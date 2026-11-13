@@ -4,7 +4,7 @@
 <table class="table"><thead><tr><th>@Localizer["Machine"]</th><th>@Localizer["Cluster"]</th><th>@Localizer["Agent version"]</th><th>@Localizer["Status"]</th><th>@Localizer["Last seen"]</th></tr></thead><tbody>
 @foreach (var machine in Model.Machines)
 {
-    <tr><td><a asp-action="Operations" asp-route-machineId="@machine.Id">@machine.Name</a><br /><small>@machine.Id</small></td><td>@Model.Clusters.FirstOrDefault(c => c.Id == machine.ClusterId)?.Name</td><td>@machine.AgentVersion</td><td>@(machine.Disabled ? Localizer["Disabled"] : machine.LastSeen > DateTime.UtcNow.AddSeconds(-45) ? Localizer["Online"] : Localizer["Offline"])</td><td>@machine.LastSeen</td></tr>
+    <tr><td><a asp-action="Operations" asp-route-machineId="@machine.Id" asp-route-clusterId="@machine.ClusterId">@machine.Name</a><br /><small>@machine.Id</small></td><td><a asp-action="Operations" asp-route-clusterId="@machine.ClusterId" asp-route-clusterWorkflowsOnly="true">@Model.Clusters.FirstOrDefault(c => c.Id == machine.ClusterId)?.Name</a></td><td>@machine.AgentVersion</td><td>@(machine.Disabled ? Localizer["Disabled"] : machine.LastSeen > DateTime.UtcNow.AddSeconds(-45) ? Localizer["Online"] : Localizer["Offline"])</td><td>@machine.LastSeen</td></tr>
 }
 </tbody></table>
 @if (Model.Machines.Count == 0) { <p>@Localizer["No machines are visible. Configure cluster access, then use the CLI to request machine registration."]</p> }
