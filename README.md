@@ -1,52 +1,94 @@
 # DMS
 
-Approved server operations for humans and AI. A Controller manages inventory, Lockbox approvals and workflow history. Linux Agents connect outward over WebSocket; managed machines need no SSH service or internet access.
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Pipeline stat](https://badge-proxy.aiursoft.com/aiursoft/dms/badges/master/pipeline.svg)](https://gitlab.aiursoft.com/aiursoft/dms/-/pipelines)
+[![Test Coverage](https://badge-proxy.aiursoft.com/aiursoft/dms/badges/master/coverage.svg)](https://gitlab.aiursoft.com/aiursoft/dms/-/pipelines)
+[![S360 compliance](https://s360.aiursoft.com/badge.svg?project=aiursoft%2Fdms)](https://s360.aiursoft.com/SupplyChain?tab=projects&project=aiursoft%2Fdms&scope=baseline&ecosystem=all)
+[![Man hours](https://manhours.aiursoft.com/r/github.com/aiursoftweb/dms.svg)](https://manhours.aiursoft.com/r/github.com/aiursoftweb/dms.html)
 
-The initial workflows are performance information, service restart, machine inventory and registration. Arbitrary commands are not exposed. Every operational CLI command submits a Lockbox; inspection and approval commands use authenticated management APIs.
+DMS is a server operations platform for humans and AI, built on Aiursoft Template. Request an operation, approve its scope through Lockbox, and follow its execution across your machines.
 
-## Run
+![DMS local preview](./screenshot.png)
 
-Build with the .NET 10 SDK:
+## What is DMS?
+
+- A web console for machine inventory, approvals and workflow history.
+- A CLI and reusable SDK for requesting operations and inspecting their results.
+- Linux Agents that connect outward to the Controller over WebSocket. Managed machines need access to the Controller, without requiring internet access or an SSH service.
+- Cluster permissions with independent request, automatic approval and approval rights for five risk levels.
+- Persistent workflow state, parent/child callstacks and ClickHouse trace archives.
+- Shared Aiursoft accounts, OIDC, roles, themes and localization.
+
+The current workflows cover performance information, service restart, machine inventory and registration. Operational commands submit a Lockbox; inspection and approval commands use authenticated management APIs. Arbitrary shell commands are not exposed.
+
+## Run manually
+
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and [Node.js](https://nodejs.org/).
+
+```sh
+cd src/Aiursoft.DMS/wwwroot
+npm ci
+npm run build
+cd ..
+dotnet run --project Aiursoft.DMS.csproj -- --urls http://localhost:5000
+```
+
+Open `http://localhost:5000`. The default local administrator is `admin@default.com` with password `Admin@123456!`. Change this password before exposing a deployment.
+
+The defaults use SQLite and local accounts. Open **Cluster access** to configure the first cluster and its permissions, then create a personal key under **API Keys**. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
+
+## Run in Microsoft Visual Studio
+
+Open `Aiursoft.DMS.sln`, select `Aiursoft.DMS` as the startup project, and press **F5**. Install the frontend dependencies as described above first.
+
+## Run in Docker
+
+Build a Controller image from the repository root:
+
+```sh
+docker build --tag dms:local .
+docker run -d --name dms --restart unless-stopped \
+  -p 8080:5000 -v dms-data:/data dms:local
+```
+
+Open `http://localhost:8080`. Persist `/data` for the default SQLite database, configuration, uploaded files and workflow state. The health endpoint is `/health`.
+
+| Property | Value |
+| --- | --- |
+| Container port | `5000` |
+| Binary directory | `/app` |
+| Persistent data | `/data` |
+| Configuration | `/data/appsettings.json` |
+| Workflow state | `/data/dms-state` |
+
+The shared CI validates Linux amd64 and arm64 images. Once a successful master pipeline publishes `aiursoft/dms:latest`, the standard [installer](./install.sh) can install that image with a chosen port:
+
+```sh
+sudo bash install.sh 8080
+```
+
+The Controller image does not install Agents on managed machines. Build and distribute the Agent separately using the [Agent setup guide](./docs/cli-and-agent.md#run-an-agent).
+
+## Configuration
+
+Run one Controller with a persistent business database and workflow state directory. Configure ClickHouse for detailed workflow traces before using the service for ongoing operations. Local accounts are the development default; OIDC is an explicit deployment setting.
+
+See [configuration and persistence](./docs/configuration.md) for database settings, trace storage, authentication, recovery and cancellation behavior.
+
+## How to contribute
+
+Report bugs and feature requests through the [issue tracker](https://gitlab.aiursoft.com/aiursoft/dms/-/issues). Use a feature branch or fork and submit a merge request.
+
+Build and test from the repository root:
 
 ```sh
 dotnet build Aiursoft.DMS.sln
-dotnet run --project src/Aiursoft.DMS/Aiursoft.DMS.csproj
+dotnet test Aiursoft.DMS.sln
+./lint.sh
 ```
 
-Use the Template local administrator for initial setup, change its password, then open **Cluster access** to create a cluster and assign each risk level's request, automatic approval and approval permissions. Self approval is a separate user setting. Create a personal key under **API Keys**.
+NugetNinja maintains the shared Template files and dependency conventions through `ninja.yaml`. External contributors use the checked-in public NuGet/npm sources; company CI selects the internal build sources separately.
 
-```sh
-export DMS_SERVER=https://dms.example.com
-export DMS_API_KEY='<personal-key>'
-dotnet run --project src/Aiursoft.DMS.Client -- cluster add-machine --cluster-id <cluster-id> --name server-01 --reason 'Register server'
-```
+## Credits
 
-After approval, inspect the operation result for the machine ID. Issue its Agent key under **Cluster access**. Install the published Agent and .NET 10 runtime using your internal distribution channel. Run it with a dedicated persistent private state directory:
-
-```sh
-export DMS_CONTROLLER=https://dms.example.com
-export DMS_MACHINE_KEY='<agent-key>'
-export DMS_STATE_PATH=/var/lib/dms-agent
-dotnet Aiursoft.DMS.Agent.dll
-```
-
-The machine is bound to its state directory's installation identity. Preserve that directory across upgrades. A second installation with the same key is rejected until pending operations have been reconciled.
-
-```sh
-dotnet dms.dll machine performance info --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect capacity'
-dotnet dms.dll machine systemctl restart --cluster-id <cluster-id> --machine-id <machine-id> --service example.service --reason 'Approved maintenance'
-dotnet dms.dll lockbox get --id <lockbox-id>
-dotnet dms.dll lockbox approve --id <lockbox-id> --reason 'Maintenance window confirmed'
-dotnet dms.dll operation get-callstack --id <workflow-id>
-dotnet dms.dll operation get-trace --id <workflow-id>
-```
-
-Use `--all-machines` to freeze the cluster's current machines into a request, `--request-id` when retrying the same submission, and `--json` for automation. The five risk levels have independent permissions in each cluster. A request can target only one cluster.
-
-## Persistence
-
-Run one Controller with persistent database and `Dms:StatePath` storage. Configure `Dms:Clickhouse:Enabled` and `Dms:Clickhouse:ConnectionString` for workflow traces; application logging uses the separate Template logging settings. Detailed traces are spooled on disk and archived into `DmsWorkflowTrace`, not the relational business database. Unavailable storage applies backpressure instead of dropping entries.
-
-Unstarted tasks resume dispatch. Started tasks with unknown outcomes become `NeedsVerification` and are never automatically rerun. `kill-workflow` requires a new Lockbox; cancellation does not undo side effects or prove that a systemd job was rolled back.
-
-The Web UI provides machines, approval context, workflow history, callstacks and trace. Query access follows cluster membership. Default development authentication is Local; configure OIDC through the existing Template settings when deploying.
+Built on [Aiursoft Template](https://github.com/aiursoftweb/template). Licensed under the [MIT License](./LICENSE).
