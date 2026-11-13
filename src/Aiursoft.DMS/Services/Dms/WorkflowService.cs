@@ -23,7 +23,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
         var risk = request.Workflow switch
         {
-            WorkflowNames.Performance or WorkflowNames.ListMachines => RiskLevel.Safe,
+            WorkflowNames.Performance or WorkflowNames.ListMachines or WorkflowNames.AgentStatus or WorkflowNames.ListBlockDevices or WorkflowNames.DiskFree => RiskLevel.Safe,
+            WorkflowNames.ServiceStatus => RiskLevel.Low,
             WorkflowNames.Restart or WorkflowNames.AddMachine or WorkflowNames.Kill => RiskLevel.Medium,
             _ => throw new DmsException(400, "This workflow is not available as an external operation.")
         };
@@ -31,7 +32,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var grant = await access.GrantAsync(user, request.ClusterId, risk);
         if (grant?.CanRequest != true) throw new DmsException(403, "You cannot request this risk level in this cluster.");
         var targets = new List<Guid>();
-        if (request.Workflow is WorkflowNames.Performance or WorkflowNames.Restart)
+        if (WorkflowNames.IsMachineWorkflow(request.Workflow))
         {
             if (request.AllMachines && request.MachineIds.Count != 0) throw new DmsException(400, "Choose explicit machines or all machines, not both.");
             targets = request.AllMachines
@@ -39,7 +40,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
                 : request.MachineIds.Distinct().ToList();
             if (targets.Count is < 1 or > 1000 || await db.Machines.CountAsync(m => targets.Contains(m.Id) && m.ClusterId == request.ClusterId && !m.Disabled) != targets.Count)
                 throw new DmsException(400, "Select between 1 and 1000 active machines in this cluster.");
-            if (request.Workflow == WorkflowNames.Restart && !RestartServiceWorkflow.ValidService(request.Service))
+            if (request.Workflow is (WorkflowNames.Restart or WorkflowNames.ServiceStatus) && !RestartServiceWorkflow.ValidService(request.Service))
                 throw new DmsException(400, "A concrete .service unit name is required.");
         }
         if (request.Workflow == WorkflowNames.AddMachine && (string.IsNullOrWhiteSpace(request.MachineName) || request.MachineName.Length > 100))

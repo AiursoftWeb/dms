@@ -53,7 +53,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
     {
         while (!token.IsCancellationRequested)
         {
-            await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString() }, token);
+            await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString(), SupportedWorkflows = WorkflowNames.MachineDefinitions.ToList() }, token);
             foreach (var task in journal.Snapshot().Where(t => !t.State.Terminal() || t.Pending.Count > 0))
             {
                 await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "status", TaskId = task.Id, State = task.State }, token);
@@ -71,7 +71,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
             switch (message.Kind)
             {
                 case "offer":
-                    if (message.Version != WorkflowNames.Version || message.Definition is not (WorkflowNames.Performance or WorkflowNames.Restart))
+                    if (message.Version != WorkflowNames.Version || !WorkflowNames.IsMachineWorkflow(message.Definition))
                         throw new InvalidDataException("Unsupported workflow version or definition.");
                     journal.Accept(message);
                     break;
@@ -98,6 +98,12 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
             {
                 WorkflowNames.Performance => new PerformanceInfoWorkflow(),
                 WorkflowNames.Restart => new RestartServiceWorkflow(task.Service),
+                WorkflowNames.ServiceStatus => new ServiceStatusWorkflow(task.Service),
+                WorkflowNames.ListBlockDevices => new ListBlockDevicesWorkflow(),
+                WorkflowNames.DiskFree => new DiskFreeWorkflow(),
+                WorkflowNames.AgentStatus => new AgentStatusWorkflow(journal.InstallationId,
+                    typeof(AgentClient).Assembly.GetName().Version!.ToString(),
+                    journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count)),
                 _ => throw new InvalidDataException("Unsupported workflow.")
             };
             await context.RunAsync(workflow, CancellationToken.None);

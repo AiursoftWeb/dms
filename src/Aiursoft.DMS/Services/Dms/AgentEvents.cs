@@ -15,6 +15,12 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
             if (message.Version.Length > 100) throw new DmsException(400, "Invalid Agent version.");
             if (message.InstallationId == Guid.Empty || (machine.InstallationId != null && machine.InstallationId != message.InstallationId))
                 throw new DmsException(409, "Agent state directory belongs to a different installation. Reconcile pending tasks before replacement.");
+            if (message.SupportedWorkflows is { } definitions)
+            {
+                if (definitions.Count > 64 || definitions.Any(d => string.IsNullOrWhiteSpace(d) || d.Length > 100))
+                    throw new DmsException(400, "Invalid Agent workflow capabilities.");
+                session.SupportedWorkflows = definitions.ToHashSet(StringComparer.Ordinal);
+            }
             machine.InstallationId ??= message.InstallationId;
             machine.LastSeen = DateTime.UtcNow; machine.AgentVersion = message.Version;
             await db.SaveChangesAsync(); session.Ready = true; return null;
@@ -43,7 +49,7 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
         if (run == null)
         {
             var parent = await db.WorkflowRuns.SingleOrDefaultAsync(r => r.Id == item.ParentId);
-            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || item.Definition is not (WorkflowNames.Process or WorkflowNames.Performance or WorkflowNames.Restart) || !await BelongsToTaskAsync(parent, task.Id))
+            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && !WorkflowNames.IsMachineWorkflow(item.Definition)) || !await BelongsToTaskAsync(parent, task.Id))
                 throw new DmsException(403, "Invalid machine subworkflow parent or definition.");
             run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, ClusterId = task.ClusterId, MachineId = machineId, Definition = item.Definition };
             db.WorkflowRuns.Add(run);

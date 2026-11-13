@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Aiursoft.DMS.Agent;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Workflows;
@@ -105,6 +106,36 @@ public class AgentJournalTests
             Assert.AreEqual(RunState.Cancelled, journal.Snapshot().Single().State);
         }
         finally { Directory.Delete(path, true); }
+    }
+
+    [TestMethod]
+    [DataRow(9000, "x", "output exceeds")]
+    [DataRow(4000, "中", "serialized output limit")]
+    public async Task CapturedOutputIsAResultAndOversizedQueriesFailWithoutTruncation(int count, string character, string error)
+    {
+        var events = new List<WorkflowEvent>();
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, item => { events.Add(item); return Task.CompletedTask; });
+        var result = await context.RunAsync(new ProcessWorkflow("/usr/bin/printf", ["fixed output"], captureOutput: true), CancellationToken.None);
+        Assert.AreEqual("fixed output", JsonSerializer.Deserialize<ProcessResult>(result)!.Output);
+        Assert.IsTrue(events.Any(e => e.IsTrace && e.Message == "fixed output"));
+        events.Clear();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => context.RunAsync(
+            new ProcessWorkflow("/usr/bin/printf", ["%s", string.Concat(Enumerable.Repeat(character, count))], captureOutput: true), CancellationToken.None));
+        var failure = events.Single(e => e.State == RunState.Failed);
+        StringAssert.Contains(failure.Result, error);
+        Assert.IsFalse(events.Any(e => e.State == RunState.Succeeded));
+    }
+
+    [TestMethod]
+    [DataRow("*.service")]
+    [DataRow("--all")]
+    [DataRow("ssh.service; reboot")]
+    public async Task ServiceStatusRejectsExpressionsBeforeStartingAProcess(string service)
+    {
+        var events = new List<WorkflowEvent>();
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, item => { events.Add(item); return Task.CompletedTask; });
+        await Assert.ThrowsAsync<ArgumentException>(() => context.RunAsync(new ServiceStatusWorkflow(service), CancellationToken.None));
+        Assert.IsFalse(events.Any(e => e.Definition == WorkflowNames.Process));
     }
 
     [TestMethod]
