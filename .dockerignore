@@ -4,6 +4,7 @@
 # Build outputs are regenerated inside the image.
 **/bin
 **/obj
+**/.nuget
 **/node_modules
 **/.node_modules-keep
 

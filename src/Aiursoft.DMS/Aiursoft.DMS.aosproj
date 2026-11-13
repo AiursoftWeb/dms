@@ -15,8 +15,8 @@
   <ItemGroup>
     <PrebuildCommand Run="rm -rf bin/publish" />
     <PrebuildCommand Run="npm ci --prefix wwwroot" />
-    <PrebuildCommand Run="dotnet publish Aiursoft.DMS.csproj --configuration Release --no-self-contained --runtime linux-x64 --output bin/publish/" Condition="'$(Arch)' == 'amd64'" />
-    <PrebuildCommand Run="dotnet publish Aiursoft.DMS.csproj --configuration Release --no-self-contained --runtime linux-arm64 --output bin/publish/" Condition="'$(Arch)' == 'arm64'" />
+    <PrebuildCommand Run="dotnet publish Aiursoft.DMS.csproj --configuration Release --no-self-contained -p:UseAppHost=false --runtime linux-x64 --output bin/publish/" Condition="'$(Arch)' == 'amd64'" />
+    <PrebuildCommand Run="dotnet publish Aiursoft.DMS.csproj --configuration Release --no-self-contained -p:UseAppHost=false --runtime linux-arm64 --output bin/publish/" Condition="'$(Arch)' == 'arm64'" />
     <PrebuildCommand Run="cp -r wwwroot/* bin/publish/wwwroot/" />
     <PrebuildCommand Run="sed -i 's|DataSource=app.db|DataSource=/var/lib/aiursoft-dms/app.db|g' bin/publish/appsettings.json" />
     <PrebuildCommand Run="sed -i 's|/tmp/data|/var/lib/aiursoft-dms/storage|g' bin/publish/appsettings.json" />
