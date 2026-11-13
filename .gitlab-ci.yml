@@ -76,7 +76,7 @@ s360:
 s360_npm:
     stage: s360
     script:
-        - s360 check --path . --ecosystem npm --npm-lockfile-only --purpose "$S360_PURPOSE"
+        - s360 check --path . --ecosystem npm --npm-lockfile-only --npm-registry "$npm_config_registry" --purpose "$S360_PURPOSE"
     rules:
         - exists:
               - "**/package.json"
