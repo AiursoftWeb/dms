@@ -7,6 +7,8 @@ namespace Aiursoft.DMS.Entities;
 [ExcludeFromCodeCoverage]
 public class User : IdentityUser
 {
+    public bool CanApproveOwnRequests { get; set; }
+
     public const string DefaultAvatarPath = "avatar/default-avatar.jpg";
 
     [MaxLength(30)]

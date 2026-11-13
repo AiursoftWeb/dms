@@ -14,4 +14,5 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
+  <ItemGroup><ProjectReference Include="../Aiursoft.DMS.Contracts/Aiursoft.DMS.Contracts.csproj" /></ItemGroup>
 </Project>

@@ -1,0 +1,254 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
+using Aiursoft.DMS.Contracts;
+using Aiursoft.DMS.Entities;
+using Aiursoft.DMS.Services.Authentication;
+using Aiursoft.DMS.Services.Dms;
+using Microsoft.EntityFrameworkCore;
+
+namespace Aiursoft.DMS.Tests.IntegrationTests;
+
+[TestClass]
+public class DmsWorkflowTests : TestBase
+{
+    private async Task<(Guid Cluster, string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false)
+    {
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var user = await db.Users.SingleAsync(u => u.UserName == "admin");
+        var approver = new User { DisplayName = "Approver", UserName = "approver", Id = Guid.NewGuid().ToString() };
+        db.Users.Add(approver);
+        var cluster = new Cluster { Name = "Test" }; db.Clusters.Add(cluster);
+        var machine = new Machine { ClusterId = cluster.Id, Name = "Test machine", KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
+        db.Machines.Add(machine);
+        foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Medium })
+        {
+            db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = risk, CanRequest = true, AutoApprove = automatic, CanApprove = true });
+            db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = approver.Id, Risk = risk, CanApprove = true });
+        }
+        await db.SaveChangesAsync();
+        return (cluster.Id, user.Id, approver.Id, machine.Id);
+    }
+
+    private OperationRequest Request(Guid cluster, Guid machine) => new()
+    {
+        ClusterId = cluster, Workflow = WorkflowNames.Restart, MachineIds = [machine], Service = "dms-test.service", Reason = "Business acceptance"
+    };
+
+    [TestMethod]
+    public async Task ApprovalRequiresAnotherUserAndCreatesOneChild()
+    {
+        var setup = await ArrangeAsync();
+        Guid id;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var item = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
+            Assert.AreEqual(DecisionState.Pending, item.Decision); Assert.IsNull(item.OperationId); id = item.Id;
+            var forbidden = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.User, id, true, "Self approval"));
+            Assert.AreEqual(403, forbidden.StatusCode);
+        }
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var item = await service.DecideAsync(setup.Approver, id, true, "Approved maintenance");
+            Assert.AreEqual(DecisionState.Approved, item.Decision); Assert.IsNotNull(item.OperationId);
+            var tree = await service.CallstackAsync(setup.User, item.WorkflowId);
+            Assert.IsTrue(tree.Any(r => r.Id == item.OperationId && r.ParentId == item.WorkflowId));
+            var conflict = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, id, false, "Late rejection"));
+            Assert.AreEqual(409, conflict.StatusCode);
+        }
+    }
+
+    [TestMethod]
+    public async Task AutoApprovalDoesNotNeedSelfApprovalAndTargetsStayFrozen()
+    {
+        var setup = await ArrangeAsync(true);
+        using var scope = Server!.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var request = Request(setup.Cluster, setup.Machine); request.AllMachines = true; request.MachineIds.Clear();
+        var item = await service.SubmitAsync(setup.User, request);
+        Assert.IsTrue(item.Automatic); Assert.AreEqual(DecisionState.Approved, item.Decision); Assert.IsNull(item.ApproverId);
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Added after submission", KeyHash = "another" }); await db.SaveChangesAsync();
+        Assert.AreEqual(item.Id, (await service.SubmitAsync(setup.User, request)).Id);
+        var targets = JsonSerializer.Deserialize<List<Guid>>(item.TargetMachines)!;
+        CollectionAssert.AreEqual(new[] { setup.Machine }, targets);
+        request.Service = "changed.service";
+        var conflict = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request));
+        Assert.AreEqual(409, conflict.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task DenialStartsNoOperationAndExplicitSelfApprovalWorks()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var item = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
+        await service.DecideAsync(setup.Approver, item.Id, false, "Maintenance window closed");
+        Assert.IsNull(item.OperationId);
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var user = await db.Users.SingleAsync(u => u.Id == setup.User); user.CanApproveOwnRequests = true; await db.SaveChangesAsync();
+        var second = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
+        await service.DecideAsync(setup.User, second.Id, true, "Explicit self approval grant");
+        Assert.AreEqual(DecisionState.Approved, second.Decision);
+    }
+
+    [TestMethod]
+    public async Task CrossClusterAndInternalWorkflowRequestsAreRejected()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var other = new Cluster { Name = "Other" }; db.Clusters.Add(other); await db.SaveChangesAsync();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, Request(other.Id, setup.Machine)));
+        Assert.AreEqual(403, denied.StatusCode);
+        var request = Request(setup.Cluster, setup.Machine); request.Workflow = WorkflowNames.Process;
+        var invalid = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request)); Assert.AreEqual(400, invalid.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task AgentKeyCannotInvokeHumanApiAndPersonalKeyCanSubmit()
+    {
+        var setup = await ArrangeAsync(true);
+        var agentKey = DmsKeyAuthenticationHandler.CreateKey(true);
+        var personal = DmsKeyAuthenticationHandler.CreateKey(false);
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(agentKey);
+            db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, KeyHash = DmsKeyAuthenticationHandler.Hash(personal), Name = "test", ExpiresAt = DateTime.UtcNow.AddHours(1) });
+            await db.SaveChangesAsync();
+        }
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", agentKey);
+        var denied = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", Request(setup.Cluster, setup.Machine));
+        Assert.AreEqual(HttpStatusCode.Forbidden, denied.StatusCode);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", personal);
+        var accepted = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", Request(setup.Cluster, setup.Machine));
+        Assert.AreEqual(HttpStatusCode.OK, accepted.StatusCode);
+        var websocket = await Http.GetAsync("/api/agent/channel"); Assert.AreEqual(HttpStatusCode.Forbidden, websocket.StatusCode);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync([
+            "machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
+            "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--json"]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        StringAssert.Contains(cli.StdOut, "WorkflowId");
+        var invalidRequest = Request(setup.Cluster, setup.Machine);
+        invalidRequest.Service = "*.service";
+        var invalid = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", invalidRequest);
+        Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
+        var error = await invalid.Content.ReadFromJsonAsync<Aiursoft.AiurProtocol.Models.AiurCollection<string>>();
+        Assert.IsNotNull(error?.Items);
+        Assert.HasCount(1, error.Items);
+        var empty = await Http.PostAsJsonAsync<OperationRequest?>("/api/v1/dms/lockboxes", null);
+        Assert.AreEqual(HttpStatusCode.BadRequest, empty.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task ConcurrentApprovalsCreateOnlyOneOperation()
+    {
+        var setup = await ArrangeAsync();
+        Guid id;
+        using (var scope = Server!.Services.CreateScope())
+            id = (await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine))).Id;
+        async Task<bool> Decide()
+        {
+            using var scope = Server.Services.CreateScope();
+            try
+            {
+                await scope.ServiceProvider.GetRequiredService<WorkflowService>().DecideAsync(setup.Approver, id, true, "Concurrent review");
+                return true;
+            }
+            catch (DmsException exception) when (exception.StatusCode == 409) { return false; }
+        }
+        var results = await Task.WhenAll(Decide(), Decide());
+        Assert.AreEqual(1, results.Count(success => success));
+        using var check = Server.Services.CreateScope();
+        var db = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var item = await db.Lockboxes.SingleAsync(l => l.Id == id);
+        Assert.AreEqual(1, await db.WorkflowRuns.CountAsync(r => r.ParentId == item.WorkflowId));
+    }
+
+    [TestMethod]
+    public async Task ManualApprovalDispatchesExactlyTheTenSubmittedMachines()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        for (var i = 1; i < 10; i++) db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = $"Machine {i}", KeyHash = Guid.NewGuid().ToString() });
+        await db.SaveChangesAsync();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var request = Request(setup.Cluster, setup.Machine); request.AllMachines = true; request.MachineIds.Clear();
+        var item = await service.SubmitAsync(setup.User, request);
+        var late = new Machine { ClusterId = setup.Cluster, Name = "Eleventh machine", KeyHash = Guid.NewGuid().ToString() };
+        db.Machines.Add(late); await db.SaveChangesAsync();
+        await service.DecideAsync(setup.Approver, item.Id, true, "Ten machines approved");
+        var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.OperationId);
+        await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, item));
+        var dispatched = db.WorkflowRuns.Local.Where(r => r.ParentId == operation.Id).ToList();
+        Assert.HasCount(10, dispatched);
+        Assert.IsFalse(dispatched.Any(r => r.MachineId == late.Id));
+    }
+
+    [TestMethod]
+    public async Task CorePagesRenderWithAuthorizedUser()
+    {
+        await ArrangeAsync(); await LoginAsAdmin();
+        foreach (var route in new[] { "/Dms", "/Dms/Lockboxes", "/Dms/Operations", "/DmsAccess", "/DmsAccess/Keys" })
+        {
+            var response = await Http.GetAsync(route);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, route);
+        }
+    }
+    [TestMethod]
+    public async Task ActualAgentExecutesApprovedWorkflowAndReturnsTrace()
+    {
+        var setup = await ArrangeAsync(true);
+        var key = DmsKeyAuthenticationHandler.CreateKey(true);
+        LockboxRequest request;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(key);
+            await db.SaveChangesAsync();
+            var input = Request(setup.Cluster, setup.Machine); input.Workflow = WorkflowNames.Performance;
+            request = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
+        }
+        var path = Path.Combine(Path.GetTempPath(), "dms-real-agent-" + Guid.NewGuid());
+        using var stopping = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        try
+        {
+            using var journal = new Agent.TaskJournal(path);
+            var agent = new Agent.AgentClient(Http.BaseAddress!, key, journal).RunAsync(stopping.Token);
+            try
+            {
+                WorkflowRun? operation = null;
+                while (!stopping.IsCancellationRequested)
+                {
+                    using var scope = Server!.Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+                    operation = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == request.OperationId);
+                    if (operation.State.Terminal()) break;
+                    await Task.Delay(100, stopping.Token);
+                }
+                Assert.IsNotNull(operation); Assert.AreEqual(RunState.Succeeded, operation.State);
+                using var check = Server!.Services.CreateScope();
+                var tree = await check.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, request.WorkflowId);
+                var machine = tree.Single(r => r.IsMachineTask);
+                Assert.AreEqual(RunState.Succeeded, machine.State);
+                StringAssert.Contains(machine.Result, "Processors");
+                Assert.IsTrue(machine.LastSequence >= 3);
+                Assert.IsTrue(Server.Services.GetRequiredService<TraceStore>().PendingCount > 0);
+            }
+            finally
+            {
+                await stopping.CancelAsync();
+                try { await agent; } catch (OperationCanceledException) { }
+            }
+        }
+        finally { Directory.Delete(path, true); }
+    }
+
+}

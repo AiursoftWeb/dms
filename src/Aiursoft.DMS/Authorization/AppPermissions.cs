@@ -25,6 +25,7 @@ public class AppPermissions
         var localizer = new FakeLocalizer();
         List<PermissionDescriptor> allPermission =
         [
+            new("CanManageDmsAccess", localizer["Manage DMS access"], localizer["Create clusters, configure cluster grants and manage Agent identities."]),
             new(AppPermissionNames.CanReadUsers,
                 localizer["Read Users"],
                 localizer["Allows viewing the list of all users."]),

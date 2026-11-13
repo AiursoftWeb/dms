@@ -50,6 +50,23 @@ public class Startup : IWebStartup
         // Authentication and Authorization
         services.AddTemplateAuth(configuration);
 
+        services.AddAuthentication().AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions,
+            DmsKeyAuthenticationHandler>(DmsKeyAuthenticationHandler.SchemeName, _ => { });
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("DmsHuman", policy => policy.RequireClaim(System.Security.Claims.ClaimTypes.NameIdentifier));
+            options.AddPolicy("DmsAgent", policy => policy.RequireClaim("DmsMachine"));
+        });
+        services.AddSingleton<Services.Dms.ControllerGate>();
+        services.AddSingleton<Services.Dms.AgentSessions>();
+        services.AddSingleton<Services.Dms.TraceStore>();
+        services.AddScoped<Services.Dms.AccessService>();
+        services.AddScoped<Services.Dms.WorkflowService>();
+        services.AddScoped<Services.Dms.AgentEvents>();
+        services.AddScoped<Services.Dms.TraceDatabase>();
+        services.AddHostedService<Services.Dms.WorkflowScheduler>();
+        services.AddHostedService<Services.Dms.TraceFlushService>();
+
         // Services
         services.AddMemoryCache();
         services.AddHttpClient();
@@ -90,6 +107,7 @@ public class Startup : IWebStartup
         app.UseUIStack();
         app.UseStaticFiles();
         app.UseRouting();
+        app.UseWebSockets();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapDefaultControllerRoute();

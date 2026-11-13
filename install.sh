@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Repository configuration.
-app_name="dMS"
+app_name="dms"
 extra_docker_args=()
 
 set -euo pipefail

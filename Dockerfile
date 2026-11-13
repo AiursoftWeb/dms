@@ -5,10 +5,11 @@ ARG PROJ_NAME="Aiursoft.DMS"
 # Prepare NPM Environment
 FROM --platform=$BUILDPLATFORM hub.aiursoft.com/node:24-alpine AS npm-env
 ARG CSPROJ_PATH
+ARG NPM_REGISTRY=https://registry.npmjs.org
 WORKDIR /src
 # Only copy package files to take advantage of Docker cache
 COPY ${CSPROJ_PATH}wwwroot/package.json ${CSPROJ_PATH}wwwroot/package-lock.json ${CSPROJ_PATH}wwwroot/.npmrc* /src/${CSPROJ_PATH}wwwroot/
-RUN npm ci --prefix "${CSPROJ_PATH}wwwroot" --loglevel verbose
+RUN npm ci --registry "$NPM_REGISTRY" --prefix "${CSPROJ_PATH}wwwroot" --loglevel verbose
 
 # Build frontend (slims node_modules to only "keep" declared packages)
 COPY ${CSPROJ_PATH}wwwroot/build.mjs /src/${CSPROJ_PATH}wwwroot/build.mjs
@@ -20,6 +21,7 @@ FROM --platform=$BUILDPLATFORM hub.aiursoft.com/aiursoft/internalimages/dotnet A
 ARG CSPROJ_PATH
 ARG PROJ_NAME
 ARG TARGETARCH
+ARG NUGET_SOURCE=https://api.nuget.org/v3/index.json
 
 WORKDIR /src
 COPY . .
@@ -35,7 +37,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
         RID="linux-$TARGETARCH"; \
     fi && \
     echo "Building for arch: $TARGETARCH, using .NET RID: $RID" && \
-    dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj --configuration Release --no-self-contained --runtime $RID --output /app --configfile nuget.config
+    dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj --configuration Release --no-self-contained --runtime $RID --output /app --source "$NUGET_SOURCE"
 
 RUN cp -r ${CSPROJ_PATH}/wwwroot/* /app/wwwroot
 
@@ -53,6 +55,8 @@ RUN mkdir -p /data
 
 VOLUME /data
 EXPOSE 5000
+
+ENV Dms__StatePath=/data/dms-state
 
 ENV SRC_SETTINGS=/app/appsettings.json
 ENV VOL_SETTINGS=/data/appsettings.json

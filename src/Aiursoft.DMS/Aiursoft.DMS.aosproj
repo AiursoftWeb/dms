@@ -1,7 +1,7 @@
 <Project Sdk="Aiursoft.Apkg.Sdk">
   <PropertyGroup>
-    <PackageName>aiursoft-dMS</PackageName>
-    <PackageVersion>1.0.2</PackageVersion>
+    <PackageName>aiursoft-dms</PackageName>
+    <PackageVersion>1.0.3</PackageVersion>
     <PackageAuthors>Anduin Xue &lt;anduin@aiursoft.com&gt;</PackageAuthors>
     <PackageDescription>Aiursoft DMS Web Application</PackageDescription>
     <TargetDistro>anduinos</TargetDistro>
@@ -18,8 +18,8 @@
     <PrebuildCommand Run="dotnet publish Aiursoft.DMS.csproj --configuration Release --no-self-contained --runtime linux-x64 --output bin/publish/" Condition="'$(Arch)' == 'amd64'" />
     <PrebuildCommand Run="dotnet publish Aiursoft.DMS.csproj --configuration Release --no-self-contained --runtime linux-arm64 --output bin/publish/" Condition="'$(Arch)' == 'arm64'" />
     <PrebuildCommand Run="cp -r wwwroot/* bin/publish/wwwroot/" />
-    <PrebuildCommand Run="sed -i 's|DataSource=app.db|DataSource=/var/lib/aiursoft-dMS/app.db|g' bin/publish/appsettings.json" />
-    <PrebuildCommand Run="sed -i 's|/tmp/data|/var/lib/aiursoft-dMS/storage|g' bin/publish/appsettings.json" />
+    <PrebuildCommand Run="sed -i 's|DataSource=app.db|DataSource=/var/lib/aiursoft-dms/app.db|g' bin/publish/appsettings.json" />
+    <PrebuildCommand Run="sed -i 's|/tmp/data|/var/lib/aiursoft-dms/storage|g' bin/publish/appsettings.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,8 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <IncludeFolder Include="bin/publish/" Target="/usr/share/aiursoft-dMS" />
-    <ConfFile Include="bin/publish/appsettings.json" Target="/etc/aiursoft-dMS/appsettings.json" />
+    <IncludeFolder Include="bin/publish/" Target="/usr/share/aiursoft-dms" />
+    <ConfFile Include="bin/publish/appsettings.json" Target="/etc/aiursoft-dms/appsettings.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SystemdUnit Include="aiursoft-dMS.service" AutoEnable="true" />
+    <SystemdUnit Include="aiursoft-dms.service" AutoEnable="true" />
   </ItemGroup>
 </Project>

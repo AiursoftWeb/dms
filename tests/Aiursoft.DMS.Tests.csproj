@@ -20,4 +20,8 @@
   <ItemGroup>
     <ProjectReference Include="..\src\Aiursoft.DMS\Aiursoft.DMS.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" />
+    <ProjectReference Include="../src/Aiursoft.DMS.Client/Aiursoft.DMS.Client.csproj" />
+  </ItemGroup>
 </Project>

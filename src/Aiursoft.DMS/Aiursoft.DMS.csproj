@@ -31,4 +31,5 @@
     <ProjectReference Include="..\Aiursoft.DMS.MySql\Aiursoft.DMS.MySql.csproj" />
     <ProjectReference Include="..\Aiursoft.DMS.Sqlite\Aiursoft.DMS.Sqlite.csproj" />
   </ItemGroup>
+  <ItemGroup><ProjectReference Include="../Aiursoft.DMS.Workflows/Aiursoft.DMS.Workflows.csproj" /></ItemGroup>
 </Project>
