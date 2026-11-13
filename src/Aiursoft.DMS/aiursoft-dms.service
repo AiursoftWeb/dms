@@ -1,0 +1,18 @@
+[Unit]
+Description=Aiursoft DMS Web Application
+After=network.target
+
+[Service]
+WorkingDirectory=/usr/share/aiursoft-dms
+ExecStart=/usr/bin/dotnet /usr/share/aiursoft-dms/Aiursoft.DMS.dll --urls http://*:5000
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=aiursoft-dms
+User=www-data
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=Dms__StatePath=/var/lib/aiursoft-dms/traces
+Environment=HOME=/var/lib/aiursoft-dms
+
+[Install]
+WantedBy=multi-user.target

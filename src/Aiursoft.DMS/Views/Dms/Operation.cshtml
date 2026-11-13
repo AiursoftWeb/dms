@@ -1,0 +1,16 @@
+@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
+@using Aiursoft.DMS.Models.DmsViewModels
+<h1>@Model.Run!.Definition</h1><p>@Model.Run.Id <span class="badge bg-@DmsViewModel.Color(Model.Run.State)">@Model.Run.State</span></p>
+<a asp-action="Lockbox" asp-route-id="@Model.Run.LockboxId">@Localizer["Approval context"]</a>
+<div class="card mt-3"><div class="card-body table-responsive"><h2>@Localizer["Callstack"]</h2><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["Parent"]</th><th>@Localizer["State"]</th></tr></thead><tbody>
+@foreach (var run in Model.Runs)
+{
+    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td>@run.ParentId</td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td></tr>
+}
+</tbody></table></div></div>
+<div class="card"><div class="card-body"><h2>@Localizer["Result"]</h2><pre>@Model.Run.Result</pre></div></div>
+<h2>@Localizer["Trace"]</h2>
+@if (Model.Notice != null) { <div class="alert alert-warning"><div class="alert-message">@Model.Notice</div></div> }
+<div class="card"><div class="card-body">
+@foreach (var entry in Model.Trace) { <div><small>@entry.Time [@entry.Source]</small><pre>@entry.Message</pre></div> }
+</div></div>

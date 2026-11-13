@@ -1,0 +1,7 @@
+@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
+<h1>@Localizer["API Keys"]</h1>
+@if (Model.NewKey != null) { <div class="alert alert-warning"><div class="alert-message">@Localizer["Copy this key now. It will not be shown again."]<pre>@Model.NewKey</pre></div></div> }
+<form asp-action="CreateKey" method="post" class="card"><div class="card-body"><label for="name" class="form-label">@Localizer["Name"]</label><input id="name" name="name" class="form-control mb-2" maxlength="100" required /><label for="days" class="form-label">@Localizer["Valid days"]</label><input id="days" name="days" type="number" class="form-control mb-2" value="30" min="1" max="366" /><button class="btn btn-primary">@Localizer["Create key"]</button></div></form>
+<div class="card"><div class="card-body"><table class="table"><thead><tr><th>@Localizer["Name"]</th><th>@Localizer["Expires"]</th><th>@Localizer["Action"]</th></tr></thead><tbody>
+@foreach (var key in Model.Keys) { <tr><td>@key.Name</td><td>@key.ExpiresAt</td><td><form asp-action="RevokeKey" method="post"><input name="id" type="hidden" value="@key.Id" /><button class="btn btn-danger">@Localizer["Revoke"]</button></form></td></tr> }
+</tbody></table></div></div>

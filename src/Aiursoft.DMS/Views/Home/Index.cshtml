@@ -1,0 +1,21 @@
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/site.css" />
+    <link rel="stylesheet" href="~/styles/marketing.css" />
+}
+<vc:marketing-navbar></vc:marketing-navbar>
+<section class="landing-intro text-bg-dark py-5">
+    <div class="container py-5">
+        <h1 class="text-white">@Localizer["Approved operations. Accountable execution."]</h1>
+        <p class="lead text-white-50">@Localizer["Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation."]</p>
+        <a asp-controller="Dms" asp-action="Index" class="btn btn-primary btn-lg">@Localizer["Open DMS"]</a>
+    </div>
+</section>
+<section class="container py-5">
+    <div class="row g-4">
+        <div class="col-md-4"><h2>@Localizer["Know your machines"]</h2><p>@Localizer["View cluster inventory, Agent connectivity, versions, and each machine's operation history."]</p></div>
+        <div class="col-md-4"><h2>@Localizer["Review before execution"]</h2><p>@Localizer["Lockbox records who requested an operation, its targets, and the approval decision."]</p></div>
+        <div class="col-md-4"><h2>@Localizer["Follow every workflow"]</h2><p>@Localizer["Share a workflow ID to inspect its state, child workflows, results, and trace."]</p></div>
+    </div>
+</section>
+<vc:marketing-footer></vc:marketing-footer>

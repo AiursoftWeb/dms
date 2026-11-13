@@ -1,0 +1,29 @@
+@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
+@using Aiursoft.DMS.Contracts
+@{ var item = Model.Lockbox!; }
+<h1>@Localizer["Lockbox"]</h1>
+@if (Model.Notice != null) { <div class="alert alert-warning"><div class="alert-message">@Model.Notice</div></div> }
+<div class="card"><div class="card-body">
+<dl class="row">
+<dt class="col-sm-3">@Localizer["ID"]</dt><dd class="col-sm-9">@item.Id</dd>
+<dt class="col-sm-3">@Localizer["Requester"]</dt><dd class="col-sm-9">@item.RequesterId</dd>
+<dt class="col-sm-3">@Localizer["Workflow"]</dt><dd class="col-sm-9">@item.Definition (@item.Version)</dd>
+<dt class="col-sm-3">@Localizer["Risk"]</dt><dd class="col-sm-9">@item.Risk</dd>
+<dt class="col-sm-3">@Localizer["Reason"]</dt><dd class="col-sm-9">@item.Reason</dd>
+<dt class="col-sm-3">@Localizer["Created"]</dt><dd class="col-sm-9">@item.CreatedAt</dd>
+<dt class="col-sm-3">@Localizer["Approved target machines"]</dt><dd class="col-sm-9"><pre>@item.TargetMachines</pre></dd>
+<dt class="col-sm-3">@Localizer["Parameters"]</dt><dd class="col-sm-9"><pre>@item.Parameters</pre></dd>
+<dt class="col-sm-3">@Localizer["Decision"]</dt><dd class="col-sm-9">@item.Decision — @(item.Automatic ? Localizer["Automatic approval"] : item.ApproverId) @item.DecidedAt<br />@item.DecisionReason</dd>
+</dl>
+<a asp-action="Operation" asp-route-id="@item.WorkflowId">@Localizer["Lockbox callstack"]</a>
+@if (item.OperationId != null) { <a class="ms-3" asp-action="Operation" asp-route-id="@item.OperationId">@Localizer["Operation"]</a> }
+</div></div>
+@if (item.Decision == DecisionState.Pending)
+{
+    <form asp-action="Decide" method="post" class="card"><div class="card-body">
+        <input type="hidden" name="id" value="@item.Id" />
+        <label class="form-label" for="reason">@Localizer["Decision reason"]</label><textarea id="reason" class="form-control mb-3" name="reason" maxlength="2000"></textarea>
+        <button class="btn btn-success" name="approve" value="true">@Localizer["Approve"]</button>
+        <button class="btn btn-danger" name="approve" value="false">@Localizer["Deny"]</button>
+    </div></form>
+}

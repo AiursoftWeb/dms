@@ -1,0 +1,62 @@
+namespace Aiursoft.DMS.Contracts;
+
+public enum RiskLevel { Safe, Low, Medium, High, VeryHigh }
+public enum RunState { WaitingApproval, Queued, Offered, Accepted, Running, Succeeded, Warning, Failed, Denied, CancelRequested, Cancelled, NeedsVerification }
+public enum DecisionState { Pending, Approved, Denied }
+
+public static class WorkflowNames
+{
+    public const string Lockbox = "lockbox";
+    public const string Batch = "cluster.machine-batch";
+    public const string Performance = "machine.performance.info";
+    public const string Restart = "machine.systemctl.restart";
+    public const string Process = "internal.process";
+    public const string ListMachines = "cluster.get-machines";
+    public const string AddMachine = "cluster.add-machine";
+    public const string Kill = "operation.kill-workflow";
+    public const string Version = "1";
+
+    public static bool Terminal(this RunState state) => state is RunState.Succeeded or RunState.Warning
+        or RunState.Failed or RunState.Cancelled or RunState.Denied;
+}
+
+public sealed class OperationRequest
+{
+    public Guid RequestId { get; set; } = Guid.NewGuid();
+    public Guid ClusterId { get; set; }
+    public string Workflow { get; set; } = string.Empty;
+    public List<Guid> MachineIds { get; set; } = [];
+    public bool AllMachines { get; set; }
+    public string Service { get; set; } = string.Empty;
+    public string MachineName { get; set; } = string.Empty;
+    public Guid? TargetWorkflowId { get; set; }
+    public string Reason { get; set; } = string.Empty;
+}
+
+public sealed class WorkflowEvent
+{
+    public long Sequence { get; set; }
+    public Guid WorkflowId { get; set; }
+    public Guid? ParentId { get; set; }
+    public string Definition { get; set; } = string.Empty;
+    public RunState State { get; set; }
+    public bool IsTrace { get; set; }
+    public string Source { get; set; } = "engine";
+    public string Message { get; set; } = string.Empty;
+    public string Result { get; set; } = string.Empty;
+    public DateTime Time { get; set; } = DateTime.UtcNow;
+}
+
+public sealed class AgentMessage
+{
+    public Guid InstallationId { get; set; }
+    public string Kind { get; set; } = string.Empty;
+    public Guid TaskId { get; set; }
+    public Guid? TargetWorkflowId { get; set; }
+    public string Version { get; set; } = WorkflowNames.Version;
+    public string Definition { get; set; } = string.Empty;
+    public string Service { get; set; } = string.Empty;
+    public RunState State { get; set; }
+    public long Sequence { get; set; }
+    public WorkflowEvent? Event { get; set; }
+}
