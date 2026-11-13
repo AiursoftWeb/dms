@@ -54,7 +54,7 @@ before_script:
 variables:
     GIT_CLONE_PATH: "$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID/$CI_JOB_ID"
     MSBUILDDISABLENODEREUSE: "1"
-    npm_config_registry: "https://nopkg.aiursoft.com"
+    npm_config_registry: "https://nopkg.aiursoft.com/npm/"
     DOTNET_CLI_TELEMETRY_OPTOUT: "1"
     S360_PURPOSE: review
     S360_CHECK_KEY: ""
@@ -155,7 +155,7 @@ validate_docker:
         - build
     script:
         - docker buildx use aiur-global-builder
-        - docker buildx build . --build-arg NUGET_SOURCE=https://nupkg.aiursoft.com/v3/index.json --build-arg NPM_REGISTRY=https://nopkg.aiursoft.com --platform linux/amd64,linux/arm64
+        - docker buildx build . --build-arg NUGET_SOURCE=https://nupkg.aiursoft.com/v3/index.json --build-arg NPM_REGISTRY=https://nopkg.aiursoft.com/npm/ --platform linux/amd64,linux/arm64
     rules:
         - exists:
               - Dockerfile
@@ -243,7 +243,7 @@ deploy_docker_all:
         - docker buildx use aiur-global-builder
         # Both required destinations must succeed. China replication is handled
         # asynchronously by puller_cn after the home-registry push completes.
-        - docker buildx build . --build-arg NUGET_SOURCE=https://nupkg.aiursoft.com/v3/index.json --build-arg NPM_REGISTRY=https://nopkg.aiursoft.com --platform linux/amd64,linux/arm64 --tag "$LOCAL_TARGET_COM" --tag "$PUBLIC_TARGET" --push
+        - docker buildx build . --build-arg NUGET_SOURCE=https://nupkg.aiursoft.com/v3/index.json --build-arg NPM_REGISTRY=https://nopkg.aiursoft.com/npm/ --platform linux/amd64,linux/arm64 --tag "$LOCAL_TARGET_COM" --tag "$PUBLIC_TARGET" --push
 
     rules:
         - if: '$CI_COMMIT_BRANCH == "master"'
