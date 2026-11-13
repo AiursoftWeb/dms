@@ -13,6 +13,59 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class DmsWorkflowTests : TestBase
 {
+    [TestMethod]
+    public async Task WebHistoryFiltersClustersAndKeepsFiltersWhenPaging()
+    {
+        var setup = await ArrangeAsync();
+        var other = new Cluster { Name = "Other visible cluster" };
+        var hidden = new Cluster { Name = "Hidden cluster" };
+        var runs = Enumerable.Range(0, 51).Select(i => new WorkflowRun
+        {
+            ClusterId = setup.Cluster, Definition = WorkflowNames.ListMachines,
+            State = RunState.Succeeded, CreatedAt = DateTime.UtcNow.AddMinutes(-i)
+        }).ToList();
+        var machineRun = new WorkflowRun { ClusterId = setup.Cluster, MachineId = setup.Machine, Definition = WorkflowNames.Performance, State = RunState.Succeeded };
+        var otherRun = new WorkflowRun { ClusterId = other.Id, Definition = WorkflowNames.ListMachines, State = RunState.Succeeded };
+        var hiddenRun = new WorkflowRun { ClusterId = hidden.Id, Definition = WorkflowNames.ListMachines, State = RunState.Succeeded };
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            db.Clusters.AddRange(other, hidden);
+            db.ClusterGrants.Add(new ClusterGrant { ClusterId = other.Id, UserId = setup.User, Risk = RiskLevel.Safe, CanRequest = true });
+            db.WorkflowRuns.AddRange(runs);
+            db.WorkflowRuns.AddRange(machineRun, otherRun, hiddenRun);
+            await db.SaveChangesAsync();
+        }
+        await LoginAsAdmin();
+        var path = $"/Dms/Operations?clusterId={setup.Cluster}&clusterWorkflowsOnly=true&definition={WorkflowNames.ListMachines}";
+        var first = await Http.GetAsync(path);
+        Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
+        var html = await first.Content.ReadAsStringAsync();
+        StringAssert.Contains(html, runs[0].Id.ToString());
+        Assert.DoesNotContain(runs[50].Id.ToString(), html);
+        Assert.DoesNotContain(otherRun.Id.ToString(), html);
+        Assert.DoesNotContain(hiddenRun.Id.ToString(), html);
+        Assert.DoesNotContain(hidden.Name, html);
+        var next = System.Text.RegularExpressions.Regex.Matches(html, "href=\"([^\"]+)\"")
+            .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
+            .Single(link => link.Contains("page=1", StringComparison.Ordinal));
+        StringAssert.Contains(next, $"clusterId={setup.Cluster}");
+        StringAssert.Contains(next, $"definition={WorkflowNames.ListMachines}");
+        Assert.IsTrue(next.Contains("clusterWorkflowsOnly=True", StringComparison.OrdinalIgnoreCase));
+        var second = await Http.GetAsync(next);
+        Assert.AreEqual(HttpStatusCode.OK, second.StatusCode);
+        var secondHtml = await second.Content.ReadAsStringAsync();
+        StringAssert.Contains(secondHtml, runs[50].Id.ToString());
+        Assert.DoesNotContain(runs[0].Id.ToString(), secondHtml);
+        var clusterOnly = await Http.GetStringAsync($"/Dms/Operations?clusterId={setup.Cluster}&clusterWorkflowsOnly=true");
+        Assert.DoesNotContain(machineRun.Id.ToString(), clusterOnly);
+        var machineOnly = await Http.GetStringAsync($"/Dms/Operations?clusterId={setup.Cluster}&machineId={setup.Machine}");
+        StringAssert.Contains(machineOnly, machineRun.Id.ToString());
+        Assert.DoesNotContain(runs[0].Id.ToString(), machineOnly);
+        var forbidden = await Http.GetAsync($"/Dms/Operations?clusterId={hidden.Id}");
+        Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
+    }
+
     private async Task<(Guid Cluster, string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false)
     {
         using var scope = Server!.Services.CreateScope();
