@@ -64,13 +64,6 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             var lockbox = await db.Lockboxes.SingleAsync(l => l.Id == task.LockboxId, token);
             if (lockbox.Decision != DecisionState.Approved || machine.ClusterId != lockbox.ClusterId) continue;
             var cancel = task.State == RunState.CancelRequested;
-            if (!cancel && !session.SupportedWorkflows.Contains(task.Definition))
-            {
-                task.State = RunState.Failed; task.FinishedAt = DateTime.UtcNow;
-                task.Result = JsonSerializer.Serialize(new { Error = "Agent does not support this workflow. Upgrade the Agent before submitting a new request.", task.Definition });
-                await db.SaveChangesAsync(token);
-                continue;
-            }
             if (!cancel) task.State = RunState.Offered;
             await db.SaveChangesAsync(token); // Persist the offer before sending; reconnect repeats the same ID.
             var request = JsonSerializer.Deserialize<OperationRequest>(lockbox.Parameters)!;

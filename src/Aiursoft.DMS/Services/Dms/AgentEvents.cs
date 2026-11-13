@@ -15,12 +15,6 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
             if (message.Version.Length > 100) throw new DmsException(400, "Invalid Agent version.");
             if (message.InstallationId == Guid.Empty || (machine.InstallationId != null && machine.InstallationId != message.InstallationId))
                 throw new DmsException(409, "Agent state directory belongs to a different installation. Reconcile pending tasks before replacement.");
-            if (message.SupportedWorkflows is { } definitions)
-            {
-                if (definitions.Count > 64 || definitions.Any(d => string.IsNullOrWhiteSpace(d) || d.Length > 100))
-                    throw new DmsException(400, "Invalid Agent workflow capabilities.");
-                session.SupportedWorkflows = definitions.ToHashSet(StringComparer.Ordinal);
-            }
             machine.InstallationId ??= message.InstallationId;
             machine.LastSeen = DateTime.UtcNow; machine.AgentVersion = message.Version;
             await db.SaveChangesAsync(); session.Ready = true; return null;

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.WebSockets;
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
@@ -266,47 +265,30 @@ public class DmsWorkflowTests : TestBase
         }
     }
     [TestMethod]
-    public async Task LegacyAgentRejectsNewDefinitionsButKeepsExistingWorkflowsAndOfflineQueue()
+    public async Task OfflineMachineKeepsApprovedReadOnlyWorkQueued()
     {
         var setup = await ArrangeAsync(true);
-        var key = DmsKeyAuthenticationHandler.CreateKey(true);
-        var requests = new List<LockboxRequest>();
+        Guid operationId;
         using (var scope = Server!.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(key);
-            await db.SaveChangesAsync();
-            foreach (var definition in WorkflowNames.MachineDefinitions)
-            {
-                var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
-                requests.Add(await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input));
-            }
+            var input = Request(setup.Cluster, setup.Machine); input.Workflow = WorkflowNames.AgentStatus;
+            var item = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
+            operationId = item.OperationId!.Value;
         }
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-        async Task<List<WorkflowRun>> Tasks(CancellationToken token)
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (true)
         {
             using var scope = Server!.Services.CreateScope();
-            return await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().WorkflowRuns.AsNoTracking()
-                .Where(r => r.MachineId == setup.Machine && r.IsMachineTask).ToListAsync(token);
+            var task = await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().WorkflowRuns.AsNoTracking()
+                .SingleOrDefaultAsync(r => r.ParentId == operationId && r.IsMachineTask, timeout.Token);
+            if (task != null)
+            {
+                Assert.AreEqual(RunState.Queued, task.State);
+                Assert.IsNull(task.StartedAt); Assert.IsNull(task.FinishedAt);
+                break;
+            }
+            await Task.Delay(100, timeout.Token);
         }
-        List<WorkflowRun> tasks;
-        do { await Task.Delay(100, timeout.Token); tasks = await Tasks(timeout.Token); } while (tasks.Count < requests.Count);
-        Assert.IsTrue(tasks.All(t => t.State == RunState.Queued));
-        using var socket = new ClientWebSocket();
-        socket.Options.SetRequestHeader("Authorization", "Bearer " + key);
-        var uri = new UriBuilder(Http.BaseAddress!) { Scheme = "ws", Path = "/api/agent/channel" }.Uri;
-        await socket.ConnectAsync(uri, timeout.Token);
-        // The original Agent sends no capability field.
-        await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = Guid.NewGuid(), Version = "1.0.0" }, timeout.Token);
-        do { await Task.Delay(100, timeout.Token); tasks = await Tasks(timeout.Token); }
-        while (tasks.Count(t => t.State == RunState.Failed) < 4);
-        Assert.IsTrue(tasks.Where(t => t.Definition is WorkflowNames.Performance or WorkflowNames.Restart).All(t => t.State == RunState.Offered));
-        foreach (var failed in tasks.Where(t => t.State == RunState.Failed))
-        {
-            StringAssert.Contains(failed.Result, "does not support");
-            Assert.IsNull(failed.StartedAt); Assert.IsNotNull(failed.FinishedAt);
-        }
-        Assert.AreEqual(WebSocketState.Open, socket.State);
     }
 
     [TestMethod]

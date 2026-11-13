@@ -53,7 +53,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
     {
         while (!token.IsCancellationRequested)
         {
-            await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString(), SupportedWorkflows = WorkflowNames.MachineDefinitions.ToList() }, token);
+            await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString() }, token);
             foreach (var task in journal.Snapshot().Where(t => !t.State.Terminal() || t.Pending.Count > 0))
             {
                 await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "status", TaskId = task.Id, State = task.State }, token);

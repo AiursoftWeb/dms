@@ -65,6 +65,5 @@ public sealed class AgentMessage
     public string Service { get; set; } = string.Empty;
     public RunState State { get; set; }
     public long Sequence { get; set; }
-    public List<string>? SupportedWorkflows { get; set; }
     public WorkflowEvent? Event { get; set; }
 }
