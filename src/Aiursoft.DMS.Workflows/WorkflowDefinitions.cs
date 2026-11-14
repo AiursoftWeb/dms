@@ -10,6 +10,7 @@ public sealed class MachineWorkflowRegistry
 
     public MachineWorkflowRegistry()
     {
+        Register(MachineWorkflows.DiskUsage, (input, _) => new MachineDiskUsageWorkflow(input));
         Register(MachineWorkflows.Performance, (_, _) => new PerformanceInfoWorkflow());
         Register(MachineWorkflows.Restart, (input, _) => new RestartServiceWorkflow(input.Service));
         Register(MachineWorkflows.ServiceStatus, (input, _) => new ServiceStatusWorkflow(input.Service));

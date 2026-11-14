@@ -4,3 +4,7 @@ public sealed record ProcessResult(int ExitCode, string Output = "", string Erro
 public sealed record PerformanceResult(string Hostname, int Processors, string Memory, string Load);
 public sealed record AgentStatusResult(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents);
 public sealed record MachineSummary(Guid Id, string Name, string AgentVersion, DateTime? LastSeen, bool Disabled);
+
+public sealed record DiskUsageResult(Guid WorkflowId, long TotalBytes, long UsedBytes, long AvailableBytes, int Filesystems);
+public sealed record MachineDiskUsage(Guid MachineId, DiskUsageResult Usage);
+public sealed record ClusterDiskUsageResult(long TotalBytes, long UsedBytes, long AvailableBytes, int MachineCount, List<MachineDiskUsage> Machines);
