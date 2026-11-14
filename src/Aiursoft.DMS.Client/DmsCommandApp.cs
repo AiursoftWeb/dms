@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Services;
 using Aiursoft.CommandFramework;
 using Aiursoft.CommandFramework.Framework;
@@ -69,6 +70,35 @@ public static class DmsCommandApp
         private readonly Option<RunState?> _state = new("--state");
         private readonly Option<bool?> _automatic = new("--automatic-approval");
         private readonly Option<int> _page = new("--page") { Description = "Zero-based archive page, 50 events per page." };
+
+        public override Command BuildAsCommand()
+        {
+            var command = base.BuildAsCommand();
+            command.SetAction(async context =>
+            {
+                try
+                {
+                    await Execute(context);
+                    return 0;
+                }
+                catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException)
+                {
+                    var message = exception switch
+                    {
+                        AiurUnexpectedServerResponseException response => response.Response.Message ?? "Controller rejected the request.",
+                        AiurHttpResponseException { StatusCode: System.Net.HttpStatusCode.Unauthorized } => "Authentication failed. Check your personal API Key and its expiry.",
+                        AiurHttpResponseException http => $"Controller returned HTTP {(int)http.StatusCode} ({http.StatusCode}).",
+                        ArgumentException argument => argument.Message,
+                        _ => throw new InvalidOperationException()
+                    };
+                    var key = context.GetValue(_key) ?? Environment.GetEnvironmentVariable("DMS_API_KEY");
+                    if (!string.IsNullOrEmpty(key)) message = message.Replace(key, "[redacted]", StringComparison.Ordinal);
+                    context.InvocationConfiguration.Error.WriteLine($"Error: {message}");
+                    return 1;
+                }
+            });
+            return command;
+        }
 
         protected override IEnumerable<Option> GetCommandOptions()
         {

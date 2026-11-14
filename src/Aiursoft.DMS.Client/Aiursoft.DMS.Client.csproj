@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>dms</AssemblyName>
     <RootNamespace>Aiursoft.DMS.Client</RootNamespace>
+    <Description>Request approved server operations and inspect DMS workflows.</Description>
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
