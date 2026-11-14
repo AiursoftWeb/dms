@@ -5,10 +5,10 @@ using Aiursoft.DMS.Workflows;
 
 namespace Aiursoft.DMS.Agent;
 
-public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
+public sealed class AgentClient(Uri controller, string key, TaskJournal journal, MachineWorkflowRegistry? workflows = null)
 {
     private readonly ConcurrentDictionary<Guid, MachineWorkflowContext> _running = new();
-    private readonly MachineWorkflowRegistry _workflows = new();
+    private readonly MachineWorkflowRegistry _workflows = workflows ?? new MachineWorkflowRegistry();
 
     public async Task RunAsync(CancellationToken stopping)
     {
@@ -72,7 +72,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
             switch (message.Kind)
             {
                 case "offer":
-                    if (message.Version != WorkflowNames.Version || !_workflows.Contains(message.Definition))
+                    if (_workflows.FindDefinition(message.Definition)?.Version != message.Version || !_workflows.Contains(message.Definition))
                         throw new InvalidDataException("Unsupported workflow version or definition.");
                     journal.Accept(message);
                     break;

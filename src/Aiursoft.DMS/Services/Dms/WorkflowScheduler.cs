@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGate gate, AgentSessions sessions, ClusterWorkflowRuntime runtime, ClusterWorkflowRegistry workflows, ILogger<WorkflowScheduler> logger) : BackgroundService
+public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGate gate, AgentSessions sessions, ClusterWorkflowRuntime runtime, ClusterWorkflowRegistry workflows, WorkflowCatalog catalog, ILogger<WorkflowScheduler> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -56,7 +56,7 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                 _ => throw new InvalidOperationException("Unknown cluster workflow.")
             };
             run.StartedAt = DateTime.UtcNow;
-            try { await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, lockbox)); }
+            try { await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, lockbox, catalog.Find(lockbox.Definition))); }
             catch (InvalidOperationException exception) { run.State = RunState.Failed; run.Result = JsonSerializer.Serialize(new { Error = exception.Message }); }
             if (run.State.Terminal()) run.FinishedAt = DateTime.UtcNow;
             await db.SaveChangesAsync(token);

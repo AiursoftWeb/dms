@@ -12,14 +12,24 @@ namespace Aiursoft.DMS.Client;
 public static class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
-        .WithFeature(new Group("cluster", [new ActionCommand("get-machines", WorkflowNames.ListMachines), new ActionCommand("add-machine", WorkflowNames.AddMachine)]))
+        .WithFeature(new Group("cluster", [StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine)]))
         .WithFeature(new Group("machine", [
-            new Group("performance", [new ActionCommand("info", WorkflowNames.Performance)]),
-            new Group("systemctl", [new ActionCommand("restart", WorkflowNames.Restart), new ActionCommand("status", WorkflowNames.ServiceStatus)]),
-            new Group("agent", [new ActionCommand("status", WorkflowNames.AgentStatus)]),
-            new Group("layout", [new ActionCommand("lsblk", WorkflowNames.ListBlockDevices), new ActionCommand("df", WorkflowNames.DiskFree)])]))
+            new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
+            new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
+            new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput())]),
+            new Group("layout", [StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()), StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput())])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
         .WithFeature(new Group("operation", [new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
+
+    private static ActionCommand StandardCommand<TInput, TResult>(string name, WorkflowDefinition<TInput, TResult> definition,
+        Func<ParseResult, TInput> input, params Option[] options) =>
+        new(name, definition.Name, definition, context => definition.Serialize(input(context)), options);
+
+    private static ActionCommand ServiceCommand(string name, MachineWorkflowDefinition<ServiceInput, ProcessResult> definition)
+    {
+        var service = new Option<string>("--service") { Required = true };
+        return StandardCommand(name, definition, context => new ServiceInput(context.GetValue(service) ?? string.Empty), service);
+    }
 
     private sealed class Group(string name, CommandHandlerBuilder[] children) : NavigationCommandHandlerBuilder
     {
@@ -28,7 +38,7 @@ public static class DmsCommandApp
         protected override CommandHandlerBuilder[] GetSubCommandHandlers() => children;
     }
 
-    private sealed class ActionCommand(string name, string action) : ExecutableCommandHandlerBuilder
+    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null) : ExecutableCommandHandlerBuilder
     {
         protected override string Name => name;
         protected override string Description => action.Contains('.') ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
@@ -41,7 +51,6 @@ public static class DmsCommandApp
         private readonly Option<Guid> _id = new("--id");
         private readonly Option<Guid> _request = new("--request-id") { Description = "Reuse this ID only to retry the same submission." };
         private readonly Option<string> _reason = new("--reason");
-        private readonly Option<string> _service = new("--service");
         private readonly Option<string> _machineName = new("--name");
         private readonly Option<int> _skip = new("--skip");
 
@@ -52,8 +61,8 @@ public static class DmsCommandApp
             {
                 _cluster.Required = true; _reason.Required = true;
                 yield return _cluster; yield return _request; yield return _reason;
-                if (WorkflowNames.IsMachineWorkflow(action)) { yield return _machines; yield return _all; }
-                if (action is WorkflowNames.Restart or WorkflowNames.ServiceStatus) { _service.Required = true; yield return _service; }
+                if (definition?.RequiresTargets == true) { yield return _machines; yield return _all; }
+                foreach (var option in options ?? []) yield return option;
                 if (action == WorkflowNames.AddMachine) { _machineName.Required = true; yield return _machineName; }
                 if (action == WorkflowNames.Kill) { _id.Required = true; yield return _id; }
             }
@@ -86,7 +95,8 @@ public static class DmsCommandApp
                     RequestId = requestId == Guid.Empty ? Guid.NewGuid() : requestId,
                     ClusterId = context.GetValue(_cluster), Workflow = action, MachineIds = (context.GetValue(_machines) ?? []).ToList(),
                     AllMachines = context.GetValue(_all), Reason = context.GetValue(_reason) ?? string.Empty,
-                    Service = context.GetValue(_service) ?? string.Empty, MachineName = context.GetValue(_machineName) ?? string.Empty,
+                    Input = input?.Invoke(context) ?? "{}",
+                    MachineName = context.GetValue(_machineName) ?? string.Empty,
                     TargetWorkflowId = action == WorkflowNames.Kill ? id : null
                 });
             }

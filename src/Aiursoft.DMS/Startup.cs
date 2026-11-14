@@ -63,6 +63,7 @@ public class Startup : IWebStartup
         services.AddSingleton<Services.Dms.TraceStore>();
         services.AddScoped<Services.Dms.AccessService>();
         services.AddScoped<Services.Dms.WorkflowService>();
+        services.AddSingleton<Services.Dms.WorkflowCatalog>();
         services.AddScoped<Services.Dms.AgentEvents>();
         services.AddScoped<Services.Dms.TraceDatabase>();
         services.AddSingleton<MachineWorkflowRegistry>();

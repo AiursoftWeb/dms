@@ -1,23 +1,23 @@
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
-using Aiursoft.DMS.Workflows;
 using Aiursoft.DMS.Services.Authentication;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run, LockboxRequest lockbox)
+public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run, LockboxRequest lockbox, WorkflowDefinition? definition = null)
 {
+    public WorkflowDefinition? Definition => definition;
     public TemplateDbContext Inventory => db;
     public WorkflowRun Run => run;
     public LockboxRequest Lockbox => lockbox;
     public OperationRequest Parameters => JsonSerializer.Deserialize<OperationRequest>(lockbox.Parameters)!;
 
-    public void CallMachine(string definition, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
+    public void CallMachine(string name, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
     {
         RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId, ClusterId = run.ClusterId,
-        MachineId = machine, Definition = definition, Input = MachineWorkflowRegistry.OperationInput(Parameters),
+        MachineId = machine, Definition = name, Input = Parameters.Input,
         Version = lockbox.Version, IsMachineTask = true, State = RunState.Queued
     });
 }
@@ -37,8 +37,9 @@ public sealed class LockboxWorkflow : ClusterWorkflow
         {
             RootId = context.Run.Id, ParentId = context.Run.Id, LockboxId = context.Lockbox.Id,
             ClusterId = context.Lockbox.ClusterId, State = RunState.Queued,
-            Definition = WorkflowNames.IsMachineWorkflow(context.Lockbox.Definition)
-                ? WorkflowNames.Batch : context.Lockbox.Definition
+            Definition = context.Definition?.Location == WorkflowLocation.Machine
+                ? WorkflowNames.Batch : context.Lockbox.Definition,
+            Input = context.Parameters.Input, Version = context.Lockbox.Version
         };
         context.Inventory.WorkflowRuns.Add(child);
         context.Lockbox.OperationId = child.Id;
@@ -52,8 +53,9 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
 {
     public override async Task ExecuteAsync(ClusterWorkflowContext context)
     {
+        if (context.Definition?.Location != WorkflowLocation.Machine || context.Definition.Version != context.Lockbox.Version)
+            throw new InvalidOperationException("The approved machine workflow version is no longer available.");
         var targets = JsonSerializer.Deserialize<List<Guid>>(context.Lockbox.TargetMachines)!;
-        if (context.Lockbox.Version != WorkflowNames.Version) throw new InvalidOperationException("The approved workflow version is no longer available.");
         foreach (var id in targets)
         {
             if (!await context.Inventory.Machines.AnyAsync(m => m.Id == id && m.ClusterId == context.Run.ClusterId && !m.Disabled))
@@ -62,11 +64,6 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
         foreach (var id in targets) context.CallMachine(context.Lockbox.Definition, id);
         context.Run.State = RunState.Running;
     }
-}
-
-public static class ClusterWorkflows
-{
-    public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines);
 }
 
 public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<MachineSummary>>

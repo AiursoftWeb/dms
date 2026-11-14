@@ -14,9 +14,6 @@ public static class WorkflowNames
     public const string ServiceStatus = "machine.systemctl.status";
     public const string ListBlockDevices = "machine.layout.lsblk";
     public const string DiskFree = "machine.layout.df";
-    public static readonly IReadOnlyList<string> MachineDefinitions =
-        [Performance, Restart, AgentStatus, ServiceStatus, ListBlockDevices, DiskFree];
-    public static bool IsMachineWorkflow(string definition) => MachineDefinitions.Contains(definition);
     public const string Process = "internal.process";
     public const string ListMachines = "cluster.get-machines";
     public const string AddMachine = "cluster.add-machine";
@@ -34,7 +31,7 @@ public sealed class OperationRequest
     public string Workflow { get; set; } = string.Empty;
     public List<Guid> MachineIds { get; set; } = [];
     public bool AllMachines { get; set; }
-    public string Service { get; set; } = string.Empty;
+    public string Input { get; set; } = "{}";
     public string MachineName { get; set; } = string.Empty;
     public Guid? TargetWorkflowId { get; set; }
     public string Reason { get; set; } = string.Empty;
@@ -42,6 +39,7 @@ public sealed class OperationRequest
 
 public sealed class WorkflowEvent
 {
+    public string Version { get; set; } = WorkflowNames.Version;
     public string Input { get; set; } = "{}";
     public long Sequence { get; set; }
     public Guid WorkflowId { get; set; }

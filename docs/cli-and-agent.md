@@ -115,3 +115,5 @@ dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id> --output-
 
 
 See [typed subworkflows](subworkflows.md) for compiled registration, cross-machine calls, results, cancellation and recovery.
+
+Standard workflow authors can follow [Adding a standard workflow](authoring-workflows.md), including compiled Machine/Cluster examples and typed SDK submissions.

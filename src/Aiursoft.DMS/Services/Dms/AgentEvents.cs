@@ -44,9 +44,9 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
         if (run == null)
         {
             var parent = await db.WorkflowRuns.SingleOrDefaultAsync(r => r.Id == item.ParentId);
-            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && !workflows.Contains(item.Definition)) || !await BelongsToTaskAsync(parent, task.Id))
+            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && workflows.FindDefinition(item.Definition)?.Version != item.Version) || !await BelongsToTaskAsync(parent, task.Id))
                 throw new DmsException(403, "Invalid machine subworkflow parent or definition.");
-            run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, ClusterId = task.ClusterId, MachineId = machineId, Definition = item.Definition, Input = item.Input, Version = task.Version };
+            run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, ClusterId = task.ClusterId, MachineId = machineId, Definition = item.Definition, Input = item.Input, Version = item.Version };
             db.WorkflowRuns.Add(run);
         }
         if (run.RootId != task.RootId || run.MachineId != machineId || !await BelongsToTaskAsync(run, task.Id))
