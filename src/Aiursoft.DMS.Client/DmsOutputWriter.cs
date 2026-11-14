@@ -66,7 +66,7 @@ public static class DmsOutputWriter
             foreach (var p in properties.Where(p => p.Name == "Result" || p.Value is JObject or JArray))
             {
                 output.WriteLine(); output.WriteLine(p.Name); output.WriteLine(new string('-', p.Name.Length));
-                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name == "Definitions");
+                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "Grants");
             }
         }
         else if (value is JArray array)

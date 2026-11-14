@@ -45,6 +45,25 @@ public class DmsManagementTests : TestBase
     }
 
     [TestMethod]
+    public async Task WebAndApiShareClusterValidationAndRiskGrantChanges()
+    {
+        var setup = await ArrangeAsync();
+        await LoginAsAdmin();
+        var name = "Web-" + Guid.NewGuid();
+        Assert.AreEqual(HttpStatusCode.Found, (await PostForm("/DmsAccess/CreateCluster", new Dictionary<string, string> { ["name"] = name }, "/DmsAccess")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.Conflict, (await PostForm("/DmsAccess/CreateCluster", new Dictionary<string, string> { ["name"] = name }, "/DmsAccess")).StatusCode);
+        var cluster = (await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Single(c => c.Name == name);
+        Assert.AreEqual(HttpStatusCode.Found, (await PostForm("/DmsAccess/Grant", new Dictionary<string, string>
+        {
+            ["clusterId"] = cluster.Id.ToString(), ["userId"] = setup.Employee, ["risk"] = "Low", ["canApprove"] = "true"
+        }, "/DmsAccess")).StatusCode);
+        var grant = (await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get")).Grants.Single(g => g.UserId == setup.Employee && g.ClusterId == cluster.Id);
+        Assert.AreEqual(RiskLevel.Low, grant.Risk); Assert.IsTrue(grant.CanApprove); Assert.IsFalse(grant.CanRequest); Assert.IsFalse(grant.AutoApprove);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.ManagerKey);
+        Assert.AreEqual(HttpStatusCode.Conflict, (await Http.PostAsJsonAsync("/api/v1/dms/clusters", new CreateClusterInput(Guid.NewGuid(), name))).StatusCode);
+    }
+
+    [TestMethod]
     public async Task ManagementCliCreatesListsRenamesAndDropsClustersWithoutImplicitBusinessGrants()
     {
         var setup = await ArrangeAsync();
@@ -52,25 +71,26 @@ public class DmsManagementTests : TestBase
         Assert.AreEqual(setup.Manager, identity.Id); Assert.IsFalse(identity.CanApproveOwnRequests);
         CollectionAssert.Contains(identity.Permissions, "CanManageDmsAccess");
         var id = Guid.NewGuid();
-        var created = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--id", id.ToString(), "--name", "  Production  ");
-        Assert.AreEqual(id, created.Id); Assert.AreEqual("Production", created.Name);
-        var retry = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--id", id.ToString(), "--name", "Production");
+        var name = "Production-" + id;
+        var created = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--id", id.ToString(), "--name", "  " + name + "  ");
+        Assert.AreEqual(id, created.Id); Assert.AreEqual(name, created.Name);
+        var retry = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--id", id.ToString(), "--name", name);
         Assert.AreEqual(id, retry.Id);
-        Assert.HasCount(1, await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list"));
+        Assert.IsTrue((await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Any(c => c.Id == id));
         Assert.HasCount(0, await CliAsync<List<ClusterSummary>>(setup.EmployeeKey, "cluster", "list"));
         var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get");
-        Assert.HasCount(0, snapshot.Grants); Assert.HasCount(0, snapshot.Machines);
+        Assert.IsFalse(snapshot.Grants.Any(g => g.ClusterId == id)); Assert.IsFalse(snapshot.Machines.Any(m => m.ClusterId == id));
         foreach (var format in new[] { "table", "csv" })
         {
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["cluster", "list", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.ManagerKey, "--output-format", format]);
-            Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr); StringAssert.Contains(cli.StdOut, id.ToString()); StringAssert.Contains(cli.StdOut, "Production");
+            Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr); StringAssert.Contains(cli.StdOut, id.ToString()); StringAssert.Contains(cli.StdOut, name);
         }
-        var renamed = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "rename", "--cluster-id", id.ToString(), "--name", "Primary");
-        Assert.AreEqual("Primary", renamed.Name);
+        var renamed = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "rename", "--cluster-id", id.ToString(), "--name", "Primary-" + id);
+        Assert.AreEqual("Primary-" + id, renamed.Name);
         await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "drop", "--cluster-id", id.ToString());
-        Assert.HasCount(0, await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list"));
+        Assert.IsFalse((await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Any(c => c.Id == id));
         using var check = Server!.Services.CreateScope(); var db = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        Assert.AreEqual(0, await db.Lockboxes.CountAsync()); Assert.AreEqual(0, await db.WorkflowRuns.CountAsync());
+        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.ClusterId == id)); Assert.AreEqual(0, await db.WorkflowRuns.CountAsync(r => r.ClusterId == id));
         foreach (var action in new[] { "access.identity", "access.inspect", "access.cluster.create", "access.cluster.rename", "access.cluster.drop" })
             Assert.IsTrue(await db.AuditEvents.AnyAsync(a => a.ActorId == setup.Manager && a.Action == action));
     }
@@ -79,6 +99,12 @@ public class DmsManagementTests : TestBase
     public async Task ReadPermissionAndAgentKeysCannotMutateControllerAccess()
     {
         var setup = await ArrangeAsync();
+        int clustersBefore, grantsBefore;
+        using (var before = Server!.Services.CreateScope())
+        {
+            var beforeDb = before.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            clustersBefore = await beforeDb.Clusters.CountAsync(); grantsBefore = await beforeDb.ClusterGrants.CountAsync();
+        }
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.EmployeeKey);
         foreach (var request in new[]
         {
@@ -95,7 +121,7 @@ public class DmsManagementTests : TestBase
         }
         var own = await CliAsync<CurrentUser>(setup.EmployeeKey, "access", "whoami"); Assert.AreEqual(setup.Employee, own.Id);
         using var scope = Server!.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        Assert.AreEqual(0, await db.Clusters.CountAsync()); Assert.AreEqual(0, await db.ClusterGrants.CountAsync());
+        Assert.AreEqual(clustersBefore, await db.Clusters.CountAsync()); Assert.AreEqual(grantsBefore, await db.ClusterGrants.CountAsync());
         Assert.IsFalse((await db.Users.SingleAsync(u => u.Id == setup.Employee)).CanApproveOwnRequests);
     }
 
@@ -105,7 +131,7 @@ public class DmsManagementTests : TestBase
         var setup = await ArrangeAsync();
         var cluster = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--name", "Operations");
         await CliAsync<RiskGrant>(setup.ManagerKey, "access", "set-grant", "--cluster-id", cluster.Id.ToString(), "--user-id", setup.Employee, "--risk", "Medium", "--can-request", "--can-approve");
-        var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get"); var grant = snapshot.Grants.Single();
+        var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get"); var grant = snapshot.Grants.Single(g => g.ClusterId == cluster.Id && g.UserId == setup.Employee && g.Risk == RiskLevel.Medium);
         Assert.IsTrue(grant.CanRequest); Assert.IsTrue(grant.CanApprove); Assert.IsFalse(grant.AutoApprove);
         Assert.IsFalse(snapshot.Users.Single(u => u.Id == setup.Employee).CanApproveOwnRequests);
         Assert.HasCount(1, await CliAsync<List<ClusterSummary>>(setup.EmployeeKey, "cluster", "list"));
@@ -129,7 +155,7 @@ public class DmsManagementTests : TestBase
         using var check = Server!.Services.CreateScope(); var verify = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
         Assert.AreEqual(DmsKeyAuthenticationHandler.Hash(second.Key), (await verify.Machines.SingleAsync(m => m.Id == machine)).KeyHash);
         Assert.IsFalse(await verify.AuditEvents.AnyAsync(a => a.Detail.Contains(second.Key) || a.Detail.Contains(first.Key)));
-        Assert.AreEqual(0, await verify.Lockboxes.CountAsync());
+        Assert.AreEqual(0, await verify.Lockboxes.CountAsync(l => l.ClusterId == cluster.Id));
     }
 
     [TestMethod]
