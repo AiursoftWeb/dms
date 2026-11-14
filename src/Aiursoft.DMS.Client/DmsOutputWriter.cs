@@ -20,10 +20,10 @@ public static class DmsOutputWriter
         if (format == OutputFormat.Csv) WriteCsv(output, data);
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
-        else WriteHuman(output, data, width, color);
+        else WriteHuman(output, data, width, color, true);
     }
 
-    private static void WriteHuman(TextWriter output, JToken value, int width, bool color)
+    private static void WriteHuman(TextWriter output, JToken value, int width, bool color, bool workflowMetadata = false)
     {
         value = Structured(value);
         if (value is JObject obj)
@@ -31,7 +31,7 @@ public static class DmsOutputWriter
             if (obj.Count == 0) { output.WriteLine("(empty)"); return; }
             var properties = obj.Properties().Select(p => (p.Name, Value: Structured(p.Value))).ToList();
             var scalars = properties.Where(p => p.Name != "Result" && p.Value is not (JObject or JArray)).ToList();
-            WriteRows(output, ["Property", "Value"], scalars.Select(p => new[] { p.Name, HumanScalar(p.Name, p.Value) }).ToList(), width, color);
+            WriteRows(output, ["Property", "Value"], scalars.Select(p => new[] { p.Name, HumanScalar(p.Name, p.Value, workflowMetadata) }).ToList(), width, color && workflowMetadata);
             foreach (var p in properties.Where(p => p.Name == "Result" || p.Value is JObject or JArray))
             {
                 output.WriteLine(); output.WriteLine(p.Name); output.WriteLine(new string('-', p.Name.Length));
@@ -44,11 +44,11 @@ public static class DmsOutputWriter
             if (array.All(v => v is JObject))
             {
                 var headers = array.Cast<JObject>().SelectMany(o => o.Properties().Select(p => p.Name)).Distinct().ToArray();
-                var rows = array.Cast<JObject>().Select(o => headers.Select(h => HumanScalar(h, o[h])).ToArray()).ToList();
+                var rows = array.Cast<JObject>().Select(o => headers.Select(h => HumanScalar(h, o[h], workflowMetadata)).ToArray()).ToList();
                 if (headers.Length > 0 && Widths(headers, rows).Sum() + (headers.Length - 1) * 2 <= width)
-                    WriteRows(output, headers, rows, width, color);
+                    WriteRows(output, headers, rows, width, color && workflowMetadata);
                 else
-                    foreach (var item in array) { WriteHuman(output, item, width, color); output.WriteLine(); }
+                    foreach (var item in array) { WriteHuman(output, item, width, color, workflowMetadata); output.WriteLine(); }
             }
             else foreach (var item in array) WriteHuman(output, item, width, color);
         }
@@ -64,10 +64,10 @@ public static class DmsOutputWriter
         catch (JsonReaderException) { return value; }
     }
 
-    private static string HumanScalar(string name, JToken? value)
+    private static string HumanScalar(string name, JToken? value, bool workflowMetadata = false)
     {
         if (value == null || value.Type == JTokenType.Null) return "-";
-        if (value.Type == JTokenType.Integer && name is "State" or "Decision" or "Risk")
+        if (workflowMetadata && value.Type == JTokenType.Integer && name is "State" or "Decision" or "Risk")
         {
             var number = value.Value<int>();
             if (name == "State" && Enum.IsDefined((RunState)number)) return ((RunState)number).ToString();

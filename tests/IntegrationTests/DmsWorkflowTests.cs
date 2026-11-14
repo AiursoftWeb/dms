@@ -123,13 +123,14 @@ public class DmsWorkflowTests : TestBase
     public void HumanOutputExpandsInventoryAndKeepsLargeCountsAndIds()
     {
         var id = Guid.NewGuid();
-        var result = JsonSerializer.Serialize(new[] { new { Id = id, Name = "demo-node", TotalBytes = 9007199254740991L } });
+        var result = JsonSerializer.Serialize(new[] { new { Id = id, Name = "demo-node", TotalBytes = 9007199254740991L, State = 1 } });
         var response = new DmsResponse { Message = "Request completed.", Data = new { WorkflowId = id, State = RunState.Succeeded, Result = result } };
         using var output = new StringWriter();
         Client.DmsOutputWriter.Write(output, response, Client.OutputFormat.Table, false, false);
         var table = output.ToString();
         StringAssert.Contains(table, "Succeeded"); StringAssert.Contains(table, "TotalBytes");
         StringAssert.Contains(table, "9007199254740991"); StringAssert.Contains(table, id.ToString());
+        Assert.DoesNotContain("Queued", table);
         Assert.DoesNotContain("\"", table);
         using var narrow = new StringWriter();
         Client.DmsOutputWriter.Write(narrow, response, Client.OutputFormat.Table, false, false, 60);
