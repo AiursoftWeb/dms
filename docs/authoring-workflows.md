@@ -144,3 +144,5 @@ The [cluster disk usage operation](disk-usage.md) is a product example of the sa
 ## Discover registered public workflows
 
 Public definitions registered by the factories automatically appear in the [standard workflow catalog](workflow-discovery.md). No separate catalog entry is required. Internal definitions (`PublicRisk = null`) remain available only to compiled subworkflow calls.
+
+Structured approval and state history is [captured automatically](workflow-audit.md) at the shared save boundary. Standard workflow authors do not register an audit writer or add delivery calls.

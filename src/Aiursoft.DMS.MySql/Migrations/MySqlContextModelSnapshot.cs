@@ -349,6 +349,29 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowAuditOutbox", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId")
+                        .IsUnique();
+
+                    b.ToTable("WorkflowAuditOutbox");
+                });
+
             modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowRun", b =>
                 {
                     b.Property<Guid>("Id")

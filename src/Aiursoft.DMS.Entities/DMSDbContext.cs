@@ -7,7 +7,7 @@ namespace Aiursoft.DMS.Entities;
 
 [ExcludeFromCodeCoverage]
 
-public abstract class TemplateDbContext(DbContextOptions options) : IdentityDbContext<User>(options), ICanMigrate
+public abstract partial class TemplateDbContext(DbContextOptions options) : IdentityDbContext<User>(options), ICanMigrate
 {
     public DbSet<GlobalSetting> GlobalSettings => Set<GlobalSetting>();
 
@@ -18,10 +18,12 @@ public abstract class TemplateDbContext(DbContextOptions options) : IdentityDbCo
     public DbSet<LockboxRequest> Lockboxes => Set<LockboxRequest>();
     public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
+    public DbSet<WorkflowAuditOutbox> WorkflowAuditOutbox => Set<WorkflowAuditOutbox>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.Entity<WorkflowAuditOutbox>().HasIndex(x => x.EventId).IsUnique();
         builder.Entity<ClusterGrant>().HasIndex(x => new { x.ClusterId, x.UserId, x.Risk }).IsUnique();
         builder.Entity<PersonalApiKey>().HasIndex(x => x.KeyHash).IsUnique();
         builder.Entity<Machine>().HasIndex(x => x.KeyHash).IsUnique();
