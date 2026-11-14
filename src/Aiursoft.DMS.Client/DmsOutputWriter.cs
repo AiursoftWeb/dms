@@ -9,7 +9,7 @@ public enum OutputFormat { Table, Json, Csv }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false)
     {
         if (format == OutputFormat.Json)
         {
@@ -17,7 +17,15 @@ public static class DmsOutputWriter
             return;
         }
         var data = response.Data as JToken ?? (response.Data == null ? JValue.CreateNull() : JToken.FromObject(response.Data));
-        if (format == OutputFormat.Csv) WriteCsv(output, data);
+        if (format == OutputFormat.Csv)
+        {
+            if (catalog && data is JObject details && details["Definitions"] is JArray definitions)
+                data = new JArray(definitions.OfType<JObject>().Select(item => new JObject(
+                    new JProperty("ClusterId", details["ClusterId"]?.DeepClone()),
+                    new JProperty("CanApproveOwnRequests", details["CanApproveOwnRequests"]?.DeepClone()),
+                    item.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())))));
+            WriteCsv(output, data);
+        }
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
         else WriteHuman(output, data, width, color, true);
@@ -35,7 +43,7 @@ public static class DmsOutputWriter
             foreach (var p in properties.Where(p => p.Name == "Result" || p.Value is JObject or JArray))
             {
                 output.WriteLine(); output.WriteLine(p.Name); output.WriteLine(new string('-', p.Name.Length));
-                WriteHuman(output, p.Value, width, color);
+                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name == "Definitions");
             }
         }
         else if (value is JArray array)
@@ -67,12 +75,13 @@ public static class DmsOutputWriter
     private static string HumanScalar(string name, JToken? value, bool workflowMetadata = false)
     {
         if (value == null || value.Type == JTokenType.Null) return "-";
-        if (workflowMetadata && value.Type == JTokenType.Integer && name is "State" or "Decision" or "Risk")
+        if (workflowMetadata && value.Type == JTokenType.Integer && name is "State" or "Decision" or "Risk" or "Location")
         {
             var number = value.Value<int>();
             if (name == "State" && Enum.IsDefined((RunState)number)) return ((RunState)number).ToString();
             if (name == "Decision" && Enum.IsDefined((DecisionState)number)) return ((DecisionState)number).ToString();
             if (name == "Risk" && Enum.IsDefined((RiskLevel)number)) return ((RiskLevel)number).ToString();
+            if (name == "Location" && Enum.IsDefined((WorkflowLocation)number)) return ((WorkflowLocation)number).ToString();
         }
         if (value.Type == JTokenType.Date) return value.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
         return Cell(value);

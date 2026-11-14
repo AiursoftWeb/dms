@@ -27,6 +27,24 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         });
     }
 
+    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Standard workflows", LinkOrder = 4)]
+    public async Task<IActionResult> Definitions(Guid? clusterId = null)
+    {
+        var visible = await access.VisibleClustersAsync(Actor);
+        if (clusterId != null && !visible.Contains(clusterId.Value)) return StatusCode(403);
+        var clusters = await db.Clusters.Where(c => visible.Contains(c.Id)).OrderBy(c => c.Name).ThenBy(c => c.Id).ToListAsync();
+        clusterId ??= clusters.FirstOrDefault()?.Id;
+        try
+        {
+            return this.StackView(new DmsViewModel
+            {
+                PageTitle = "Standard workflows", Clusters = clusters, ClusterId = clusterId,
+                Catalog = clusterId == null ? null : await workflows.ListDefinitionsAsync(Actor, clusterId.Value)
+            });
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
+    }
+
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Lockboxes", LinkOrder = 2)]
     public async Task<IActionResult> Lockboxes(int page = 0)
     {

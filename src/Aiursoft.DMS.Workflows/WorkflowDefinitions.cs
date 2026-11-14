@@ -46,6 +46,8 @@ public sealed class MachineWorkflowRegistry
 
     public WorkflowDefinition? FindDefinition(string name) => _definitions.TryGetValue(name, out var entry) ? entry.Definition : null;
 
+    public IEnumerable<WorkflowDefinition> Definitions => _definitions.Values.Select(entry => entry.Definition);
+
 }
 
 public sealed class ChildWorkflowException(Guid workflowId, string definition, Guid? machineId, RunState state, string result)

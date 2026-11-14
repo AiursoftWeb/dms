@@ -29,6 +29,7 @@ public sealed class ClusterWorkflowRegistry
     }
 
     public WorkflowDefinition? FindDefinition(string name) => _definitions.TryGetValue(name, out var entry) ? entry.Definition : null;
+    public IEnumerable<WorkflowDefinition> Definitions => _definitions.Values.Select(entry => entry.Definition);
     public bool Contains(string name) => _definitions.ContainsKey(name);
     public Task<string> ExecuteAsync(string name, WorkflowExecutionContext context, string input, CancellationToken token) =>
         _definitions.TryGetValue(name, out var execute) ? execute.Execute(context, input, token)
