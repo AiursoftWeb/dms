@@ -20,7 +20,7 @@ public static class DmsCommandApp
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput())]),
             new Group("layout", [StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()), StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput())])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
-        .WithFeature(new Group("operation", [new ActionCommand("list-definitions", "definitions"), new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
+        .WithFeature(new Group("operation", [new ActionCommand("list-definitions", "definitions"), new ActionCommand("query-audit", "audit"), new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
 
     private static ActionCommand StandardCommand<TInput, TResult>(string name, WorkflowDefinition<TInput, TResult> definition,
         Func<ParseResult, TInput> input, params Option[] options) =>
@@ -55,6 +55,20 @@ public static class DmsCommandApp
         private readonly Option<string> _reason = new("--reason");
         private readonly Option<string> _machineName = new("--name");
         private readonly Option<int> _skip = new("--skip");
+        private readonly Option<DateTimeOffset?> _from = new("--from") { Description = "Inclusive archive recording time, ISO 8601 with UTC offset; defaults to 24 hours before --until." };
+        private readonly Option<DateTimeOffset?> _until = new("--until") { Description = "Exclusive archive recording time, ISO 8601 with UTC offset; defaults to now. Maximum range: 31 days." };
+        private readonly Option<Guid?> _machineFilter = new("--machine-id");
+        private readonly Option<Guid?> _workflowFilter = new("--workflow-id");
+        private readonly Option<Guid?> _rootFilter = new("--root-workflow-id");
+        private readonly Option<Guid?> _lockboxFilter = new("--lockbox-id");
+        private readonly Option<string?> _requester = new("--requester-id");
+        private readonly Option<string?> _approver = new("--approver-id");
+        private readonly Option<string?> _definitionFilter = new("--definition");
+        private readonly Option<string?> _requestedDefinition = new("--requested-definition");
+        private readonly Option<WorkflowAuditKind?> _kind = new("--kind");
+        private readonly Option<RunState?> _state = new("--state");
+        private readonly Option<bool?> _automatic = new("--automatic-approval");
+        private readonly Option<int> _page = new("--page") { Description = "Zero-based archive page, 50 events per page." };
 
         protected override IEnumerable<Option> GetCommandOptions()
         {
@@ -71,6 +85,12 @@ public static class DmsCommandApp
             else if (action == "definitions")
             {
                 _cluster.Required = true; yield return _cluster;
+            }
+            else if (action == "audit")
+            {
+                _cluster.Required = true; yield return _cluster;
+                foreach (var option in new Option[] { _from, _until, _machineFilter, _workflowFilter, _rootFilter, _lockboxFilter,
+                    _requester, _approver, _definitionFilter, _requestedDefinition, _kind, _state, _automatic, _page }) yield return option;
             }
             else
             {
@@ -108,6 +128,15 @@ public static class DmsCommandApp
             }
             else response = action switch
             {
+                "audit" => await client.AuditEventsAsync(new WorkflowAuditQuery
+                {
+                    ClusterId = context.GetValue(_cluster), From = context.GetValue(_from), Until = context.GetValue(_until),
+                    MachineId = context.GetValue(_machineFilter), WorkflowId = context.GetValue(_workflowFilter),
+                    RootWorkflowId = context.GetValue(_rootFilter), LockboxId = context.GetValue(_lockboxFilter),
+                    RequesterId = context.GetValue(_requester), ApproverId = context.GetValue(_approver),
+                    Definition = context.GetValue(_definitionFilter), RequestedDefinition = context.GetValue(_requestedDefinition),
+                    Kind = context.GetValue(_kind), State = context.GetValue(_state), AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
+                }),
                 "definitions" => await client.ListDefinitionsAsync(context.GetValue(_cluster)),
                 "get" => await client.GetLockboxAsync(id),
                 "approve" or "deny" => await client.DecideAsync(id, action == "approve", context.GetValue(_reason) ?? string.Empty),
@@ -118,7 +147,7 @@ public static class DmsCommandApp
             };
             DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
                 action == "callstack", !Console.IsOutputRedirected,
-                Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: action == "definitions");
+                Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: action == "definitions", audit: action == "audit");
         }
     }
 }

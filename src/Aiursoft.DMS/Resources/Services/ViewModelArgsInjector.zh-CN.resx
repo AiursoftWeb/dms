@@ -102,6 +102,9 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>内部服务器错误</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>调查</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>账户被锁定</value>
   </data>
