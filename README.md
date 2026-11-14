@@ -77,7 +77,7 @@ See [configuration and persistence](./docs/configuration.md) for database settin
 
 ## How to contribute
 
-Report bugs and feature requests through the [issue tracker](https://gitlab.aiursoft.com/aiursoft/dms/-/issues). Use a feature branch or fork and submit a merge request.
+Report bugs and feature requests through the [issue tracker](https://github.com/AiursoftWeb/dms/issues). Use a feature branch or fork and submit a merge request.
 
 Build and test from the repository root:
 
