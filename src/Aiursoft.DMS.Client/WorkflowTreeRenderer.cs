@@ -5,6 +5,18 @@ namespace Aiursoft.DMS.Client;
 
 public static class WorkflowTreeRenderer
 {
+    public static string Colorize(string text, RunState state, bool enabled)
+    {
+        var code = state switch
+        {
+            RunState.Succeeded => "32", RunState.Failed => "31",
+            RunState.Running or RunState.Accepted or RunState.Offered => "34",
+            RunState.Warning or RunState.NeedsVerification or RunState.CancelRequested => "33",
+            _ => "37"
+        };
+        return enabled ? $"\u001b[{code}m{text}\u001b[0m" : text;
+    }
+
     private sealed record Node(Guid Id, Guid? ParentId, string Definition, RunState State);
 
     public static IEnumerable<string> Render(JArray data, bool color)
@@ -25,14 +37,7 @@ public static class WorkflowTreeRenderer
                 if (!visited.Add(item.Node.Id)) continue;
                 var node = item.Node;
                 var text = $"{node.Id}  {node.Definition}  [{node.State}]";
-                var code = node.State switch
-                {
-                    RunState.Succeeded => "32", RunState.Failed => "31",
-                    RunState.Running or RunState.Accepted or RunState.Offered => "34",
-                    RunState.Warning or RunState.NeedsVerification or RunState.CancelRequested => "33",
-                    _ => "37"
-                };
-                yield return item.Prefix + item.Connector + (color ? $"\u001b[{code}m{text}\u001b[0m" : text);
+                yield return item.Prefix + item.Connector + Colorize(text, node.State, color);
                 var prefix = item.Prefix + (item.Connector.Length == 0 ? string.Empty : item.Last ? "    " : "│   ");
                 var descendants = children[node.Id].ToList();
                 for (var i = descendants.Count - 1; i >= 0; i--)

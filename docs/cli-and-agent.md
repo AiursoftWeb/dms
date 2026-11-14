@@ -89,7 +89,7 @@ dotnet ./bin/client/dms.dll operation get-trace --id <workflow-id>
 
 Each operational command creates a Lockbox before execution. The Lockbox ID, its own workflow ID and the approved operation's workflow ID are distinct; use the returned ID for the corresponding inspection command. Inspection and `lockbox approve`/`deny` use authenticated management APIs without creating another Lockbox.
 
-Use `--all-machines` instead of `--machine-id` to freeze the cluster's current machines into a request. A request targets only one cluster. Use `--request-id` when retrying the same submission and `--json` for automation.
+Use `--all-machines` instead of `--machine-id` to freeze the cluster's current machines into a request. A request targets only one cluster. Use `--request-id` when retrying the same submission and `--output-format json` for automation.
 
 `operation kill-workflow --cluster-id <cluster-id> --id <workflow-id> --reason 'Stop operation'` creates a new Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation).
 
@@ -99,6 +99,19 @@ Read-only process results contain `ExitCode`, `Output` and `ErrorOutput`; the ou
 
 `operation get-workflow` returns the instance's `WorkflowId`, `RootWorkflowId` and `ParentWorkflowId`, along with its state and result. The root points to itself and has no parent. Each subworkflow has its own ID. These inspection commands are authenticated and audited; they do not create a Lockbox.
 
-`operation get-callstack` prints the selected instance and its descendants as a tree, including every full workflow ID, definition and state. Interactive output uses green for success, red for failure, blue for running and yellow for warnings. Redirected output preserves the tree and state names without terminal colors. Use `--json` to obtain the full protocol response with parent and root IDs.
+`operation get-callstack` prints the selected instance and its descendants as a tree, including every full workflow ID, definition and state. Interactive output uses green for success, red for failure, blue for running and yellow for warnings. Redirected output preserves the tree and state names without terminal colors. Use `--output-format json` to obtain the full protocol response with parent and root IDs.
+
+## Output formats
+
+Commands default to human-readable tables. Single-object details use `Property` and `Value` columns; collections use one row per record. State, decision and risk values are shown by name. Structured results are expanded separately, and multiline output remains readable. Full IDs are preserved; wide collections fall back to individual property tables. `get-callstack` uses its colored tree in table mode. Redirected output has no added terminal colors.
+
+Use `--output-format json` for the complete, unchanged AiurProtocol response, including pagination metadata. Use `--output-format csv` for business records with alphabetically ordered columns and quoted commas, quotes and line breaks. Nested values remain JSON in a cell; API numeric enums and full timestamps are preserved. Trace CSV contains event records, including column headers on an empty page; pagination and archive metadata are available in table and JSON output. Format names are case insensitive. Invalid formats are rejected before submitting any request.
+
+```sh
+dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id>
+dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id> --output-format json
+dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id> --output-format csv
+```
+
 
 See [typed subworkflows](subworkflows.md) for compiled registration, cross-machine calls, results, cancellation and recovery.

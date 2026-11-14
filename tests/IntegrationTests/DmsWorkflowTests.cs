@@ -21,7 +21,7 @@ public class DmsWorkflowTests : TestBase
         var root = new WorkflowRun { ClusterId = setup.Cluster, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
         root.RootId = root.Id;
         var parent = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.Batch, State = RunState.Succeeded };
-        var child = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = "disk result" };
+        var child = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
         var sibling = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
         var hidden = new Cluster { Name = "Hidden" };
         var hiddenRun = new WorkflowRun { ClusterId = hidden.Id, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
@@ -50,15 +50,33 @@ public class DmsWorkflowTests : TestBase
             Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);
             Assert.AreEqual(run.FinishedAt, details.FinishedAt);
         }
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--json"]);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "RootWorkflowId"); StringAssert.Contains(cli.StdOut, "ParentWorkflowId");
         StringAssert.Contains(cli.StdOut, child.Id.ToString()); StringAssert.Contains(cli.StdOut, parent.Id.ToString());
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        StringAssert.Contains(table.StdOut, "Property"); StringAssert.Contains(table.StdOut, "Value");
+        StringAssert.Contains(table.StdOut, "Succeeded"); StringAssert.Contains(table.StdOut, "Output");
+        StringAssert.Contains(table.StdOut, "disk, \"quoted\""); StringAssert.Contains(table.StdOut, "second line");
+        Assert.DoesNotContain("\\n", table.StdOut); Assert.DoesNotContain("ProtocolVersion", table.StdOut);
+        StringAssert.Contains(table.StdOut, child.Id.ToString()); StringAssert.Contains(table.StdOut, root.Id.ToString());
+        var csv = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "CsV"]);
+        Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
+        using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.StdOut)))
+        {
+            parser.SetDelimiters(","); parser.TrimWhiteSpace = false;
+            var headers = parser.ReadFields()!; var values = parser.ReadFields()!;
+            Assert.AreEqual(child.Id.ToString(), values[Array.IndexOf(headers, "WorkflowId")]);
+            Assert.AreEqual(parent.Id.ToString(), values[Array.IndexOf(headers, "ParentWorkflowId")]);
+            Assert.AreEqual(child.Result, values[Array.IndexOf(headers, "Result")]);
+            Assert.IsTrue(parser.EndOfData);
+        }
         var tree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", root.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
         Assert.AreEqual(0, tree.ProgramReturn, tree.StdErr);
         StringAssert.Contains(tree.StdOut, "├── "); StringAssert.Contains(tree.StdOut, "│   └── ");
         foreach (var id in new[] { root.Id, parent.Id, child.Id, sibling.Id }) StringAssert.Contains(tree.StdOut, id.ToString());
-        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", parent.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--json"]);
+        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", parent.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, subtree.ProgramReturn, subtree.StdErr);
         StringAssert.Contains(subtree.StdOut, parent.Id.ToString()); StringAssert.Contains(subtree.StdOut, child.Id.ToString());
         Assert.DoesNotContain(sibling.Id.ToString(), subtree.StdOut); Assert.DoesNotContain("└──", subtree.StdOut);
@@ -99,6 +117,51 @@ public class DmsWorkflowTests : TestBase
         var subtree = Client.WorkflowTreeRenderer.Render(new Newtonsoft.Json.Linq.JArray(nodes[0].DeepClone(), nodes[2].DeepClone()), false).ToArray();
         StringAssert.StartsWith(subtree[0], a.ToString());
         StringAssert.StartsWith(subtree[1], "└── " + leaf);
+    }
+
+    [TestMethod]
+    public void HumanOutputExpandsInventoryAndKeepsLargeCountsAndIds()
+    {
+        var id = Guid.NewGuid();
+        var result = JsonSerializer.Serialize(new[] { new { Id = id, Name = "demo-node", TotalBytes = 9007199254740991L, State = 1 } });
+        var response = new DmsResponse { Message = "Request completed.", Data = new { WorkflowId = id, State = RunState.Succeeded, Result = result } };
+        using var output = new StringWriter();
+        Client.DmsOutputWriter.Write(output, response, Client.OutputFormat.Table, false, false);
+        var table = output.ToString();
+        StringAssert.Contains(table, "Succeeded"); StringAssert.Contains(table, "TotalBytes");
+        StringAssert.Contains(table, "9007199254740991"); StringAssert.Contains(table, id.ToString());
+        Assert.DoesNotContain("Queued", table);
+        Assert.DoesNotContain("\"", table);
+        using var narrow = new StringWriter();
+        Client.DmsOutputWriter.Write(narrow, response, Client.OutputFormat.Table, false, false, 60);
+        StringAssert.Contains(narrow.ToString(), id.ToString()); StringAssert.Contains(narrow.ToString(), "demo-node");
+        using var json = new StringWriter();
+        Client.DmsOutputWriter.Write(json, response, Client.OutputFormat.Json, false, true);
+        var data = Newtonsoft.Json.Linq.JObject.Parse(json.ToString())["Data"]!;
+        Assert.AreEqual(5, data["State"]!.ToObject<int>());
+        Assert.AreEqual(result, data["Result"]!.ToObject<string>());
+    }
+
+    [TestMethod]
+    public void TraceCsvPreservesQuotesNewlinesAndEmptyPageHeaders()
+    {
+        var id = Guid.NewGuid(); var message = "disk, \"quoted\"\nsecond line";
+        var response = new DmsResponse { Message = "Request completed.", Data = new { Entries = new[] { new { EventId = "one", WorkflowId = id, Time = DateTime.UnixEpoch, Source = "stdout", Message = message } }, PendingArchiveEvents = 3, NextOffset = 200 } };
+        using var csv = new StringWriter();
+        Client.DmsOutputWriter.Write(csv, response, Client.OutputFormat.Csv, false, true);
+        using var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.ToString()));
+        parser.SetDelimiters(","); parser.TrimWhiteSpace = false;
+        var headers = parser.ReadFields()!; var values = parser.ReadFields()!;
+        Assert.AreEqual(message, values[Array.IndexOf(headers, "Message")]);
+        Assert.AreEqual(id.ToString(), values[Array.IndexOf(headers, "WorkflowId")]);
+        Assert.IsTrue(parser.EndOfData); Assert.DoesNotContain("\u001b", csv.ToString());
+        using var empty = new StringWriter();
+        Client.DmsOutputWriter.Write(empty, new DmsResponse { Message = "Request completed.", Data = new { Entries = Array.Empty<object>(), PendingArchiveEvents = 0, NextOffset = 200 } }, Client.OutputFormat.Csv, false, false);
+        Assert.AreEqual(string.Join(',', headers) + "\r\n", empty.ToString());
+        using var table = new StringWriter();
+        Client.DmsOutputWriter.Write(table, response, Client.OutputFormat.Table, false, false);
+        StringAssert.Contains(table.ToString(), "PendingArchiveEvents"); StringAssert.Contains(table.ToString(), "NextOffset");
+        StringAssert.Contains(table.ToString(), "second line");
     }
 
     [TestMethod]
@@ -274,18 +337,27 @@ public class DmsWorkflowTests : TestBase
         var websocket = await Http.GetAsync("/api/agent/channel"); Assert.AreEqual(HttpStatusCode.Forbidden, websocket.StatusCode);
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([
             "machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
-            "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--json"]);
+            "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "WorkflowId");
         foreach (var command in new[] { new[] { "agent", "status" }, new[] { "systemctl", "status" }, new[] { "layout", "lsblk" }, new[] { "layout", "df" } })
         {
             var args = new List<string> { "machine", command[0], command[1], "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
-                "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--json" };
+                "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--output-format", "json" };
             if (command[0] == "systemctl") args.AddRange(["--service", "dms-test.service"]);
             var result = await Client.DmsCommandApp.Create().TestRunAsync(args.ToArray());
             Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
             StringAssert.Contains(result.StdOut, "WorkflowId");
         }
+        int beforeInvalidFormat;
+        using (var countScope = Server!.Services.CreateScope()) beforeInvalidFormat = await countScope.ServiceProvider.GetRequiredService<TemplateDbContext>().Lockboxes.CountAsync();
+        foreach (var format in new[] { "yaml", "999" })
+        {
+            var badFormat = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
+                "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Must not submit", "--output-format", format]);
+            Assert.AreNotEqual(0, badFormat.ProgramReturn);
+        }
+        using (var countScope = Server!.Services.CreateScope()) Assert.AreEqual(beforeInvalidFormat, await countScope.ServiceProvider.GetRequiredService<TemplateDbContext>().Lockboxes.CountAsync());
         var invalidRequest = Request(setup.Cluster, setup.Machine);
         invalidRequest.Service = "*.service";
         var invalid = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", invalidRequest);
