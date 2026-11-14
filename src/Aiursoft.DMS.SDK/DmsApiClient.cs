@@ -8,6 +8,15 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
 {
     private AiurApiEndpoint Endpoint(string route, object? query = null) => new(endpoint.TrimEnd('/'), "/api/v1/dms/" + route, query ?? new { });
     private IDictionary<string, string> Headers => new Dictionary<string, string> { ["Authorization"] = "Bearer " + key };
+    public Task<DmsResponse> CurrentUserAsync() => http.Get<DmsResponse>(Endpoint("access/identity"), headers: Headers);
+    public Task<DmsResponse> ListClustersAsync() => http.Get<DmsResponse>(Endpoint("clusters"), headers: Headers);
+    public Task<DmsResponse> AccessAsync() => http.Get<DmsResponse>(Endpoint("access"), headers: Headers);
+    public Task<DmsResponse> CreateClusterAsync(CreateClusterInput input) => http.Post<DmsResponse>(Endpoint("clusters"), new AiurApiPayload(input), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    public Task<DmsResponse> RenameClusterAsync(Guid id, string name) => http.Put<DmsResponse>(Endpoint($"clusters/{id}"), new AiurApiPayload(new ClusterNameInput(name)), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    public Task<DmsResponse> DropClusterAsync(Guid id) => http.Http<DmsResponse>(Endpoint($"clusters/{id}"), new AiurApiPayload(new { }), HttpMethod.Delete, BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    public Task<DmsResponse> SetGrantAsync(RiskGrant input) => http.Put<DmsResponse>(Endpoint("access/grants"), new AiurApiPayload(input), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    public Task<DmsResponse> SetSelfApprovalAsync(SelfApprovalInput input) => http.Put<DmsResponse>(Endpoint("access/self-approval"), new AiurApiPayload(input), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    public Task<DmsResponse> IssueAgentKeyAsync(Guid id) => http.Post<DmsResponse>(Endpoint($"access/machines/{id}/key"), new AiurApiPayload(new { }), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
     public Task<DmsResponse> SubmitAsync(OperationRequest request) => http.Post<DmsResponse>(Endpoint("lockboxes"), new AiurApiPayload(request), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
     public Task<DmsResponse> SubmitAsync<TInput, TResult>(WorkflowDefinition<TInput, TResult> definition,
         Guid cluster, TInput input, string reason, IEnumerable<Guid>? machines = null, bool allMachines = false,

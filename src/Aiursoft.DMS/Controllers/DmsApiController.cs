@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.DMS.Contracts;
+using Aiursoft.DMS.Authorization;
+using EFCoreSecondLevelCacheInterceptor;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
@@ -13,7 +15,7 @@ namespace Aiursoft.DMS.Controllers;
 [Authorize(AuthenticationSchemes = DmsKeyAuthenticationHandler.SchemeName, Policy = "DmsHuman")]
 [Route("api/v1/dms")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, WorkflowInvestigation investigation, ILogger<DmsApiController> logger) : ControllerBase
+public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, WorkflowInvestigation investigation, ILogger<DmsApiController> logger, DmsManagementService management) : ControllerBase
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -30,6 +32,54 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
             }, Message = exception.Message });
         }
     }
+
+    [HttpGet("access/identity")]
+    public Task<IActionResult> Identity() => Handle(async () =>
+    {
+        var self = await db.Users.AsNoTracking().NotCacheable().Where(u => u.Id == Actor).Select(u => u.CanApproveOwnRequests).SingleAsync();
+        access.Audit(Actor, "access.identity"); await db.SaveChangesAsync();
+        return new CurrentUser(Actor, User.Identity?.Name ?? "", self, User.FindAll(AppPermissions.Type).Select(c => c.Value).Distinct().Order().ToList());
+    });
+
+    [HttpGet("clusters")]
+    public Task<IActionResult> Clusters() => Handle(async () => await management.ClustersAsync(Actor, User.HasClaim(AppPermissions.Type, "CanManageDmsAccess")));
+
+    [HttpGet("access"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> Access() => Handle(async () => await management.SnapshotAsync(Actor));
+
+    [HttpPost("clusters"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> CreateCluster([FromBody] CreateClusterInput? input) => Handle(async () =>
+    {
+        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid cluster creation request.");
+        return await management.CreateAsync(Actor, input);
+    });
+
+    [HttpPut("clusters/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> RenameCluster(Guid id, [FromBody] ClusterNameInput? input) => Handle(async () =>
+    {
+        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid cluster name.");
+        return await management.RenameAsync(Actor, id, input.Name);
+    });
+
+    [HttpDelete("clusters/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> DropCluster(Guid id) => Handle(async () => await management.DropAsync(Actor, id));
+
+    [HttpPut("access/grants"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> SetGrant([FromBody] RiskGrant? input) => Handle(async () =>
+    {
+        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid risk grant.");
+        return await management.GrantAsync(Actor, input);
+    });
+
+    [HttpPut("access/self-approval"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> SetSelfApproval([FromBody] SelfApprovalInput? input) => Handle(async () =>
+    {
+        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid self-approval setting.");
+        return await management.SelfApprovalAsync(Actor, input);
+    });
+
+    [HttpPost("access/machines/{id:guid}/key"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> IssueAgentKey(Guid id) => Handle(async () => await management.AgentKeyAsync(Actor, id));
 
     [HttpPost("lockboxes")]
     public Task<IActionResult> Submit([FromBody] OperationRequest? request) => Handle(async () =>

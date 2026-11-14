@@ -14,7 +14,7 @@ namespace Aiursoft.DMS.Controllers;
 
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsAccessController(TemplateDbContext db, AccessService access, ControllerGate gate) : Controller
+public class DmsAccessController(TemplateDbContext db, AccessService access, DmsManagementService management) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -27,60 +27,30 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Con
         NewKey = TempData["DmsNewKey"] as string, Notice = TempData["DmsNotice"] as string
     });
 
-    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public async Task<IActionResult> CreateCluster(string name)
+    private async Task<IActionResult> ManageAsync(Func<Task<object>> action)
     {
-        if (string.IsNullOrWhiteSpace(name) || name.Length > 100) return BadRequest();
-        await gate.RunAsync(async () =>
-        {
-            var cluster = new Cluster { Name = name.Trim() };
-            db.Clusters.Add(cluster); access.Audit(Actor, "access.cluster.create", cluster.Id);
-            await db.SaveChangesAsync(); return true;
-        });
-        return RedirectToAction(nameof(Index));
+        try { await action(); return RedirectToAction(nameof(Index)); }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode, exception.Message); }
     }
 
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public async Task<IActionResult> Grant(Guid clusterId, string userId, RiskLevel risk, bool canRequest, bool autoApprove, bool canApprove)
-    {
-        if (!Enum.IsDefined(risk) || !await db.Clusters.AnyAsync(c => c.Id == clusterId) || !await db.Users.AnyAsync(u => u.Id == userId)) return BadRequest();
-        await gate.RunAsync(async () =>
-        {
-            var grant = await db.ClusterGrants.SingleOrDefaultAsync(g => g.ClusterId == clusterId && g.UserId == userId && g.Risk == risk);
-            if (grant == null) { grant = new ClusterGrant { ClusterId = clusterId, UserId = userId, Risk = risk }; db.ClusterGrants.Add(grant); }
-            grant.CanRequest = canRequest; grant.AutoApprove = autoApprove; grant.CanApprove = canApprove;
-            access.Audit(Actor, "access.grant", clusterId, $"User={userId}; Risk={risk}; Request={canRequest}; Auto={autoApprove}; Approve={canApprove}");
-            await db.SaveChangesAsync(); return true;
-        });
-        return RedirectToAction(nameof(Index));
-    }
+    public Task<IActionResult> CreateCluster(string name) => ManageAsync(async () =>
+        await management.CreateAsync(Actor, new CreateClusterInput(Guid.NewGuid(), name)));
 
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public async Task<IActionResult> SelfApproval(string userId, bool enabled)
-    {
-        await gate.RunAsync(async () =>
-        {
-            var user = await db.Users.SingleAsync(u => u.Id == userId);
-            user.CanApproveOwnRequests = enabled;
-            access.Audit(Actor, "access.self-approval", detail: $"User={userId}; Enabled={enabled}");
-            await db.SaveChangesAsync(); return true;
-        });
-        return RedirectToAction(nameof(Index));
-    }
+    public Task<IActionResult> Grant(Guid clusterId, string userId, RiskLevel risk, bool canRequest, bool autoApprove, bool canApprove) =>
+        ManageAsync(async () => await management.GrantAsync(Actor, new RiskGrant(clusterId, userId, risk, canRequest, autoApprove, canApprove)));
 
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public async Task<IActionResult> AgentKey(Guid machineId)
+    public Task<IActionResult> SelfApproval(string userId, bool enabled) => ManageAsync(async () =>
+        await management.SelfApprovalAsync(Actor, new SelfApprovalInput(userId, enabled)));
+
+    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> AgentKey(Guid machineId) => ManageAsync(async () =>
     {
-        var key = DmsKeyAuthenticationHandler.CreateKey(true);
-        await gate.RunAsync(async () =>
-        {
-            var machine = await db.Machines.SingleAsync(m => m.Id == machineId);
-            machine.KeyHash = DmsKeyAuthenticationHandler.Hash(key);
-            access.Audit(Actor, "key.agent.rotate", machineId); await db.SaveChangesAsync(); return true;
-        });
-        TempData["DmsNewKey"] = key;
-        return RedirectToAction(nameof(Index));
-    }
+        var result = await management.AgentKeyAsync(Actor, machineId);
+        TempData["DmsNewKey"] = result.Key; return result;
+    });
 
     [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "Personal", CascadedLinksIcon = "user", LinkText = "API Keys", LinkOrder = 2)]
     public async Task<IActionResult> Keys() => this.StackView(new DmsViewModel
