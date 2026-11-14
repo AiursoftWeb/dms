@@ -69,6 +69,7 @@ public class DmsManagementTests : TestBase
         var setup = await ArrangeAsync();
         var identity = await CliAsync<CurrentUser>(setup.ManagerKey, "access", "whoami");
         Assert.AreEqual(setup.Manager, identity.Id); Assert.IsFalse(identity.CanApproveOwnRequests);
+        StringAssert.StartsWith(identity.UserName, "manager");
         CollectionAssert.Contains(identity.Permissions, "CanManageDmsAccess");
         var id = Guid.NewGuid();
         var name = "Production-" + id;
@@ -79,6 +80,9 @@ public class DmsManagementTests : TestBase
         Assert.IsTrue((await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Any(c => c.Id == id));
         Assert.HasCount(0, await CliAsync<List<ClusterSummary>>(setup.EmployeeKey, "cluster", "list"));
         var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get");
+        Assert.AreEqual(name, snapshot.Clusters.Single(c => c.Id == id).Name);
+        var manager = snapshot.Users.Single(u => u.Id == setup.Manager);
+        Assert.AreEqual(identity.UserName, manager.UserName); Assert.AreEqual("Manager", manager.DisplayName);
         Assert.IsFalse(snapshot.Grants.Any(g => g.ClusterId == id)); Assert.IsFalse(snapshot.Machines.Any(m => m.ClusterId == id));
         foreach (var format in new[] { "table", "csv" })
         {
@@ -150,7 +154,10 @@ public class DmsManagementTests : TestBase
         Assert.AreEqual(HttpStatusCode.Unauthorized, (await Http.GetAsync("/api/agent/channel")).StatusCode);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", second.Key);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync("/api/v1/dms/access/identity")).StatusCode);
-        var snapshotJson = Newtonsoft.Json.JsonConvert.SerializeObject(await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get"));
+        var snapshotWithMachine = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get");
+        var machineInfo = snapshotWithMachine.Machines.Single(m => m.Id == machine);
+        Assert.AreEqual("Registered fixture", machineInfo.Name); Assert.IsFalse(machineInfo.Disabled);
+        var snapshotJson = Newtonsoft.Json.JsonConvert.SerializeObject(snapshotWithMachine);
         Assert.DoesNotContain("KeyHash", snapshotJson); Assert.DoesNotContain(second.Key, snapshotJson);
         using var check = Server!.Services.CreateScope(); var verify = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
         Assert.AreEqual(DmsKeyAuthenticationHandler.Hash(second.Key), (await verify.Machines.SingleAsync(m => m.Id == machine)).KeyHash);
