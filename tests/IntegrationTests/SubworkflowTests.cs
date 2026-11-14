@@ -35,7 +35,7 @@ public class SubworkflowTests : TestBase
             var cluster = new Cluster { Name = "Subworkflow test" };
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
             var machines = keys.Select((key, index) => new Machine { ClusterId = cluster.Id, Name = $"node-{index}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
-            var box = new LockboxRequest { ClusterId = cluster.Id, Decision = DecisionState.Approved, TargetMachines = JsonSerializer.Serialize(machines.Select(m => m.Id)), Definition = definition.Name };
+            var box = new LockboxRequest { WorkflowId = Guid.NewGuid(), ClientRequestId = Guid.NewGuid(), ClusterId = cluster.Id, Decision = DecisionState.Approved, TargetMachines = JsonSerializer.Serialize(machines.Select(m => m.Id)), Definition = definition.Name };
             var root = new WorkflowRun { Id = box.WorkflowId, RootId = box.WorkflowId, ClusterId = cluster.Id, LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.Running };
             var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, ClusterId = cluster.Id, Definition = definition.Name, Input = definition.Serialize(new EmptyInput()), State = initial };
             box.OperationId = parent.Id;
@@ -118,6 +118,10 @@ public class SubworkflowTests : TestBase
             Assert.AreEqual(RunState.Succeeded, run.State, run.Result);
             CollectionAssert.AreEquivalent(journals.Select(j => j.InstallationId).ToList(), JsonSerializer.Deserialize<List<Guid>>(run.Result)!);
             var tree = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == setup.Parent.RootId).ToListAsync());
+            Assert.AreNotEqual(Guid.Empty, setup.Parent.RootId);
+            var root = tree.Single(r => r.Id == setup.Parent.RootId);
+            Assert.AreEqual(root.Id, root.RootId); Assert.IsNull(root.ParentId);
+            Assert.AreEqual(root.Id, setup.Parent.ParentId);
             var nested = tree.Single(r => r.Definition == nestedDefinition.Name);
             Assert.AreEqual(setup.Parent.Id, nested.ParentId);
             var children = tree.Where(r => r.IsMachineTask).ToList();
