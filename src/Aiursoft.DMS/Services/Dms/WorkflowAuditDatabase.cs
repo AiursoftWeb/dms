@@ -17,6 +17,7 @@ public sealed partial class TraceDatabase
                 WorkflowId String, RootWorkflowId String, ParentWorkflowId Nullable(String), LockboxId String, ClusterId String,
                 Location String, MachineId Nullable(String), InstallationId Nullable(String), Definition String, Version String,
                 RequesterId Nullable(String), ApproverId Nullable(String), AutomaticApproval Nullable(Bool), RequestedRisk Nullable(String),
+                RequestedDefinition Nullable(String), RequestedVersion Nullable(String),
                 Decision Nullable(String), DecidedAt Nullable(DateTime64(7, 'UTC')), PreviousState Nullable(String), State Nullable(String)
             ) ENGINE = ReplacingMergeTree ORDER BY (ClusterId, WorkflowId, EventId)
             """;
@@ -32,12 +33,13 @@ public sealed partial class TraceDatabase
             INSERT INTO DmsWorkflowAudit (
                 EventId, ControllerSequence, Kind, OccurredAt, RecordedAt,
                 WorkflowId, RootWorkflowId, ParentWorkflowId, LockboxId, ClusterId, Location, MachineId, InstallationId,
-                Definition, Version, RequesterId, ApproverId, AutomaticApproval, RequestedRisk, Decision, DecidedAt, PreviousState, State)
+                Definition, Version, RequesterId, ApproverId, AutomaticApproval, RequestedRisk, RequestedDefinition, RequestedVersion, Decision, DecidedAt, PreviousState, State)
             VALUES (
                 {event:String}, {sequence:Int64}, {kind:String}, {occurred:DateTime64(7)}, {recorded:DateTime64(7)},
                 {workflow:String}, {root:String}, {parent:Nullable(String)}, {lockbox:String}, {cluster:String}, {location:String},
                 {machine:Nullable(String)}, {installation:Nullable(String)}, {definition:String}, {version:String},
                 {requester:Nullable(String)}, {approver:Nullable(String)}, {automatic:Nullable(Bool)}, {risk:Nullable(String)},
+                {requestedDefinition:Nullable(String)}, {requestedVersion:Nullable(String)},
                 {decision:Nullable(String)}, {decided:Nullable(DateTime64(7))}, {previous:Nullable(String)}, {state:Nullable(String)})
             """;
         command.AddParameter("event", row.EventId.ToString()); command.AddParameter("sequence", row.Id);
@@ -49,6 +51,7 @@ public sealed partial class TraceDatabase
         command.AddParameter("definition", item.Definition); command.AddParameter("version", item.Version);
         command.AddParameter("requester", item.RequesterId); command.AddParameter("approver", item.ApproverId);
         command.AddParameter("automatic", item.AutomaticApproval); command.AddParameter("risk", item.RequestedRisk?.ToString());
+        command.AddParameter("requestedDefinition", item.RequestedDefinition); command.AddParameter("requestedVersion", item.RequestedVersion);
         command.AddParameter("decision", item.Decision?.ToString()); command.AddParameter("decided", item.DecidedAt);
         command.AddParameter("previous", item.PreviousState?.ToString()); command.AddParameter("state", item.State?.ToString());
         foreach (DbParameter parameter in command.Parameters) parameter.Value ??= DBNull.Value;

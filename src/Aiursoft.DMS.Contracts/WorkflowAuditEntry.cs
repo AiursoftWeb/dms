@@ -8,4 +8,5 @@ public sealed record WorkflowAuditEntry(
     Guid WorkflowId, Guid RootWorkflowId, Guid? ParentWorkflowId, Guid LockboxId, Guid ClusterId,
     WorkflowLocation Location, Guid? MachineId, Guid? InstallationId, string Definition, string Version,
     string? RequesterId, string? ApproverId, bool? AutomaticApproval, RiskLevel? RequestedRisk,
+    string? RequestedDefinition, string? RequestedVersion,
     DecisionState? Decision, DateTime? DecidedAt, RunState? PreviousState, RunState? State);

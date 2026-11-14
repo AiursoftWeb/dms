@@ -63,6 +63,7 @@ public class WorkflowAuditTests
         await db.SaveChangesAsync(); Assert.AreEqual(count, await db.WorkflowAuditOutbox.CountAsync());
         var decision = (await db.WorkflowAuditOutbox.ToListAsync()).Select(r => r.Read()).Single(e => e.Kind == (approve ? WorkflowAuditKind.LockboxApproved : WorkflowAuditKind.LockboxDenied));
         Assert.AreEqual("engineer", decision.RequesterId); Assert.AreEqual("reviewer", decision.ApproverId);
+        Assert.AreEqual(box.Definition, decision.RequestedDefinition); Assert.AreEqual(box.Version, decision.RequestedVersion);
         Assert.IsFalse(decision.AutomaticApproval); Assert.AreEqual(box.Decision, decision.Decision);
     }
 

@@ -55,7 +55,7 @@ public abstract partial class TemplateDbContext
                 var item = new WorkflowAuditEntry(kind, occurred, recorded, run.Id, run.RootId, run.ParentId, run.LockboxId,
                     run.ClusterId, run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run.MachineId, machine?.InstallationId, run.Definition, run.Version, box?.RequesterId, box?.ApproverId,
-                    box?.Automatic, box?.Risk, box?.Decision, box?.DecidedAt, previous, state);
+                    box?.Automatic, box?.Risk, box?.Definition, box?.Version, box?.Decision, box?.DecidedAt, previous, state);
                 captured.Add(new WorkflowAuditOutbox { Metadata = JsonSerializer.Serialize(item) });
             }
         }

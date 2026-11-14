@@ -8,7 +8,7 @@ DMS archives structured approval and execution facts to `DmsWorkflowAudit` in th
 
 The archive appends `LockboxSubmitted`, `LockboxApproved`, `LockboxDenied`, `WorkflowCreated` and `WorkflowStateChanged` events. Every workflow instance, including internal subworkflows, retains its own ID, root, direct parent, Lockbox, cluster, name/version and execution location. Machine events also include the machine and the installation identity known at capture time. Cluster steps have no fabricated machine identity.
 
-`RequesterId` is the human/API Key owner who requested execution. `ApproverId` identifies the reviewer; automatic approval is explicit and has no human reviewer. Subworkflows inherit their Lockbox context without creating new approval events. `RequestedRisk` is the root Lockbox risk, not a classification of each internal helper. Approval context is a snapshot when the event is saved; pending events are not rewritten after approval. Unavailable context is null rather than an invented identity.
+`RequesterId` is the human/API Key owner who requested execution. `ApproverId` identifies the reviewer; automatic approval is explicit and has no human reviewer. Subworkflows inherit their Lockbox context without creating new approval events. `RequestedDefinition`, `RequestedVersion` and `RequestedRisk` identify the original Lockbox request separately from each instance's own definition/version. A denied request therefore remains identifiable even though it creates no business child. Approval context is a snapshot when the event is saved; pending events are not rewritten after approval. Unavailable context is null rather than an invented identity.
 
 States retain the existing meanings, including Warning, CancelRequested, Cancelled and NeedsVerification. A cancellation request is not confirmed termination. A NeedsVerification event is not a failed or successful execution; later confirmed information can add another event. No workflow is replayed to fill an archive gap.
 
@@ -34,7 +34,7 @@ Authorized database operators can inspect one cluster directly:
 
 ```sql
 SELECT RecordedAt, OccurredAt, ControllerSequence, Kind, MachineId,
-       RequesterId, ApproverId, AutomaticApproval, Definition, Version,
+       RequesterId, ApproverId, AutomaticApproval, RequestedDefinition, RequestedVersion, Definition, Version,
        PreviousState, State, WorkflowId, RootWorkflowId, ParentWorkflowId, LockboxId
 FROM DmsWorkflowAudit FINAL
 WHERE ClusterId = '<cluster-id>'

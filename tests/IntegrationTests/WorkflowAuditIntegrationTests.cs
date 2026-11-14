@@ -92,6 +92,8 @@ public class WorkflowAuditIntegrationTests : TestBase
         Assert.HasCount(1, after.Where(e => e.Kind == WorkflowAuditKind.WorkflowCreated));
         var denied = after.Single(e => e.Kind == WorkflowAuditKind.LockboxDenied);
         Assert.AreEqual(setup.Reviewer, denied.ApproverId); Assert.AreEqual(DecisionState.Denied, denied.Decision);
+        Assert.AreEqual(MachineWorkflows.DiskFree.Name, denied.RequestedDefinition);
+        Assert.AreEqual(MachineWorkflows.DiskFree.Version, denied.RequestedVersion);
         Assert.IsTrue(after.Any(e => e.State == RunState.Denied)); Assert.IsFalse(after.Any(e => e.State == RunState.Succeeded));
     }
 }
