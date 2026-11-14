@@ -104,6 +104,17 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         access.Audit(user, "lockbox.get", id); await db.SaveChangesAsync(); return item;
     });
 
+    public Task<WorkflowDetails> GetWorkflowAsync(string user, Guid id) => gate.RunAsync(async () =>
+    {
+        var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id)
+            ?? throw new DmsException(404, "Workflow not found.");
+        await access.RequireViewAsync(user, run.ClusterId);
+        access.Audit(user, "operation.get", id);
+        await db.SaveChangesAsync();
+        return new WorkflowDetails(run.Id, run.RootId, run.ParentId, run.LockboxId, run.ClusterId,
+            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, run.Result);
+    });
+
     public Task<List<WorkflowRun>> CallstackAsync(string user, Guid id) => gate.RunAsync(async () =>
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
