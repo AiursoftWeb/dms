@@ -6,8 +6,6 @@ using Aiursoft.CommandFramework.Framework;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
@@ -36,7 +34,7 @@ public static class DmsCommandApp
         protected override string Description => action.Contains('.') ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
         private readonly Option<string?> _server = new("--server") { Description = "Controller URL; defaults to DMS_SERVER." };
         private readonly Option<string?> _key = new("--api-key") { Description = "Personal API Key; defaults to DMS_API_KEY." };
-        private readonly Option<bool> _json = new("--json") { Description = "Write the full protocol response as JSON." };
+        private readonly Option<OutputFormat> _format = new("--output-format") { Description = "Output format: table (default; callstack uses a tree), json, or csv." };
         private readonly Option<Guid> _cluster = new("--cluster-id");
         private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true };
         private readonly Option<bool> _all = new("--all-machines");
@@ -49,7 +47,7 @@ public static class DmsCommandApp
 
         protected override IEnumerable<Option> GetCommandOptions()
         {
-            yield return _server; yield return _key; yield return _json;
+            yield return _server; yield return _key; yield return _format;
             if (action.Contains('.'))
             {
                 _cluster.Required = true; _reason.Required = true;
@@ -69,6 +67,8 @@ public static class DmsCommandApp
 
         protected override async Task Execute(ParseResult context)
         {
+            var format = context.GetValue(_format);
+            if (!Enum.IsDefined(format)) throw new ArgumentException("Output format must be table, json, or csv.");
             var endpoint = context.GetValue(_server) ?? Environment.GetEnvironmentVariable("DMS_SERVER") ?? throw new ArgumentException("Set --server or DMS_SERVER.");
             var key = context.GetValue(_key) ?? Environment.GetEnvironmentVariable("DMS_API_KEY") ?? throw new ArgumentException("Set --api-key or DMS_API_KEY.");
             if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(uri.UserInfo)) throw new ArgumentException("Invalid Controller URL.");
@@ -99,12 +99,9 @@ public static class DmsCommandApp
                 "trace" => await client.TraceAsync(id, context.GetValue(_skip)),
                 _ => throw new InvalidOperationException("Unsupported command.")
             };
-            var output = context.InvocationConfiguration.Output;
-            if (!context.GetValue(_json) && action == "callstack" && response.Data is JArray nodes)
-            {
-                foreach (var line in WorkflowTreeRenderer.Render(nodes, !Console.IsOutputRedirected)) output.WriteLine(line);
-            }
-            else output.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
+            DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
+                action == "callstack", !Console.IsOutputRedirected,
+                Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth));
         }
     }
 }
