@@ -138,3 +138,5 @@ No new request property, risk switch, machine whitelist, dispatch case, message 
 Test valid/invalid input, public risk, internal-only access, approved input and targets, typed results, known failure handling and parent/root IDs. Use `dms operation get-workflow --id ...`, `get-callstack` and `get-trace` to investigate each instance. The same commands apply to every new workflow.
 
 Run the existing test project, including `WorkflowAuthoringTests`; use the repository's normal build and lint commands. The execution stack belongs to the running process: after a crash, queued work can resume, but started work with unknown results is not automatically replayed.
+
+The [cluster disk usage operation](disk-usage.md) is a product example of the same extension points, with a typed Machine result, a sequential Cluster aggregate and an optional CLI entry.

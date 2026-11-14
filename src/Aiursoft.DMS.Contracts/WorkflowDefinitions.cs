@@ -79,6 +79,7 @@ public sealed record ClusterWorkflowDefinition<TInput, TResult>(string Name, Ris
 // Definitions are shared contracts. Only explicit execution-factory registration makes them runnable.
 public static class MachineWorkflows
 {
+    public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", Version: "1");
     public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe);
     public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> Restart = new(WorkflowNames.Restart, RiskLevel.Medium, ValidateInput: input => input.Validate());
     public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> ServiceStatus = new(WorkflowNames.ServiceStatus, RiskLevel.Low, ValidateInput: input => input.Validate());
@@ -89,5 +90,6 @@ public static class MachineWorkflows
 
 public static class ClusterWorkflows
 {
+    public static readonly ClusterWorkflowDefinition<EmptyInput, ClusterDiskUsageResult> DiskUsage = new("cluster.disk-usage", RiskLevel.Safe, "1", SelectMachines: true);
     public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines, RiskLevel.Safe);
 }

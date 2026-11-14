@@ -12,7 +12,8 @@ namespace Aiursoft.DMS.Client;
 public static class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
-        .WithFeature(new Group("cluster", [StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine)]))
+        .WithFeature(new Group("cluster", [StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine),
+            new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
         .WithFeature(new Group("machine", [
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),

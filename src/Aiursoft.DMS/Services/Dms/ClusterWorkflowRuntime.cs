@@ -22,7 +22,11 @@ public sealed class ClusterWorkflowRegistry
             JsonSerializer.Serialize(await factory().ExecuteAsync(context,
                 definition.ReadInput(input), token))));
 
-    public ClusterWorkflowRegistry() => Register(ClusterWorkflows.GetMachines, () => new GetMachinesWorkflow());
+    public ClusterWorkflowRegistry()
+    {
+        Register(ClusterWorkflows.GetMachines, () => new GetMachinesWorkflow());
+        Register(ClusterWorkflows.DiskUsage, () => new ClusterDiskUsageWorkflow());
+    }
 
     public WorkflowDefinition? FindDefinition(string name) => _definitions.TryGetValue(name, out var entry) ? entry.Definition : null;
     public bool Contains(string name) => _definitions.ContainsKey(name);
