@@ -41,6 +41,7 @@ public class ViewModelArgsInjector(
         // Titles, navbar strings.
         _ = localizer["Features"];
         _ = localizer["Standard workflows"];
+        _ = localizer["Investigation"];
         _ = localizer["Index"];
         _ = localizer["Directory"];
         _ = localizer["Users"];

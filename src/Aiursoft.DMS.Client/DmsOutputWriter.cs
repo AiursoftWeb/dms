@@ -9,7 +9,7 @@ public enum OutputFormat { Table, Json, Csv }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false)
     {
         if (format == OutputFormat.Json)
         {
@@ -17,6 +17,29 @@ public static class DmsOutputWriter
             return;
         }
         var data = response.Data as JToken ?? (response.Data == null ? JValue.CreateNull() : JToken.FromObject(response.Data));
+        if (audit && data is JObject page && page["Entries"] is JArray events)
+        {
+            var flat = new JArray(events.OfType<JObject>().Select(item => new JObject(
+                new JProperty("EventId", item["EventId"]?.DeepClone()), new JProperty("ControllerSequence", item["ControllerSequence"]?.DeepClone()),
+                (item["Fact"] as JObject)?.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())) ?? [])));
+            if (format == OutputFormat.Csv) WriteCsv(output, flat, new[] { "EventId", "ControllerSequence" }.Concat(typeof(WorkflowAuditEntry).GetProperties().Select(p => p.Name)));
+            else
+            {
+                output.WriteLine($"Archive window: {page["Query"]?["From"]} to {page["Query"]?["Until"]} (exclusive); page {page["Query"]?["Page"]}; more: {page["HasNextPage"]}.");
+                output.WriteLine("Archived events; recent changes may still be pending delivery. State is the event state, not a current snapshot.");
+                var rows = flat.OfType<JObject>().Select(e => new[]
+                {
+                    e["RecordedAt"]!.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+                    ((WorkflowAuditKind)e["Kind"]!.Value<int>()).ToString(),
+                    Cell(e["Kind"]!.Value<int>() <= (int)WorkflowAuditKind.LockboxDenied ? e["RequestedDefinition"] ?? e["Definition"] : e["Definition"]),
+                    HumanScalar("State", e["State"], true), Cell(e["WorkflowId"])
+                }).ToList();
+                if (rows.Count == 0) output.WriteLine("(empty)");
+                else WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "State", "WorkflowId"], rows, width, color,
+                    [19, 20, Math.Max(12, width - 100), 17, 36]);
+            }
+            return;
+        }
         if (format == OutputFormat.Csv)
         {
             if (catalog && data is JObject details && details["Definitions"] is JArray definitions)
@@ -90,10 +113,11 @@ public static class DmsOutputWriter
     private static int[] Widths(string[] headers, List<string[]> rows) => headers.Select((h, i) =>
         Math.Max(h.Length, rows.SelectMany(r => r[i].Replace("\r\n", "\n").Split('\n')).Select(s => s.Length).DefaultIfEmpty().Max())).ToArray();
 
-    private static void WriteRows(TextWriter output, string[] headers, List<string[]> rows, int width, bool color)
+    private static void WriteRows(TextWriter output, string[] headers, List<string[]> rows, int width, bool color, int[]? maxWidths = null)
     {
         if (rows.Count == 0) return;
         var widths = Widths(headers, rows);
+        if (maxWidths != null) widths = widths.Select((value, i) => Math.Min(value, maxWidths[i])).ToArray();
         if (headers is ["Property", "Value"]) widths[1] = Math.Min(widths[1], Math.Max(36, width - widths[0] - 2));
         output.WriteLine(string.Join("  ", headers.Select((h, i) => h.PadRight(widths[i]))).TrimEnd());
         output.WriteLine(string.Join("  ", widths.Select(w => new string('-', w))));
@@ -115,9 +139,9 @@ public static class DmsOutputWriter
         }
     }
 
-    private static void WriteCsv(TextWriter output, JToken data)
+    private static void WriteCsv(TextWriter output, JToken data, IEnumerable<string>? defaultHeaders = null)
     {
-        string[] defaults = [];
+        string[] defaults = defaultHeaders?.ToArray() ?? [];
         if (data is JObject page && page["Entries"] is JArray entries)
         {
             data = entries;

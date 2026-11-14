@@ -42,3 +42,26 @@ ORDER BY RecordedAt, ControllerSequence;
 ```
 
 Direct database access requires its own authorization. This example does not expose an arbitrary-SQL DMS command. A future public investigation endpoint must enforce the same per-cluster visibility as other DMS management queries.
+
+## Authorized investigation queries
+
+`GET /api/v1/dms/audit-events` and `dms operation query-audit` read archived facts directly. They do not create a Lockbox or workflow. A personal API Key and an explicit visible Cluster are required; Agent keys cannot use this management endpoint. Queries use current per-cluster visibility, including revocations, and authorized query attempts are recorded in the existing access audit.
+
+```sh
+dms operation query-audit --cluster-id "$CLUSTER" --state Failed
+
+dms operation query-audit --cluster-id "$CLUSTER" \
+  --from 2026-11-14T00:00:00Z --until 2026-11-15T00:00:00Z \
+  --requested-definition cluster.disk-usage --output-format json
+
+dms operation query-audit --cluster-id "$CLUSTER" \
+  --machine-id "$MACHINE" --output-format csv
+```
+
+Filters are exact matches: `--requester-id`, `--approver-id`, `--machine-id`, `--workflow-id`, `--root-workflow-id`, `--lockbox-id`, `--definition` (the individual instance), `--requested-definition` (the original operation), `--kind`, `--state` and `--automatic-approval`. An event's State is its state at capture time, not the instance's current state. Approval events have no execution State. Use Kind to find approval/denial facts, then follow their WorkflowId or LockboxId through existing authorized diagnostics.
+
+Time filtering uses Controller `RecordedAt`, with an inclusive `--from` and exclusive `--until`. Use ISO 8601 values with an explicit UTC offset. Defaults select the last 24 hours; a query can span at most 31 days. This limits each query, not archive retention. Select an older window to investigate older events. Responses include the normalized Query, Entries and HasNextPage. Each Entry has EventId, ControllerSequence and the structured Fact. The default table summarizes the event and retains the full WorkflowId; JSON retains all structured fields, and CSV flattens each Fact into one record, including attribution and machine IDs. Empty CSV pages still have headers.
+
+`--page` is zero based, with 50 events per page. Ordering is RecordedAt, ControllerSequence and EventId descending after `FINAL` deduplication. Preserve the returned From and Until when requesting another page. These bounds stabilize the requested window; delivery of previously captured events can still change page boundaries. This is an eventually consistent archive, not a database snapshot. Recent changes may still be awaiting delivery. ClickHouse being disabled or unavailable returns an explicit 503, never a fabricated empty success; queries do not merge the pending queue into the archive.
+
+The Web **Investigation** page uses the same authorization, filters and pagination, with links to workflow details, machine history and approval context. Only visible Clusters appear. Time labels and values use UTC. No arbitrary SQL, cross-cluster search, output-body search or live workflow control is exposed by this query feature.

@@ -1,0 +1,43 @@
+using Aiursoft.DMS.Client;
+using Aiursoft.DMS.Contracts;
+using Newtonsoft.Json.Linq;
+
+namespace Aiursoft.DMS.Tests;
+
+[TestClass]
+public class InvestigationOutputTests
+{
+    [TestMethod]
+    public void InvestigationFormatsRetainIdsHistoricalStatesAndFlatCsvFacts()
+    {
+        var workflow = Guid.NewGuid(); var at = DateTime.UtcNow;
+        var fact = new WorkflowAuditEntry(WorkflowAuditKind.WorkflowStateChanged, at, at, workflow, workflow, null, Guid.NewGuid(), Guid.NewGuid(),
+            WorkflowLocation.Machine, Guid.NewGuid(), Guid.NewGuid(), "internal.process", "1", "engineer", "reviewer", false, RiskLevel.Low,
+            "example,\"quoted\"\nrequest", "1", DecisionState.Approved, at, RunState.Running, RunState.NeedsVerification);
+        var row = new WorkflowAuditRow(Guid.NewGuid(), 42, fact);
+        var result = new DmsResponse { Message = "Request completed.", Data = new WorkflowAuditPage(new WorkflowAuditQuery { ClusterId = fact.ClusterId, From = at.AddHours(-1), Until = at }, [row], true) };
+        using var table = new StringWriter(); DmsOutputWriter.Write(table, result, OutputFormat.Table, false, false, audit: true);
+        StringAssert.Contains(table.ToString(), workflow.ToString()); StringAssert.Contains(table.ToString(), "NeedsVerification");
+        StringAssert.Contains(table.ToString(), "not a current snapshot"); Assert.DoesNotContain("\u001b", table.ToString());
+        using var json = new StringWriter(); DmsOutputWriter.Write(json, result, OutputFormat.Json, false, false, audit: true);
+        Assert.AreEqual(row.EventId.ToString(), JObject.Parse(json.ToString())["Data"]!["Entries"]![0]!["EventId"]!.Value<string>());
+        using var csvOutput = new StringWriter(); DmsOutputWriter.Write(csvOutput, result, OutputFormat.Csv, false, false, audit: true);
+        using var csv = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csvOutput.ToString())); csv.SetDelimiters(",");
+        var headers = csv.ReadFields()!; var values = csv.ReadFields()!;
+        Assert.AreEqual(fact.RequestedDefinition, values[Array.IndexOf(headers, "RequestedDefinition")]);
+        Assert.AreEqual(workflow.ToString(), values[Array.IndexOf(headers, "WorkflowId")]);
+        Assert.AreEqual("reviewer", values[Array.IndexOf(headers, "ApproverId")]);
+        Assert.IsTrue(csv.EndOfData); Assert.DoesNotContain("Archive window", csvOutput.ToString());
+        using var empty = new StringWriter();
+        DmsOutputWriter.Write(empty, new DmsResponse { Message = "Request completed.", Data = new WorkflowAuditPage(new WorkflowAuditQuery(), [], false) }, OutputFormat.Csv, false, false, audit: true);
+        StringAssert.Contains(empty.ToString(), "WorkflowId"); StringAssert.Contains(empty.ToString(), "RequesterId");
+    }
+
+    [TestMethod]
+    public async Task InvestigationCliRequiresClusterInsteadOfAnOperationId()
+    {
+        var result = await DmsCommandApp.Create().TestRunAsync(["operation", "query-audit"]);
+        Assert.AreNotEqual(0, result.ProgramReturn); StringAssert.Contains(result.StdErr, "--cluster-id");
+        Assert.DoesNotContain("--id' is required", result.StdErr);
+    }
+}

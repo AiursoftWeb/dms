@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
 using Aiursoft.DMS.Services.Dms;
@@ -12,7 +13,7 @@ namespace Aiursoft.DMS.Controllers;
 
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces) : Controller
+public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces, WorkflowInvestigation investigation) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -25,6 +26,29 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             Clusters = await db.Clusters.Where(c => clusters.Contains(c.Id)).ToListAsync(),
             Machines = await db.Machines.Where(m => clusters.Contains(m.ClusterId)).OrderBy(m => m.Name).Take(1000).ToListAsync()
         });
+    }
+
+    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Investigation", LinkOrder = 5)]
+    public async Task<IActionResult> Investigation([FromQuery] WorkflowAuditQuery query)
+    {
+        var visible = await access.VisibleClustersAsync(Actor);
+        if (query.ClusterId != Guid.Empty && !visible.Contains(query.ClusterId)) return StatusCode(403);
+        var clusters = await db.Clusters.Where(c => visible.Contains(c.Id)).OrderBy(c => c.Name).ThenBy(c => c.Id).ToListAsync();
+        if (query.ClusterId == Guid.Empty && clusters.Count > 0) query = query with { ClusterId = clusters[0].Id };
+        var model = new DmsViewModel { PageTitle = "Investigation", Clusters = clusters, AuditQuery = query };
+        if (clusters.Count == 0) return this.StackView(model);
+        try
+        {
+            if (!ModelState.IsValid) throw new DmsException(400, "Invalid investigation filters.");
+            model.AuditPage = await investigation.ReadAsync(Actor, query);
+            model.AuditQuery = model.AuditPage.Query;
+        }
+        catch (DmsException exception)
+        {
+            if (exception.StatusCode == 403) return StatusCode(403);
+            Response.StatusCode = model.AuditError = exception.StatusCode;
+        }
+        return this.StackView(model);
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Standard workflows", LinkOrder = 4)]

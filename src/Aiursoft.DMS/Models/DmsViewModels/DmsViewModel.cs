@@ -18,6 +18,9 @@ public class DmsViewModel : UiStackLayoutViewModel
     public LockboxRequest? Lockbox { get; set; }
     public WorkflowRun? Run { get; set; }
     public WorkflowCatalogResult? Catalog { get; set; }
+    public WorkflowAuditQuery AuditQuery { get; set; } = new();
+    public WorkflowAuditPage? AuditPage { get; set; }
+    public int AuditError { get; set; }
     public IReadOnlyList<TraceEntry> Trace { get; set; } = [];
     public string? Notice { get; set; }
     public string? NewKey { get; set; }

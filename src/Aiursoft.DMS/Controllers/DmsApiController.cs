@@ -13,7 +13,7 @@ namespace Aiursoft.DMS.Controllers;
 [Authorize(AuthenticationSchemes = DmsKeyAuthenticationHandler.SchemeName, Policy = "DmsHuman")]
 [Route("api/v1/dms")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, ILogger<DmsApiController> logger) : ControllerBase
+public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, WorkflowInvestigation investigation, ILogger<DmsApiController> logger) : ControllerBase
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -40,6 +40,14 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
 
     [HttpGet("workflow-definitions")]
     public Task<IActionResult> Definitions(Guid clusterId) => Handle(async () => await workflows.ListDefinitionsAsync(Actor, clusterId));
+
+    [HttpGet("audit-events")]
+    public Task<IActionResult> AuditEvents([FromQuery] WorkflowAuditQuery query) => Handle(async () =>
+    {
+        await access.RequireViewAsync(Actor, query.ClusterId);
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid investigation filters.");
+        return await investigation.ReadAsync(Actor, query);
+    });
 
     [HttpGet("lockboxes/{id:guid}")]
     public Task<IActionResult> Get(Guid id) => Handle(async () => await workflows.GetLockboxAsync(Actor, id));

@@ -67,6 +67,7 @@ public class Startup : IWebStartup
         services.AddScoped<Services.Dms.AgentEvents>();
         services.AddScoped<Services.Dms.TraceDatabase>();
         services.AddScoped<Services.Dms.WorkflowAuditArchive>();
+        services.AddScoped<Services.Dms.WorkflowInvestigation>();
         services.AddSingleton<MachineWorkflowRegistry>();
         services.AddSingleton<Services.Dms.ClusterWorkflowRegistry>();
         services.AddSingleton<Services.Dms.ClusterWorkflowRuntime>();
