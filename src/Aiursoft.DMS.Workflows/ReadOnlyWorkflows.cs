@@ -3,8 +3,6 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
-public sealed record ProcessResult(int ExitCode, string Output, string ErrorOutput);
-
 public sealed class AgentStatusWorkflow(Guid installationId, string version, int activeTasks, int pendingEvents) : MachineWorkflow
 {
     public override string Name => WorkflowNames.AgentStatus;
@@ -20,6 +18,7 @@ public sealed class AgentStatusWorkflow(Guid installationId, string version, int
 public sealed class ServiceStatusWorkflow(string service) : MachineWorkflow
 {
     public override string Name => WorkflowNames.ServiceStatus;
+    public override string Input => JsonSerializer.Serialize(new ServiceInput(service));
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
         if (!RestartServiceWorkflow.ValidService(service)) throw new ArgumentException("A concrete .service unit name is required.");

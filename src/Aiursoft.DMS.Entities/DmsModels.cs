@@ -77,6 +77,8 @@ public class WorkflowRun
     public DateTime? StartedAt { get; set; }
     public DateTime? FinishedAt { get; set; }
     public string Result { get; set; } = string.Empty;
+    public string Input { get; set; } = "{}";
+    [MaxLength(30)] public string Version { get; set; } = WorkflowNames.Version;
     public bool IsMachineTask { get; set; }
     public long LastSequence { get; set; }
 }

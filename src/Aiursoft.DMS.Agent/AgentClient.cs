@@ -8,6 +8,7 @@ namespace Aiursoft.DMS.Agent;
 public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
 {
     private readonly ConcurrentDictionary<Guid, MachineWorkflowContext> _running = new();
+    private readonly MachineWorkflowRegistry _workflows = new();
 
     public async Task RunAsync(CancellationToken stopping)
     {
@@ -71,7 +72,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
             switch (message.Kind)
             {
                 case "offer":
-                    if (message.Version != WorkflowNames.Version || !WorkflowNames.IsMachineWorkflow(message.Definition))
+                    if (message.Version != WorkflowNames.Version || !_workflows.Contains(message.Definition))
                         throw new InvalidDataException("Unsupported workflow version or definition.");
                     journal.Accept(message);
                     break;
@@ -90,26 +91,21 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal)
 
     private async Task ExecuteAsync(JournalTask task)
     {
-        var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item));
+        var environment = new AgentEnvironment(journal.InstallationId, typeof(AgentClient).Assembly.GetName().Version!.ToString(),
+            journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count));
+        var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try
         {
-            MachineWorkflow workflow = task.Definition switch
-            {
-                WorkflowNames.Performance => new PerformanceInfoWorkflow(),
-                WorkflowNames.Restart => new RestartServiceWorkflow(task.Service),
-                WorkflowNames.ServiceStatus => new ServiceStatusWorkflow(task.Service),
-                WorkflowNames.ListBlockDevices => new ListBlockDevicesWorkflow(),
-                WorkflowNames.DiskFree => new DiskFreeWorkflow(),
-                WorkflowNames.AgentStatus => new AgentStatusWorkflow(journal.InstallationId,
-                    typeof(AgentClient).Assembly.GetName().Version!.ToString(),
-                    journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count)),
-                _ => throw new InvalidDataException("Unsupported workflow.")
-            };
+            var workflow = _workflows.Create(task.Definition, task.Input,
+                environment);
             await context.RunAsync(workflow, CancellationToken.None);
         }
         catch (Exception exception)
         {
+            if (journal.Snapshot().Single(t => t.Id == task.Id).State == RunState.Running)
+                await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition,
+                    State = RunState.Failed, Result = System.Text.Json.JsonSerializer.Serialize(new { Error = exception.Message }) });
             Console.Error.WriteLine($"Workflow {task.Id}: {exception.GetType().Name}. Inspect the workflow trace and journal.");
         }
         finally { _running.TryRemove(task.Id, out _); }

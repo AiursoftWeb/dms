@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
+using Aiursoft.DMS.Workflows;
 using Aiursoft.DMS.Services.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,8 @@ public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run
     public void CallMachine(string definition, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
     {
         RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId, ClusterId = run.ClusterId,
-        MachineId = machine, Definition = definition, IsMachineTask = true, State = RunState.Queued
+        MachineId = machine, Definition = definition, Input = MachineWorkflowRegistry.OperationInput(Parameters),
+        Version = lockbox.Version, IsMachineTask = true, State = RunState.Queued
     });
 }
 
@@ -62,14 +64,17 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
     }
 }
 
-public sealed class GetMachinesWorkflow : ClusterWorkflow
+public static class ClusterWorkflows
 {
-    public override async Task ExecuteAsync(ClusterWorkflowContext context)
-    {
-        context.Run.Result = JsonSerializer.Serialize(await context.Inventory.Machines.AsNoTracking()
-            .Where(m => m.ClusterId == context.Run.ClusterId).Select(m => new { m.Id, m.Name, m.AgentVersion, m.LastSeen, m.Disabled }).ToListAsync());
-        context.Run.State = RunState.Succeeded;
-    }
+    public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines);
+}
+
+public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<MachineSummary>>
+{
+    public override Task<List<MachineSummary>> ExecuteAsync(WorkflowExecutionContext context, EmptyInput input, CancellationToken token) =>
+        context.WithInventoryAsync(db => db.Machines.AsNoTracking()
+            .Where(m => m.ClusterId == context.ClusterId)
+            .Select(m => new MachineSummary(m.Id, m.Name, m.AgentVersion, m.LastSeen, m.Disabled)).ToListAsync(token), token);
 }
 
 public sealed class AddMachineWorkflow : ClusterWorkflow

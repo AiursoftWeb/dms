@@ -369,6 +369,10 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Input")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("IsMachineTask")
                         .HasColumnType("tinyint(1)");
 
@@ -396,6 +400,11 @@ namespace Aiursoft.DMS.MySql.Migrations
 
                     b.Property<int>("State")
                         .HasColumnType("int");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
 
                     b.HasKey("Id");
 

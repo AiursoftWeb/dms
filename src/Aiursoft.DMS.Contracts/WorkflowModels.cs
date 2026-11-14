@@ -21,7 +21,7 @@ public static class WorkflowNames
     public const string ListMachines = "cluster.get-machines";
     public const string AddMachine = "cluster.add-machine";
     public const string Kill = "operation.kill-workflow";
-    public const string Version = "1";
+    public const string Version = "2";
 
     public static bool Terminal(this RunState state) => state is RunState.Succeeded or RunState.Warning
         or RunState.Failed or RunState.Cancelled or RunState.Denied;
@@ -42,6 +42,7 @@ public sealed class OperationRequest
 
 public sealed class WorkflowEvent
 {
+    public string Input { get; set; } = "{}";
     public long Sequence { get; set; }
     public Guid WorkflowId { get; set; }
     public Guid? ParentId { get; set; }
@@ -62,7 +63,7 @@ public sealed class AgentMessage
     public Guid? TargetWorkflowId { get; set; }
     public string Version { get; set; } = WorkflowNames.Version;
     public string Definition { get; set; } = string.Empty;
-    public string Service { get; set; } = string.Empty;
+    public string Input { get; set; } = "{}";
     public RunState State { get; set; }
     public long Sequence { get; set; }
     public WorkflowEvent? Event { get; set; }

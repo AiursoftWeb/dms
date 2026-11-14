@@ -100,3 +100,5 @@ Read-only process results contain `ExitCode`, `Output` and `ErrorOutput`; the ou
 `operation get-workflow` returns the instance's `WorkflowId`, `RootWorkflowId` and `ParentWorkflowId`, along with its state and result. The root points to itself and has no parent. Each subworkflow has its own ID. These inspection commands are authenticated and audited; they do not create a Lockbox.
 
 `operation get-callstack` prints the selected instance and its descendants as a tree, including every full workflow ID, definition and state. Interactive output uses green for success, red for failure, blue for running and yellow for warnings. Redirected output preserves the tree and state names without terminal colors. Use `--json` to obtain the full protocol response with parent and root IDs.
+
+See [typed subworkflows](subworkflows.md) for compiled registration, cross-machine calls, results, cancellation and recovery.

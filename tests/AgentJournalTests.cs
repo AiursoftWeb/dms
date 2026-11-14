@@ -55,7 +55,7 @@ public class AgentJournalTests
             using (var journal = new TaskJournal(path))
             {
                 installation = journal.InstallationId;
-                journal.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.Restart, Service = "test.service" });
+                journal.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.Restart, Input = "{\"Service\":\"test.service\"}" });
                 Assert.IsNotNull(journal.Start(id));
                 Assert.IsNull(journal.Start(id));
             }
@@ -63,7 +63,7 @@ public class AgentJournalTests
             Assert.AreEqual(installation, recovered.InstallationId);
             Assert.AreEqual(RunState.NeedsVerification, recovered.Snapshot().Single().State);
             Assert.IsNull(recovered.Start(id));
-            recovered.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.Restart, Service = "test.service" });
+            recovered.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.Restart, Input = "{\"Service\":\"test.service\"}" });
             Assert.IsNull(recovered.Start(id));
         }
         finally { Directory.Delete(path, true); }
