@@ -7,13 +7,17 @@ public sealed record EmptyInput;
 public sealed record ServiceInput(string Service);
 public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents);
 
+internal static class WorkflowJson
+{
+    internal static readonly JsonSerializerOptions Options = new() { RespectRequiredConstructorParameters = true };
+}
+
 public abstract record WorkflowDefinition<TInput, TResult>(string Name)
 {
-    private static readonly JsonSerializerOptions Options = new() { RespectRequiredConstructorParameters = true };
     public string Serialize(TInput input) => JsonSerializer.Serialize(input);
-    public TInput ReadInput(string input) => JsonSerializer.Deserialize<TInput>(input, Options)
+    public TInput ReadInput(string input) => JsonSerializer.Deserialize<TInput>(input, WorkflowJson.Options)
         ?? throw new InvalidDataException("Workflow input cannot be null.");
-    public TResult ReadResult(string result) => JsonSerializer.Deserialize<TResult>(result, Options)
+    public TResult ReadResult(string result) => JsonSerializer.Deserialize<TResult>(result, WorkflowJson.Options)
         ?? throw new InvalidDataException("Workflow returned a null result.");
 }
 
