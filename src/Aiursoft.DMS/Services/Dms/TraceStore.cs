@@ -15,7 +15,7 @@ public sealed class TraceEntry
     public string Message { get; set; } = string.Empty;
 }
 
-public sealed class TraceDatabase(IConfiguration configuration) : ClickhouseDbContext(
+public sealed partial class TraceDatabase(IConfiguration configuration) : ClickhouseDbContext(
     configuration.GetSection("Dms:Clickhouse").Get<ClickhouseOptions>() ?? new ClickhouseOptions())
 {
     public override Task SaveChangesAsync() => Task.CompletedTask;

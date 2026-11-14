@@ -123,3 +123,7 @@ See [typed subworkflows](subworkflows.md) for compiled registration, cross-machi
 Standard workflow authors can follow [Adding a standard workflow](authoring-workflows.md), including compiled Machine/Cluster examples and typed SDK submissions.
 
 For a typed aggregate across a frozen set of machines, see [Cluster disk usage](disk-usage.md).
+
+## Structured investigation history
+
+Approval and workflow state changes are automatically archived to ClickHouse through a transactional pending queue. See [structured workflow audit](workflow-audit.md) for attribution, deduplication and outage behavior. Existing trace commands continue to query trace text; no new investigation command is added in this phase.

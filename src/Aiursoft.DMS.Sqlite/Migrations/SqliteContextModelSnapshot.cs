@@ -344,6 +344,27 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowAuditOutbox", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Metadata")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId")
+                        .IsUnique();
+
+                    b.ToTable("WorkflowAuditOutbox");
+                });
+
             modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowRun", b =>
                 {
                     b.Property<Guid>("Id")
