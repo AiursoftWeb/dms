@@ -54,6 +54,9 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         return await workflows.DecideAsync(Actor, id, input.Approve, input.Reason);
     });
 
+    [HttpGet("operations/{id:guid}")]
+    public Task<IActionResult> Workflow(Guid id) => Handle(async () => await workflows.GetWorkflowAsync(Actor, id));
+
     [HttpGet("operations/{id:guid}/callstack")]
     public Task<IActionResult> Callstack(Guid id) => Handle(async () => await workflows.CallstackAsync(Actor, id));
 

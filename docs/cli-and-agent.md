@@ -82,6 +82,7 @@ dotnet ./bin/client/dms.dll machine layout df \
 dotnet ./bin/client/dms.dll machine systemctl restart \
   --cluster-id <cluster-id> --machine-id <machine-id> \
   --service example.service --reason 'Approved maintenance'
+dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id>
 dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id>
 dotnet ./bin/client/dms.dll operation get-trace --id <workflow-id>
 ```
@@ -95,3 +96,7 @@ Use `--all-machines` instead of `--machine-id` to freeze the cluster's current m
 Agent status, performance information, `layout lsblk` and `layout df` use the Safe risk policy; `systemctl status` uses Low and restart uses Medium. Service commands require a concrete `.service` name. Status reads fixed systemd properties without reading the journal. Block-device queries exclude loop devices, and capacity queries cover local filesystems. No extra command arguments or shell expressions are accepted.
 
 Read-only process results contain `ExitCode`, `Output` and `ErrorOutput`; the output is also available in the workflow trace. Each output stream is limited to 8192 characters, and the serialized result to 24000 characters. Larger queries fail explicitly rather than returning truncated data. A missing tool, failed query or nonexistent service is reported as a failed workflow.
+
+`operation get-workflow` returns the instance's `WorkflowId`, `RootWorkflowId` and `ParentWorkflowId`, along with its state and result. The root points to itself and has no parent. Each subworkflow has its own ID. These inspection commands are authenticated and audited; they do not create a Lockbox.
+
+`operation get-callstack` prints the selected instance and its descendants as a tree, including every full workflow ID, definition and state. Interactive output uses green for success, red for failure, blue for running and yellow for warnings. Redirected output preserves the tree and state names without terminal colors. Use `--json` to obtain the full protocol response with parent and root IDs.

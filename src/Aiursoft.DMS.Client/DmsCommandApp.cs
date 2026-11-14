@@ -21,7 +21,7 @@ public static class DmsCommandApp
             new Group("agent", [new ActionCommand("status", WorkflowNames.AgentStatus)]),
             new Group("layout", [new ActionCommand("lsblk", WorkflowNames.ListBlockDevices), new ActionCommand("df", WorkflowNames.DiskFree)])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
-        .WithFeature(new Group("operation", [new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
+        .WithFeature(new Group("operation", [new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
 
     private sealed class Group(string name, CommandHandlerBuilder[] children) : NavigationCommandHandlerBuilder
     {
@@ -94,6 +94,7 @@ public static class DmsCommandApp
             {
                 "get" => await client.GetLockboxAsync(id),
                 "approve" or "deny" => await client.DecideAsync(id, action == "approve", context.GetValue(_reason) ?? string.Empty),
+                "workflow" => await client.GetWorkflowAsync(id),
                 "callstack" => await client.CallstackAsync(id),
                 "trace" => await client.TraceAsync(id, context.GetValue(_skip)),
                 _ => throw new InvalidOperationException("Unsupported command.")
@@ -101,13 +102,7 @@ public static class DmsCommandApp
             var output = context.InvocationConfiguration.Output;
             if (!context.GetValue(_json) && action == "callstack" && response.Data is JArray nodes)
             {
-                foreach (var node in nodes)
-                {
-                    var state = node["State"]?.Value<int>() ?? node["state"]?.Value<int>() ?? 0;
-                    var color = (RunState)state switch { RunState.Running => "34", RunState.Failed => "31", RunState.Succeeded => "32", RunState.Warning or RunState.NeedsVerification or RunState.CancelRequested => "33", _ => "37" };
-                    var line = $"{node["Id"] ?? node["id"]}  {node["Definition"] ?? node["definition"]}  {(RunState)state}  parent={node["ParentId"] ?? node["parentId"]}";
-                    output.WriteLine(Console.IsOutputRedirected ? line : $"\u001b[{color}m{line}\u001b[0m");
-                }
+                foreach (var line in WorkflowTreeRenderer.Render(nodes, !Console.IsOutputRedirected)) output.WriteLine(line);
             }
             else output.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
         }

@@ -13,6 +13,95 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 public class DmsWorkflowTests : TestBase
 {
     [TestMethod]
+    public async Task WorkflowInspectionShowsRootAndParentAndDoesNotCreateWork()
+    {
+        var setup = await ArrangeAsync();
+        var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        var agentKey = DmsKeyAuthenticationHandler.CreateKey(true);
+        var root = new WorkflowRun { ClusterId = setup.Cluster, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        root.RootId = root.Id;
+        var parent = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.Batch, State = RunState.Succeeded };
+        var child = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = "disk result" };
+        var sibling = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
+        var hidden = new Cluster { Name = "Hidden" };
+        var hiddenRun = new WorkflowRun { ClusterId = hidden.Id, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        hiddenRun.RootId = hiddenRun.Id;
+        int lockboxes;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Inspection", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+            (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(agentKey);
+            db.Clusters.Add(hidden); db.WorkflowRuns.AddRange(root, parent, child, sibling, hiddenRun);
+            await db.SaveChangesAsync(); lockboxes = await db.Lockboxes.CountAsync();
+        }
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", key);
+        foreach (var run in new[] { root, parent, child })
+        {
+            var response = await Http.GetAsync($"/api/v1/dms/operations/{run.Id}");
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            var body = Newtonsoft.Json.Linq.JObject.Parse(await response.Content.ReadAsStringAsync());
+            var details = body.GetValue("Data", StringComparison.OrdinalIgnoreCase)!.ToObject<WorkflowDetails>()!;
+            Assert.AreEqual(run.Id, details.WorkflowId); Assert.AreEqual(root.Id, details.RootWorkflowId);
+            Assert.AreEqual(run.ParentId, details.ParentWorkflowId);
+            Assert.AreEqual(run.LockboxId, details.LockboxId); Assert.AreEqual(setup.Cluster, details.ClusterId);
+            Assert.AreEqual(run.MachineId, details.MachineId); Assert.AreEqual(run.Definition, details.Definition);
+            Assert.AreEqual(run.State, details.State); Assert.AreEqual(run.Result, details.Result);
+            Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);
+            Assert.AreEqual(run.FinishedAt, details.FinishedAt);
+        }
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--json"]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        StringAssert.Contains(cli.StdOut, "RootWorkflowId"); StringAssert.Contains(cli.StdOut, "ParentWorkflowId");
+        StringAssert.Contains(cli.StdOut, child.Id.ToString()); StringAssert.Contains(cli.StdOut, parent.Id.ToString());
+        var tree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", root.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+        Assert.AreEqual(0, tree.ProgramReturn, tree.StdErr);
+        StringAssert.Contains(tree.StdOut, "├── "); StringAssert.Contains(tree.StdOut, "│   └── ");
+        foreach (var id in new[] { root.Id, parent.Id, child.Id, sibling.Id }) StringAssert.Contains(tree.StdOut, id.ToString());
+        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", parent.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--json"]);
+        Assert.AreEqual(0, subtree.ProgramReturn, subtree.StdErr);
+        StringAssert.Contains(subtree.StdOut, parent.Id.ToString()); StringAssert.Contains(subtree.StdOut, child.Id.ToString());
+        Assert.DoesNotContain(sibling.Id.ToString(), subtree.StdOut); Assert.DoesNotContain("└──", subtree.StdOut);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}/callstack")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync($"/api/v1/dms/operations/{Guid.NewGuid()}")).StatusCode);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", agentKey);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{child.Id}")).StatusCode);
+        using var check = Server!.Services.CreateScope();
+        var checkedDb = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        Assert.AreEqual(lockboxes, await checkedDb.Lockboxes.CountAsync());
+        Assert.IsTrue(await checkedDb.AuditEvents.AnyAsync(a => a.ActorId == setup.User && a.Action == "operation.get" && a.ResourceId == child.Id));
+    }
+
+    [TestMethod]
+    public void CallstackTreePreservesIdsHierarchyAndStateWithOrWithoutColors()
+    {
+        var root = Guid.NewGuid(); var a = Guid.NewGuid(); var leaf = Guid.NewGuid(); var b = Guid.NewGuid();
+        var nodes = Newtonsoft.Json.Linq.JArray.FromObject(new[]
+        {
+            new { Id = leaf, ParentId = (Guid?)a, Definition = "leaf", State = RunState.Warning },
+            new { Id = root, ParentId = (Guid?)null, Definition = "root", State = RunState.Running },
+            new { Id = a, ParentId = (Guid?)root, Definition = "a", State = RunState.Succeeded },
+            new { Id = b, ParentId = (Guid?)root, Definition = "b", State = RunState.Failed }
+        });
+        var plain = Client.WorkflowTreeRenderer.Render(nodes, false).ToArray();
+        Assert.HasCount(4, plain);
+        StringAssert.StartsWith(plain[0], root.ToString());
+        StringAssert.StartsWith(plain[1], "├── " + a);
+        StringAssert.StartsWith(plain[2], "│   └── " + leaf);
+        StringAssert.StartsWith(plain[3], "└── " + b);
+        Assert.IsTrue(plain.All(line => !line.Contains('\u001b')));
+        var colored = Client.WorkflowTreeRenderer.Render(nodes, true).ToArray();
+        StringAssert.Contains(colored[0], "\u001b[34m" + root);
+        StringAssert.Contains(colored[1], "\u001b[32m" + a);
+        StringAssert.Contains(colored[2], "\u001b[33m" + leaf);
+        StringAssert.Contains(colored[3], "\u001b[31m" + b);
+        var subtree = Client.WorkflowTreeRenderer.Render(new Newtonsoft.Json.Linq.JArray(nodes[0].DeepClone(), nodes[2].DeepClone()), false).ToArray();
+        StringAssert.StartsWith(subtree[0], a.ToString());
+        StringAssert.StartsWith(subtree[1], "└── " + leaf);
+    }
+
+    [TestMethod]
     public async Task WebHistoryFiltersClustersAndKeepsFiltersWhenPaging()
     {
         var setup = await ArrangeAsync();
