@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Text.Json;
+using System.Text;
 using System.Text.RegularExpressions;
 using Aiursoft.DMS.Contracts;
 
@@ -65,7 +66,7 @@ public sealed class MachineWorkflowContext
         catch (Exception exception)
         {
             await TraceAsync(exception.Message, "error");
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Failed });
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Failed, Result = JsonSerializer.Serialize(new { Error = exception.Message[..Math.Min(exception.Message.Length, 2000)] }) });
             throw;
         }
         finally { _cancellations.TryRemove(new KeyValuePair<Guid, CancellationTokenSource>(_id, cancellation)); }
@@ -103,7 +104,7 @@ public sealed partial class RestartServiceWorkflow(string service) : MachineWork
 }
 
 // Only compiled workflows construct processes; this class is not an external dispatch target.
-public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arguments) : MachineWorkflow
+public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arguments, bool captureOutput = false) : MachineWorkflow
 {
     public override string Name => WorkflowNames.Process;
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
@@ -116,10 +117,15 @@ public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arg
         foreach (var argument in arguments) process.StartInfo.ArgumentList.Add(argument);
         process.Start();
         using var registration = token.Register(static state => Kill((Process)state!), process);
-        await Task.WhenAll(Drain(process.StandardOutput, "stdout", process, context), Drain(process.StandardError, "stderr", process, context), process.WaitForExitAsync(CancellationToken.None));
+        var output = captureOutput ? new StringBuilder() : null;
+        var errorOutput = captureOutput ? new StringBuilder() : null;
+        await Task.WhenAll(Drain(process.StandardOutput, "stdout", process, context, output), Drain(process.StandardError, "stderr", process, context, errorOutput), process.WaitForExitAsync(CancellationToken.None));
         token.ThrowIfCancellationRequested();
         if (process.ExitCode != 0) throw new InvalidOperationException($"Process exited with code {process.ExitCode}.");
-        return JsonSerializer.Serialize(new { process.ExitCode });
+        if (!captureOutput) return JsonSerializer.Serialize(new { process.ExitCode });
+        var result = JsonSerializer.Serialize(new ProcessResult(process.ExitCode, output!.ToString(), errorOutput!.ToString()));
+        if (result.Length > 24000) throw new InvalidOperationException("Query result exceeds the serialized output limit.");
+        return result;
     }
 
     private static void Kill(Process process)
@@ -128,14 +134,19 @@ public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arg
         catch (InvalidOperationException) { } // The process may have exited while cancellation was delivered.
     }
 
-    private static async Task Drain(StreamReader reader, string source, Process process, MachineWorkflowContext context)
+    private static async Task Drain(StreamReader reader, string source, Process process, MachineWorkflowContext context, StringBuilder? captured)
     {
         var buffer = new char[4096];
         int read;
         try
         {
             while ((read = await reader.ReadAsync(buffer.AsMemory(), CancellationToken.None)) > 0)
+            {
                 await context.TraceAsync(new string(buffer, 0, read), source);
+                if (captured == null) continue;
+                if (captured.Length + read > 8192) throw new InvalidOperationException("Query output exceeds the 8192 character stream limit.");
+                captured.Append(buffer, 0, read);
+            }
         }
         catch { Kill(process); throw; }
     }

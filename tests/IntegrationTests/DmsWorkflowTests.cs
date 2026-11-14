@@ -75,7 +75,7 @@ public class DmsWorkflowTests : TestBase
         var cluster = new Cluster { Name = "Test" }; db.Clusters.Add(cluster);
         var machine = new Machine { ClusterId = cluster.Id, Name = "Test machine", KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
         db.Machines.Add(machine);
-        foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Medium })
+        foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Low, RiskLevel.Medium })
         {
             db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = risk, CanRequest = true, AutoApprove = automatic, CanApprove = true });
             db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = approver.Id, Risk = risk, CanApprove = true });
@@ -188,6 +188,15 @@ public class DmsWorkflowTests : TestBase
             "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "WorkflowId");
+        foreach (var command in new[] { new[] { "agent", "status" }, new[] { "systemctl", "status" }, new[] { "layout", "lsblk" }, new[] { "layout", "df" } })
+        {
+            var args = new List<string> { "machine", command[0], command[1], "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
+                "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--json" };
+            if (command[0] == "systemctl") args.AddRange(["--service", "dms-test.service"]);
+            var result = await Client.DmsCommandApp.Create().TestRunAsync(args.ToArray());
+            Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+            StringAssert.Contains(result.StdOut, "WorkflowId");
+        }
         var invalidRequest = Request(setup.Cluster, setup.Machine);
         invalidRequest.Service = "*.service";
         var invalid = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", invalidRequest);
@@ -256,7 +265,69 @@ public class DmsWorkflowTests : TestBase
         }
     }
     [TestMethod]
-    public async Task ActualAgentExecutesApprovedWorkflowAndReturnsTrace()
+    public async Task OfflineMachineKeepsApprovedReadOnlyWorkQueued()
+    {
+        var setup = await ArrangeAsync(true);
+        Guid operationId;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var input = Request(setup.Cluster, setup.Machine); input.Workflow = WorkflowNames.AgentStatus;
+            var item = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
+            operationId = item.OperationId!.Value;
+        }
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        while (true)
+        {
+            using var scope = Server!.Services.CreateScope();
+            var task = await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().WorkflowRuns.AsNoTracking()
+                .SingleOrDefaultAsync(r => r.ParentId == operationId && r.IsMachineTask, timeout.Token);
+            if (task != null)
+            {
+                Assert.AreEqual(RunState.Queued, task.State);
+                Assert.IsNull(task.StartedAt); Assert.IsNull(task.FinishedAt);
+                break;
+            }
+            await Task.Delay(100, timeout.Token);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(WorkflowNames.AgentStatus, RiskLevel.Safe)]
+    [DataRow(WorkflowNames.ServiceStatus, RiskLevel.Low)]
+    [DataRow(WorkflowNames.ListBlockDevices, RiskLevel.Safe)]
+    [DataRow(WorkflowNames.DiskFree, RiskLevel.Safe)]
+    public async Task ReadOnlyCommandsUseRiskGrantsAndApprovedFrozenBatch(string definition, RiskLevel risk)
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var grant = await db.ClusterGrants.SingleAsync(g => g.ClusterId == setup.Cluster && g.UserId == setup.User && g.Risk == risk);
+        grant.CanRequest = false; await db.SaveChangesAsync();
+        var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
+        var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, input));
+        Assert.AreEqual(403, denied.StatusCode);
+        grant.CanRequest = true; await db.SaveChangesAsync();
+        input.AllMachines = true; input.MachineIds.Clear();
+        var item = await service.SubmitAsync(setup.User, input);
+        Assert.AreEqual(risk, item.Risk); Assert.AreEqual(DecisionState.Pending, item.Decision);
+        Assert.IsNull(item.OperationId);
+        db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Late target", KeyHash = "late" });
+        await db.SaveChangesAsync();
+        await service.DecideAsync(setup.Approver, item.Id, true, "Read only approval");
+        var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.OperationId);
+        Assert.AreEqual(WorkflowNames.Batch, operation.Definition);
+        await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, item));
+        var child = db.WorkflowRuns.Local.Single(r => r.ParentId == operation.Id);
+        Assert.AreEqual(setup.Machine, child.MachineId); Assert.AreEqual(definition, child.Definition);
+    }
+
+    [TestMethod]
+    [DataRow(WorkflowNames.Performance, "Processors")]
+    [DataRow(WorkflowNames.AgentStatus, "InstallationId")]
+    [DataRow(WorkflowNames.ListBlockDevices, "blockdevices")]
+    [DataRow(WorkflowNames.DiskFree, "Filesystem")]
+    public async Task ActualAgentExecutesApprovedWorkflowAndReturnsTrace(string definition, string expected)
     {
         var setup = await ArrangeAsync(true);
         var key = DmsKeyAuthenticationHandler.CreateKey(true);
@@ -266,7 +337,7 @@ public class DmsWorkflowTests : TestBase
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(key);
             await db.SaveChangesAsync();
-            var input = Request(setup.Cluster, setup.Machine); input.Workflow = WorkflowNames.Performance;
+            var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
             request = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
         }
         var path = Path.Combine(Path.GetTempPath(), "dms-real-agent-" + Guid.NewGuid());
@@ -291,7 +362,7 @@ public class DmsWorkflowTests : TestBase
                 var tree = await check.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, request.WorkflowId);
                 var machine = tree.Single(r => r.IsMachineTask);
                 Assert.AreEqual(RunState.Succeeded, machine.State);
-                StringAssert.Contains(machine.Result, "Processors");
+                StringAssert.Contains(machine.Result, expected);
                 Assert.IsTrue(machine.LastSequence >= 3);
                 Assert.IsTrue(Server.Services.GetRequiredService<TraceStore>().PendingCount > 0);
             }

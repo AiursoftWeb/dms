@@ -70,6 +70,15 @@ dotnet ./bin/client/dms.dll cluster get-machines \
   --cluster-id <cluster-id> --reason 'Inspect inventory'
 dotnet ./bin/client/dms.dll machine performance info \
   --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect capacity'
+dotnet ./bin/client/dms.dll machine agent status \
+  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect Agent'
+dotnet ./bin/client/dms.dll machine systemctl status \
+  --cluster-id <cluster-id> --machine-id <machine-id> \
+  --service example.service --reason 'Inspect service'
+dotnet ./bin/client/dms.dll machine layout lsblk \
+  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect block devices'
+dotnet ./bin/client/dms.dll machine layout df \
+  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect local capacity'
 dotnet ./bin/client/dms.dll machine systemctl restart \
   --cluster-id <cluster-id> --machine-id <machine-id> \
   --service example.service --reason 'Approved maintenance'
@@ -82,3 +91,7 @@ Each operational command creates a Lockbox before execution. The Lockbox ID, its
 Use `--all-machines` instead of `--machine-id` to freeze the cluster's current machines into a request. A request targets only one cluster. Use `--request-id` when retrying the same submission and `--json` for automation.
 
 `operation kill-workflow --cluster-id <cluster-id> --id <workflow-id> --reason 'Stop operation'` creates a new Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation).
+
+Agent status, performance information, `layout lsblk` and `layout df` use the Safe risk policy; `systemctl status` uses Low and restart uses Medium. Service commands require a concrete `.service` name. Status reads fixed systemd properties without reading the journal. Block-device queries exclude loop devices, and capacity queries cover local filesystems. No extra command arguments or shell expressions are accepted.
+
+Read-only process results contain `ExitCode`, `Output` and `ErrorOutput`; the output is also available in the workflow trace. Each output stream is limited to 8192 characters, and the serialized result to 24000 characters. Larger queries fail explicitly rather than returning truncated data. A missing tool, failed query or nonexistent service is reported as a failed workflow.

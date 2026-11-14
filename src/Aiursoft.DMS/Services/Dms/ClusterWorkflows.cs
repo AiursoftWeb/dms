@@ -35,7 +35,7 @@ public sealed class LockboxWorkflow : ClusterWorkflow
         {
             RootId = context.Run.Id, ParentId = context.Run.Id, LockboxId = context.Lockbox.Id,
             ClusterId = context.Lockbox.ClusterId, State = RunState.Queued,
-            Definition = context.Lockbox.Definition is WorkflowNames.Performance or WorkflowNames.Restart
+            Definition = WorkflowNames.IsMachineWorkflow(context.Lockbox.Definition)
                 ? WorkflowNames.Batch : context.Lockbox.Definition
         };
         context.Inventory.WorkflowRuns.Add(child);

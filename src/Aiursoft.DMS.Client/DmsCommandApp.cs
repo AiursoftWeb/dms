@@ -15,7 +15,11 @@ public static class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
         .WithFeature(new Group("cluster", [new ActionCommand("get-machines", WorkflowNames.ListMachines), new ActionCommand("add-machine", WorkflowNames.AddMachine)]))
-        .WithFeature(new Group("machine", [new Group("performance", [new ActionCommand("info", WorkflowNames.Performance)]), new Group("systemctl", [new ActionCommand("restart", WorkflowNames.Restart)])]))
+        .WithFeature(new Group("machine", [
+            new Group("performance", [new ActionCommand("info", WorkflowNames.Performance)]),
+            new Group("systemctl", [new ActionCommand("restart", WorkflowNames.Restart), new ActionCommand("status", WorkflowNames.ServiceStatus)]),
+            new Group("agent", [new ActionCommand("status", WorkflowNames.AgentStatus)]),
+            new Group("layout", [new ActionCommand("lsblk", WorkflowNames.ListBlockDevices), new ActionCommand("df", WorkflowNames.DiskFree)])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
         .WithFeature(new Group("operation", [new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
 
@@ -50,8 +54,8 @@ public static class DmsCommandApp
             {
                 _cluster.Required = true; _reason.Required = true;
                 yield return _cluster; yield return _request; yield return _reason;
-                if (action is WorkflowNames.Performance or WorkflowNames.Restart) { yield return _machines; yield return _all; }
-                if (action == WorkflowNames.Restart) { _service.Required = true; yield return _service; }
+                if (WorkflowNames.IsMachineWorkflow(action)) { yield return _machines; yield return _all; }
+                if (action is WorkflowNames.Restart or WorkflowNames.ServiceStatus) { _service.Required = true; yield return _service; }
                 if (action == WorkflowNames.AddMachine) { _machineName.Required = true; yield return _machineName; }
                 if (action == WorkflowNames.Kill) { _id.Required = true; yield return _id; }
             }

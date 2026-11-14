@@ -43,7 +43,7 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
         if (run == null)
         {
             var parent = await db.WorkflowRuns.SingleOrDefaultAsync(r => r.Id == item.ParentId);
-            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || item.Definition is not (WorkflowNames.Process or WorkflowNames.Performance or WorkflowNames.Restart) || !await BelongsToTaskAsync(parent, task.Id))
+            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && !WorkflowNames.IsMachineWorkflow(item.Definition)) || !await BelongsToTaskAsync(parent, task.Id))
                 throw new DmsException(403, "Invalid machine subworkflow parent or definition.");
             run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, ClusterId = task.ClusterId, MachineId = machineId, Definition = item.Definition };
             db.WorkflowRuns.Add(run);
