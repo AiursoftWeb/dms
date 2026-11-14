@@ -38,6 +38,9 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         return await workflows.SubmitAsync(Actor, request);
     });
 
+    [HttpGet("workflow-definitions")]
+    public Task<IActionResult> Definitions(Guid clusterId) => Handle(async () => await workflows.ListDefinitionsAsync(Actor, clusterId));
+
     [HttpGet("lockboxes/{id:guid}")]
     public Task<IActionResult> Get(Guid id) => Handle(async () => await workflows.GetLockboxAsync(Actor, id));
 

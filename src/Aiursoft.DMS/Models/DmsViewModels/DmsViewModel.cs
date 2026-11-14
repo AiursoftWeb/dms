@@ -17,6 +17,7 @@ public class DmsViewModel : UiStackLayoutViewModel
     public List<PersonalApiKey> Keys { get; set; } = [];
     public LockboxRequest? Lockbox { get; set; }
     public WorkflowRun? Run { get; set; }
+    public WorkflowCatalogResult? Catalog { get; set; }
     public IReadOnlyList<TraceEntry> Trace { get; set; } = [];
     public string? Notice { get; set; }
     public string? NewKey { get; set; }

@@ -7,6 +7,23 @@ namespace Aiursoft.DMS.Services.Dms;
 
 public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog)
 {
+    public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user, Guid cluster) => gate.RunAsync(async () =>
+    {
+        await access.RequireViewAsync(user, cluster);
+        var definitions = new List<WorkflowDefinitionSummary>();
+        foreach (var definition in catalog.PublicDefinitions())
+        {
+            var risk = definition.PublicRisk!.Value;
+            var grant = await access.GrantAsync(user, cluster, risk);
+            definitions.Add(new WorkflowDefinitionSummary(definition.Name, definition.Version, definition.Location,
+                risk, definition.RequiresTargets, grant?.CanRequest == true, grant?.AutoApprove == true, grant?.CanApprove == true));
+        }
+        var selfApproval = await db.Users.Where(u => u.Id == user).Select(u => u.CanApproveOwnRequests).SingleAsync();
+        access.Audit(user, "workflow.definitions", cluster);
+        await db.SaveChangesAsync();
+        return new WorkflowCatalogResult(cluster, selfApproval, definitions);
+    });
+
     public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(async () =>
     {
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)

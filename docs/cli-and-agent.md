@@ -63,6 +63,10 @@ The Agent opens the WebSocket connection to the Controller. It does not require 
 
 The machine is bound to the installation identity in its state directory. Preserve this directory across upgrades. A second installation with the same key is rejected until pending operations have been reconciled.
 
+## Discover standard workflows
+
+Use `dms operation list-definitions --cluster-id <cluster-id>` to see the Controller's registered public standard workflows and your permissions in that cluster. The command supports `--output-format table|json|csv` and creates no Lockbox. The same catalog is available under **Standard workflows** in the web UI. See [workflow discovery](workflow-discovery.md) for permission and output details.
+
 ## Request and inspect operations
 
 ```sh

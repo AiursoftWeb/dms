@@ -20,7 +20,7 @@ public static class DmsCommandApp
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput())]),
             new Group("layout", [StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()), StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput())])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
-        .WithFeature(new Group("operation", [new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
+        .WithFeature(new Group("operation", [new ActionCommand("list-definitions", "definitions"), new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
 
     private static ActionCommand StandardCommand<TInput, TResult>(string name, WorkflowDefinition<TInput, TResult> definition,
         Func<ParseResult, TInput> input, params Option[] options) =>
@@ -68,6 +68,10 @@ public static class DmsCommandApp
                 if (action == WorkflowNames.AddMachine) { _machineName.Required = true; yield return _machineName; }
                 if (action == WorkflowNames.Kill) { _id.Required = true; yield return _id; }
             }
+            else if (action == "definitions")
+            {
+                _cluster.Required = true; yield return _cluster;
+            }
             else
             {
                 _id.Required = true; yield return _id;
@@ -104,6 +108,7 @@ public static class DmsCommandApp
             }
             else response = action switch
             {
+                "definitions" => await client.ListDefinitionsAsync(context.GetValue(_cluster)),
                 "get" => await client.GetLockboxAsync(id),
                 "approve" or "deny" => await client.DecideAsync(id, action == "approve", context.GetValue(_reason) ?? string.Empty),
                 "workflow" => await client.GetWorkflowAsync(id),
@@ -113,7 +118,7 @@ public static class DmsCommandApp
             };
             DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
                 action == "callstack", !Console.IsOutputRedirected,
-                Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth));
+                Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: action == "definitions");
         }
     }
 }
