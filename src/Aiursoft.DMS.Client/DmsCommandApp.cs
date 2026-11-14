@@ -40,8 +40,9 @@ public static class DmsCommandApp
 
     private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null) : ExecutableCommandHandlerBuilder
     {
+        private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
-        protected override string Description => action.Contains('.') ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
+        protected override string Description => IsSubmission ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
         private readonly Option<string?> _server = new("--server") { Description = "Controller URL; defaults to DMS_SERVER." };
         private readonly Option<string?> _key = new("--api-key") { Description = "Personal API Key; defaults to DMS_API_KEY." };
         private readonly Option<OutputFormat> _format = new("--output-format") { Description = "Output format: table (default; callstack uses a tree), json, or csv." };
@@ -57,7 +58,7 @@ public static class DmsCommandApp
         protected override IEnumerable<Option> GetCommandOptions()
         {
             yield return _server; yield return _key; yield return _format;
-            if (action.Contains('.'))
+            if (IsSubmission)
             {
                 _cluster.Required = true; _reason.Required = true;
                 yield return _cluster; yield return _request; yield return _reason;
@@ -87,7 +88,7 @@ public static class DmsCommandApp
             var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), endpoint, key);
             var id = context.GetValue(_id);
             DmsResponse response;
-            if (action.Contains('.'))
+            if (IsSubmission)
             {
                 var requestId = context.GetValue(_request);
                 response = await client.SubmitAsync(new OperationRequest
