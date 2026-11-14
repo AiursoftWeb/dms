@@ -7,7 +7,8 @@ public sealed class JournalTask
 {
     public Guid Id { get; set; }
     public string Definition { get; set; } = string.Empty;
-    public string Service { get; set; } = string.Empty;
+    public string Input { get; set; } = "{}";
+    public string Version { get; set; } = WorkflowNames.Version;
     public RunState State { get; set; } = RunState.Accepted;
     public long Sequence { get; set; }
     public List<WorkflowEvent> Pending { get; set; } = [];
@@ -55,10 +56,10 @@ public sealed class TaskJournal : IDisposable
         {
             if (_tasks.TryGetValue(message.TaskId, out var prior))
             {
-                if (prior.Definition != message.Definition || prior.Service != message.Service) throw new InvalidDataException("Task ID changed parameters.");
+                if (prior.Definition != message.Definition || prior.Input != message.Input || prior.Version != message.Version) throw new InvalidDataException("Task ID changed parameters.");
                 return;
             }
-            var task = new JournalTask { Id = message.TaskId, Definition = message.Definition, Service = message.Service };
+            var task = new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
             Save(task); _tasks.Add(task.Id, task);
         }
     }

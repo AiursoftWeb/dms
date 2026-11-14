@@ -112,3 +112,6 @@ dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id>
 dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id> --output-format json
 dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id> --output-format csv
 ```
+
+
+See [typed subworkflows](subworkflows.md) for compiled registration, cross-machine calls, results, cancellation and recovery.

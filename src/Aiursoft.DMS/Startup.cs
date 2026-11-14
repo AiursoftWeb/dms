@@ -1,3 +1,4 @@
+using Aiursoft.DMS.Workflows;
 using Aiursoft.CSTools.Tools;
 using Aiursoft.Canon.TaskQueue;
 using Aiursoft.Canon.BackgroundJobs;
@@ -64,6 +65,9 @@ public class Startup : IWebStartup
         services.AddScoped<Services.Dms.WorkflowService>();
         services.AddScoped<Services.Dms.AgentEvents>();
         services.AddScoped<Services.Dms.TraceDatabase>();
+        services.AddSingleton<MachineWorkflowRegistry>();
+        services.AddSingleton<Services.Dms.ClusterWorkflowRegistry>();
+        services.AddSingleton<Services.Dms.ClusterWorkflowRuntime>();
         services.AddHostedService<Services.Dms.WorkflowScheduler>();
         services.AddHostedService<Services.Dms.TraceFlushService>();
 

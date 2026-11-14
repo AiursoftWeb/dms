@@ -364,6 +364,10 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.Property<DateTime?>("FinishedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Input")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsMachineTask")
                         .HasColumnType("INTEGER");
 
@@ -391,6 +395,11 @@ namespace Aiursoft.DMS.Sqlite.Migrations
 
                     b.Property<int>("State")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

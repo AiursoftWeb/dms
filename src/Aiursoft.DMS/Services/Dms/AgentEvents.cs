@@ -1,10 +1,11 @@
+using Aiursoft.DMS.Workflows;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, TraceStore traces)
+public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, TraceStore traces, MachineWorkflowRegistry workflows)
 {
     public Task<AgentMessage?> HandleAsync(Guid machineId, AgentSession session, AgentMessage message) => gate.RunAsync<AgentMessage?>(async () =>
     {
@@ -43,14 +44,14 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
         if (run == null)
         {
             var parent = await db.WorkflowRuns.SingleOrDefaultAsync(r => r.Id == item.ParentId);
-            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && !WorkflowNames.IsMachineWorkflow(item.Definition)) || !await BelongsToTaskAsync(parent, task.Id))
+            if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && !workflows.Contains(item.Definition)) || !await BelongsToTaskAsync(parent, task.Id))
                 throw new DmsException(403, "Invalid machine subworkflow parent or definition.");
-            run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, ClusterId = task.ClusterId, MachineId = machineId, Definition = item.Definition };
+            run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, ClusterId = task.ClusterId, MachineId = machineId, Definition = item.Definition, Input = item.Input, Version = task.Version };
             db.WorkflowRuns.Add(run);
         }
         if (run.RootId != task.RootId || run.MachineId != machineId || !await BelongsToTaskAsync(run, task.Id))
             throw new DmsException(403, "Event is outside this task's subtree.");
-        if (item.Message.Length > 32768 || item.Result.Length > 32768) throw new DmsException(400, "Event exceeds the size limit.");
+        if (item.Message.Length > 32768 || item.Result.Length > 32768 || item.Input.Length > 24000) throw new DmsException(400, "Event exceeds the size limit.");
         if (item.IsTrace) traces.Enqueue(task.Id, item);
         else
         {

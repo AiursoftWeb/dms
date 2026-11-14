@@ -10,23 +10,37 @@ namespace Aiursoft.DMS.Workflows;
 public abstract class MachineWorkflow
 {
     public abstract string Name { get; }
+    public virtual string Input => "{}";
     public abstract Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token);
+}
+
+public abstract class MachineWorkflow<TInput, TResult>(TInput input) : MachineWorkflow
+{
+    public sealed override string Input => JsonSerializer.Serialize(input);
+    public sealed override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token) =>
+        JsonSerializer.Serialize(await ExecuteAsync(context, input, token));
+    public abstract Task<TResult> ExecuteAsync(MachineWorkflowContext context, TInput input, CancellationToken token);
 }
 
 public sealed class MachineWorkflowContext
 {
     private readonly Guid _id;
+    private CancellationToken _executionToken;
+    private readonly AgentEnvironment _environment;
+    private readonly MachineWorkflowRegistry _workflows;
     private readonly Guid? _parentId;
     private readonly Func<WorkflowEvent, Task> _report;
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _cancellations;
 
-    public MachineWorkflowContext(Guid id, Guid? parentId, Func<WorkflowEvent, Task> report)
-        : this(id, parentId, report, new ConcurrentDictionary<Guid, CancellationTokenSource>()) { }
+    public MachineWorkflowContext(Guid id, Guid? parentId, Func<WorkflowEvent, Task> report,
+        AgentEnvironment? environment = null, MachineWorkflowRegistry? workflows = null)
+        : this(id, parentId, report, new ConcurrentDictionary<Guid, CancellationTokenSource>(),
+            environment ?? new AgentEnvironment(Guid.Empty, "", 0, 0), workflows ?? new MachineWorkflowRegistry()) { }
 
     private MachineWorkflowContext(Guid id, Guid? parentId, Func<WorkflowEvent, Task> report,
-        ConcurrentDictionary<Guid, CancellationTokenSource> cancellations)
+        ConcurrentDictionary<Guid, CancellationTokenSource> cancellations, AgentEnvironment environment, MachineWorkflowRegistry workflows)
     {
-        _id = id; _parentId = parentId; _report = report; _cancellations = cancellations;
+        _id = id; _parentId = parentId; _report = report; _cancellations = cancellations; _environment = environment; _workflows = workflows;
     }
 
     public Guid Id => _id;
@@ -49,10 +63,11 @@ public sealed class MachineWorkflowContext
     {
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
         token = cancellation.Token;
+        _executionToken = token;
         _cancellations[_id] = cancellation;
         try
         {
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Running });
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Input = workflow.Input, State = RunState.Running });
             token.ThrowIfCancellationRequested();
             var result = await workflow.ExecuteAsync(this, token);
             await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Succeeded, Result = result });
@@ -72,8 +87,23 @@ public sealed class MachineWorkflowContext
         finally { _cancellations.TryRemove(new KeyValuePair<Guid, CancellationTokenSource>(_id, cancellation)); }
     }
 
-    public Task<string> CallAsync(MachineWorkflow workflow, CancellationToken token) =>
-        new MachineWorkflowContext(Guid.NewGuid(), _id, _report, _cancellations).RunAsync(workflow, token);
+    public async Task<string> CallAsync(MachineWorkflow workflow, CancellationToken token)
+    {
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, _executionToken);
+        token = cancellation.Token;
+        token.ThrowIfCancellationRequested();
+        var id = Guid.NewGuid();
+        try { return await new MachineWorkflowContext(id, _id, _report, _cancellations, _environment, _workflows).RunAsync(workflow, token); }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception exception) { throw new ChildWorkflowException(id, workflow.Name, null, RunState.Failed, exception.Message); }
+    }
+
+    public async Task<TResult> CallAsync<TInput, TResult>(MachineWorkflowDefinition<TInput, TResult> definition,
+        TInput input, CancellationToken token)
+    {
+        var workflow = _workflows.Create(definition.Name, definition.Serialize(input), _environment);
+        return definition.ReadResult(await CallAsync(workflow, token));
+    }
 }
 
 public sealed class PerformanceInfoWorkflow : MachineWorkflow
@@ -92,6 +122,7 @@ public sealed class PerformanceInfoWorkflow : MachineWorkflow
 public sealed partial class RestartServiceWorkflow(string service) : MachineWorkflow
 {
     public override string Name => WorkflowNames.Restart;
+    public override string Input => JsonSerializer.Serialize(new ServiceInput(service));
     public static bool ValidService(string service) => ServiceName().IsMatch(service);
     [GeneratedRegex(@"\A[a-zA-Z0-9][a-zA-Z0-9_.@-]{0,190}\.service\z")]
     private static partial Regex ServiceName();
@@ -107,6 +138,7 @@ public sealed partial class RestartServiceWorkflow(string service) : MachineWork
 public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arguments, bool captureOutput = false) : MachineWorkflow
 {
     public override string Name => WorkflowNames.Process;
+    public override string Input => JsonSerializer.Serialize(new { Executable = executable, Arguments = arguments, CaptureOutput = captureOutput });
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
         using var process = new Process();
