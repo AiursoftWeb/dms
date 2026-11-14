@@ -15,18 +15,19 @@ public abstract class ClusterWorkflow<TInput, TResult>
 // Registration is compiled application code. Registration alone never exposes a Lockbox API entry point.
 public sealed class ClusterWorkflowRegistry
 {
-    private readonly Dictionary<string, Func<WorkflowExecutionContext, string, CancellationToken, Task<string>>> _definitions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (WorkflowDefinition Definition, Func<WorkflowExecutionContext, string, CancellationToken, Task<string>> Execute)> _definitions = new(StringComparer.Ordinal);
 
     public void Register<TInput, TResult>(ClusterWorkflowDefinition<TInput, TResult> definition,
-        Func<ClusterWorkflow<TInput, TResult>> factory) => _definitions.Add(definition.Name, async (context, input, token) =>
+        Func<ClusterWorkflow<TInput, TResult>> factory) => _definitions.Add(definition.Name, (definition, async (context, input, token) =>
             JsonSerializer.Serialize(await factory().ExecuteAsync(context,
-                definition.ReadInput(input), token)));
+                definition.ReadInput(input), token))));
 
     public ClusterWorkflowRegistry() => Register(ClusterWorkflows.GetMachines, () => new GetMachinesWorkflow());
 
+    public WorkflowDefinition? FindDefinition(string name) => _definitions.TryGetValue(name, out var entry) ? entry.Definition : null;
     public bool Contains(string name) => _definitions.ContainsKey(name);
     public Task<string> ExecuteAsync(string name, WorkflowExecutionContext context, string input, CancellationToken token) =>
-        _definitions.TryGetValue(name, out var execute) ? execute(context, input, token)
+        _definitions.TryGetValue(name, out var execute) ? execute.Execute(context, input, token)
             : throw new InvalidDataException("Unsupported cluster workflow definition.");
 }
 
@@ -171,7 +172,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
             var child = new WorkflowRun
             {
                 RootId = parent.RootId, ParentId = parent.Id, LockboxId = parent.LockboxId, ClusterId = parent.ClusterId,
-                MachineId = machine, Definition = definition, Input = input, Version = WorkflowNames.Version,
+                MachineId = machine, Definition = definition, Input = input, Version = (machine == null ? workflows.FindDefinition(definition) : machines.FindDefinition(definition))!.Version,
                 IsMachineTask = machine != null, State = RunState.Queued
             };
             db.WorkflowRuns.Add(child);
@@ -214,7 +215,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         {
             var run = await DatabaseAsync(async db => await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == id));
             context = new WorkflowExecutionContext(this, id, run.ClusterId, token);
-            if (run.Version != WorkflowNames.Version) throw new InvalidDataException("Workflow version is no longer available.");
+            if (workflows.FindDefinition(run.Definition)?.Version != run.Version) throw new InvalidOperationException("The approved workflow version is no longer available.");
             result = await workflows.ExecuteAsync(run.Definition, context, run.Input, token);
             if (result.Length > 32768) throw new InvalidDataException("Workflow result exceeds the size limit.");
         }

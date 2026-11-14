@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text;
-using System.Text.RegularExpressions;
 using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
@@ -11,12 +10,15 @@ public abstract class MachineWorkflow
 {
     public abstract string Name { get; }
     public virtual string Input => "{}";
+    public virtual string Version => WorkflowNames.Version;
     public abstract Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token);
 }
 
-public abstract class MachineWorkflow<TInput, TResult>(TInput input) : MachineWorkflow
+public abstract class MachineWorkflow<TInput, TResult>(MachineWorkflowDefinition<TInput, TResult> definition, TInput input) : MachineWorkflow
 {
-    public sealed override string Input => JsonSerializer.Serialize(input);
+    public sealed override string Name => definition.Name;
+    public sealed override string Version => definition.Version;
+    public sealed override string Input => definition.Serialize(input);
     public sealed override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token) =>
         JsonSerializer.Serialize(await ExecuteAsync(context, input, token));
     public abstract Task<TResult> ExecuteAsync(MachineWorkflowContext context, TInput input, CancellationToken token);
@@ -67,21 +69,21 @@ public sealed class MachineWorkflowContext
         _cancellations[_id] = cancellation;
         try
         {
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Input = workflow.Input, State = RunState.Running });
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, Input = workflow.Input, State = RunState.Running });
             token.ThrowIfCancellationRequested();
             var result = await workflow.ExecuteAsync(this, token);
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Succeeded, Result = result });
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.Succeeded, Result = result });
             return result;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Cancelled });
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.Cancelled });
             throw;
         }
         catch (Exception exception)
         {
             await TraceAsync(exception.Message, "error");
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, State = RunState.Failed, Result = JsonSerializer.Serialize(new { Error = exception.Message[..Math.Min(exception.Message.Length, 2000)] }) });
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.Failed, Result = JsonSerializer.Serialize(new { Error = exception.Message[..Math.Min(exception.Message.Length, 2000)] }) });
             throw;
         }
         finally { _cancellations.TryRemove(new KeyValuePair<Guid, CancellationTokenSource>(_id, cancellation)); }
@@ -119,13 +121,11 @@ public sealed class PerformanceInfoWorkflow : MachineWorkflow
     }
 }
 
-public sealed partial class RestartServiceWorkflow(string service) : MachineWorkflow
+public sealed class RestartServiceWorkflow(string service) : MachineWorkflow
 {
     public override string Name => WorkflowNames.Restart;
     public override string Input => JsonSerializer.Serialize(new ServiceInput(service));
-    public static bool ValidService(string service) => ServiceName().IsMatch(service);
-    [GeneratedRegex(@"\A[a-zA-Z0-9][a-zA-Z0-9_.@-]{0,190}\.service\z")]
-    private static partial Regex ServiceName();
+    public static bool ValidService(string service) => ServiceInput.ValidService(service);
 
     public override Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {

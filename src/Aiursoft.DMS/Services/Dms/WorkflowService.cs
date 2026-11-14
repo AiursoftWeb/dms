@@ -1,17 +1,17 @@
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
-using Aiursoft.DMS.Workflows;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog)
 {
     public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(async () =>
     {
-        if (request.Reason == null || request.Service == null || request.MachineName == null || request.MachineIds == null)
+        if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
+        if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
@@ -21,18 +21,19 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         }
         if (request.RequestId == Guid.Empty || request.Reason.Length is < 1 or > 2000)
             throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
-        var risk = request.Workflow switch
-        {
-            WorkflowNames.Performance or WorkflowNames.ListMachines or WorkflowNames.AgentStatus or WorkflowNames.ListBlockDevices or WorkflowNames.DiskFree => RiskLevel.Safe,
-            WorkflowNames.ServiceStatus => RiskLevel.Low,
-            WorkflowNames.Restart or WorkflowNames.AddMachine or WorkflowNames.Kill => RiskLevel.Medium,
-            _ => throw new DmsException(400, "This workflow is not available as an external operation.")
-        };
+        var definition = catalog.Find(request.Workflow);
+        var risk = definition != null
+            ? definition.PublicRisk ?? throw new DmsException(400, "This workflow is not available as an external operation.")
+            : request.Workflow is WorkflowNames.AddMachine or WorkflowNames.Kill ? RiskLevel.Medium
+            : throw new DmsException(400, "This workflow is not available as an external operation.");
+        try { definition?.Validate(request.Input); }
+        catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
+        { throw new DmsException(400, "Invalid workflow input: " + exception.Message); }
         if (!await db.Clusters.AnyAsync(c => c.Id == request.ClusterId)) throw new DmsException(404, "Cluster not found.");
         var grant = await access.GrantAsync(user, request.ClusterId, risk);
         if (grant?.CanRequest != true) throw new DmsException(403, "You cannot request this risk level in this cluster.");
         var targets = new List<Guid>();
-        if (WorkflowNames.IsMachineWorkflow(request.Workflow))
+        if (definition?.RequiresTargets == true)
         {
             if (request.AllMachines && request.MachineIds.Count != 0) throw new DmsException(400, "Choose explicit machines or all machines, not both.");
             targets = request.AllMachines
@@ -40,9 +41,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
                 : request.MachineIds.Distinct().ToList();
             if (targets.Count is < 1 or > 1000 || await db.Machines.CountAsync(m => targets.Contains(m.Id) && m.ClusterId == request.ClusterId && !m.Disabled) != targets.Count)
                 throw new DmsException(400, "Select between 1 and 1000 active machines in this cluster.");
-            if (request.Workflow is (WorkflowNames.Restart or WorkflowNames.ServiceStatus) && !RestartServiceWorkflow.ValidService(request.Service))
-                throw new DmsException(400, "A concrete .service unit name is required.");
         }
+        else if (request.AllMachines || request.MachineIds.Count != 0)
+            throw new DmsException(400, "This workflow does not accept machine targets.");
         if (request.Workflow == WorkflowNames.AddMachine && (string.IsNullOrWhiteSpace(request.MachineName) || request.MachineName.Length > 100))
             throw new DmsException(400, "Machine name must contain 1 to 100 characters.");
         if (request.Workflow == WorkflowNames.Kill && !await db.WorkflowRuns.AnyAsync(r => r.Id == request.TargetWorkflowId && r.ClusterId == request.ClusterId))
@@ -50,7 +51,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var lockbox = new LockboxRequest
         {
             ClientRequestId = request.RequestId, ClusterId = request.ClusterId, RequesterId = user,
-            Definition = request.Workflow, Risk = risk, Parameters = JsonSerializer.Serialize(request),
+            Definition = request.Workflow, Risk = risk, Version = definition?.Version ?? WorkflowNames.Version, Parameters = JsonSerializer.Serialize(request),
             TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason,
             WorkflowId = Guid.NewGuid()
         };
@@ -89,11 +90,15 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
 
     private async Task ApproveAsync(LockboxRequest item, string? user, string reason)
     {
+        var definition = catalog.Find(item.Definition);
+        if ((definition == null && item.Definition is not (WorkflowNames.AddMachine or WorkflowNames.Kill))
+            || (definition != null && (definition.Version != item.Version || definition.PublicRisk != item.Risk)))
+            throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
         item.Decision = DecisionState.Approved; item.ApproverId = user; item.Automatic = user == null;
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
         var root = db.WorkflowRuns.Local.FirstOrDefault(r => r.Id == item.WorkflowId)
             ?? await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
-        await new LockboxWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, root, item));
+        await new LockboxWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, root, item, catalog.Find(item.Definition)));
         access.Audit(user ?? "system", "lockbox.approve", item.Id, reason);
     }
 
