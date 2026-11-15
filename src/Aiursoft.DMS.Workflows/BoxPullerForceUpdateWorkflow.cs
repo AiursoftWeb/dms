@@ -7,35 +7,40 @@ namespace Aiursoft.DMS.Workflows;
 public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput input, string dockerExecutable = "/usr/bin/docker")
     : MachineWorkflow<PullerForceUpdateInput, PullerForceUpdateResult>(MachineWorkflows.PullerForceUpdate, input)
 {
-    // Arguments are passed separately. Only this compiled script can run inside the fixed Box service.
+    // Reuse Puller's existing Python runtime. Request arguments never become script source.
     private const string Sync = """
-        set -euo pipefail
-        entry=/app/entry.sh
-        if [[ ! -x "$entry" || ! -r /app/source_updated.py ]] ||
-            ! grep -Fq 'images=("$@")' "$entry" ||
-            ! grep -Fq SKIP_IF_SYNCED_HOURS /app/source_updated.py; then
-            echo 'This Puller does not support scoped force updates.' >&2
-            exit 78
-        fi
-        for tool in flock pgrep; do
-            if ! command -v "$tool" >/dev/null; then
-                echo "Puller requires $tool for a guarded force update." >&2
-                exit 78
-            fi
-        done
-        exec 9>/app/dms-force-update.lock
-        if ! flock --nonblock 9 || pgrep -f '^(/usr)?/bin/bash /app/entry[.]sh( |$)' >/dev/null; then
-            echo 'Puller is already running. No new sync was started.' >&2
-            exit 75
-        fi
-        echo "Starting a scoped Puller force update: $1"
-        status=0
-        "$entry" "$@" || status=$?
-        if ((status != 0)); then
-            echo "Puller finished with exit code $status." >&2
-            exit 70
-        fi
-        echo 'Puller mirror sync completed. Service deployment must be checked separately.'
+        import fcntl, glob, os, subprocess, sys
+        def fail(message, code):
+            print(message, file=sys.stderr, flush=True)
+            sys.exit(code)
+        entry = '/app/entry.sh'
+        try:
+            with open(entry, encoding='utf-8') as source:
+                scoped = 'images=("$@")' in source.read()
+            with open('/app/source_updated.py', encoding='utf-8') as helper:
+                scoped = scoped and 'SKIP_IF_SYNCED_HOURS' in helper.read()
+        except OSError:
+            scoped = False
+        if not scoped or not os.access(entry, os.X_OK):
+            fail('This Puller does not support scoped force updates.', 78)
+        with open('/app/dms-force-update.lock', 'a') as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                fail('Puller is already running. No new sync was started.', 75)
+            for process in glob.glob('/proc/[0-9]*/cmdline'):
+                try:
+                    with open(process, 'rb') as source:
+                        args = source.read().split(b'\0')
+                except OSError:
+                    continue
+                if len(args) > 1 and args[1] == os.fsencode(entry) and os.path.basename(args[0]) in (b'bash', b'sh'):
+                    fail('Puller is already running. No new sync was started.', 75)
+            print('Starting a scoped Puller force update: ' + sys.argv[1], flush=True)
+            result = subprocess.run([entry, sys.argv[1]], check=False)
+            if result.returncode != 0:
+                fail('Puller finished with exit code ' + str(result.returncode) + '.', 70)
+            print('Puller mirror sync completed. Service deployment must be checked separately.', flush=True)
         """;
 
     public override async Task<PullerForceUpdateResult> ExecuteAsync(MachineWorkflowContext context, PullerForceUpdateInput input, CancellationToken token)
@@ -52,7 +57,7 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
         try
         {
             await context.CallAsync(new ProcessWorkflow(dockerExecutable,
-                ["exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/bin/bash", "-c", Sync, "dms-puller-force-update", input.Image]), token);
+                ["exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync, input.Image]), token);
         }
         catch (ChildWorkflowException exception) when (exception.Result is "Process exited with code 70." or "Process exited with code 75." or "Process exited with code 78.")
         {

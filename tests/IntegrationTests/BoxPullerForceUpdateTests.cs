@@ -139,12 +139,12 @@ public class BoxPullerForceUpdateTests
                     cat "$directory/containers"
                     exit 0
                 fi
-                [[ "$#" == 9 && "$1" == exec && "$2" == --env && "$3" == SKIP_IF_SYNCED_HOURS=0 && "$4" == '{{Container}}' && "$5" == /bin/bash && "$6" == -c ]]
+                [[ "$#" == 8 && "$1" == exec && "$2" == --env && "$3" == SKIP_IF_SYNCED_HOURS=0 && "$4" == '{{Container}}' && "$5" == /usr/bin/python3 && "$6" == -c ]]
                 if [[ -f "$directory/disconnect" ]]; then exit 125; fi
                 export SKIP_IF_SYNCED_HOURS=0
                 script="$7"
                 script="${script//\/app\//$directory/app/}"
-                exec /bin/bash -c "$script" "$8" "$9"
+                exec /usr/bin/python3 -c "$script" "$8"
                 """);
         }
 
