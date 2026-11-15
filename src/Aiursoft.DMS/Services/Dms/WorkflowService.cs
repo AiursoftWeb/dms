@@ -32,23 +32,34 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
+        var definition = catalog.Find(request.Workflow);
+        try { request.Input = definition?.Normalize(request.Input) ?? request.Input; }
+        catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
+        { throw new DmsException(400, "Invalid workflow input: " + exception.Message); }
+        if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
             await access.RequireViewAsync(user, prior.ClusterId);
+            // A retry keeps the original inferred scope, even if inventory changes.
+            var frozen = JsonSerializer.Deserialize<OperationRequest>(prior.Parameters)!;
+            if (request.ClusterId == Guid.Empty) request.ClusterId = frozen.ClusterId;
+            if (!request.AllMachines && request.MachineIds.Count == 0) request.MachineIds = frozen.MachineIds.ToList();
             if (prior.Parameters != JsonSerializer.Serialize(request)) throw new DmsException(409, "Request ID already belongs to different parameters.");
             return prior;
         }
         if (request.RequestId == Guid.Empty || request.Reason.Length is < 1 or > 2000)
             throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
-        var definition = catalog.Find(request.Workflow);
         var risk = definition != null
             ? definition.PublicRisk ?? throw new DmsException(400, "This workflow is not available as an external operation.")
             : request.Workflow is WorkflowNames.AddMachine or WorkflowNames.Kill ? RiskLevel.Medium
             : throw new DmsException(400, "This workflow is not available as an external operation.");
-        try { definition?.Validate(request.Input); }
-        catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
-        { throw new DmsException(400, "Invalid workflow input: " + exception.Message); }
+        if (request.ClusterId == Guid.Empty)
+        {
+            var visible = await access.VisibleClustersAsync(user);
+            if (visible.Count != 1) throw new DmsException(400, "Specify --cluster-id: exactly one accessible cluster is required to omit it.");
+            request.ClusterId = visible[0];
+        }
         if (!await db.Clusters.AnyAsync(c => c.Id == request.ClusterId)) throw new DmsException(404, "Cluster not found.");
         var grant = await access.GrantAsync(user, request.ClusterId, risk);
         if (grant?.CanRequest != true) throw new DmsException(403, "You cannot request this risk level in this cluster.");
@@ -56,6 +67,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (definition?.RequiresTargets == true)
         {
             if (request.AllMachines && request.MachineIds.Count != 0) throw new DmsException(400, "Choose explicit machines or all machines, not both.");
+            if (!request.AllMachines && request.MachineIds.Count == 0)
+            {
+                var candidates = await db.Machines.Where(m => m.ClusterId == request.ClusterId && !m.Disabled).Select(m => m.Id).Take(2).ToListAsync();
+                if (candidates.Count != 1) throw new DmsException(400, "Specify --machine-id or --all-machines: exactly one active machine is required to omit the target.");
+                request.MachineIds = candidates;
+            }
             targets = request.AllMachines
                 ? await db.Machines.Where(m => m.ClusterId == request.ClusterId && !m.Disabled).Select(m => m.Id).ToListAsync()
                 : request.MachineIds.Distinct().ToList();

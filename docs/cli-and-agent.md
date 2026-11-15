@@ -63,25 +63,88 @@ Deletion requires no machines, operation history or enrollment keys (including r
 
 ## Force a Box Puller mirror update
 
-An enrolled Linux Box Agent can request a scoped update of its existing Puller:
+With `DMS_SERVER` and `DMS_API_KEY` configured, an enrolled Box can request:
 
-```sh
-dotnet ./bin/client/dms.dll machine box puller force-update \
-  --cluster-id <cluster-id> --machine-id <box-machine-id> \
-  --image aiursoft/dms:latest --reason "Refresh the DMS mirror"
+```bash
+# One accessible cluster with one active machine: refresh the main Puller inventory.
+dms machine box puller force-update --reason "Refresh configured mirrors"
+
+# Select one machine and image explicitly.
+dms machine box puller force-update \
+  --cluster-id "$CLUSTER_ID" --machine-id "$MACHINE_ID" \
+  --image aiursoft/dms:latest --reason "Refresh DMS mirror"
+
+# Refresh the CN Puller's configured inventory on the selected machine.
+dms machine box puller force-update \
+  --cluster-id "$CLUSTER_ID" --machine-id "$MACHINE_ID" \
+  --puller cn --reason "Refresh configured China mirrors"
 ```
 
-This is the standard High-risk `machine.box.puller.force-update` workflow. The image, Puller selection and machines are frozen in Lockbox before approval. `--puller main` (the default) selects the local Swarm `puller_downloader` service; `--puller cn` selects `puller_downloader_cn`. It requires exactly one running container for the selected service and never falls back to the other Puller. Registry credentials stay inside Puller. Container IDs, commands, scripts, registry configuration and credentials are not request parameters.
+`--reason` remains required. `--puller` defaults to `main`; `--image` is optional.
+Omitting the image refreshes the selected Puller's own configured inventory;
+it does not discover every image in a registry. An explicitly empty or invalid
+image is rejected. Add `--output-format json` or `csv` for structured output;
+table remains the default.
 
-Main Puller uses its existing image-filtering `/app/entry.sh` with a one-shot `SKIP_IF_SYNCED_HOURS=0`. It needs its existing `/usr/bin/python3` and `source_updated.py` cooldown support. Its fixed Python wrapper locks concurrent DMS runs and checks for already running scheduled syncs. Global, HL and Proart main Puller sources provide these interfaces.
+For workflow submissions, `--cluster-id` may be omitted only when the caller
+has exactly one accessible cluster. Machine targets may be omitted only when
+the selected cluster has exactly one active (not disabled) machine; online status
+does not determine selection. With multiple machines, use explicit
+`--machine-id` values or intentionally request `--all-machines`. The Controller
+resolves these defaults under its existing submission gate and stores the
+resolved IDs before approval. Reusing the same `--request-id` preserves the
+original resolved targets even if inventory or accessible clusters change.
+An ambiguous or empty selection fails before creating a Lockbox.
 
-CN Puller uses the scoped `/app/force-update.sh` entry point supplied by the BoxForProart CN Puller update. This calls the existing mirror logic with exactly the approved image and disables both quiet periods for that invocation. It uses the container's existing Bash and flock, sharing the persistent `puller_cn.lock` with cron. Older CN containers without that entry point fail as unsupported before syncing; no Python installation is needed. The CN update preserves the scheduled inventory and cron schedule.
+This is the standard **High-risk** `machine.box.puller.force-update` workflow,
+version 2. The caller needs this cluster's High `CanRequest` grant. Only its
+High `AutoApprove` grant enables automatic approval; otherwise a user with High
+`CanApprove` must approve. Under the company role policy this is normally
+leadership or root. Self approval separately requires `CanApproveOwnRequests`;
+leadership cannot approve its own requests, while an explicitly authorized root
+user can. This feature does not change any grants.
 
-The host needs Docker at `/usr/bin/docker` and the local `/var/run/docker.sock`; the workflow explicitly selects this socket instead of a configured remote Docker context. Unsupported Pullers and concurrent requests are rejected. Container discovery and execution are subworkflows with their own IDs and streamed traces. For example, add `--puller cn` to sync the approved image from the home registry to the China registry.
+The Lockbox stores the actual cluster/machines, selected Puller and
+`ImageScope: SingleImage` or `AllConfiguredImages` in canonical typed input.
+The image scope must match `Image`; a contradictory scope is rejected. For the
+all-images mode, approval covers the selected Puller's configured inventory at
+execution, not a separately frozen list of image tags. For a fixed image scope,
+pass `--image` explicitly. Child workflows inherit the approved scope.
 
-Success means the mirror sync completed, including a successful no-op when the mirror was already current. Check Shepherd and the application separately for deployment completion. A cancelled or disconnected Docker client can leave its server-side command running: the workflow becomes **NeedsVerification**, without automatic retry. Inspect the existing run before requesting another sync.
+Main selects the local Swarm `puller_downloader` service; CN selects
+`puller_downloader_cn`. Exactly one running container must exist. Selecting CN
+on a Box without CN fails at execution-time discovery, records Failed, and never
+falls back to main. The Agent always uses `/usr/bin/docker` with the local
+`unix:///var/run/docker.sock`, ignoring remote Docker context selection.
 
-The Box must already have an approved, connected Agent containing this definition. This workflow cannot bootstrap an unenrolled Box or update a Controller that has not yet received it.
+Main calls its existing `/app/entry.sh` with zero or one image arguments and
+`SKIP_IF_SYNCED_HOURS=0`. Its existing Python runtime handles the DMS lock and
+checks for a running scheduled entry. Global, HL and Proart main Puller sources
+provide this interface. CN calls its updated `/app/force-update.sh` with zero or
+one image arguments, reusing Bash/flock and cron's persistent `puller_cn.lock`.
+Both CN quiet periods are disabled for this invocation; the cron schedule and
+no-argument inventory are unchanged. Update the CN Puller image before using
+this version's all-images mode; an unsupported old entry fails without syncing.
+Registry configuration and credentials remain inside Puller.
+
+Discovery and sync each appear as Process subworkflows with their own IDs and
+streamed trace. Busy, unsupported and confirmed sync failures are Failed.
+Cancellation or uncertain Docker exec outcome is NeedsVerification, with no
+automatic replay. Success means mirror sync completed or was already current;
+it does not force application or Shepherd deployment. Controller, CLI and Agent
+must contain the new definition (Agent/APKG 1.0.18); the Box must already be
+enrolled.
+
+After submitting, query and approve the returned Lockbox ID, then use the
+execution Workflow ID returned after approval:
+
+```bash
+dms lockbox get --id "$LOCKBOX_ID"
+dms lockbox approve --id "$LOCKBOX_ID" --reason "Approve mirror refresh"
+dms operation get-workflow --id "$WORKFLOW_ID"
+dms operation get-callstack --id "$WORKFLOW_ID"
+dms operation get-trace --id "$WORKFLOW_ID"
+```
 
 ## Install and join an Agent
 

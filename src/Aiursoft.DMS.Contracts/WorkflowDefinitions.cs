@@ -31,6 +31,7 @@ public abstract record WorkflowDefinition(string Name, RiskLevel? PublicRisk, st
     public abstract WorkflowLocation Location { get; }
     public abstract bool RequiresTargets { get; }
     public abstract void Validate(string input);
+    public abstract string Normalize(string input);
 }
 
 public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLevel? PublicRisk, string Version,
@@ -50,6 +51,7 @@ public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLeve
         return value;
     }
     public override void Validate(string input) => ReadInput(input);
+    public override string Normalize(string input) => Serialize(ReadInput(input));
     public TResult ReadResult(string result) => JsonSerializer.Deserialize<TResult>(result, WorkflowJson.Options)
         ?? throw new InvalidDataException("Workflow returned a null result.");
     public OperationRequest Request(Guid cluster, TInput input, string reason, IEnumerable<Guid>? machines = null,
@@ -80,7 +82,7 @@ public sealed record ClusterWorkflowDefinition<TInput, TResult>(string Name, Ris
 public static class MachineWorkflows
 {
     public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", Version: "1");
-    public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, RiskLevel.High, "1", input => input.Validate());
+    public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, RiskLevel.High, "2", input => input.Validate());
     public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe);
     public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> Restart = new(WorkflowNames.Restart, RiskLevel.Medium, ValidateInput: input => input.Validate());
     public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> ServiceStatus = new(WorkflowNames.ServiceStatus, RiskLevel.Low, ValidateInput: input => input.Validate());

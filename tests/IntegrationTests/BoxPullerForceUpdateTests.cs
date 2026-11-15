@@ -34,10 +34,10 @@ public class BoxPullerForceUpdateTests
         Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput("aiursoft/dms:latest", puller)));
 
     [TestMethod]
-    public void RejectsNullMissingOverlongAndExecutableOverrideInput()
+    public void DefaultsToAllImagesAndRejectsInvalidOverrides()
     {
-        Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":null}"));
-        Assert.Throws<System.Text.Json.JsonException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{}"));
+        Assert.AreEqual("AllConfiguredImages", MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":null}").ImageScope);
+        Assert.AreEqual("AllConfiguredImages", MachineWorkflows.PullerForceUpdate.ReadInput("{}").ImageScope);
         Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":\"aiursoft/dms\",\"Puller\":null}"));
         Assert.Throws<System.Text.Json.JsonException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":\"aiursoft/dms\",\"DockerExecutable\":\"/bin/bash\"}"));
         Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput(new string('a', 256))));
@@ -61,6 +61,38 @@ public class BoxPullerForceUpdateTests
         Assert.IsTrue(events.Any(e => e.IsTrace && e.Message.Contains("Scoped mirror complete", StringComparison.Ordinal)));
         // More than the bounded query capture limit must still stream successfully.
         Assert.IsGreaterThan(8192, events.Where(e => e.IsTrace && e.Source == "stdout").Sum(e => e.Message.Length));
+    }
+
+    [TestMethod]
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task OmittedImageInvokesTheConfiguredInventoryWithoutImageArguments(string puller)
+    {
+        using var fixture = new Puller(puller, null);
+        var result = MachineWorkflows.PullerForceUpdate.ReadResult(await fixture.RunAsync(CancellationToken.None));
+        Assert.IsNull(result.Image);
+        Assert.AreEqual("AllConfiguredImages", result.ImageScope);
+        Assert.AreEqual(puller, result.Puller);
+        Assert.AreEqual("all configured images|0", (await File.ReadAllTextAsync(fixture.PathOf("invocations"))).Trim());
+        Assert.IsTrue(fixture.Events.Any(e => e.IsTrace && e.Message.Contains("all configured images", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public async Task MissingCnPullerFailsDuringDiscoveryWithoutStartingOrFallingBack()
+    {
+        using var fixture = new Puller("cn", null);
+        await File.WriteAllTextAsync(fixture.PathOf("containers"), "");
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.RunAsync(CancellationToken.None));
+        StringAssert.Contains(error.Message, "selected cn Puller");
+        Assert.IsFalse(File.Exists(fixture.PathOf("invocations")));
+        Assert.AreEqual(RunState.Failed, fixture.Events.Last(e => !e.IsTrace && e.WorkflowId == fixture.Id).State);
+    }
+
+    [TestMethod]
+    public void ScopeCannotMisrepresentTheApprovedImageSelection()
+    {
+        Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"ImageScope\":\"SingleImage\"}"));
+        Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":\"aiursoft/dms\",\"ImageScope\":\"AllConfiguredImages\"}"));
     }
 
     [TestMethod]
@@ -169,10 +201,12 @@ public class BoxPullerForceUpdateTests
         public string PathOf(string file) => Path.Combine(_directory, file);
 
         private readonly string _puller;
+        private readonly string? _image;
 
-        public Puller(string puller = "main")
+        public Puller(string puller = "main", string? image = "aiursoft/dms:latest")
         {
             _puller = puller;
+            _image = image;
             Directory.CreateDirectory(PathOf("app"));
             File.WriteAllText(PathOf("containers"), Container);
             File.WriteAllText(PathOf("app/source_updated.py"), "SKIP_IF_SYNCED_HOURS");
@@ -181,7 +215,7 @@ public class BoxPullerForceUpdateTests
                 set -eu
                 images=("$@")
                 directory='{{_directory}}'
-                printf '%s|%s\n' "$1" "${SKIP_IF_SYNCED_HOURS:-$PUBLIC_CHECK_INTERVAL_SECONDS}" >> "$directory/invocations"
+                printf '%s|%s\n' "${1:-all configured images}" "${SKIP_IF_SYNCED_HOURS:-$PUBLIC_CHECK_INTERVAL_SECONDS}" >> "$directory/invocations"
                 if [[ -f "$directory/hold" ]]; then while true; do sleep 1; done; fi
                 if [[ -f "$directory/fail" ]]; then exit 9; fi
                 printf '%09000d\n' 0
@@ -192,7 +226,7 @@ public class BoxPullerForceUpdateTests
                 set -eu
                 exec 9>'{{_directory}}/app/puller_cn.lock'
                 if ! flock -n 9; then exit 75; fi
-                if PUBLIC_CHECK_INTERVAL_SECONDS=0 '{{_directory}}/app/entry.sh' "$1"; then exit 0; else result=$?; echo "CN Puller finished with exit code $result." >&2; exit 70; fi
+                if PUBLIC_CHECK_INTERVAL_SECONDS=0 '{{_directory}}/app/entry.sh' "$@"; then exit 0; else result=$?; echo "CN Puller finished with exit code $result." >&2; exit 70; fi
                 """);
             WriteExecutable("docker", $$"""
                 #!/bin/bash
@@ -206,18 +240,18 @@ public class BoxPullerForceUpdateTests
                     exit 0
                 fi
                 if [[ '{{puller}}' == cn ]]; then
-                    [[ "$#" == 7 && "$1" == exec && "$2" == '{{Container}}' && "$3" == /bin/bash && "$4" == -c && "$6" == dms-puller ]]
+                    [[ "$#" == {{(image == null ? 6 : 7)}} && "$1" == exec && "$2" == '{{Container}}' && "$3" == /bin/bash && "$4" == -c && "$6" == dms-puller ]]
                     if [[ -f "$directory/disconnect" ]]; then exit 125; fi
                     script="$5"
                     script="${script//\/app\//$directory/app/}"
-                    exec /bin/bash -c "$script" "$6" "$7"
+                    exec /bin/bash -c "$script" "${@:6}"
                 fi
-                [[ "$#" == 8 && "$1" == exec && "$2" == --env && "$3" == SKIP_IF_SYNCED_HOURS=0 && "$4" == '{{Container}}' && "$5" == /usr/bin/python3 && "$6" == -c ]]
+                [[ "$#" == {{(image == null ? 7 : 8)}} && "$1" == exec && "$2" == --env && "$3" == SKIP_IF_SYNCED_HOURS=0 && "$4" == '{{Container}}' && "$5" == /usr/bin/python3 && "$6" == -c ]]
                 if [[ -f "$directory/disconnect" ]]; then exit 125; fi
                 export SKIP_IF_SYNCED_HOURS=0
                 script="$7"
                 script="${script//\/app\//$directory/app/}"
-                exec /usr/bin/python3 -c "$script" "$8"
+                exec /usr/bin/python3 -c "$script" "${@:8}"
                 """);
         }
 
@@ -232,7 +266,7 @@ public class BoxPullerForceUpdateTests
         public Task<string> RunAsync(CancellationToken token) => new MachineWorkflowContext(Id, null, e =>
         {
             Events.Enqueue(e); return Task.CompletedTask;
-        }).RunAsync(new BoxPullerForceUpdateWorkflow(new PullerForceUpdateInput("aiursoft/dms:latest", _puller), PathOf("docker")), token);
+        }).RunAsync(new BoxPullerForceUpdateWorkflow(new PullerForceUpdateInput(_image, _puller), PathOf("docker")), token);
 
         public void Dispose() => Directory.Delete(_directory, true);
     }

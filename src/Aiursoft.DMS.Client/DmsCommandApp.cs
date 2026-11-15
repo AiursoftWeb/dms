@@ -27,10 +27,10 @@ public static class DmsCommandApp
 
     private static ActionCommand PullerCommand()
     {
-        var image = new Option<string>("--image") { Required = true };
+        var image = new Option<string?>("--image") { Description = "One image; omit to refresh all images configured in the selected Puller." };
         var puller = new Option<string>("--puller") { Description = "Puller to update: main (default) or cn." };
         return StandardCommand("force-update", MachineWorkflows.PullerForceUpdate,
-            context => new PullerForceUpdateInput(context.GetValue(image) ?? string.Empty, context.GetValue(puller) ?? "main"), image, puller);
+            context => new PullerForceUpdateInput(context.GetValue(image), context.GetValue(puller) ?? "main"), image, puller);
     }
 
     private static ActionCommand ServiceCommand(string name, MachineWorkflowDefinition<ServiceInput, ProcessResult> definition)
@@ -51,8 +51,8 @@ public static class DmsCommandApp
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
         protected override string Description => IsSubmission ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
-        private readonly Option<Guid> _cluster = new("--cluster-id");
-        private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true };
+        private readonly Option<Guid> _cluster = new("--cluster-id") { Description = "Cluster ID; may be omitted when exactly one cluster is accessible." };
+        private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true, Description = "Explicit machines; may be omitted when the cluster has exactly one active machine." };
         private readonly Option<bool> _all = new("--all-machines");
         private readonly Option<Guid> _id = new("--id");
         private readonly Option<Guid> _request = new("--request-id") { Description = "Reuse this ID only to retry the same submission." };
@@ -78,7 +78,7 @@ public static class DmsCommandApp
         {
             if (IsSubmission)
             {
-                _cluster.Required = true; _reason.Required = true;
+                _reason.Required = true;
                 yield return _cluster; yield return _request; yield return _reason;
                 if (definition?.RequiresTargets == true) { yield return _machines; yield return _all; }
                 foreach (var option in options ?? []) yield return option;
