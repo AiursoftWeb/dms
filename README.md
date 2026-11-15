@@ -10,7 +10,9 @@ DMS is a server operations platform for humans and AI, built on Aiursoft Templat
 
 ![DMS local preview](./screenshot.png)
 
-## What is DMS?
+## Overview
+
+### What is DMS?
 
 - A web console for machine inventory, approvals and workflow history.
 - A CLI and reusable SDK for requesting operations and inspecting their results.
@@ -20,6 +22,30 @@ DMS is a server operations platform for humans and AI, built on Aiursoft Templat
 - Shared Aiursoft accounts, OIDC, roles, themes and localization.
 
 The current workflows cover approved Agent upgrades and status, scoped Box Puller mirror updates, performance information, service status and restart, block devices, local filesystem capacity, machine inventory and registration. Operational commands submit a Lockbox; inspection and approval commands use authenticated management APIs. Arbitrary shell commands are not exposed.
+
+## CLI & SDK
+
+Install the CLI with the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
+
+```sh
+dotnet tool install --global Aiursoft.DMS.Client
+dms --help
+```
+
+Sign in to your Controller and create a personal key under **API Keys**. In Bash, configure access and check your identity:
+
+```sh
+export DMS_SERVER=https://dms.aiursoft.com/
+read -rsp 'DMS personal API key: ' DMS_API_KEY
+echo
+export DMS_API_KEY
+dms access whoami
+dms cluster list
+```
+
+The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require their Cluster's risk permissions and Lockbox approval.
+
+Use `dotnet tool update --global Aiursoft.DMS.Client` to update or `dotnet tool uninstall --global Aiursoft.DMS.Client` to uninstall. See [CLI and Agent setup](./docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples. The [SDK source](./src/Aiursoft.DMS.SDK) is included in this repository and is not published as a separate NuGet package.
 
 ## Run manually
 

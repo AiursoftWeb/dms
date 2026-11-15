@@ -4,7 +4,36 @@
 
 The Controller provides the web UI and HTTP API. The CLI submits requests and inspects results; an Agent runs approved machine workflows on its own Linux host. The SDK is available in [Aiursoft.DMS.SDK](../src/Aiursoft.DMS.SDK).
 
-## Build the clients
+## Install the CLI
+
+Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), then install the global tool from NuGet:
+
+```sh
+dotnet tool install --global Aiursoft.DMS.Client
+```
+
+On AnduinOS or Ubuntu, add the global tool directory to your current Bash session's PATH:
+
+```sh
+export PATH="$HOME/.dotnet/tools:$PATH"
+```
+
+If your SDK installation has not already configured this directory, add that same line to `~/.bashrc` for new terminals. Check the installed command:
+
+```sh
+dms --help
+```
+
+Update or remove the CLI using the standard tool commands:
+
+```sh
+dotnet tool update --global Aiursoft.DMS.Client
+dotnet tool uninstall --global Aiursoft.DMS.Client
+```
+
+Company environments can select `https://nupkg.aiursoft.com/v3/index.json` as their NuGet source. Normal installations use public NuGet. Installing the CLI does not install a Controller or register the laptop as an Agent.
+
+## Build the clients from source
 
 From the repository root, use the .NET 10 SDK to publish the CLI and Agent:
 
@@ -16,7 +45,7 @@ dotnet publish src/Aiursoft.DMS.Agent -c Release \
 dotnet ./bin/client/dms.dll --help
 ```
 
-These are framework-dependent applications. Install the .NET 10 runtime on each host that runs one, and distribute the entire publish directory. The CLI and Agent are not currently packaged as installable NuGet tools.
+These source publishes are framework-dependent applications. Install the .NET 10 runtime on each host that runs one, and distribute the entire publish directory. The CLI is also available as the global tool above. Agents use the Controller's self-contained installer below rather than a NuGet tool.
 
 ## Configure access
 
@@ -25,10 +54,21 @@ Sign in through the Controller's configured authentication provider and create a
 ```sh
 export DMS_SERVER=https://dms.example.com
 export DMS_API_KEY='<personal-key>'
-dotnet ./bin/client/dms.dll access whoami
+dms access whoami
+dms cluster list
 ```
 
 `--server` and `--api-key` can also be supplied to individual commands. `whoami` shows the current user's ID, platform permissions and self-approval setting. Machine keys authenticate Agents.
+
+To enter a personal key without placing it in Bash command history:
+
+```sh
+read -rsp 'DMS personal API key: ' DMS_API_KEY
+echo
+export DMS_API_KEY
+```
+
+The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Existing command names, output formats and approval requirements are unchanged.
 
 ### Manage clusters and permissions
 

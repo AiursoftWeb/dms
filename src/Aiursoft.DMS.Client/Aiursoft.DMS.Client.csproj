@@ -1,17 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <Version>1.0.0</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>dms</AssemblyName>
     <RootNamespace>Aiursoft.DMS.Client</RootNamespace>
     <Description>Request approved server operations and inspect DMS workflows.</Description>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dms</ToolCommandName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Company>Aiursoft</Company>
+    <Product>DMS command-line client</Product>
+    <PackageId>Aiursoft.DMS.Client</PackageId>
+    <PackageTags>dms server operations workflows cli</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/aiursoftweb/dms</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/aiursoftweb/dms.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Aiursoft.DMS.SDK/Aiursoft.DMS.SDK.csproj" />
     <PackageReference Include="Aiursoft.CommandFramework" Version="10.0.19" />
+    <None Include="../../README.md" Pack="true" PackagePath="." />
   </ItemGroup>
 </Project>
