@@ -85,10 +85,13 @@ public class BoxPullerForceUpdateTests
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         using var scheduled = new System.Diagnostics.Process
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf("app/entry.sh")) { UseShellExecute = false }
+            StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf("app/entry.sh"))
+            {
+                UseShellExecute = false,
+                ArgumentList = { "aiursoft/other:latest" },
+                Environment = { ["SKIP_IF_SYNCED_HOURS"] = "1" }
+            }
         };
-        scheduled.StartInfo.ArgumentList.Add("aiursoft/other:latest");
-        scheduled.StartInfo.Environment["SKIP_IF_SYNCED_HOURS"] = "1";
         scheduled.Start();
         try
         {
@@ -161,6 +164,8 @@ public class BoxPullerForceUpdateTests
                 #!/bin/bash
                 set -eu
                 directory='{{_directory}}'
+                [[ "$1" == --host && "$2" == unix:///var/run/docker.sock ]]
+                shift 2
                 if [[ "$1" == ps ]]; then
                     [[ "$2" == --no-trunc && "$3" == --filter && "$4" == label=com.docker.swarm.service.name=puller_downloader && "$5" == --format && "$6" == '{{Format}}' ]]
                     cat "$directory/containers"

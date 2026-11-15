@@ -47,7 +47,7 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
     {
         input.Validate();
         var discovery = JsonSerializer.Deserialize<ProcessResult>(await context.CallAsync(new ProcessWorkflow(dockerExecutable,
-            ["ps", "--no-trunc", "--filter", "label=com.docker.swarm.service.name=puller_downloader", "--format", "{{.ID}}"], captureOutput: true), token))!;
+            ["--host", "unix:///var/run/docker.sock", "ps", "--no-trunc", "--filter", "label=com.docker.swarm.service.name=puller_downloader", "--format", "{{.ID}}"], captureOutput: true), token))!;
         var containers = discovery.Output.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (containers.Length != 1 || !ContainerId().IsMatch(containers[0]))
             throw new InvalidOperationException("Expected exactly one running local puller_downloader container. No sync was started.");
@@ -57,7 +57,7 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
         try
         {
             await context.CallAsync(new ProcessWorkflow(dockerExecutable,
-                ["exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync, input.Image]), token);
+                ["--host", "unix:///var/run/docker.sock", "exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync, input.Image]), token);
         }
         catch (ChildWorkflowException exception) when (exception.Result is "Process exited with code 70." or "Process exited with code 75." or "Process exited with code 78.")
         {
