@@ -25,15 +25,27 @@ The current workflows cover approved Agent upgrades and status, scoped Box Pulle
 
 ## CLI & SDK
 
-The CLI currently runs from a source publish with the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). From the repository root:
+Install the CLI with the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0):
 
-```bash
-dotnet publish src/Aiursoft.DMS.Client/Aiursoft.DMS.Client.csproj -c Release \
-  --no-self-contained -p:UseAppHost=false -o ./bin/client
-dotnet ./bin/client/dms.dll --help
+```sh
+dotnet tool install --global Aiursoft.DMS.Client
+dms --help
 ```
 
-Distribute the complete publish directory to CLI hosts with the .NET 10 runtime. The CLI is not yet published as an installable .NET tool. The [SDK source](src/Aiursoft.DMS.SDK) is included in this repository. See [CLI and Agent setup](docs/cli-and-agent.md) for authentication, management commands and operation examples.
+Sign in to your Controller and create a personal key under **API Keys**. In Bash, configure access and check your identity:
+
+```sh
+export DMS_SERVER=https://dms.aiursoft.com/
+read -rsp 'DMS personal API key: ' DMS_API_KEY
+echo
+export DMS_API_KEY
+dms access whoami
+dms cluster list
+```
+
+The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require their Cluster's risk permissions and Lockbox approval.
+
+Use `dotnet tool update --global Aiursoft.DMS.Client` to update or `dotnet tool uninstall --global Aiursoft.DMS.Client` to uninstall. See [CLI and Agent setup](./docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples. The [SDK source](./src/Aiursoft.DMS.SDK) is included in this repository and is not published as a separate NuGet package.
 
 ## Try
 
