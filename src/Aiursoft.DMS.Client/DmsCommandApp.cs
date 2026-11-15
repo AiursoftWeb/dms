@@ -13,6 +13,7 @@ public static class DmsCommandApp
             new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
         .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("set-grant", "grant"), new ManagementCommand("set-self-approval", "self"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
         .WithFeature(new Group("machine", [
+            new Group("box", [new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()), new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)]),
@@ -23,6 +24,14 @@ public static class DmsCommandApp
     private static ActionCommand StandardCommand<TInput, TResult>(string name, WorkflowDefinition<TInput, TResult> definition,
         Func<ParseResult, TInput> input, params Option[] options) =>
         new(name, definition.Name, definition, context => definition.Serialize(input(context)), options);
+
+    private static ActionCommand PullerCommand()
+    {
+        var image = new Option<string>("--image") { Required = true };
+        var puller = new Option<string>("--puller") { Description = "Puller to update: main (default) or cn." };
+        return StandardCommand("force-update", MachineWorkflows.PullerForceUpdate,
+            context => new PullerForceUpdateInput(context.GetValue(image) ?? string.Empty, context.GetValue(puller) ?? "main"), image, puller);
+    }
 
     private static ActionCommand ServiceCommand(string name, MachineWorkflowDefinition<ServiceInput, ProcessResult> definition)
     {

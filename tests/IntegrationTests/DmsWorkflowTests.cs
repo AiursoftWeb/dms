@@ -38,6 +38,8 @@ public class DmsWorkflowTests : TestBase
                 (["operation", "list-definitions", "--cluster-id", Guid.NewGuid().ToString()], key, "Access to this cluster is denied."),
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
                 (["machine", "systemctl", "status", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
+                (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
+                (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
                 (["cluster", "get-machines", "--cluster-id", setup.Cluster.ToString(), "--reason", new string('a', 2001)], key, "A request ID and a reason of at most 2000 characters are required.")
             })
             {
@@ -270,7 +272,7 @@ public class DmsWorkflowTests : TestBase
         var cluster = new Cluster { Name = "Test" }; db.Clusters.Add(cluster);
         var machine = new Machine { ClusterId = cluster.Id, Name = "Test machine", KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
         db.Machines.Add(machine);
-        foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Low, RiskLevel.Medium })
+        foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Low, RiskLevel.Medium, RiskLevel.High })
         {
             db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = risk, CanRequest = true, AutoApprove = automatic, CanApprove = true });
             db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = approver.Id, Risk = risk, CanApprove = true });
@@ -496,11 +498,42 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task PullerCliFreezesImageAndTargetsInHighRiskLockbox(string puller)
+    {
+        var setup = await ArrangeAsync();
+        var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Puller CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+        await db.SaveChangesAsync();
+        foreach (var format in new[] { "table", "json", "csv" })
+        {
+            var request = Guid.NewGuid();
+            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(),
+                "--machine-id", setup.Machine.ToString(), "--image", "aiursoft/dms:latest", "--puller", puller, "--reason", "Update DMS mirror", "--request-id", request.ToString(),
+                "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
+            Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+            var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
+            Assert.AreEqual(WorkflowNames.PullerForceUpdate, box.Definition); Assert.AreEqual("1", box.Version);
+            Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
+            var input = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
+            var frozen = MachineWorkflows.PullerForceUpdate.ReadInput(input.Input);
+            Assert.AreEqual("aiursoft/dms:latest", frozen.Image);
+            Assert.AreEqual(puller, frozen.Puller);
+            CollectionAssert.AreEqual(new[] { setup.Machine }, JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
+            StringAssert.Contains(cli.StdOut, box.Id.ToString());
+        }
+    }
+
+    [TestMethod]
     [DataRow(WorkflowNames.AgentStatus, RiskLevel.Safe)]
     [DataRow(WorkflowNames.ServiceStatus, RiskLevel.Low)]
     [DataRow(WorkflowNames.ListBlockDevices, RiskLevel.Safe)]
     [DataRow(WorkflowNames.DiskFree, RiskLevel.Safe)]
-    public async Task ReadOnlyCommandsUseRiskGrantsAndApprovedFrozenBatch(string definition, RiskLevel risk)
+    [DataRow(WorkflowNames.PullerForceUpdate, RiskLevel.High)]
+    public async Task MachineCommandsUseRiskGrantsAndApprovedFrozenBatch(string definition, RiskLevel risk)
     {
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
@@ -508,7 +541,13 @@ public class DmsWorkflowTests : TestBase
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var grant = await db.ClusterGrants.SingleAsync(g => g.ClusterId == setup.Cluster && g.UserId == setup.User && g.Risk == risk);
         grant.CanRequest = false; await db.SaveChangesAsync();
-        var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition; if (definition != WorkflowNames.ServiceStatus) input.Input = JsonSerializer.Serialize(new EmptyInput());
+        var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
+        input.Input = definition switch
+        {
+            WorkflowNames.ServiceStatus => input.Input,
+            WorkflowNames.PullerForceUpdate => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput("aiursoft/dms:latest")),
+            _ => JsonSerializer.Serialize(new EmptyInput())
+        };
         var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, input));
         Assert.AreEqual(403, denied.StatusCode);
         grant.CanRequest = true; await db.SaveChangesAsync();
