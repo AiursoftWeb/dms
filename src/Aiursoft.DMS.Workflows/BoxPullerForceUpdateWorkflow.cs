@@ -13,7 +13,7 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
             echo 'This CN Puller does not support scoped force updates.' >&2
             exit 78
         fi
-        exec /app/force-update.sh "$1"
+        exec /app/force-update.sh "$@"
         """;
 
     // Reuse Puller's existing Python runtime. Request arguments never become script source.
@@ -45,8 +45,9 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
                     continue
                 if len(args) > 1 and args[1] == os.fsencode(entry) and os.path.basename(args[0]) in (b'bash', b'sh'):
                     fail('Puller is already running. No new sync was started.', 75)
-            print('Starting a scoped Puller force update: ' + sys.argv[1], flush=True)
-            result = subprocess.run([entry, sys.argv[1]], check=False)
+            images = sys.argv[1:]
+            print('Starting a Puller force update: ' + (images[0] if images else 'all configured images'), flush=True)
+            result = subprocess.run([entry, *images], check=False)
             if result.returncode != 0:
                 fail('Puller finished with exit code ' + str(result.returncode) + '.', 70)
             print('Puller mirror sync completed. Service deployment must be checked separately.', flush=True)
@@ -60,15 +61,16 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
             ["--host", "unix:///var/run/docker.sock", "ps", "--no-trunc", "--filter", $"label=com.docker.swarm.service.name={service}", "--format", "{{.ID}}"], captureOutput: true), token))!;
         var containers = discovery.Output.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (containers.Length != 1 || !ContainerId().IsMatch(containers[0]))
-            throw new InvalidOperationException($"Expected exactly one running local {service} container. No sync was started.");
+            throw new InvalidOperationException($"Expected exactly one running local {service} container for the selected {input.Puller} Puller. No sync was started.");
         var container = containers[0];
-        await context.TraceAsync($"Forcing the existing Box {input.Puller} Puller to check {input.Image}; container {container}. This does not force a service deployment.");
+        await context.TraceAsync($"Forcing the existing Box {input.Puller} Puller to check {input.Image ?? "all configured images"}; container {container}. This does not force a service deployment.");
         token.ThrowIfCancellationRequested();
         try
         {
             string[] arguments = input.Puller == "cn"
-                ? ["--host", "unix:///var/run/docker.sock", "exec", container, "/bin/bash", "-c", CnSync, "dms-puller", input.Image]
-                : ["--host", "unix:///var/run/docker.sock", "exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync, input.Image];
+                ? ["--host", "unix:///var/run/docker.sock", "exec", container, "/bin/bash", "-c", CnSync, "dms-puller"]
+                : ["--host", "unix:///var/run/docker.sock", "exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync];
+            if (input.Image != null) arguments = [.. arguments, input.Image];
             await context.CallAsync(new ProcessWorkflow(dockerExecutable, arguments), token);
         }
         catch (ChildWorkflowException exception) when (exception.Result is "Process exited with code 70." or "Process exited with code 75." or "Process exited with code 78.")
@@ -81,7 +83,7 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
             await context.TraceAsync("The Docker exec outcome is unknown. Puller may still be running; verify before submitting another update.", "error");
             throw new WorkflowNeedsVerificationException(context.Id);
         }
-        return new PullerForceUpdateResult(input.Image, container, input.Puller);
+        return new PullerForceUpdateResult(input.Image, container, input.Puller, input.ImageScope);
     }
 
     [GeneratedRegex(@"\A[0-9a-f]{64}\z")]
