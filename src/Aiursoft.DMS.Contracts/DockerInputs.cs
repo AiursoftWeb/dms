@@ -18,7 +18,8 @@ public sealed partial record DockerContainerInput(string Container)
 {
     public void Validate()
     {
-        if (Container == null || !ContainerId().IsMatch(Container))
+        ArgumentNullException.ThrowIfNull(Container);
+        if (!ContainerId().IsMatch(Container))
             throw new ArgumentException("Use the full 64-character container ID returned by docker ps.");
     }
 
@@ -40,8 +41,10 @@ public sealed record DockerExecInput(string Container, string[] Command)
     public void Validate()
     {
         new DockerContainerInput(Container).Validate();
-        if (Command == null || Command.Length is < 1 or > 256 || string.IsNullOrWhiteSpace(Command[0]) ||
-            Command[0].StartsWith('-') || Command.Any(argument => argument == null || argument.Contains('\0')) ||
+        ArgumentNullException.ThrowIfNull(Command);
+        foreach (var argument in Command) ArgumentNullException.ThrowIfNull(argument);
+        if (Command.Length is < 1 or > 256 || string.IsNullOrWhiteSpace(Command[0]) ||
+            Command[0].StartsWith('-') || Command.Any(argument => argument.Contains('\0')) ||
             Command.Sum(argument => (long)argument.Length) > 16384)
             throw new ArgumentException("Supply an executable and up to 255 arguments (maximum 16384 characters, no NUL characters).");
     }

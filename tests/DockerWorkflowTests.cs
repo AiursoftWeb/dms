@@ -35,6 +35,9 @@ public class DockerWorkflowTests
         Assert.Throws<ArgumentException>(() => MachineWorkflows.DockerExec.Serialize(new DockerExecInput(Container, ["echo", new string('a', 16385)])));
         Assert.Throws<JsonException>(() => MachineWorkflows.DockerPs.ReadInput("{\"Host\":\"tcp://remote:2375\"}"));
         Assert.Throws<JsonException>(() => MachineWorkflows.DockerExec.ReadInput($"{{\"Container\":\"{Container}\",\"Command\":[\"true\"],\"Privileged\":true}}"));
+        Assert.Throws<ArgumentNullException>(() => MachineWorkflows.DockerKill.ReadInput("{\"Container\":null}"));
+        Assert.Throws<ArgumentNullException>(() => MachineWorkflows.DockerExec.ReadInput($"{{\"Container\":\"{Container}\",\"Command\":null}}"));
+        Assert.Throws<ArgumentNullException>(() => MachineWorkflows.DockerExec.ReadInput($"{{\"Container\":\"{Container}\",\"Command\":[\"echo\",null]}}"));
     }
 
     [TestMethod]
