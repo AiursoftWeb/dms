@@ -145,6 +145,6 @@ NugetNinja maintains the shared Template files and dependency conventions throug
 
 ## License
 
-<a id="credits"></a>
+<a name="credits"></a>
 
 Built on [Aiursoft Template](https://github.com/aiursoftweb/template). Licensed under the [MIT License](./LICENSE).
