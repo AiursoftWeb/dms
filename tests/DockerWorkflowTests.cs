@@ -54,7 +54,7 @@ public class DockerWorkflowTests
     public async Task LogsAreBoundedAndStreamBothOutputsIntoTheWorkflowTrace()
     {
         using var docker = new Docker();
-        var since = DateTimeOffset.Parse("2026-11-15T10:00:00+00:00");
+        var since = new DateTimeOffset(2026, 11, 15, 10, 0, 0, TimeSpan.Zero);
         await docker.RunAsync(new DockerLogsWorkflow(new DockerLogsInput(Container, 25, since), docker.Executable));
         CollectionAssert.AreEqual(new[] { "--host", "unix:///var/run/docker.sock", "logs", "--timestamps", "--tail", "25",
             "--since", "2026-11-15T10:00:00.0000000+00:00", Container }, docker.Arguments());
