@@ -83,14 +83,12 @@ public class BoxPullerForceUpdateTests
         using var fixture = new Puller();
         await File.WriteAllTextAsync(fixture.PathOf("hold"), "");
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-        using var scheduled = new System.Diagnostics.Process
+        using var scheduled = new System.Diagnostics.Process();
+        scheduled.StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf("app/entry.sh"))
         {
-            StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf("app/entry.sh"))
-            {
-                UseShellExecute = false,
-                ArgumentList = { "aiursoft/other:latest" },
-                Environment = { ["SKIP_IF_SYNCED_HOURS"] = "1" }
-            }
+            UseShellExecute = false,
+            ArgumentList = { "aiursoft/other:latest" },
+            Environment = { ["SKIP_IF_SYNCED_HOURS"] = "1" }
         };
         scheduled.Start();
         try
