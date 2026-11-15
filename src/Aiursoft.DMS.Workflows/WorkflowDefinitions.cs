@@ -2,7 +2,8 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
-public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents);
+public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents,
+    Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null);
 
 public sealed class MachineWorkflowRegistry
 {
@@ -16,6 +17,7 @@ public sealed class MachineWorkflowRegistry
         Register(MachineWorkflows.ServiceStatus, (input, _) => new ServiceStatusWorkflow(input.Service));
         Register(MachineWorkflows.ListBlockDevices, (_, _) => new ListBlockDevicesWorkflow());
         Register(MachineWorkflows.DiskFree, (_, _) => new DiskFreeWorkflow());
+        Register(MachineWorkflows.AgentUpgrade, (input, agent) => new AgentUpgradeWorkflow(input, agent));
         Register(MachineWorkflows.AgentStatus, (_, agent) => new AgentStatusWorkflow(agent.InstallationId, agent.Version, agent.ActiveTasks, agent.PendingEvents));
     }
 

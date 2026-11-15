@@ -15,7 +15,7 @@ public static class DmsCommandApp
         .WithFeature(new Group("machine", [
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
-            new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput())]),
+            new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()), new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)]),
             new Group("layout", [StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()), StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput())])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
         .WithFeature(new Group("operation", [new ActionCommand("list-definitions", "definitions"), new ActionCommand("query-audit", "audit"), new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
@@ -110,7 +110,7 @@ public static class DmsCommandApp
                     RequestId = requestId == Guid.Empty ? Guid.NewGuid() : requestId,
                     ClusterId = context.GetValue(_cluster), Workflow = action, MachineIds = (context.GetValue(_machines) ?? []).ToList(),
                     AllMachines = context.GetValue(_all), Reason = context.GetValue(_reason) ?? string.Empty,
-                    Input = input?.Invoke(context) ?? "{}",
+                    Input = action == WorkflowNames.AgentUpgrade ? MachineWorkflows.AgentUpgrade.Serialize(new AgentUpgradeInput((await client.AgentReleasesAsync()).Data)) : input?.Invoke(context) ?? "{}",
                     MachineName = context.GetValue(_machineName) ?? string.Empty,
                     TargetWorkflowId = action == WorkflowNames.Kill ? id : null
                 });

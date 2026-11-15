@@ -5,8 +5,10 @@ using Aiursoft.DMS.Workflows;
 
 namespace Aiursoft.DMS.Agent;
 
-public sealed class AgentClient(Uri controller, string key, TaskJournal journal, MachineWorkflowRegistry? workflows = null)
+public sealed class AgentClient(Uri controller, string key, TaskJournal journal, MachineWorkflowRegistry? workflows = null, string? installedState = null)
 {
+    private readonly object _startGate = new();
+    private Guid? _maintenance;
     private readonly ConcurrentDictionary<Guid, MachineWorkflowContext> _running = new();
     private readonly MachineWorkflowRegistry _workflows = workflows ?? new MachineWorkflowRegistry();
 
@@ -55,9 +57,12 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         while (!token.IsCancellationRequested)
         {
             await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString() }, token);
+            Guid? maintenance;
+            lock (_startGate) maintenance = _maintenance;
             foreach (var task in journal.Snapshot().Where(t => !t.State.Terminal() || t.Pending.Count > 0))
             {
-                await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "status", TaskId = task.Id, State = task.State }, token);
+                if (task.State != RunState.Accepted || maintenance == null || maintenance == task.Id)
+                    await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "status", TaskId = task.Id, State = task.State }, token);
                 foreach (var item in task.Pending.Take(64))
                     await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "event", TaskId = task.Id, Event = item }, token);
             }
@@ -77,8 +82,12 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
                     journal.Accept(message);
                     break;
                 case "start":
-                    var task = journal.Start(message.TaskId);
-                    if (task != null) _ = ExecuteAsync(task);
+                    lock (_startGate)
+                    {
+                        if (_maintenance != null && _maintenance != message.TaskId) break;
+                        var task = journal.Start(message.TaskId);
+                        if (task != null) _ = ExecuteAsync(task);
+                    }
                     break;
                 case "cancel":
                     if (_running.TryGetValue(message.TaskId, out var running)) await running.CancelAsync(message.TargetWorkflowId ?? message.TaskId);
@@ -89,10 +98,40 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         }
     }
 
+    private async Task<AgentUpgradeResult> UpgradeAsync(Guid taskId, MachineWorkflowContext context, AgentUpgradeInput input, CancellationToken token)
+    {
+        lock (_startGate)
+        {
+            if (_maintenance != null) throw new InvalidOperationException("An Agent upgrade is already running.");
+            _maintenance = taskId;
+        }
+        try
+        {
+            await context.TraceAsync("Pausing new machine tasks and waiting for running tasks to finish.");
+            using var drain = CancellationTokenSource.CreateLinkedTokenSource(token);
+            drain.CancelAfter(TimeSpan.FromMinutes(1));
+            while (true)
+            {
+                var others = journal.Snapshot().Where(t => t.Id != taskId).ToList();
+                if (others.Any(t => t.State is RunState.NeedsVerification or RunState.CancelRequested))
+                    throw new InvalidOperationException("Reconcile uncertain machine tasks before upgrading the Agent.");
+                if (others.All(t => t.State != RunState.Running)) break;
+                await Task.Delay(250, drain.Token);
+            }
+            return await new AgentUpgrade(installedState!, journal).PrepareAsync(taskId, context, input, token);
+        }
+        catch
+        {
+            lock (_startGate) { if (_maintenance == taskId) _maintenance = null; }
+            throw;
+        }
+    }
+
     private async Task ExecuteAsync(JournalTask task)
     {
         var environment = new AgentEnvironment(journal.InstallationId, typeof(AgentClient).Assembly.GetName().Version!.ToString(),
-            journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count));
+            journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count),
+            installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token));
         var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try
@@ -108,6 +147,10 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
                     State = RunState.Failed, Result = System.Text.Json.JsonSerializer.Serialize(new { Error = exception.Message }) });
             Console.Error.WriteLine($"Workflow {task.Id}: {exception.GetType().Name}. Inspect the workflow trace and journal.");
         }
-        finally { _running.TryRemove(task.Id, out _); }
+        finally
+        {
+            _running.TryRemove(task.Id, out _);
+            lock (_startGate) { if (_maintenance == task.Id) _maintenance = null; }
+        }
     }
 }

@@ -10,6 +10,7 @@ public static class WorkflowNames
     public const string Batch = "cluster.machine-batch";
     public const string Performance = "machine.performance.info";
     public const string Restart = "machine.systemctl.restart";
+    public const string AgentUpgrade = "machine.agent.upgrade";
     public const string AgentStatus = "machine.agent.status";
     public const string ServiceStatus = "machine.systemctl.status";
     public const string ListBlockDevices = "machine.layout.lsblk";

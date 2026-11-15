@@ -46,6 +46,7 @@ public sealed class MachineWorkflowContext
     }
 
     public Guid Id => _id;
+    public Guid? ParentId => _parentId;
 
     public async Task CancelAsync(Guid target)
     {
@@ -80,6 +81,11 @@ public sealed class MachineWorkflowContext
             await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.Cancelled });
             throw;
         }
+        catch (WorkflowNeedsVerificationException)
+        {
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.NeedsVerification });
+            throw;
+        }
         catch (Exception exception)
         {
             await TraceAsync(exception.Message, "error");
@@ -97,6 +103,7 @@ public sealed class MachineWorkflowContext
         var id = Guid.NewGuid();
         try { return await new MachineWorkflowContext(id, _id, _report, _cancellations, _environment, _workflows).RunAsync(workflow, token); }
         catch (OperationCanceledException) { throw; }
+        catch (WorkflowNeedsVerificationException) { throw; }
         catch (Exception exception) { throw new ChildWorkflowException(id, workflow.Name, null, RunState.Failed, exception.Message); }
     }
 
