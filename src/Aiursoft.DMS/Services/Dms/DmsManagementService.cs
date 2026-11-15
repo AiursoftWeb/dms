@@ -63,8 +63,8 @@ public sealed class DmsManagementService(TemplateDbContext db, AccessService acc
     public Task<ClusterSummary> DropAsync(string actor, Guid id) => gate.RunAsync(async () =>
     {
         var cluster = await db.Clusters.NotCacheable().SingleOrDefaultAsync(c => c.Id == id) ?? throw new DmsException(404, "Cluster not found.");
-        if (await db.Machines.NotCacheable().AnyAsync(m => m.ClusterId == id) || await db.Lockboxes.NotCacheable().AnyAsync(l => l.ClusterId == id) || await db.WorkflowRuns.NotCacheable().AnyAsync(r => r.ClusterId == id))
-            throw new DmsException(409, "Only an empty cluster with no operation history can be deleted.");
+        if (await db.JoinKeys.NotCacheable().AnyAsync(k => k.ClusterId == id) || await db.Machines.NotCacheable().AnyAsync(m => m.ClusterId == id) || await db.Lockboxes.NotCacheable().AnyAsync(l => l.ClusterId == id) || await db.WorkflowRuns.NotCacheable().AnyAsync(r => r.ClusterId == id))
+            throw new DmsException(409, "Only an empty cluster with no operation or enrollment history can be deleted.");
         db.ClusterGrants.RemoveRange(await db.ClusterGrants.NotCacheable().Where(g => g.ClusterId == id).ToListAsync());
         db.Clusters.Remove(cluster); access.Audit(actor, "access.cluster.drop", id); await db.SaveChangesAsync();
         return new ClusterSummary(cluster.Id, cluster.Name);

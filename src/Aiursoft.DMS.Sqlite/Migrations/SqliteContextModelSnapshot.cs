@@ -17,6 +17,62 @@ namespace Aiursoft.DMS.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.15");
 
+            modelBuilder.Entity("Aiursoft.DMS.Entities.AgentEnrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AgentKeyHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("InstallationId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("JoinKeyId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("LockboxId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("MachineId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MachineName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReceiptHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentKeyHash")
+                        .IsUnique();
+
+                    b.HasIndex("InstallationId");
+
+                    b.HasIndex("JoinKeyId");
+
+                    b.HasIndex("LockboxId")
+                        .IsUnique();
+
+                    b.HasIndex("MachineId");
+
+                    b.HasIndex("ReceiptHash")
+                        .IsUnique();
+
+                    b.ToTable("AgentEnrollments");
+                });
+
             modelBuilder.Entity("Aiursoft.DMS.Entities.AuditEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -111,6 +167,51 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("GlobalSettings");
+                });
+
+            modelBuilder.Entity("Aiursoft.DMS.Entities.JoinKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ClusterId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("IssuerId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Revoked")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClusterId");
+
+                    b.HasIndex("IssuerId");
+
+                    b.HasIndex("KeyHash")
+                        .IsUnique();
+
+                    b.ToTable("JoinKeys");
                 });
 
             modelBuilder.Entity("Aiursoft.DMS.Entities.LockboxRequest", b =>
@@ -225,6 +326,9 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("InstallationId")
+                        .IsUnique();
 
                     b.HasIndex("KeyHash")
                         .IsUnique();
@@ -559,6 +663,51 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Aiursoft.DMS.Entities.AgentEnrollment", b =>
+                {
+                    b.HasOne("Aiursoft.DMS.Entities.JoinKey", "JoinKey")
+                        .WithMany()
+                        .HasForeignKey("JoinKeyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Aiursoft.DMS.Entities.LockboxRequest", "Lockbox")
+                        .WithMany()
+                        .HasForeignKey("LockboxId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Aiursoft.DMS.Entities.Machine", "Machine")
+                        .WithMany()
+                        .HasForeignKey("MachineId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("JoinKey");
+
+                    b.Navigation("Lockbox");
+
+                    b.Navigation("Machine");
+                });
+
+            modelBuilder.Entity("Aiursoft.DMS.Entities.JoinKey", b =>
+                {
+                    b.HasOne("Aiursoft.DMS.Entities.Cluster", "Cluster")
+                        .WithMany()
+                        .HasForeignKey("ClusterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Aiursoft.DMS.Entities.User", "Issuer")
+                        .WithMany()
+                        .HasForeignKey("IssuerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cluster");
+
+                    b.Navigation("Issuer");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

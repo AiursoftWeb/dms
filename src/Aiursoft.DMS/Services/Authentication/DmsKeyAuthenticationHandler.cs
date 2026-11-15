@@ -27,6 +27,18 @@ public sealed class DmsKeyAuthenticationHandler(
         var raw = header[7..];
         if (raw.Length != 69 || !raw[5..].All(char.IsAsciiHexDigit)) return AuthenticateResult.Fail("Invalid API Key.");
         var hash = Hash(raw);
+        if (raw.StartsWith("dmsj_", StringComparison.Ordinal))
+        {
+            var join = await db.JoinKeys.AsNoTracking().NotCacheable().SingleOrDefaultAsync(k => k.KeyHash == hash && !k.Revoked && k.ExpiresAt > DateTime.UtcNow);
+            if (join == null) return AuthenticateResult.Fail("Invalid or expired join key.");
+            return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity([new Claim("DmsJoinKey", join.Id.ToString())], SchemeName)), SchemeName));
+        }
+        if (raw.StartsWith("dmsr_", StringComparison.Ordinal))
+        {
+            var enrollment = await db.AgentEnrollments.AsNoTracking().NotCacheable().SingleOrDefaultAsync(e => e.ReceiptHash == hash);
+            if (enrollment == null) return AuthenticateResult.Fail("Invalid enrollment receipt.");
+            return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(new ClaimsIdentity([new Claim("DmsEnrollment", enrollment.Id.ToString())], SchemeName)), SchemeName));
+        }
         if (raw.StartsWith("dmsa_", StringComparison.Ordinal))
         {
             var machine = await db.Machines.AsNoTracking().NotCacheable().SingleOrDefaultAsync(m => m.KeyHash == hash && !m.Disabled);
