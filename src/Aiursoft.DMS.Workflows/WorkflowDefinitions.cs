@@ -11,6 +11,10 @@ public sealed class MachineWorkflowRegistry
 
     public MachineWorkflowRegistry()
     {
+        Register(MachineWorkflows.DockerPs, (input, _) => new DockerPsWorkflow(input));
+        Register(MachineWorkflows.DockerLogs, (input, _) => new DockerLogsWorkflow(input));
+        Register(MachineWorkflows.DockerExec, (input, _) => new DockerExecWorkflow(input));
+        Register(MachineWorkflows.DockerKill, (input, _) => new DockerKillWorkflow(input));
         Register(MachineWorkflows.DiskUsage, (input, _) => new MachineDiskUsageWorkflow(input));
         Register(MachineWorkflows.PullerForceUpdate, (input, _) => new BoxPullerForceUpdateWorkflow(input));
         Register(MachineWorkflows.Performance, (_, _) => new PerformanceInfoWorkflow());

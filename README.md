@@ -19,7 +19,7 @@ DMS is a server operations platform for humans and AI, built on Aiursoft Templat
 - Persistent workflow state, parent/child callstacks and ClickHouse trace archives.
 - Shared Aiursoft accounts, OIDC, roles, themes and localization.
 
-The current workflows cover approved Agent upgrades and status, scoped Box Puller mirror updates, performance information, service status and restart, block devices, local filesystem capacity, machine inventory and registration. Operational commands submit a Lockbox; inspection and approval commands use authenticated management APIs. Arbitrary shell commands are not exposed.
+The current workflows cover approved Agent upgrades and status, Docker container listing, logs, execution and stopping, scoped Box Puller mirror updates, performance information, service status and restart, block devices, local filesystem capacity, machine inventory and registration. Operational commands submit a Lockbox; inspection and approval commands use authenticated management APIs. Container execution requires VeryHigh permission and approval; host shell commands are not exposed.
 
 ## Run manually
 

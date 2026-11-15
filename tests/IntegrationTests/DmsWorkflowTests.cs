@@ -262,6 +262,52 @@ public class DmsWorkflowTests : TestBase
         Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
     }
 
+    [TestMethod]
+    public async Task DockerCliFreezesLiteralArgumentsAndRequiresVeryHighPermissionForExec()
+    {
+        var setup = await ArrangeAsync();
+        var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Docker CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+        await db.SaveChangesAsync();
+        var container = new string('a', 64);
+        string[] common = ["--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Docker command",
+            "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"];
+        string[] exec = ["machine", "docker", "exec", .. common, "--container", container, "--", "/start.sh", "a b", "$(id)", "--server", "unchanged"];
+        var denied = await Client.DmsCommandApp.Create().TestRunAsync(exec);
+        Assert.AreEqual(1, denied.ProgramReturn);
+        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster));
+        db.ClusterGrants.Add(new ClusterGrant { ClusterId = setup.Cluster, UserId = setup.User, Risk = RiskLevel.VeryHigh, CanRequest = true });
+        await db.SaveChangesAsync();
+        var accepted = await Client.DmsCommandApp.Create().TestRunAsync(exec);
+        Assert.AreEqual(0, accepted.ProgramReturn, accepted.StdErr);
+        var box = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster);
+        Assert.AreEqual(RiskLevel.VeryHigh, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
+        var request = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
+        var input = MachineWorkflows.DockerExec.ReadInput(request.Input);
+        Assert.AreEqual(container, input.Container);
+        CollectionAssert.AreEqual(new[] { "/start.sh", "a b", "$(id)", "--server", "unchanged" }, input.Command);
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        request.Input = MachineWorkflows.DockerExec.Serialize(input with { Command = ["/different.sh"] });
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request))).StatusCode);
+
+        var ps = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "ps", .. common, "--all", "--grep-name", "nugetninja.worker"]);
+        Assert.AreEqual(0, ps.ProgramReturn, ps.StdErr);
+        var psBox = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster && l.Definition == "machine.docker.ps");
+        var psInput = MachineWorkflows.DockerPs.ReadInput(JsonSerializer.Deserialize<OperationRequest>(psBox.Parameters)!.Input);
+        Assert.IsTrue(psInput.All); Assert.AreEqual("nugetninja.worker", psInput.GrepName);
+        var logs = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "logs", .. common, "--container", container]);
+        Assert.AreEqual(0, logs.ProgramReturn, logs.StdErr);
+        var logsBox = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster && l.Definition == "machine.docker.logs");
+        Assert.AreEqual(100, MachineWorkflows.DockerLogs.ReadInput(JsonSerializer.Deserialize<OperationRequest>(logsBox.Parameters)!.Input).Tail);
+        var kill = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "kill", .. common, "--container", container]);
+        Assert.AreEqual(0, kill.ProgramReturn, kill.StdErr);
+        var killBox = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster && l.Definition == "machine.docker.kill");
+        Assert.AreEqual(RiskLevel.High, killBox.Risk);
+        Assert.IsNull(killBox.OperationId);
+    }
+
     private async Task<(Guid Cluster, string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false, bool isolatedRequester = false)
     {
         using var scope = Server!.Services.CreateScope();
@@ -635,12 +681,22 @@ public class DmsWorkflowTests : TestBase
     [DataRow(WorkflowNames.ListBlockDevices, RiskLevel.Safe)]
     [DataRow(WorkflowNames.DiskFree, RiskLevel.Safe)]
     [DataRow(WorkflowNames.PullerForceUpdate, RiskLevel.High)]
+    [DataRow("machine.docker.ps", RiskLevel.Low)]
+    [DataRow("machine.docker.logs", RiskLevel.Low)]
+    [DataRow("machine.docker.exec", RiskLevel.VeryHigh)]
+    [DataRow("machine.docker.kill", RiskLevel.High)]
     public async Task MachineCommandsUseRiskGrantsAndApprovedFrozenBatch(string definition, RiskLevel risk)
     {
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        if (risk == RiskLevel.VeryHigh)
+        {
+            db.ClusterGrants.Add(new ClusterGrant { ClusterId = setup.Cluster, UserId = setup.User, Risk = risk, CanRequest = true });
+            db.ClusterGrants.Add(new ClusterGrant { ClusterId = setup.Cluster, UserId = setup.Approver, Risk = risk, CanApprove = true });
+            await db.SaveChangesAsync();
+        }
         var grant = await db.ClusterGrants.SingleAsync(g => g.ClusterId == setup.Cluster && g.UserId == setup.User && g.Risk == risk);
         grant.CanRequest = false; await db.SaveChangesAsync();
         var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
@@ -648,6 +704,10 @@ public class DmsWorkflowTests : TestBase
         {
             WorkflowNames.ServiceStatus => input.Input,
             WorkflowNames.PullerForceUpdate => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput("aiursoft/dms:latest")),
+            "machine.docker.ps" => MachineWorkflows.DockerPs.Serialize(new DockerPsInput(GrepName: "worker.1")),
+            "machine.docker.logs" => MachineWorkflows.DockerLogs.Serialize(new DockerLogsInput(new string('a', 64))),
+            "machine.docker.exec" => MachineWorkflows.DockerExec.Serialize(new DockerExecInput(new string('a', 64), ["/start.sh"])),
+            "machine.docker.kill" => MachineWorkflows.DockerKill.Serialize(new DockerContainerInput(new string('a', 64))),
             _ => JsonSerializer.Serialize(new EmptyInput())
         };
         var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, input));

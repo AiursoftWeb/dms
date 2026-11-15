@@ -81,6 +81,10 @@ public sealed record ClusterWorkflowDefinition<TInput, TResult>(string Name, Ris
 // Definitions are shared contracts. Only explicit execution-factory registration makes them runnable.
 public static class MachineWorkflows
 {
+    public static readonly MachineWorkflowDefinition<DockerPsInput, ProcessResult> DockerPs = new("machine.docker.ps", RiskLevel.Low, "1", input => input.Validate());
+    public static readonly MachineWorkflowDefinition<DockerLogsInput, ProcessResult> DockerLogs = new("machine.docker.logs", RiskLevel.Low, "1", input => input.Validate());
+    public static readonly MachineWorkflowDefinition<DockerExecInput, ProcessResult> DockerExec = new("machine.docker.exec", RiskLevel.VeryHigh, "1", input => input.Validate());
+    public static readonly MachineWorkflowDefinition<DockerContainerInput, ProcessResult> DockerKill = new("machine.docker.kill", RiskLevel.High, "1", input => input.Validate());
     public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", Version: "1");
     public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, RiskLevel.High, "2", input => input.Validate());
     public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe);

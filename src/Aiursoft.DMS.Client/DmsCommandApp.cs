@@ -13,6 +13,7 @@ public static class DmsCommandApp
             new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
         .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("set-grant", "grant"), new ManagementCommand("set-self-approval", "self"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
         .WithFeature(new Group("machine", [
+            new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand()]),
             new Group("box", [new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
@@ -33,6 +34,43 @@ public static class DmsCommandApp
             context => new PullerForceUpdateInput(context.GetValue(image), context.GetValue(puller) ?? "main"), image, puller);
     }
 
+    private static ActionCommand DockerPsCommand()
+    {
+        var all = new Option<bool>("--all") { Description = "Include stopped containers." };
+        var name = new Option<string?>("--grep-name") { Description = "Only containers whose names contain this literal text." };
+        return StandardCommand("ps", MachineWorkflows.DockerPs,
+            context => new DockerPsInput(context.GetValue(all), context.GetValue(name)), all, name);
+    }
+
+    private static Option<string> ContainerOption() => new("--container")
+    {
+        Required = true, Description = "Full container ID from docker ps; names and short IDs are not accepted."
+    };
+
+    private static ActionCommand DockerLogsCommand()
+    {
+        var container = ContainerOption();
+        var tail = new Option<int>("--tail") { DefaultValueFactory = _ => 100, Description = "Last 1 to 1000 lines (default 100)." };
+        var since = new Option<DateTimeOffset?>("--since") { Description = "Only logs since this timestamp with UTC offset." };
+        return StandardCommand("logs", MachineWorkflows.DockerLogs,
+            context => new DockerLogsInput(context.GetValue(container)!, context.GetValue(tail), context.GetValue(since)), container, tail, since);
+    }
+
+    private static ActionCommand DockerExecCommand()
+    {
+        var container = ContainerOption();
+        var command = new Argument<string[]>("command") { Arity = ArgumentArity.OneOrMore, Description = "Executable and arguments after --; no implicit shell." };
+        return new ActionCommand("exec", MachineWorkflows.DockerExec.Name, MachineWorkflows.DockerExec,
+            context => MachineWorkflows.DockerExec.Serialize(new DockerExecInput(context.GetValue(container)!, context.GetValue(command)!)), [container], command);
+    }
+
+    private static ActionCommand DockerKillCommand()
+    {
+        var container = ContainerOption();
+        return StandardCommand("kill", MachineWorkflows.DockerKill,
+            context => new DockerContainerInput(context.GetValue(container)!), container);
+    }
+
     private static ActionCommand ServiceCommand(string name, MachineWorkflowDefinition<ServiceInput, ProcessResult> definition)
     {
         var service = new Option<string>("--service") { Required = true };
@@ -46,8 +84,14 @@ public static class DmsCommandApp
         protected override CommandHandlerBuilder[] GetSubCommandHandlers() => children;
     }
 
-    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null) : DmsCommandHandler
+    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null, Argument? argument = null) : DmsCommandHandler
     {
+        public override Command BuildAsCommand()
+        {
+            var command = base.BuildAsCommand();
+            if (argument != null) command.Arguments.Add(argument);
+            return command;
+        }
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
         protected override string Description => IsSubmission ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
