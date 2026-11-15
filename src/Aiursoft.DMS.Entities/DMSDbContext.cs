@@ -15,6 +15,8 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
     public DbSet<ClusterGrant> ClusterGrants => Set<ClusterGrant>();
     public DbSet<Machine> Machines => Set<Machine>();
     public DbSet<PersonalApiKey> PersonalApiKeys => Set<PersonalApiKey>();
+    public DbSet<JoinKey> JoinKeys => Set<JoinKey>();
+    public DbSet<AgentEnrollment> AgentEnrollments => Set<AgentEnrollment>();
     public DbSet<LockboxRequest> Lockboxes => Set<LockboxRequest>();
     public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
@@ -27,6 +29,17 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
         builder.Entity<ClusterGrant>().HasIndex(x => new { x.ClusterId, x.UserId, x.Risk }).IsUnique();
         builder.Entity<PersonalApiKey>().HasIndex(x => x.KeyHash).IsUnique();
         builder.Entity<Machine>().HasIndex(x => x.KeyHash).IsUnique();
+        builder.Entity<Machine>().HasIndex(x => x.InstallationId).IsUnique();
+        builder.Entity<JoinKey>().HasIndex(x => x.KeyHash).IsUnique();
+        builder.Entity<JoinKey>().HasOne(x => x.Cluster).WithMany().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<JoinKey>().HasOne(x => x.Issuer).WithMany().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<AgentEnrollment>().HasIndex(x => x.ReceiptHash).IsUnique();
+        builder.Entity<AgentEnrollment>().HasIndex(x => x.AgentKeyHash).IsUnique();
+        builder.Entity<AgentEnrollment>().HasIndex(x => x.LockboxId).IsUnique();
+        builder.Entity<AgentEnrollment>().HasIndex(x => x.InstallationId);
+        builder.Entity<AgentEnrollment>().HasOne(x => x.JoinKey).WithMany().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<AgentEnrollment>().HasOne(x => x.Lockbox).WithMany().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<AgentEnrollment>().HasOne(x => x.Machine).WithMany().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<LockboxRequest>().HasIndex(x => new { x.RequesterId, x.ClientRequestId }).IsUnique();
         builder.Entity<WorkflowRun>().HasIndex(x => x.RootId);
         builder.Entity<WorkflowRun>().HasIndex(x => new { x.ClusterId, x.CreatedAt });

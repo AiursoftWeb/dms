@@ -15,7 +15,7 @@ namespace Aiursoft.DMS.Controllers;
 [Authorize(AuthenticationSchemes = DmsKeyAuthenticationHandler.SchemeName, Policy = "DmsHuman")]
 [Route("api/v1/dms")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, WorkflowInvestigation investigation, ILogger<DmsApiController> logger, DmsManagementService management) : ControllerBase
+public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, WorkflowInvestigation investigation, ILogger<DmsApiController> logger, DmsManagementService management, EnrollmentService enrollment) : ControllerBase
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -40,6 +40,22 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         access.Audit(Actor, "access.identity"); await db.SaveChangesAsync();
         return new CurrentUser(Actor, User.Identity?.Name ?? "", self, User.FindAll(AppPermissions.Type).Select(c => c.Value).Distinct().Order().ToList());
     });
+
+    [HttpPost("access/join-keys"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> IssueJoinKey([FromBody] JoinKeyInput? input) => Handle(async () =>
+    {
+        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid join key request.");
+        return await enrollment.IssueAsync(Actor, input);
+    });
+
+    [HttpGet("access/join-keys"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> JoinKeys(Guid clusterId) => Handle(async () => await enrollment.KeysAsync(Actor, clusterId));
+
+    [HttpDelete("access/join-keys/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> RevokeJoinKey(Guid id) => Handle(async () => await enrollment.RevokeAsync(Actor, id));
+
+    [HttpGet("access/enrollments"), Authorize(Policy = "CanManageDmsAccess")]
+    public Task<IActionResult> Enrollments(Guid clusterId) => Handle(async () => await enrollment.ListAsync(Actor, clusterId));
 
     [HttpGet("clusters")]
     public Task<IActionResult> Clusters() => Handle(async () => await management.ClustersAsync(Actor, User.HasClaim(AppPermissions.Type, "CanManageDmsAccess")));

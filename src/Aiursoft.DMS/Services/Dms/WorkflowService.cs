@@ -24,7 +24,10 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         return new WorkflowCatalogResult(cluster, selfApproval, definitions);
     });
 
-    public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(async () =>
+    public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(() => SubmitCoreAsync(user, request));
+
+    // Enrollment uses the same approval path while holding ControllerGate and a database transaction.
+    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request)
     {
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
@@ -82,7 +85,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the cluster risk policy.");
         await db.SaveChangesAsync();
         return lockbox;
-    });
+    }
 
     public Task<LockboxRequest> DecideAsync(string user, Guid id, bool approve, string reason) => gate.RunAsync(async () =>
     {

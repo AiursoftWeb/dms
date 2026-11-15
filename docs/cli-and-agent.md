@@ -59,42 +59,82 @@ dotnet ./bin/client/dms.dll cluster rename --cluster-id <cluster-id> --name <new
 dotnet ./bin/client/dms.dll cluster drop --cluster-id <cluster-id>
 ```
 
-Deletion requires no machines and no operation history. Its access grants are removed atomically and the audit record is retained.
+Deletion requires no machines, operation history or enrollment keys (including revoked keys). Its access grants are removed atomically and the audit record is retained.
 
-## Register a machine
+## Install and join an Agent
 
-Replace the example IDs with the IDs from your deployment:
+An administrator with **Manage DMS access** issues a dedicated join key for one cluster:
 
 ```sh
-dotnet ./bin/client/dms.dll cluster add-machine \
-  --cluster-id <cluster-id> --name server-01 --reason 'Register server'
+dotnet ./bin/client/dms.dll access create-join-key \
+  --cluster-id <cluster-id> --name 'Production enrollment' --days 7
+```
+
+The key is displayed once. It can enroll several machines into that cluster until it expires or is revoked. It can only submit registration requests; it cannot approve requests, query inventory or execute workflows. Its issuer needs permission to request the Medium registration workflow in that cluster. Registration uses the issuer's current request and automatic-approval permissions.
+
+On each managed Linux x64 or arm64 host, run this once from Bash:
+
+```sh
+curl --fail --silent --show-error https://dms.example.com/agent/install.sh | \
+  sudo bash -s -- --controller-url https://dms.example.com/ \
+  --api-key '<join-key>' --cluster-name aiursoft-prod
+```
+
+The host needs `curl`, `tar`, systemd and access to the Controller. The Controller supplies a self-contained Agent, including its .NET runtime; the managed host needs neither internet access nor a preinstalled .NET runtime. Use HTTPS for production. The installer runs the Agent as root so approved operating-system workflows can execute. Add `--name server-01` to override the hostname.
+
+The installer creates `/opt/aiursoft-dms-agent`, the `/usr/local/bin/dms-agent` symlink and `dms-agent.service`. It persists the private installation identity, enrollment receipt and machine credential under `/var/lib/aiursoft-dms-agent` (directory 0700, configuration 0600). It never persists the reusable join key or a human personal key. Keep this state directory when restarting or upgrading the Agent.
+
+The join prints the enrollment, Lockbox, workflow and installation IDs. The service starts immediately and waits for approval without requiring another visit to the machine. An authorized approver can inspect and approve the request:
+
+```sh
+dotnet ./bin/client/dms.dll access list-enrollments --cluster-id <cluster-id>
 dotnet ./bin/client/dms.dll lockbox get --id <lockbox-id>
 dotnet ./bin/client/dms.dll lockbox approve \
-  --id <lockbox-id> --reason 'Registration approved'
+  --id <lockbox-id> --reason 'Verified machine registration'
 ```
 
-The submission returns a Lockbox ID. A permitted approver must approve it unless the requester's cluster permission allows automatic approval. After approval, inspect the operation result for the machine ID. Issue that machine's Agent key using the CLI or **Cluster access**:
+Self approval still requires the independent self-approval attribute. A machine credential becomes usable only after the registration workflow creates the machine. The Agent then connects outward over WebSocket. It requires no inbound SSH or database access.
+
+If the Agent binary is already installed, the equivalent registration command is:
 
 ```sh
-dotnet ./bin/client/dms.dll access issue-agent-key --machine-id <machine-id>
+sudo dms-agent join --controller-url https://dms.example.com/ \
+  --api-key '<join-key>' --cluster-name aiursoft-prod
 ```
 
-The response contains the new key once; issuing another key revokes the previous key. Access snapshots omit keys and stored key hashes. Preserve the machine's existing installation identity when rotating its key.
+Repeated joins resume the same pending request. A denied or unavailable request can be retried with a valid join key, producing a new request while preserving the installation identity. Once joined, repeating the installer preserves credentials and running tasks; it does not implicitly upgrade or restart an active Agent. Joining a different Controller or cluster is rejected while the existing identity remains in place.
 
-## Run an Agent
-
-Copy the Agent publish directory to the managed Linux host and provide a private persistent state directory writable by the Agent's account:
+Administrators can inspect or revoke join keys:
 
 ```sh
-export DMS_CONTROLLER=https://dms.example.com
+dotnet ./bin/client/dms.dll access list-join-keys --cluster-id <cluster-id>
+dotnet ./bin/client/dms.dll access revoke-join-key --id <join-key-id>
+```
+
+Revocation prevents new registrations and activation of pending registrations. Previously approved machines retain their independent credentials. The enrollment history and approval decisions remain available for investigation.
+
+### Build self-contained Agent assets
+
+Controller Docker images and APKG packages include both Linux architectures. For a manual Controller publish, create the assets beside the Controller's published assembly:
+
+```sh
+bash scripts/build-agent-assets.sh ./bin/controller/agent-assets
+```
+
+The build requires the .NET 10 SDK and restores both architectures' runtime and host packs. The asset script explicitly ships serviced runtime patch 10.0.15, independently of the SDK's bundled runtime. Update that patch in the script when servicing the Agent runtime; admission and vulnerability checks still apply. The Controller serves only the supported `linux-x64` and `linux-arm64` bundles. Its installation endpoints return 404 when those assets have not been packaged.
+
+### Run an Agent during development
+
+For an isolated development environment, register a machine with `cluster add-machine`, approve its Lockbox, then issue a machine key with `access issue-agent-key --machine-id <machine-id>`. Issuing another key replaces the previous one. Run the framework-dependent publish using a private persistent state directory:
+
+```sh
+export DMS_CONTROLLER=http://localhost:5000
 export DMS_MACHINE_KEY='<agent-key>'
 export DMS_STATE_PATH=/var/lib/dms-agent
 dotnet /opt/dms-agent/Aiursoft.DMS.Agent.dll
 ```
 
-The Agent opens the WebSocket connection to the Controller. It does not require inbound SSH, internet access or a database connection; the Controller must remain reachable. The Agent account needs the operating-system permissions required by the workflows you intend to run.
-
-The machine is bound to the installation identity in its state directory. Preserve this directory across upgrades. A second installation with the same key is rejected until pending operations have been reconciled.
+This development mode requires a .NET 10 runtime. Preserve the installation identity in its state directory; a second installation with the same key is rejected until pending operations have been reconciled.
 
 ## Discover standard workflows
 

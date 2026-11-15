@@ -40,6 +40,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj --configuration Release --no-self-contained -p:UseAppHost=false --runtime $RID --output /app --source "$NUGET_SOURCE"
 
 RUN cp -r ${CSPROJ_PATH}/wwwroot/* /app/wwwroot
+RUN bash scripts/build-agent-assets.sh /app/agent-assets "$NUGET_SOURCE"
 
 # ============================
 # Prepare Runtime Environment

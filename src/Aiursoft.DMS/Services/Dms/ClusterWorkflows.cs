@@ -76,14 +76,18 @@ public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<Machi
 
 public sealed class AddMachineWorkflow : ClusterWorkflow
 {
-    public override Task ExecuteAsync(ClusterWorkflowContext context)
+    public override async Task ExecuteAsync(ClusterWorkflowContext context)
     {
+        var enrollment = await context.Inventory.AgentEnrollments.Include(e => e.JoinKey).SingleOrDefaultAsync(e => e.LockboxId == context.Lockbox.Id);
+        if (enrollment != null && (enrollment.JoinKey.Revoked || enrollment.JoinKey.ExpiresAt <= DateTime.UtcNow
+            || await context.Inventory.Machines.AnyAsync(m => m.InstallationId == enrollment.InstallationId)))
+            throw new InvalidOperationException("Enrollment is unavailable or this installation has already joined.");
         var machine = new Machine { ClusterId = context.Run.ClusterId, Name = context.Parameters.MachineName,
-            KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
+            KeyHash = enrollment?.AgentKeyHash ?? DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)), InstallationId = enrollment?.InstallationId };
         context.Inventory.Machines.Add(machine);
+        if (enrollment != null) enrollment.MachineId = machine.Id;
         context.Run.Result = JsonSerializer.Serialize(new { machine.Id, machine.Name, machine.ClusterId });
         context.Run.State = RunState.Succeeded;
-        return Task.CompletedTask;
     }
 }
 

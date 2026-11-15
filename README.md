@@ -35,7 +35,7 @@ dotnet run --project Aiursoft.DMS.csproj -- --urls http://localhost:5000
 
 Open `http://localhost:5000`. The default local administrator is `admin@default.com` with password `Admin@123456!`. Change this password before exposing a deployment.
 
-The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to create clusters, configure their permissions and issue Agent keys; **Cluster access** provides the same management operations in the web UI. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
+The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to create clusters, configure their permissions and issue cluster join keys; **Cluster access** provides the same management operations in the web UI. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
 
 ## Run in Microsoft Visual Studio
 
@@ -67,7 +67,7 @@ The shared CI validates Linux amd64 and arm64 images. Once a successful master p
 sudo bash install.sh 8080
 ```
 
-The Controller image does not install Agents on managed machines. Build and distribute the Agent separately using the [Agent setup guide](./docs/cli-and-agent.md#run-an-agent).
+The Controller image includes self-contained Linux x64 and arm64 Agent bundles. Run its installation command once on each managed host, then approve registration through Lockbox. See [Agent installation](./docs/cli-and-agent.md#install-and-join-an-agent).
 
 ## Configuration
 

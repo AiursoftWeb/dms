@@ -57,12 +57,15 @@ public class Startup : IWebStartup
         {
             options.AddPolicy("DmsHuman", policy => policy.RequireClaim(System.Security.Claims.ClaimTypes.NameIdentifier));
             options.AddPolicy("DmsAgent", policy => policy.RequireClaim("DmsMachine"));
+            options.AddPolicy("DmsJoin", policy => policy.RequireClaim("DmsJoinKey"));
+            options.AddPolicy("DmsEnrollment", policy => policy.RequireClaim("DmsEnrollment"));
         });
         services.AddSingleton<Services.Dms.ControllerGate>();
         services.AddSingleton<Services.Dms.AgentSessions>();
         services.AddSingleton<Services.Dms.TraceStore>();
         services.AddScoped<Services.Dms.AccessService>();
         services.AddScoped<Services.Dms.DmsManagementService>();
+        services.AddScoped<Services.Dms.EnrollmentService>();
         services.AddScoped<Services.Dms.WorkflowService>();
         services.AddSingleton<Services.Dms.WorkflowCatalog>();
         services.AddScoped<Services.Dms.AgentEvents>();

@@ -18,6 +18,7 @@ internal sealed class ManagementCommand(string name, string action) : DmsCommand
     private readonly Option<bool> _approve = new("--can-approve");
     private readonly Option<bool> _enabled = new("--enabled") { Required = true };
     private readonly Option<Guid> _machine = new("--machine-id") { Required = true };
+    private readonly Option<int> _days = new("--days") { DefaultValueFactory = _ => 7 };
 
     protected override IEnumerable<Option> GetActionOptions()
     {
@@ -28,6 +29,9 @@ internal sealed class ManagementCommand(string name, string action) : DmsCommand
         if (action == "grant") { yield return _risk; yield return _request; yield return _auto; yield return _approve; }
         if (action == "self") yield return _enabled;
         if (action == "key") yield return _machine;
+        if (action is "join-create" or "join-list" or "enrollments") yield return _cluster;
+        if (action == "join-create") { yield return _name; yield return _days; }
+        if (action == "join-revoke") { _id.Required = true; yield return _id; }
     }
 
     protected override Task<DmsResponse> RequestAsync(DmsApiClient client, ParseResult context) => action switch
@@ -41,6 +45,10 @@ internal sealed class ManagementCommand(string name, string action) : DmsCommand
         "grant" => client.SetGrantAsync(new RiskGrant(context.GetValue(_cluster), context.GetValue(_user) ?? "", context.GetValue(_risk), context.GetValue(_request), context.GetValue(_auto), context.GetValue(_approve))),
         "self" => client.SetSelfApprovalAsync(new SelfApprovalInput(context.GetValue(_user) ?? "", context.GetValue(_enabled))),
         "key" => client.IssueAgentKeyAsync(context.GetValue(_machine)),
+        "join-create" => client.IssueJoinKeyAsync(new JoinKeyInput(context.GetValue(_cluster), context.GetValue(_name) ?? "", context.GetValue(_days))),
+        "join-list" => client.JoinKeysAsync(context.GetValue(_cluster)),
+        "join-revoke" => client.RevokeJoinKeyAsync(context.GetValue(_id)),
+        "enrollments" => client.EnrollmentsAsync(context.GetValue(_cluster)),
         _ => throw new InvalidOperationException("Unknown management command.")
     };
 }
