@@ -7,6 +7,15 @@ namespace Aiursoft.DMS.Workflows;
 public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput input, string dockerExecutable = "/usr/bin/docker")
     : MachineWorkflow<PullerForceUpdateInput, PullerForceUpdateResult>(MachineWorkflows.PullerForceUpdate, input)
 {
+    // CN Puller already provides Bash and flock, and shares its lock with cron.
+    private const string CnSync = """
+        if [ ! -x /app/force-update.sh ]; then
+            echo 'This CN Puller does not support scoped force updates.' >&2
+            exit 78
+        fi
+        exec /app/force-update.sh "$1"
+        """;
+
     // Reuse Puller's existing Python runtime. Request arguments never become script source.
     private const string Sync = """
         import fcntl, glob, os, subprocess, sys
@@ -46,18 +55,21 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
     public override async Task<PullerForceUpdateResult> ExecuteAsync(MachineWorkflowContext context, PullerForceUpdateInput input, CancellationToken token)
     {
         input.Validate();
+        var service = input.Puller == "cn" ? "puller_downloader_cn" : "puller_downloader";
         var discovery = JsonSerializer.Deserialize<ProcessResult>(await context.CallAsync(new ProcessWorkflow(dockerExecutable,
-            ["--host", "unix:///var/run/docker.sock", "ps", "--no-trunc", "--filter", "label=com.docker.swarm.service.name=puller_downloader", "--format", "{{.ID}}"], captureOutput: true), token))!;
+            ["--host", "unix:///var/run/docker.sock", "ps", "--no-trunc", "--filter", $"label=com.docker.swarm.service.name={service}", "--format", "{{.ID}}"], captureOutput: true), token))!;
         var containers = discovery.Output.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (containers.Length != 1 || !ContainerId().IsMatch(containers[0]))
-            throw new InvalidOperationException("Expected exactly one running local puller_downloader container. No sync was started.");
+            throw new InvalidOperationException($"Expected exactly one running local {service} container. No sync was started.");
         var container = containers[0];
-        await context.TraceAsync($"Forcing the existing Box Puller to check {input.Image}; container {container}. This does not force a service deployment.");
+        await context.TraceAsync($"Forcing the existing Box {input.Puller} Puller to check {input.Image}; container {container}. This does not force a service deployment.");
         token.ThrowIfCancellationRequested();
         try
         {
-            await context.CallAsync(new ProcessWorkflow(dockerExecutable,
-                ["--host", "unix:///var/run/docker.sock", "exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync, input.Image]), token);
+            string[] arguments = input.Puller == "cn"
+                ? ["--host", "unix:///var/run/docker.sock", "exec", container, "/bin/bash", "-c", CnSync, "dms-puller", input.Image]
+                : ["--host", "unix:///var/run/docker.sock", "exec", "--env", "SKIP_IF_SYNCED_HOURS=0", container, "/usr/bin/python3", "-c", Sync, input.Image];
+            await context.CallAsync(new ProcessWorkflow(dockerExecutable, arguments), token);
         }
         catch (ChildWorkflowException exception) when (exception.Result is "Process exited with code 70." or "Process exited with code 75." or "Process exited with code 78.")
         {
@@ -69,7 +81,7 @@ public sealed partial class BoxPullerForceUpdateWorkflow(PullerForceUpdateInput 
             await context.TraceAsync("The Docker exec outcome is unknown. Puller may still be running; verify before submitting another update.", "error");
             throw new WorkflowNeedsVerificationException(context.Id);
         }
-        return new PullerForceUpdateResult(input.Image, container);
+        return new PullerForceUpdateResult(input.Image, container, input.Puller);
     }
 
     [GeneratedRegex(@"\A[0-9a-f]{64}\z")]

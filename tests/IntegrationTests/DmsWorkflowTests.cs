@@ -39,6 +39,7 @@ public class DmsWorkflowTests : TestBase
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
                 (["machine", "systemctl", "status", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
                 (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
+                (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
                 (["cluster", "get-machines", "--cluster-id", setup.Cluster.ToString(), "--reason", new string('a', 2001)], key, "A request ID and a reason of at most 2000 characters are required.")
             })
             {
@@ -497,7 +498,9 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
-    public async Task PullerCliFreezesImageAndTargetsInHighRiskLockbox()
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task PullerCliFreezesImageAndTargetsInHighRiskLockbox(string puller)
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
@@ -509,14 +512,16 @@ public class DmsWorkflowTests : TestBase
         {
             var request = Guid.NewGuid();
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(),
-                "--machine-id", setup.Machine.ToString(), "--image", "aiursoft/dms:latest", "--reason", "Update DMS mirror", "--request-id", request.ToString(),
+                "--machine-id", setup.Machine.ToString(), "--image", "aiursoft/dms:latest", "--puller", puller, "--reason", "Update DMS mirror", "--request-id", request.ToString(),
                 "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
             Assert.AreEqual(WorkflowNames.PullerForceUpdate, box.Definition); Assert.AreEqual("1", box.Version);
             Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
             var input = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
-            Assert.AreEqual("aiursoft/dms:latest", MachineWorkflows.PullerForceUpdate.ReadInput(input.Input).Image);
+            var frozen = MachineWorkflows.PullerForceUpdate.ReadInput(input.Input);
+            Assert.AreEqual("aiursoft/dms:latest", frozen.Image);
+            Assert.AreEqual(puller, frozen.Puller);
             CollectionAssert.AreEqual(new[] { setup.Machine }, JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
             StringAssert.Contains(cli.StdOut, box.Id.ToString());
         }

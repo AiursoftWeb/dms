@@ -25,21 +25,34 @@ public class BoxPullerForceUpdateTests
         Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput(image)));
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow("all")]
+    [DataRow("CN")]
+    [DataRow("puller_downloader_cn")]
+    [DataRow("cn;id")]
+    public void RejectsUnrecognizedPuller(string puller) =>
+        Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput("aiursoft/dms:latest", puller)));
+
+    [TestMethod]
     public void RejectsNullMissingOverlongAndExecutableOverrideInput()
     {
         Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":null}"));
         Assert.Throws<System.Text.Json.JsonException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{}"));
+        Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":\"aiursoft/dms\",\"Puller\":null}"));
         Assert.Throws<System.Text.Json.JsonException>(() => MachineWorkflows.PullerForceUpdate.ReadInput("{\"Image\":\"aiursoft/dms\",\"DockerExecutable\":\"/bin/bash\"}"));
         Assert.Throws<ArgumentException>(() => MachineWorkflows.PullerForceUpdate.Serialize(new PullerForceUpdateInput(new string('a', 256))));
     }
 
     [TestMethod]
-    public async Task RunsOnlyApprovedImageUsingExistingPullerAndTracedSubworkflows()
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task RunsOnlyApprovedImageUsingExistingPullerAndTracedSubworkflows(string puller)
     {
-        using var fixture = new Puller();
+        using var fixture = new Puller(puller);
         var result = MachineWorkflows.PullerForceUpdate.ReadResult(await fixture.RunAsync(CancellationToken.None));
         Assert.AreEqual("aiursoft/dms:latest", result.Image);
         Assert.AreEqual(Puller.Container, result.ContainerId);
+        Assert.AreEqual(puller, result.Puller);
         Assert.AreEqual("aiursoft/dms:latest|0", (await File.ReadAllTextAsync(fixture.PathOf("invocations"))).Trim());
         var events = fixture.Events.ToArray();
         var children = events.Where(e => e.State == RunState.Succeeded && e.Definition == WorkflowNames.Process && !e.IsTrace).ToArray();
@@ -51,26 +64,33 @@ public class BoxPullerForceUpdateTests
     }
 
     [TestMethod]
-    [DataRow("")]
-    [DataRow("invalid-container-id")]
-    [DataRow(Puller.Container + "\n" + Puller.Container)]
-    public async Task MissingAmbiguousOrInvalidContainerNeverStartsSync(string containers)
+    [DataRow("main", "")]
+    [DataRow("main", "invalid-container-id")]
+    [DataRow("main", Puller.Container + "\n" + Puller.Container)]
+    [DataRow("cn", "")]
+    [DataRow("cn", "invalid-container-id")]
+    [DataRow("cn", Puller.Container + "\n" + Puller.Container)]
+    public async Task MissingAmbiguousOrInvalidContainerNeverStartsSync(string puller, string containers)
     {
-        using var fixture = new Puller();
+        using var fixture = new Puller(puller);
         await File.WriteAllTextAsync(fixture.PathOf("containers"), containers);
         await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.RunAsync(CancellationToken.None));
         Assert.IsFalse(File.Exists(fixture.PathOf("invocations")));
     }
 
     [TestMethod]
-    public async Task UnsupportedPullerAndConfirmedSyncFailureAreFailed()
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task UnsupportedPullerAndConfirmedSyncFailureAreFailed(string puller)
     {
-        using var fixture = new Puller();
-        File.Delete(fixture.PathOf("app/source_updated.py"));
+        using var fixture = new Puller(puller);
+        var unsupportedFile = fixture.PathOf(puller == "cn" ? "app/force-update.sh" : "app/source_updated.py");
+        var supportedContent = await File.ReadAllTextAsync(unsupportedFile);
+        File.Delete(unsupportedFile);
         await Assert.ThrowsAsync<ChildWorkflowException>(() => fixture.RunAsync(CancellationToken.None));
         Assert.IsFalse(File.Exists(fixture.PathOf("invocations")));
         Assert.AreEqual(RunState.Failed, fixture.Events.Last(e => !e.IsTrace && e.WorkflowId == fixture.Id).State);
-        await File.WriteAllTextAsync(fixture.PathOf("app/source_updated.py"), "SKIP_IF_SYNCED_HOURS");
+        fixture.WriteExecutable(puller == "cn" ? "app/force-update.sh" : "app/source_updated.py", supportedContent);
         await File.WriteAllTextAsync(fixture.PathOf("fail"), "");
         var failure = await Assert.ThrowsAsync<ChildWorkflowException>(() => fixture.RunAsync(CancellationToken.None));
         Assert.AreEqual("Process exited with code 70.", failure.Result);
@@ -78,13 +98,15 @@ public class BoxPullerForceUpdateTests
     }
 
     [TestMethod]
-    public async Task AlreadyRunningScheduledSyncPreventsAnotherInvocation()
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task AlreadyRunningScheduledSyncPreventsAnotherInvocation(string puller)
     {
-        using var fixture = new Puller();
+        using var fixture = new Puller(puller);
         await File.WriteAllTextAsync(fixture.PathOf("hold"), "");
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         using var scheduled = new System.Diagnostics.Process();
-        scheduled.StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf("app/entry.sh"))
+        scheduled.StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf(puller == "cn" ? "app/force-update.sh" : "app/entry.sh"))
         {
             UseShellExecute = false,
             ArgumentList = { "aiursoft/other:latest" },
@@ -106,9 +128,11 @@ public class BoxPullerForceUpdateTests
     }
 
     [TestMethod]
-    public async Task ConcurrentUpdateIsRejectedAndCancellationRequiresVerification()
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task ConcurrentUpdateIsRejectedAndCancellationRequiresVerification(string puller)
     {
-        using var fixture = new Puller();
+        using var fixture = new Puller(puller);
         await File.WriteAllTextAsync(fixture.PathOf("hold"), "");
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         var first = fixture.RunAsync(stop.Token);
@@ -125,9 +149,11 @@ public class BoxPullerForceUpdateTests
     }
 
     [TestMethod]
-    public async Task DockerTransportFailureDoesNotClaimTheRemoteCommandStopped()
+    [DataRow("main")]
+    [DataRow("cn")]
+    public async Task DockerTransportFailureDoesNotClaimTheRemoteCommandStopped(string puller)
     {
-        using var fixture = new Puller();
+        using var fixture = new Puller(puller);
         await File.WriteAllTextAsync(fixture.PathOf("disconnect"), "");
         await Assert.ThrowsAsync<WorkflowNeedsVerificationException>(() => fixture.RunAsync(CancellationToken.None));
         Assert.AreEqual(RunState.NeedsVerification, fixture.Events.Last(e => !e.IsTrace && e.WorkflowId == fixture.Id).State);
@@ -142,8 +168,11 @@ public class BoxPullerForceUpdateTests
         public ConcurrentQueue<WorkflowEvent> Events { get; } = new();
         public string PathOf(string file) => Path.Combine(_directory, file);
 
-        public Puller()
+        private readonly string _puller;
+
+        public Puller(string puller = "main")
         {
+            _puller = puller;
             Directory.CreateDirectory(PathOf("app"));
             File.WriteAllText(PathOf("containers"), Container);
             File.WriteAllText(PathOf("app/source_updated.py"), "SKIP_IF_SYNCED_HOURS");
@@ -152,11 +181,18 @@ public class BoxPullerForceUpdateTests
                 set -eu
                 images=("$@")
                 directory='{{_directory}}'
-                printf '%s|%s\n' "$1" "$SKIP_IF_SYNCED_HOURS" >> "$directory/invocations"
+                printf '%s|%s\n' "$1" "${SKIP_IF_SYNCED_HOURS:-$PUBLIC_CHECK_INTERVAL_SECONDS}" >> "$directory/invocations"
                 if [[ -f "$directory/hold" ]]; then while true; do sleep 1; done; fi
                 if [[ -f "$directory/fail" ]]; then exit 9; fi
                 printf '%09000d\n' 0
                 echo 'Scoped mirror complete'
+                """);
+            WriteExecutable("app/force-update.sh", $$"""
+                #!/bin/bash
+                set -eu
+                exec 9>'{{_directory}}/app/puller_cn.lock'
+                if ! flock -n 9; then exit 75; fi
+                if PUBLIC_CHECK_INTERVAL_SECONDS=0 '{{_directory}}/app/entry.sh' "$1"; then exit 0; else result=$?; echo "CN Puller finished with exit code $result." >&2; exit 70; fi
                 """);
             WriteExecutable("docker", $$"""
                 #!/bin/bash
@@ -165,9 +201,16 @@ public class BoxPullerForceUpdateTests
                 [[ "$1" == --host && "$2" == unix:///var/run/docker.sock ]]
                 shift 2
                 if [[ "$1" == ps ]]; then
-                    [[ "$2" == --no-trunc && "$3" == --filter && "$4" == label=com.docker.swarm.service.name=puller_downloader && "$5" == --format && "$6" == '{{Format}}' ]]
+                    [[ "$2" == --no-trunc && "$3" == --filter && "$4" == label=com.docker.swarm.service.name={{(puller == "cn" ? "puller_downloader_cn" : "puller_downloader")}} && "$5" == --format && "$6" == '{{Format}}' ]]
                     cat "$directory/containers"
                     exit 0
+                fi
+                if [[ '{{puller}}' == cn ]]; then
+                    [[ "$#" == 7 && "$1" == exec && "$2" == '{{Container}}' && "$3" == /bin/bash && "$4" == -c && "$6" == dms-puller ]]
+                    if [[ -f "$directory/disconnect" ]]; then exit 125; fi
+                    script="$5"
+                    script="${script//\/app\//$directory/app/}"
+                    exec /bin/bash -c "$script" "$6" "$7"
                 fi
                 [[ "$#" == 8 && "$1" == exec && "$2" == --env && "$3" == SKIP_IF_SYNCED_HOURS=0 && "$4" == '{{Container}}' && "$5" == /usr/bin/python3 && "$6" == -c ]]
                 if [[ -f "$directory/disconnect" ]]; then exit 125; fi
@@ -178,7 +221,7 @@ public class BoxPullerForceUpdateTests
                 """);
         }
 
-        private void WriteExecutable(string name, string script)
+        public void WriteExecutable(string name, string script)
         {
             var path = PathOf(name);
             File.WriteAllText(path, script);
@@ -189,7 +232,7 @@ public class BoxPullerForceUpdateTests
         public Task<string> RunAsync(CancellationToken token) => new MachineWorkflowContext(Id, null, e =>
         {
             Events.Enqueue(e); return Task.CompletedTask;
-        }).RunAsync(new BoxPullerForceUpdateWorkflow(new PullerForceUpdateInput("aiursoft/dms:latest"), PathOf("docker")), token);
+        }).RunAsync(new BoxPullerForceUpdateWorkflow(new PullerForceUpdateInput("aiursoft/dms:latest", _puller), PathOf("docker")), token);
 
         public void Dispose() => Directory.Delete(_directory, true);
     }

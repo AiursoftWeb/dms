@@ -28,8 +28,9 @@ public static class DmsCommandApp
     private static ActionCommand PullerCommand()
     {
         var image = new Option<string>("--image") { Required = true };
+        var puller = new Option<string>("--puller") { Description = "Puller to update: main (default) or cn." };
         return StandardCommand("force-update", MachineWorkflows.PullerForceUpdate,
-            context => new PullerForceUpdateInput(context.GetValue(image) ?? string.Empty), image);
+            context => new PullerForceUpdateInput(context.GetValue(image) ?? string.Empty, context.GetValue(puller) ?? "main"), image, puller);
     }
 
     private static ActionCommand ServiceCommand(string name, MachineWorkflowDefinition<ServiceInput, ProcessResult> definition)

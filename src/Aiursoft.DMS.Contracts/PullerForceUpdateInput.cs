@@ -2,12 +2,14 @@ using System.Text.RegularExpressions;
 
 namespace Aiursoft.DMS.Contracts;
 
-public sealed partial record PullerForceUpdateInput(string Image)
+public sealed partial record PullerForceUpdateInput(string Image, string Puller = "main")
 {
     public void Validate()
     {
         if (!ValidImage(Image))
             throw new ArgumentException("Supply one concrete image name with an optional tag, such as aiursoft/dms:latest.");
+        if (Puller is not ("main" or "cn"))
+            throw new ArgumentException("Select a Puller: main or cn.");
     }
 
     private static bool ValidImage(string? image) => image != null && ImageName().IsMatch(image);
@@ -16,4 +18,4 @@ public sealed partial record PullerForceUpdateInput(string Image)
     private static partial Regex ImageName();
 }
 
-public sealed record PullerForceUpdateResult(string Image, string ContainerId);
+public sealed record PullerForceUpdateResult(string Image, string ContainerId, string Puller);
