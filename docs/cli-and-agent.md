@@ -61,6 +61,24 @@ dotnet ./bin/client/dms.dll cluster drop --cluster-id <cluster-id>
 
 Deletion requires no machines, operation history or enrollment keys (including revoked keys). Its access grants are removed atomically and the audit record is retained.
 
+## Force a Box Puller mirror update
+
+An enrolled Linux Box Agent can request a scoped update of its existing Puller:
+
+```sh
+dotnet ./bin/client/dms.dll machine box puller force-update \
+  --cluster-id <cluster-id> --machine-id <box-machine-id> \
+  --image aiursoft/dms:latest --reason "Refresh the DMS mirror"
+```
+
+This is the standard High-risk `machine.box.puller.force-update` workflow. The image and machine selection are frozen in Lockbox before approval. It discovers exactly one running local Swarm `puller_downloader` container and calls its existing `/app/entry.sh` with the approved image and a one-shot `SKIP_IF_SYNCED_HOURS=0`. Registry credentials stay inside Puller. Container IDs, commands, scripts, registry configuration and credentials are not request parameters.
+
+The host needs Docker at `/usr/bin/docker`. Puller must provide Bash, `flock`, `pgrep`, its image-filtering entry script and `source_updated.py` cooldown support. Unsupported Pullers fail without starting a sync. Concurrent DMS requests are rejected using a container-local lock; the workflow also checks for an already running scheduled sync. The existing cron configuration is unchanged. Container discovery and execution are subworkflows with their own IDs and streamed traces.
+
+Success means the mirror sync completed, including a successful no-op when the mirror was already current. Check Shepherd and the application separately for deployment completion. A cancelled or disconnected Docker client can leave its server-side command running: the workflow becomes **NeedsVerification**, without automatic retry. Inspect the existing run before requesting another sync.
+
+The Box must already have an approved, connected Agent containing this definition. This workflow cannot bootstrap an unenrolled Box or update a Controller that has not yet received it.
+
 ## Install and join an Agent
 
 An administrator with **Manage DMS access** issues a dedicated join key for one cluster:
