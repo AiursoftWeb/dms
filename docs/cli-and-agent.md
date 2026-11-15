@@ -101,6 +101,28 @@ dotnet ./bin/client/dms.dll cluster drop --cluster-id <cluster-id>
 
 Deletion requires no machines, operation history or enrollment keys (including revoked keys). Its access grants are removed atomically and the audit record is retained.
 
+## Manage Docker containers
+
+Docker commands use the selected machine's local Docker socket and the existing Lockbox approval flow. The Agent host needs Docker at `/usr/bin/docker`. Update both Controller and Agents before using new workflow definitions.
+
+```sh
+dotnet ./bin/client/dms.dll machine docker ps --grep-name nugetninja --reason "Find the bot container"
+```
+
+`--grep-name` matches literal text contained in the container name. Add `--all` to include stopped containers. The result contains full container IDs, names, images and status. Copy the complete ID into subsequent commands: names and short IDs are rejected so approval cannot accidentally target a replacement container.
+
+```sh
+dotnet ./bin/client/dms.dll machine docker logs --container <full-container-id> --tail 100 --reason "Read recent bot logs"
+dotnet ./bin/client/dms.dll machine docker exec --container <full-container-id> --reason "Start the bot" -- /start.sh
+dotnet ./bin/client/dms.dll machine docker kill --container <full-container-id> --reason "Stop this container"
+```
+
+Use `--cluster-id` and `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires VeryHigh, and kill requires High. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
+
+Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an optional `--since` timestamp with UTC offset. They do not follow indefinitely. Logs and command output are available through `operation get-trace`; they may contain application secrets, so grant access accordingly. Arguments after `--` are passed literally, without an implicit host shell. Do not put secrets in command arguments: approved inputs and output are recorded in the audit trail.
+
+`exec` waits for completion and streams output. It does not detach or automatically retry. A disconnect, cancellation or failed Docker execution is marked **NeedsVerification** because the Docker client cannot prove whether the container command stopped; inspect the trace and application state before retrying. Killing a DMS workflow is not the same as killing the container. A successful exec confirms the command's exit, not the completion of any background work it started.
+
 ## Force a Box Puller mirror update
 
 With `DMS_SERVER` and `DMS_API_KEY` configured, an enrolled Box can request:
