@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API-ключі</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Доступ заборонено</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Натисніть, щоб увійти</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Доступ до кластера</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Створити роль</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Створити користувача</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Панель керування</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>Помилка внутрішнього сервера</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Розслідування</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Сейфи</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Блокування</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Увійдіть, щоб отримати доступ до всіх функцій.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Машини</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Керування</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Не знайдено</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Операції</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>Деталі дозволів</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Вийти</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Стандартні робочі процеси</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>Система</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Користувачі</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Історія робочого процесу</value>
   </data>
 
 </root>

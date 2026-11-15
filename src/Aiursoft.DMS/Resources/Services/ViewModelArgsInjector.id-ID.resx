@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>Kunci API</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Akses Ditolak</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Klik untuk masuk</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Akses Klaster</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Buat Peran</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Buat Pengguna</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Dasbor</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>Kesalahan Server Internal</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Investigasi</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Kotak Kunci</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Kunci Keluar</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Masuk untuk mendapatkan akses ke semua fitur.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Mesin</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Kelola</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Tidak Ditemukan</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operasi</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>Detail Izin</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Keluar</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Alur kerja standar</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>Sistem</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Pengguna</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Riwayat alur kerja</value>
   </data>
 
 </root>

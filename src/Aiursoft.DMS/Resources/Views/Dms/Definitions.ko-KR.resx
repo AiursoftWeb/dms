@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="About these permissions" xml:space="preserve">
+    <value>이 권한에 대해</value>
+  </data>
+  <data name="Automatically approve" xml:space="preserve">
+    <value>자동 승인</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>클러스터</value>
+  </data>
+  <data name="High" xml:space="preserve">
+    <value>높음</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>위치</value>
+  </data>
+  <data name="Low" xml:space="preserve">
+    <value>낮음</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>머신</value>
+  </data>
+  <data name="May approve" xml:space="preserve">
+    <value>승인 가능</value>
+  </data>
+  <data name="May approve own requests" xml:space="preserve">
+    <value>본인 요청 승인 가능 여부</value>
+  </data>
+  <data name="May request" xml:space="preserve">
+    <value>요청 가능</value>
+  </data>
+  <data name="Medium" xml:space="preserve">
+    <value>중간</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>아니요</value>
+  </data>
+  <data name="No public standard workflows are registered." xml:space="preserve">
+    <value>공개 표준 워크플로가 등록되어 있지 않습니다.</value>
+  </data>
+  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
+    <value>권한은 선택된 클러스터 및 각 워크플로 위험 수준에 적용됩니다. 자동 승인에는 요청 권한이 필요하며, 본인의 요청을 승인하려면 셀프 승인 권한도 필요합니다.</value>
+  </data>
+  <data name="Requires machine targets" xml:space="preserve">
+    <value>머신 대상 필요</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>위험도</value>
+  </data>
+  <data name="Safe" xml:space="preserve">
+    <value>안전</value>
+  </data>
+  <data name="Show workflows" xml:space="preserve">
+    <value>워크플로우 표시</value>
+  </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>표준 워크플로</value>
+  </data>
+  <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
+    <value>이 카탈로그에는 Controller에서 사용할 수 있는 공개 표준 워크플로가 나열되어 있습니다. 에이전트 사용 가능 상태 및 지원되는 버전은 실행 중에 확인됩니다. 특수 제어 작업 및 내부 서브워크플로는 목록에 표시되지 않습니다.</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>버전</value>
+  </data>
+  <data name="Very high" xml:space="preserve">
+    <value>매우 높음</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>워크플로</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>예</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>클러스터에 대한 액세스 권한이 없습니다.</value>
+  </data>
+
+</root>

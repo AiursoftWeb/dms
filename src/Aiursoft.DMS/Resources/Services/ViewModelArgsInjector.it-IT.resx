@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>Chiavi API</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Accesso negato</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Clicca per accedere</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Accesso al cluster</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Crea Ruolo</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Crea Utente</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>Errore del server interno</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Indagine</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Cassaforte</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Blocco</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Accedi per accedere a tutte le funzionalità.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Macchine</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Gestisci</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Non trovato</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operazioni</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>Dettagli autorizzazioni</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Esci</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Flussi di lavoro standard</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>Sistema</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Utenti</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Cronologia del flusso di lavoro</value>
   </data>
 
 </root>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>すべての種類</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>すべての状態</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>承認モードを指定しない</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>承認コンテキスト</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>承認者</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>承認者 ID</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>自動承認</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>有効な調査フィルターと、最大31日までの時間範囲を選択してください。UTCオフセット付きのISO 8601形式の時間を使用してください。</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>クラスター</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>イベント</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>イベントの種類</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>イベント状態</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>インスタンスワークフロータイプ</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>調査</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>ロックボックスID</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>マシン</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>マシン ID</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>詳細なフィルター</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>次へ</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>いいえ</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>これらのフィルターに一致するアーカイブされたイベントはありません。</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>アーカイブ済みのイベントのみが表示されます。最近の変更は、まだ配信待ちである場合があります。イベントの状態は履歴であり、現在のワークフローの状態ではありません。</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>担当者および承認</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>前へ</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>記録日時 (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>記録開始時刻（含む、UTC）</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>記録終了時刻（非包含、UTC）</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>要求済み</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>リクエストされたワークフロータイプ</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>申請者</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>申請者ID</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>ルートワークフローID</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>アーカイブを検索</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>ステート</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>デフォルトのウィンドウは過去24時間です。各クエリは最大31日間まで対応しています。</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>調査アーカイブは利用できません、または設定されていません。後でもう一度お試しください。保留中のイベントは耐久性が保たれます。</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>ワークフロー</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ワークフローID</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>どのクラスターにもアクセスする権限がありません。</value>
+  </data>
+
+</root>

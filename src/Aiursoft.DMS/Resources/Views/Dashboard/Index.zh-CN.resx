@@ -75,6 +75,9 @@
   <data name="Consistency Validation" xml:space="preserve">
     <value>一致性验证</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
   <data name="Develop exclusively in UTC while the system automatically converts and displays dates in the user&apos;s local time zone." xml:space="preserve">
     <value>在开发时仅使用 UTC，系统会自动将日期转换并显示为用户的本地时间。</value>
   </data>
@@ -102,6 +105,9 @@
   <data name="Features a built-in file management system with automatic avatar compression." xml:space="preserve">
     <value>内置文件管理系统，支持头像自动压缩。</value>
   </data>
+  <data name="Follow the callstack and inspect execution traces." xml:space="preserve">
+    <value>跟踪调用堆栈并检查执行轨迹。</value>
+  </data>
   <data name="Handle recurring jobs like cleanup and synchronization with a comprehensive GUI for monitoring execution history and logs." xml:space="preserve">
     <value>轻松处理如清理和同步等重复性任务，并通过功能全面的图形界面监控执行历史和日志。</value>
   </data>
@@ -113,6 +119,15 @@
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>集成文件管理</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>保险库</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>机器</value>
+  </data>
+  <data name="Manage servers through approved workflows." xml:space="preserve">
+    <value>通过已批准的工作流程管理服务器。</value>
   </data>
   <data name="Models are validated on both client and server sides based on data annotations." xml:space="preserve">
     <value>模型会根据数据注解在客户端和服务器端进行验证。</value>
@@ -134,6 +149,12 @@
   </data>
   <data name="Responsive Design" xml:space="preserve">
     <value>响应式设计</value>
+  </data>
+  <data name="Review requests" xml:space="preserve">
+    <value>审核请求</value>
+  </data>
+  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
+    <value>查看所请求的操作、参数和固定目标。</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>强大的集成测试</value>
@@ -165,11 +186,23 @@
   <data name="This is a template project, where we start the voyager..." xml:space="preserve">
     <value>这是一个模板项目，我们将从这里开启探索之旅...</value>
   </data>
+  <data name="View Agent connectivity and machine history." xml:space="preserve">
+    <value>查看 Agent 连接状态和机器历史记录。</value>
+  </data>
+  <data name="View history" xml:space="preserve">
+    <value>查看历史记录</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>查看机器</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>欢迎</value>
   </data>
   <data name="Why use the Aiursoft Template?" xml:space="preserve">
     <value>为何选择 Aiursoft 模板？</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>工作流历史记录</value>
   </data>
 
 </root>

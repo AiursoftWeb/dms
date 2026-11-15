@@ -83,6 +83,14 @@ public class ViewModelArgsInjector(
         _ = localizer["Register"];
     
         _ = localizer["Delete Account"];
+    
+        _ = localizer["API Keys"];
+        _ = localizer["Cluster access"];
+        _ = localizer["DMS"];
+        _ = localizer["Lockboxes"];
+        _ = localizer["Machines"];
+        _ = localizer["Operations"];
+        _ = localizer["Workflow history"];
     }
 
     public void InjectSimple(

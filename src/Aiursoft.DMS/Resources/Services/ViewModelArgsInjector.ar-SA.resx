@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>مفاتيح API</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>الوصول ممنوع</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>انقر لتسجيل الدخول</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>الوصول إلى العنقود</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>إنشاء دور</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>إنشاء مستخدم</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>لوحة التحكم</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>خطأ الخادم الداخلي</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>الاستقصاء</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>الصناديق الآمنة</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>حظر الحساب</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>سجّل الدخول للوصول إلى جميع الميزات.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>الآلات</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>إدارة</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>غير موجود</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>العمليات</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>تفاصيل الصلاحيات</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>تسجيل الخروج</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>سير عمل قياسية</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>النظام</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>المستخدمون</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>سجل سير العمل</value>
   </data>
 
 </root>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>모든 종류</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>모든 상태</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>모든 승인 모드</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>승인 컨텍스트</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>승인자</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>승인자 ID</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>자동 승인</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>유효한 조사 필터와 최대 31일의 시간 범위를 선택하세요. UTC 오프셋이 포함된 ISO 8601 시간을 사용하세요.</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>클러스터</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>이벤트</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>이벤트 종류</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>이벤트 상태</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>인스턴스 워크플로 유형</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>조사</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>락박스 ID</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>머신</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>머신 ID</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>추가 필터</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>다음</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>아니요</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>해당 필터와 일치하는 아카이브된 이벤트가 없습니다.</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>아카이브된 이벤트만 표시됩니다. 최근 변경 사항은 아직 전달 대기 중일 수 있습니다. 이벤트 상태는 현재 워크플로 상태가 아닌 과거 상태입니다.</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>사람 및 승인</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>이전</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>기록됨 (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>기록 시작일 (포함, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>기록된 시간까지 (미포함, UTC)</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>요청됨</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>요청된 워크플로 유형</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>요청자</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>요청자 ID</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>루트 워크플로 ID</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>아카이브 검색</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>상태</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>기본 기간은 지난 24시간입니다. 각 쿼리는 최대 31일까지 지원합니다.</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>조사 아카이브를 사용할 수 없거나 구성되지 않았습니다. 나중에 다시 시도하십시오. 대기 중인 이벤트는 안전하게 유지됩니다.</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>워크플로</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>워크플로 ID</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>예</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>어떤 클러스터에도 접근 권한이 없습니다.</value>
+  </data>
+
+</root>

@@ -21,6 +21,9 @@
       <data name="Aiursoft" xml:space="preserve">
     <value>Aiursoft</value>
   </data>
+  <data name="Aiursoft DMS - Approved server operations with a traceable workflow history." xml:space="preserve">
+    <value>Aiursoft DMS - 추적 가능한 워크플로 히스토리를 갖춘 승인된 서버 운영.</value>
+  </data>
   <data name="Aiursoft Template - A modern, feature-rich, and highly extensible foundation for your next web application." xml:space="preserve">
     <value>Aiursoft Template - 현대적이고 기능이 풍부하며 확장성이 뛰어난 웹 애플리케이션 기반 플랫폼입니다.</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Github" xml:space="preserve">
     <value>GitHub</value>
+  </data>
+  <data name="Issues" xml:space="preserve">
+    <value>이슈</value>
   </data>
   <data name="Legal" xml:space="preserve">
     <value>법적</value>

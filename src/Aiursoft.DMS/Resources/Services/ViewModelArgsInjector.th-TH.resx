@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>คีย์ API</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>การเข้าถึงถูกปฏิเสธ</value>
   </data>
   <data name="Account Settings" xml:space="preserve">
@@ -54,11 +57,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>คลิกเพื่อเข้าสู่ระบบ</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>การเข้าถึงคลัสเตอร์</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>สร้างบทบาท</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>สร้างผู้ใช้</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>แดชบอร์ด</value>
@@ -102,6 +111,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>ข้อผิดพลาดของเซิร์ฟเวอร์ภายใน</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>การสอบสวน</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>ล็อกบ็อกซ์</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>บล็อกการเข้าถึง</value>
   </data>
@@ -111,11 +126,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>เข้าสู่ระบบเพื่อเข้าถึงฟีเจอร์ทั้งหมด</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>เครื่องจักร</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>จัดการ</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>ไม่พบ</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>การดำเนินงาน</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>รายละเอียดสิทธิ์การใช้งาน</value>
@@ -147,6 +168,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>ออกจากระบบ</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>เวิร์กโฟลว์มาตรฐาน</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>ระบบ</value>
   </data>
@@ -164,6 +188,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>ผู้ใช้</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>ประวัติการไหลงาน</value>
   </data>
 
 </root>
