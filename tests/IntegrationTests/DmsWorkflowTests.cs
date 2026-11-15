@@ -13,6 +13,44 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 public class DmsWorkflowTests : TestBase
 {
     [TestMethod]
+    public async Task CliReportsAuthenticationAndBusinessFailuresWithoutStackTracesOrStandardOutput()
+    {
+        var setup = await ArrangeAsync();
+        var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        int before;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "CLI errors", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+            await db.SaveChangesAsync();
+            before = await db.Lockboxes.CountAsync();
+        }
+        foreach (var format in new[] { "table", "json", "csv" })
+        {
+            foreach (var (arguments, credential, expected) in new (string[], string, string)[]
+            {
+                (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], key, "Workflow not found."),
+                (["operation", "list-definitions", "--cluster-id", Guid.NewGuid().ToString()], key, "Access to this cluster is denied."),
+                (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
+                (["machine", "systemctl", "status", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
+                (["cluster", "get-machines", "--cluster-id", setup.Cluster.ToString(), "--reason", new string('a', 2001)], key, "A request ID and a reason of at most 2000 characters are required.")
+            })
+            {
+                var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--server", Http.BaseAddress!.ToString(), "--api-key", credential, "--output-format", format]);
+                Assert.AreEqual(1, cli.ProgramReturn, cli.StdErr);
+                Assert.AreEqual(string.Empty, cli.StdOut);
+                StringAssert.StartsWith(cli.StdErr, "Error: ");
+                StringAssert.Contains(cli.StdErr, expected);
+                Assert.DoesNotContain("Exception", cli.StdErr);
+                Assert.DoesNotContain("   at ", cli.StdErr);
+                Assert.DoesNotContain(credential, cli.StdErr);
+            }
+        }
+        using var check = Server!.Services.CreateScope();
+        Assert.AreEqual(before, await check.ServiceProvider.GetRequiredService<TemplateDbContext>().Lockboxes.CountAsync());
+    }
+
+    [TestMethod]
     public async Task WorkflowInspectionShowsRootAndParentAndDoesNotCreateWork()
     {
         var setup = await ArrangeAsync();

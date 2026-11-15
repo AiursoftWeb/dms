@@ -1,19 +1,17 @@
 using System.CommandLine;
-using Aiursoft.AiurProtocol;
-using Aiursoft.AiurProtocol.Services;
 using Aiursoft.CommandFramework;
 using Aiursoft.CommandFramework.Framework;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Aiursoft.DMS.Client;
 
 public static class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
-        .WithFeature(new Group("cluster", [StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine),
+        .WithFeature(new Group("cluster", [new ManagementCommand("list", "clusters"), new ManagementCommand("create", "create"), new ManagementCommand("rename", "rename"), new ManagementCommand("drop", "drop"), StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine),
             new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
+        .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("set-grant", "grant"), new ManagementCommand("set-self-approval", "self"), new ManagementCommand("issue-agent-key", "key")]))
         .WithFeature(new Group("machine", [
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
@@ -39,14 +37,11 @@ public static class DmsCommandApp
         protected override CommandHandlerBuilder[] GetSubCommandHandlers() => children;
     }
 
-    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null) : ExecutableCommandHandlerBuilder
+    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null) : DmsCommandHandler
     {
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
         protected override string Description => IsSubmission ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
-        private readonly Option<string?> _server = new("--server") { Description = "Controller URL; defaults to DMS_SERVER." };
-        private readonly Option<string?> _key = new("--api-key") { Description = "Personal API Key; defaults to DMS_API_KEY." };
-        private readonly Option<OutputFormat> _format = new("--output-format") { Description = "Output format: table (default; callstack uses a tree), json, or csv." };
         private readonly Option<Guid> _cluster = new("--cluster-id");
         private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true };
         private readonly Option<bool> _all = new("--all-machines");
@@ -70,9 +65,8 @@ public static class DmsCommandApp
         private readonly Option<bool?> _automatic = new("--automatic-approval");
         private readonly Option<int> _page = new("--page") { Description = "Zero-based archive page, 50 events per page." };
 
-        protected override IEnumerable<Option> GetCommandOptions()
+        protected override IEnumerable<Option> GetActionOptions()
         {
-            yield return _server; yield return _key; yield return _format;
             if (IsSubmission)
             {
                 _cluster.Required = true; _reason.Required = true;
@@ -100,17 +94,12 @@ public static class DmsCommandApp
             }
         }
 
-        protected override async Task Execute(ParseResult context)
+        protected override bool Callstack => action == "callstack";
+        protected override bool Catalog => action == "definitions";
+        protected override bool Audit => action == "audit";
+
+        protected override async Task<DmsResponse> RequestAsync(DmsApiClient client, ParseResult context)
         {
-            var format = context.GetValue(_format);
-            if (!Enum.IsDefined(format)) throw new ArgumentException("Output format must be table, json, or csv.");
-            var endpoint = context.GetValue(_server) ?? Environment.GetEnvironmentVariable("DMS_SERVER") ?? throw new ArgumentException("Set --server or DMS_SERVER.");
-            var key = context.GetValue(_key) ?? Environment.GetEnvironmentVariable("DMS_API_KEY") ?? throw new ArgumentException("Set --api-key or DMS_API_KEY.");
-            if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(uri.UserInfo)) throw new ArgumentException("Invalid Controller URL.");
-            var services = new ServiceCollection(); services.AddLogging(); services.AddAiurProtocolClient();
-            services.AddHttpClient(string.Empty).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
-            using var provider = services.BuildServiceProvider();
-            var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), endpoint, key);
             var id = context.GetValue(_id);
             DmsResponse response;
             if (IsSubmission)
@@ -145,9 +134,7 @@ public static class DmsCommandApp
                 "trace" => await client.TraceAsync(id, context.GetValue(_skip)),
                 _ => throw new InvalidOperationException("Unsupported command.")
             };
-            DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
-                action == "callstack", !Console.IsOutputRedirected,
-                Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: action == "definitions", audit: action == "audit");
+            return response;
         }
     }
 }

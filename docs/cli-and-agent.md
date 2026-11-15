@@ -20,19 +20,46 @@ These are framework-dependent applications. Install the .NET 10 runtime on each 
 
 ## Configure access
 
-1. Sign in to the Controller as an administrator and change the initial password.
-2. Open **Cluster access**, create a cluster, and grant its members the appropriate request, automatic approval and approval permissions for each risk level.
-3. Configure self approval separately for users allowed to approve their own requests.
-4. Open **API Keys** and create a personal key for CLI access.
-
-Configure the CLI with your own Controller URL and personal key:
+Sign in through the Controller's configured authentication provider and create a personal key under **API Keys**. Configure the CLI with your Controller URL and key:
 
 ```sh
 export DMS_SERVER=https://dms.example.com
 export DMS_API_KEY='<personal-key>'
+dotnet ./bin/client/dms.dll access whoami
 ```
 
-`--server` and `--api-key` can also be supplied to individual commands. Machine keys are for Agents and cannot be used as personal keys.
+`--server` and `--api-key` can also be supplied to individual commands. `whoami` shows the current user's ID, platform permissions and self-approval setting. Machine keys authenticate Agents.
+
+### Manage clusters and permissions
+
+Users with **Manage DMS access** can create clusters and configure access through the CLI or **Cluster access** web page. Use `access whoami` or the administrator-only `access get` snapshot to find user IDs:
+
+```sh
+dotnet ./bin/client/dms.dll cluster create --name aiursoft-prod
+dotnet ./bin/client/dms.dll cluster list
+dotnet ./bin/client/dms.dll access get
+dotnet ./bin/client/dms.dll access set-grant \
+  --cluster-id <cluster-id> --user-id <user-id> --risk Medium \
+  --can-request --can-approve
+```
+
+`set-grant` replaces all three flags for exactly one user, cluster and risk. Omitted flags are false; the example permits requesting and approving Medium operations, with automatic approval disabled. Repeat for each required risk level. Creating a cluster grants no operation permissions automatically. Self approval is configured separately:
+
+```sh
+dotnet ./bin/client/dms.dll access set-self-approval \
+  --user-id <user-id> --enabled false
+```
+
+`cluster list` shows administrators all clusters and other users only their authorized clusters. These configuration and identity commands are audited Controller management operations and create no Lockbox. Server operations such as `cluster get-machines` and `cluster add-machine` continue through Lockbox.
+
+`cluster create --id <creation-id> --name <name>` can safely retry a creation with the same ID and name. A reused ID with another name or a duplicate cluster name is rejected. Administrators can rename or remove a cluster:
+
+```sh
+dotnet ./bin/client/dms.dll cluster rename --cluster-id <cluster-id> --name <new-name>
+dotnet ./bin/client/dms.dll cluster drop --cluster-id <cluster-id>
+```
+
+Deletion requires no machines and no operation history. Its access grants are removed atomically and the audit record is retained.
 
 ## Register a machine
 
@@ -46,7 +73,13 @@ dotnet ./bin/client/dms.dll lockbox approve \
   --id <lockbox-id> --reason 'Registration approved'
 ```
 
-The submission returns a Lockbox ID. A permitted approver must approve it unless the requester's cluster permission allows automatic approval. After approval, inspect the operation result for the machine ID. Issue that machine's Agent key under **Cluster access**.
+The submission returns a Lockbox ID. A permitted approver must approve it unless the requester's cluster permission allows automatic approval. After approval, inspect the operation result for the machine ID. Issue that machine's Agent key using the CLI or **Cluster access**:
+
+```sh
+dotnet ./bin/client/dms.dll access issue-agent-key --machine-id <machine-id>
+```
+
+The response contains the new key once; issuing another key revokes the previous key. Access snapshots omit keys and stored key hashes. Preserve the machine's existing installation identity when rotating its key.
 
 ## Run an Agent
 

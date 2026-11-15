@@ -35,7 +35,7 @@ dotnet run --project Aiursoft.DMS.csproj -- --urls http://localhost:5000
 
 Open `http://localhost:5000`. The default local administrator is `admin@default.com` with password `Admin@123456!`. Change this password before exposing a deployment.
 
-The defaults use SQLite and local accounts. Open **Cluster access** to configure the first cluster and its permissions, then create a personal key under **API Keys**. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
+The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to create clusters, configure their permissions and issue Agent keys; **Cluster access** provides the same management operations in the web UI. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
 
 ## Run in Microsoft Visual Studio
 
