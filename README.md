@@ -47,6 +47,20 @@ The CLI uses table output by default; add `--output-format json` or `csv` for st
 
 Use `dotnet tool update --global Aiursoft.DMS.Client` to update or `dotnet tool uninstall --global Aiursoft.DMS.Client` to uninstall. See [CLI and Agent setup](./docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples. The [SDK source](./src/Aiursoft.DMS.SDK) is included in this repository and is not published as a separate NuGet package.
 
+## Try
+
+Open [DMS](https://dms.aiursoft.com) with an authorized company account. Cluster permissions determine which machines, requests and workflows you can access.
+
+## Install with Docker
+
+Install the Controller with the desired port (omit it to choose an available port):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/aiursoftweb/dms/master/install.sh | sudo bash -s -- 8080
+```
+
+Installation starts after three seconds; press Ctrl+C to cancel. Then open `http://localhost:8080`. This installs the Controller; managed machines join separately through its Agent installer.
+
 ## Run manually
 
 Requires [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and [Node.js](https://nodejs.org/).
@@ -95,11 +109,37 @@ sudo bash install.sh 8080
 
 The Controller image includes self-contained Linux x64 and arm64 Agent bundles. Run its installation command once on each managed host, then approve registration through Lockbox. See [Agent installation](./docs/cli-and-agent.md#install-and-join-an-agent).
 
+## Usage
+
+### Configure CLI access
+
+Create a personal key under **API Keys** in the Controller, then set its URL and your key:
+
+```bash
+export DMS_SERVER=https://dms.example.com
+export DMS_API_KEY='<personal-key>'
+dotnet ./bin/client/dms.dll access whoami
+dotnet ./bin/client/dms.dll cluster list
+```
+
+These identity and management queries create no Lockbox. Server operations submit a Lockbox and require the selected Cluster's request permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
+
+### Join and manage machines
+
+An administrator creates a Cluster join key; an operator runs the [one-time Agent installation](docs/cli-and-agent.md#install-and-join-an-agent) on each host. The service waits for registration approval, then connects outward to the Controller. Subsequent operations, including [Agent upgrades](docs/cli-and-agent.md#upgrade-an-installed-agent), run through approved workflows. Keep personal keys, join keys and machine credentials separate.
+
 ## Configuration
 
 Run one Controller with a persistent business database and workflow state directory. Configure ClickHouse for detailed workflow traces before using the service for ongoing operations. Local accounts are the development default; OIDC is an explicit deployment setting.
 
 See [configuration and persistence](./docs/configuration.md) for database settings, trace storage, authentication, recovery and cancellation behavior.
+
+## Documentation
+
+- [CLI, authentication, Cluster management and Agent setup](docs/cli-and-agent.md)
+- [Configuration, persistence, recovery and cancellation](docs/configuration.md)
+- [Available workflows and Cluster permissions](docs/workflow-discovery.md)
+- [Workflow authoring](docs/authoring-workflows.md)
 
 ## How to contribute
 
@@ -115,6 +155,8 @@ dotnet test Aiursoft.DMS.sln
 
 NugetNinja maintains the shared Template files and dependency conventions through `ninja.yaml`. External contributors use the checked-in public NuGet/npm sources; company CI selects the internal build sources separately.
 
-## Credits
+## License
+
+<a name="credits"></a>
 
 Built on [Aiursoft Template](https://github.com/aiursoftweb/template). Licensed under the [MIT License](./LICENSE).
