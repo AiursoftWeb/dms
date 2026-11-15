@@ -129,7 +129,11 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         await access.RequireViewAsync(Actor, run.ClusterId);
         access.Audit(Actor, "operation.trace", id); await db.SaveChangesAsync();
         if (!traces.Enabled) throw new DmsException(503, "ClickHouse is not configured. Trace remains in the durable backlog.");
-        try { return new { Entries = await traces.ReadAsync(id, skip), PendingArchiveEvents = spool.PendingCount, NextOffset = skip + 200 }; }
+        try
+        {
+            await traces.InitializeAsync();
+            return new { Entries = await traces.ReadAsync(id, skip), PendingArchiveEvents = spool.PendingCount, NextOffset = skip + 200 };
+        }
         catch (Exception exception)
         {
             logger.LogWarning(exception, "Trace query is unavailable for workflow {WorkflowId}.", id);
