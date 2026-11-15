@@ -78,6 +78,33 @@ public class BoxPullerForceUpdateTests
     }
 
     [TestMethod]
+    public async Task AlreadyRunningScheduledSyncPreventsAnotherInvocation()
+    {
+        using var fixture = new Puller();
+        await File.WriteAllTextAsync(fixture.PathOf("hold"), "");
+        using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        using var scheduled = new System.Diagnostics.Process
+        {
+            StartInfo = new System.Diagnostics.ProcessStartInfo(fixture.PathOf("app/entry.sh")) { UseShellExecute = false }
+        };
+        scheduled.StartInfo.ArgumentList.Add("aiursoft/other:latest");
+        scheduled.StartInfo.Environment["SKIP_IF_SYNCED_HOURS"] = "1";
+        scheduled.Start();
+        try
+        {
+            while (!File.Exists(fixture.PathOf("invocations"))) await Task.Delay(30, stop.Token);
+            var failure = await Assert.ThrowsAsync<ChildWorkflowException>(() => fixture.RunAsync(stop.Token));
+            Assert.AreEqual("Process exited with code 75.", failure.Result);
+            CollectionAssert.AreEqual(new[] { "aiursoft/other:latest|1" }, await File.ReadAllLinesAsync(fixture.PathOf("invocations")));
+        }
+        finally
+        {
+            if (!scheduled.HasExited) scheduled.Kill(entireProcessTree: true);
+            await scheduled.WaitForExitAsync(CancellationToken.None);
+        }
+    }
+
+    [TestMethod]
     public async Task ConcurrentUpdateIsRejectedAndCancellationRequiresVerification()
     {
         using var fixture = new Puller();
