@@ -119,6 +119,8 @@ Do not add fields to `OperationRequest` for a standard workflow. Controller look
 
 For an optional CLI entry, add a command path and map its options into the typed input through `DmsCommandApp.StandardCommand`. Existing `ServiceCommand` shows how to supply an option and input builder. The common handler supplies the request envelope and renders table/JSON/CSV. Do not add workflow-name cases to the common handler or implement a second approval path.
 
+The CLI is distributed as the `Aiursoft.DMS.Client` NuGet tool, including its SDK and Contracts assemblies. When changing any of those bundled components, increment `Version` in `src/Aiursoft.DMS.Client/Aiursoft.DMS.Client.csproj` before merging. Published versions are immutable, and the shared CI skips duplicate versions. Version the CLI independently of the Controller and Agent packages.
+
 `cluster.add-machine` and approved cancellation remain dedicated control operations. Their control-specific fields are separate from standard input authoring.
 
 ## 5. Verify the workflow as a business operation
