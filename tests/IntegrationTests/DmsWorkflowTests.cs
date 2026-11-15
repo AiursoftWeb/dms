@@ -17,11 +17,14 @@ public class DmsWorkflowTests : TestBase
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        var run = new WorkflowRun { ClusterId = setup.Cluster, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        run.RootId = run.Id;
         int before;
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "CLI errors", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+            db.WorkflowRuns.Add(run);
             await db.SaveChangesAsync();
             before = await db.Lockboxes.CountAsync();
         }
@@ -30,6 +33,8 @@ public class DmsWorkflowTests : TestBase
             foreach (var (arguments, credential, expected) in new (string[], string, string)[]
             {
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], key, "Workflow not found."),
+                (["operation", "get-trace", "--id", run.Id.ToString()], key, "ClickHouse is not configured."),
+                (["operation", "query-audit", "--cluster-id", setup.Cluster.ToString()], key, "ClickHouse is not configured."),
                 (["operation", "list-definitions", "--cluster-id", Guid.NewGuid().ToString()], key, "Access to this cluster is denied."),
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
                 (["machine", "systemctl", "status", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
