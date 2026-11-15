@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.Security.Cryptography;
+using System.Text.Json;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.AiurProtocol.Services;
@@ -34,9 +35,14 @@ public static class AgentCommandApp
             command.SetAction(async context =>
             {
                 try { await Execute(context); return 0; }
-                catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException or IOException or HttpRequestException or TaskCanceledException)
+                catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException or IOException or InvalidDataException or JsonException or HttpRequestException or TaskCanceledException)
                 {
-                    var message = exception is AiurUnexpectedServerResponseException protocol ? protocol.Response.Message ?? "Controller rejected enrollment." : exception.Message;
+                    var message = exception switch
+                    {
+                        AiurUnexpectedServerResponseException protocol => protocol.Response.Message ?? "Controller rejected enrollment.",
+                        JsonException => "Invalid Agent state. Restore the existing state before restarting.",
+                        _ => exception.Message
+                    };
                     var key = context.GetValue(_key);
                     if (!string.IsNullOrEmpty(key)) message = message.Replace(key, "[redacted]", StringComparison.Ordinal);
                     context.InvocationConfiguration.Error.WriteLine("Error: " + message); return 1;

@@ -165,6 +165,35 @@ public class EnrollmentTests : TestBase
     }
 
     [TestMethod]
+    public async Task InstalledAgentReportsInvalidStateWithoutReplacingItsIdentity()
+    {
+        var state = Directory.CreateTempSubdirectory("DmsInvalidState-").FullName;
+        try
+        {
+            var args = new[] { "run", "--state-path", state };
+            var missing = await AgentCommandApp.Create().TestRunAsync(args);
+            Assert.AreEqual(1, missing.ProgramReturn);
+            Assert.AreEqual("Error: Run dms-agent join first." + Environment.NewLine, missing.StdErr);
+            Assert.AreEqual("", missing.StdOut);
+            var file = Path.Combine(state, "connection.json");
+            await File.WriteAllTextAsync(file, "{");
+            var corrupt = await AgentCommandApp.Create().TestRunAsync(args);
+            Assert.AreEqual(1, corrupt.ProgramReturn);
+            Assert.AreEqual("Error: Invalid Agent state. Restore the existing state before restarting." + Environment.NewLine, corrupt.StdErr);
+            Assert.AreEqual("{", await File.ReadAllTextAsync(file));
+            using (new TaskJournal(Path.Combine(state, "journal")))
+                new AgentConfiguration("http://localhost:5000", "fixture", Guid.NewGuid(), Guid.Empty,
+                    "fixture-node", "unused-receipt", "unused-key").Save(state);
+            var original = await File.ReadAllTextAsync(file);
+            var mismatch = await AgentCommandApp.Create().TestRunAsync(args);
+            Assert.AreEqual(1, mismatch.ProgramReturn);
+            Assert.AreEqual("Error: The Agent configuration and journal identities differ." + Environment.NewLine, mismatch.StdErr);
+            Assert.AreEqual(original, await File.ReadAllTextAsync(file));
+        }
+        finally { Directory.Delete(state, true); }
+    }
+
+    [TestMethod]
     public async Task AgentJoinPersistsPrivateIdentityAndResumesWithoutPersistingTheJoinKey()
     {
         var setup = await ArrangeAsync();
