@@ -11,8 +11,8 @@ public class AgentUpgradeTests
 {
     [TestMethod]
     [DataRow("installed", true, 10, true)]
-    [DataRow("prepared", true, 10, false)]
-    [DataRow("installing", true, 10, false)]
+    [DataRow("prepared", true, -1, false)]
+    [DataRow("installing", true, -1, false)]
     [DataRow("installed", false, 10, false)]
     [DataRow("installed", true, -1, false)]
     public async Task OnlyMatchingInstalledAgentConfirmsOriginalWorkflow(string phase, bool correctHash, int minutes, bool success)
@@ -55,6 +55,32 @@ public class AgentUpgradeTests
             await new AgentUpgrade(state, recovered).ConfirmAsync();
             Assert.AreEqual(sequence, recovered.Snapshot().Single().Sequence, "Confirmation must not be replayed.");
             Assert.AreEqual(machine, AgentConfiguration.Load(state)!.MachineId);
+        }
+        finally { Directory.Delete(state, true); }
+    }
+
+    [TestMethod]
+    public async Task RecoveryWaitsForTheInFlightUpdaterWithoutStartingAnyTask()
+    {
+        var state = Path.Combine(Path.GetTempPath(), "dms-upgrade-wait-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(state);
+        try
+        {
+            using var journal = new TaskJournal(Path.Combine(state, "journal"));
+            var taskId = Guid.NewGuid();
+            journal.Accept(new AgentMessage { TaskId = taskId, Definition = WorkflowNames.AgentStatus });
+            var marker = Path.Combine(state, "upgrade.json");
+            var release = new AgentRelease("linux-x64", "1.0.16.0", new string('a', 64), new string('b', 64));
+            var handoff = new UpgradeHandoff(Guid.NewGuid(), Guid.NewGuid(), null, journal.InstallationId, Guid.NewGuid(), release,
+                "1.0.15.0", DateTime.UtcNow.AddMinutes(1), "stopping");
+            File.WriteAllText(marker, JsonSerializer.Serialize(handoff));
+            var recovery = new AgentUpgrade(state, journal).ConfirmAsync();
+            await Task.Delay(100);
+            Assert.IsFalse(recovery.IsCompleted, "Do not reconnect and admit new tasks while the updater may still stop the Agent.");
+            Assert.AreEqual(RunState.Accepted, journal.Snapshot().Single().State);
+            File.WriteAllText(marker, JsonSerializer.Serialize(handoff with { Phase = "installed" }));
+            await recovery.WaitAsync(TimeSpan.FromSeconds(3));
+            Assert.AreEqual(RunState.Accepted, journal.Snapshot().Single().State);
         }
         finally { Directory.Delete(state, true); }
     }

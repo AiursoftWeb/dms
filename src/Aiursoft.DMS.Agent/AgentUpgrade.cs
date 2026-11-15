@@ -93,7 +93,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             try
             {
                 await RunAsync("/usr/bin/systemd-run", ["--unit=dms-agent-upgrade-" + context.Id.ToString("N"), "--collect",
-                    "--property=Type=exec", "--property=RuntimeMaxSec=300", executable, "apply-upgrade", "--state-path", state, "--id", context.Id.ToString()], CancellationToken.None);
+                    "--property=Type=exec", "--property=JobTimeoutSec=30", "--property=RuntimeMaxSec=300", executable, "apply-upgrade", "--state-path", state, "--id", context.Id.ToString()], CancellationToken.None);
             }
             catch { Save(Marker, handoff with { Phase = "failed" }); throw; }
             handedOff = true;
@@ -116,6 +116,17 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
     {
         if (!File.Exists(Marker)) return;
         var handoff = Read(Marker);
+        // An automatic service restart can race the independent updater. Do not admit new work
+        // while that updater may still stop this process. Its 30s start + 300s runtime are bounded
+        // by the original 10-minute handoff deadline. This waits, never replays the update.
+        var waitUntil = handoff.Deadline < DateTime.UtcNow.AddMinutes(10) ? handoff.Deadline : DateTime.UtcNow.AddMinutes(10);
+        while (handoff.Phase is "prepared" or "stopping" or "installing" && DateTime.UtcNow < waitUntil)
+        {
+            await Task.Delay(200);
+            var current = Read(Marker);
+            if (current.WorkflowId != handoff.WorkflowId) throw new InvalidDataException("Agent update handoff changed during recovery.");
+            handoff = current;
+        }
         if (handoff.Phase is "confirmed" or "failed" or "uncertain") return;
         var task = journal.Snapshot().SingleOrDefault(t => t.Id == handoff.TaskId);
         if (task == null || task.State.Terminal()) return;
