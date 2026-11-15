@@ -62,7 +62,7 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             await db.SaveChangesAsync(token);
         }
         foreach (var upgrade in await db.WorkflowRuns.Where(r => r.Definition == WorkflowNames.AgentUpgrade
-            && (r.State == RunState.Running || r.State == RunState.CancelRequested) && r.StartedAt < DateTime.UtcNow.AddMinutes(-15)).ToListAsync(token))
+            && (r.State == RunState.Running || r.State == RunState.CancelRequested) && r.StartedAt < DateTime.UtcNow.AddMinutes(-20)).ToListAsync(token))
         {
             upgrade.State = RunState.NeedsVerification;
             upgrade.Result = JsonSerializer.Serialize(new { Error = "Agent upgrade confirmation timed out. Do not repeat automatically." });

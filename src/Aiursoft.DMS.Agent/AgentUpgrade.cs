@@ -93,12 +93,12 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             try
             {
                 await RunAsync("/usr/bin/systemd-run", ["--unit=dms-agent-upgrade-" + context.Id.ToString("N"), "--collect",
-                    "--property=Type=exec", "--property=JobTimeoutSec=30", "--property=RuntimeMaxSec=300", executable, "apply-upgrade", "--state-path", state, "--id", context.Id.ToString()], CancellationToken.None);
+                    "--property=Type=exec", "--property=RuntimeMaxSec=300", executable, "apply-upgrade", "--state-path", state, "--id", context.Id.ToString()], CancellationToken.None);
             }
             catch { Save(Marker, handoff with { Phase = "failed" }); throw; }
             handedOff = true;
             // Returning would incorrectly complete the workflow before the service restarts.
-            while (DateTime.UtcNow < handoff.Deadline)
+            while (DateTime.UtcNow < handoff.Deadline.AddMinutes(5))
             {
                 await Task.Delay(2000, CancellationToken.None);
                 if (Read(Marker).Phase == "failed") throw new IOException("The Agent update helper failed before replacement.");
@@ -117,9 +117,11 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         if (!File.Exists(Marker)) return;
         var handoff = Read(Marker);
         // An automatic service restart can race the independent updater. Do not admit new work
-        // while that updater may still stop this process. Its 30s start + 300s runtime are bounded
-        // by the original 10-minute handoff deadline. This waits, never replays the update.
-        var waitUntil = handoff.Deadline < DateTime.UtcNow.AddMinutes(10) ? handoff.Deadline : DateTime.UtcNow.AddMinutes(10);
+        // while that updater may still stop this process. A late-starting helper must validate
+        // the original deadline before any effect; allow its maximum five-minute runtime to end.
+        // Cap malformed future deadlines too. This waits, never replays the update.
+        var activationDeadline = handoff.Deadline < DateTime.UtcNow.AddMinutes(10) ? handoff.Deadline : DateTime.UtcNow.AddMinutes(10);
+        var waitUntil = activationDeadline.AddMinutes(5);
         while (handoff.Phase is "prepared" or "stopping" or "installing" && DateTime.UtcNow < waitUntil)
         {
             await Task.Delay(200);
@@ -206,8 +208,9 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         var output = process.StandardOutput.ReadToEndAsync(token);
         var error = process.StandardError.ReadToEndAsync(token);
         await process.WaitForExitAsync(token);
-        await Task.WhenAll(output, error);
-        if (process.ExitCode != 0) throw new IOException($"Agent lifecycle process failed with exit code {process.ExitCode}.");
+        await output;
+        var diagnostic = (await error).Trim();
+        if (process.ExitCode != 0) throw new IOException($"Agent lifecycle process {Path.GetFileName(executable)} failed with exit code {process.ExitCode}: {diagnostic[..Math.Min(diagnostic.Length, 2000)]}");
     }
     private static string Hash(string path)
     {

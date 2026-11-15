@@ -72,7 +72,7 @@ public class AgentUpgradeIntegrationTests : TestBase
                 if (machineTask == null) await Task.Delay(50, timeout.Token);
             } while (machineTask == null);
             machineTask.State = RunState.Running;
-            machineTask.StartedAt = DateTime.UtcNow.AddMinutes(-16);
+            machineTask.StartedAt = DateTime.UtcNow.AddMinutes(-21);
             await database.SaveChangesAsync(timeout.Token);
             while ((await service.GetWorkflowAsync(userId, root.Id)).State != RunState.NeedsVerification) await Task.Delay(100, timeout.Token);
             using var final = Server.Services.CreateScope();

@@ -11,8 +11,8 @@ public class AgentUpgradeTests
 {
     [TestMethod]
     [DataRow("installed", true, 10, true)]
-    [DataRow("prepared", true, -1, false)]
-    [DataRow("installing", true, -1, false)]
+    [DataRow("prepared", true, -6, false)]
+    [DataRow("installing", true, -6, false)]
     [DataRow("installed", false, 10, false)]
     [DataRow("installed", true, -1, false)]
     public async Task OnlyMatchingInstalledAgentConfirmsOriginalWorkflow(string phase, bool correctHash, int minutes, bool success)
