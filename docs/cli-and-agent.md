@@ -113,6 +113,24 @@ dotnet ./bin/client/dms.dll access revoke-join-key --id <join-key-id>
 
 Revocation prevents new registrations and activation of pending registrations. Previously approved machines retain their independent credentials. The enrollment history and approval decisions remain available for investigation.
 
+### Upgrade an installed Agent
+
+Submit an upgrade from the CLI:
+
+```sh
+dotnet ./bin/cli/dms.dll machine agent upgrade \
+  --cluster-id <cluster-id> --machine-id <machine-id> \
+  --reason "Install the Controller's Agent release"
+```
+
+This creates a **High** risk Lockbox. It freezes the selected machines and both architectures' exact release versions, archive digests and Agent assembly digests. Review and approve that Lockbox through the usual commands. The permission to approve your own request remains separate. If the Controller's release changes before approval, submit a new request; the approved operation never silently changes to a newer payload.
+
+The installed Agent downloads its native self-contained bundle from its registered Controller, verifies the approved identity, pauses new task starts and waits up to one minute for running work to finish. Uncertain tasks must be reconciled first. A one-shot systemd unit installs the payload and restarts `dms-agent.service`. The machine keeps its installation identity, credential and task journal. It needs no internet connection or inbound SSH.
+
+Follow the same Workflow ID using `operation get-workflow`, `get-callstack` and `get-trace`. Success is reported only by the matching new Agent over its authenticated Controller connection. A failed download leaves the old service running. An interrupted or unconfirmed switch requires verification and is never retried automatically. Cancellation after the handoff cannot roll back the switch. A child upgrade does not resume an interrupted parent's C# stack.
+
+Use an installed Agent release that already supports this workflow for the first upgrade. Development Agents started from arbitrary publish directories cannot update themselves. This command does not provide scheduled updates, a historical version repository or automatic rollback. Hosts whose Agent cannot contact the Controller need an operator to restore connectivity.
+
 ### Build self-contained Agent assets
 
 Controller Docker images and APKG packages include both Linux architectures. For a manual Controller publish, create the assets beside the Controller's published assembly:
@@ -121,7 +139,7 @@ Controller Docker images and APKG packages include both Linux architectures. For
 bash scripts/build-agent-assets.sh ./bin/controller/agent-assets
 ```
 
-The build requires the .NET 10 SDK and restores both architectures' runtime and host packs. The asset script explicitly ships serviced runtime patch 10.0.15, independently of the SDK's bundled runtime. Update that patch in the script when servicing the Agent runtime; admission and vulnerability checks still apply. The Controller serves only the supported `linux-x64` and `linux-arm64` bundles. Its installation endpoints return 404 when those assets have not been packaged.
+The build requires the .NET 10 SDK and restores both architectures' runtime and host packs. The asset script explicitly ships serviced runtime patch 10.0.15, independently of the SDK's bundled runtime. Update that patch in the script when servicing the Agent runtime; admission and vulnerability checks still apply. The script also generates `releases.json` from the published assembly version and actual artifact digests. The Controller serves only the supported `linux-x64` and `linux-arm64` bundles. Its installation endpoints return 404 when those assets have not been packaged.
 
 ### Run an Agent during development
 

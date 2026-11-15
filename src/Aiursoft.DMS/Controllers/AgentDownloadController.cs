@@ -1,3 +1,6 @@
+using Aiursoft.AiurProtocol.Models;
+using Aiursoft.DMS.Contracts;
+using Aiursoft.DMS.Services.Dms;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,8 +9,16 @@ namespace Aiursoft.DMS.Controllers;
 [AllowAnonymous]
 [Route("agent")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class AgentDownloadController(IWebHostEnvironment environment) : ControllerBase
+public sealed class AgentDownloadController(IWebHostEnvironment environment, AgentReleaseStore releases) : ControllerBase
 {
+    [HttpGet("releases")]
+    public IActionResult Releases()
+    {
+        try { return Ok(new AgentReleasesResponse { Data = releases.Read(), Message = "Available Agent releases." }); }
+        catch (DmsException exception)
+        { return StatusCode(exception.StatusCode, new AgentReleasesResponse { Code = Code.RemoteNotAccessible, Message = exception.Message }); }
+    }
+
     [HttpGet("install.sh")]
     public IActionResult Installer() => Asset("install.sh", "text/x-shellscript");
 

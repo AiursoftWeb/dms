@@ -14,11 +14,12 @@ namespace Aiursoft.DMS.Agent;
 
 public static class AgentCommandApp
 {
-    public static NestedCommandApp Create() => new NestedCommandApp().WithFeature(new AgentCommand("join")).WithFeature(new AgentCommand("run"));
+    public static NestedCommandApp Create() => new NestedCommandApp().WithFeature(new AgentCommand("join")).WithFeature(new AgentCommand("run")).WithFeature(new AgentCommand("apply-upgrade"));
     private sealed class AgentCommand(string name) : ExecutableCommandHandlerBuilder
     {
         protected override string Name => name;
         protected override string Description => name == "join" ? "Request enrollment using a cluster-scoped join key. Approval is required." : "Run the installed Agent and resume pending enrollment.";
+        private readonly Option<Guid> _id = new("--id") { Required = true };
         private readonly Option<string> _controller = new("--controller-url") { Required = true };
         private readonly Option<string> _key = new("--api-key") { Required = true };
         private readonly Option<string> _cluster = new("--cluster-name") { Required = true };
@@ -27,6 +28,7 @@ public static class AgentCommandApp
         protected override IEnumerable<Option> GetCommandOptions()
         {
             yield return _state;
+            if (name == "apply-upgrade") yield return _id;
             if (name == "join") { yield return _controller; yield return _key; yield return _cluster; yield return _machine; }
         }
         public override Command BuildAsCommand()
@@ -53,6 +55,7 @@ public static class AgentCommandApp
         protected override async Task Execute(ParseResult context)
         {
             var state = Path.GetFullPath(context.GetValue(_state)!);
+            if (name == "apply-upgrade") { await AgentUpgrade.ApplyAsync(state, context.GetValue(_id)); return; }
             if (name == "run") { await AgentRuntime.RunInstalledAsync(state); return; }
             var controller = AgentConfiguration.ControllerUrl(context.GetValue(_controller)!);
             var cluster = context.GetValue(_cluster)!.Trim();

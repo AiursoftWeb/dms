@@ -34,7 +34,8 @@ public static class AgentRuntime
             await Task.Delay(TimeSpan.FromSeconds(2));
         }
         config.Save(state);
-        await RunAsync(new Uri(config.Controller), config.AgentKey, journal);
+        await new AgentUpgrade(state, journal).ConfirmAsync();
+        await RunAsync(new Uri(config.Controller), config.AgentKey, journal, state);
     }
     public static async Task RunEnvironmentAsync()
     {
@@ -44,12 +45,12 @@ public static class AgentRuntime
         using var journal = new TaskJournal(path);
         await RunAsync(new Uri(AgentConfiguration.ControllerUrl(endpoint)), key, journal);
     }
-    private static async Task RunAsync(Uri controller, string key, TaskJournal journal)
+    private static async Task RunAsync(Uri controller, string key, TaskJournal journal, string? installedState = null)
     {
         using var stopping = new CancellationTokenSource();
         var cancel = CreateCancelHandler(stopping);
         Console.CancelKeyPress += cancel;
-        try { await new AgentClient(controller, key, journal).RunAsync(stopping.Token); }
+        try { await new AgentClient(controller, key, journal, installedState: installedState).RunAsync(stopping.Token); }
         catch (OperationCanceledException) when (stopping.IsCancellationRequested) { }
         finally { Console.CancelKeyPress -= cancel; }
     }

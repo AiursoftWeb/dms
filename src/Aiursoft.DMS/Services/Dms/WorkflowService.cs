@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user, Guid cluster) => gate.RunAsync(async () =>
     {
@@ -68,6 +68,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             throw new DmsException(400, "Machine name must contain 1 to 100 characters.");
         if (request.Workflow == WorkflowNames.Kill && !await db.WorkflowRuns.AnyAsync(r => r.Id == request.TargetWorkflowId && r.ClusterId == request.ClusterId))
             throw new DmsException(404, "Target workflow not found in this cluster.");
+        if (request.Workflow == WorkflowNames.AgentUpgrade) releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(request.Input));
         var lockbox = new LockboxRequest
         {
             ClientRequestId = request.RequestId, ClusterId = request.ClusterId, RequesterId = user,
@@ -114,6 +115,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if ((definition == null && item.Definition is not (WorkflowNames.AddMachine or WorkflowNames.Kill))
             || (definition != null && (definition.Version != item.Version || definition.PublicRisk != item.Risk)))
             throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
+        if (item.Definition == WorkflowNames.AgentUpgrade)
+            releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input));
         item.Decision = DecisionState.Approved; item.ApproverId = user; item.Automatic = user == null;
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
         var root = db.WorkflowRuns.Local.FirstOrDefault(r => r.Id == item.WorkflowId)

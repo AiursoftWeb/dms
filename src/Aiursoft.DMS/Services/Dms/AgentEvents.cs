@@ -90,7 +90,7 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
     public Task<bool> DisconnectedAsync(Guid machine) => gate.RunAsync(async () =>
     {
         foreach (var task in await db.WorkflowRuns.Where(r => r.MachineId == machine && r.State == RunState.Running).ToListAsync())
-            task.State = RunState.NeedsVerification;
+            if (task.Definition != WorkflowNames.AgentUpgrade) task.State = RunState.NeedsVerification;
         await db.SaveChangesAsync(); return true;
     });
 }
