@@ -11,8 +11,8 @@ namespace Aiursoft.DMS.Client;
 
 internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
 {
-    protected readonly Option<string?> _server = new("--server") { Description = "Controller URL; defaults to DMS_SERVER." };
-    protected readonly Option<string?> _key = new("--api-key") { Description = "Personal API Key; defaults to DMS_API_KEY." };
+    protected readonly Option<string?> _server = new("--server") { Description = "Controller URL; defaults to DMS_SERVER or saved login." };
+    protected readonly Option<string?> _key = new("--api-key") { Description = "Personal API Key; defaults to DMS_API_KEY or saved login." };
     protected readonly Option<OutputFormat> _format = new("--output-format") { Description = "Output format: table, json, or csv." };
     protected virtual bool Callstack => false;
     protected virtual bool Catalog => false;
@@ -31,12 +31,15 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
         var command = base.BuildAsCommand();
         command.SetAction(async context =>
         {
+            string? key = null;
             try
             {
-                await Execute(context);
+                var credentials = DmsCredentials.Resolve(context.GetValue(_server), context.GetValue(_key));
+                key = credentials.ApiKey;
+                await ExecuteAsync(context, credentials);
                 return 0;
             }
-            catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException)
+            catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException or HttpRequestException or OperationCanceledException)
             {
                 var message = exception switch
                 {
@@ -44,9 +47,8 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
                     AiurHttpResponseException { StatusCode: System.Net.HttpStatusCode.Unauthorized } => "Authentication failed. Check your personal API Key and its expiry.",
                     AiurHttpResponseException http => $"Controller returned HTTP {(int)http.StatusCode} ({http.StatusCode}).",
                     ArgumentException argument => argument.Message,
-                    _ => throw new InvalidOperationException()
+                    _ => "Cannot reach the Controller. Check the endpoint and network connection."
                 };
-                var key = context.GetValue(_key) ?? Environment.GetEnvironmentVariable("DMS_API_KEY");
                 if (!string.IsNullOrEmpty(key)) message = message.Replace(key, "[redacted]", StringComparison.Ordinal);
                 context.InvocationConfiguration.Error.WriteLine($"Error: {message}");
                 return 1;
@@ -55,20 +57,25 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
         return command;
     }
 
-    protected sealed override async Task Execute(ParseResult context)
+    protected sealed override Task Execute(ParseResult context) =>
+        ExecuteAsync(context, DmsCredentials.Resolve(context.GetValue(_server), context.GetValue(_key)));
+
+    private async Task ExecuteAsync(ParseResult context, DmsCredentials credentials)
     {
         var format = context.GetValue(_format);
         if (!Enum.IsDefined(format)) throw new ArgumentException("Output format must be table, json, or csv.");
-        var endpoint = context.GetValue(_server) ?? Environment.GetEnvironmentVariable("DMS_SERVER") ?? throw new ArgumentException("Set --server or DMS_SERVER.");
-        var key = context.GetValue(_key) ?? Environment.GetEnvironmentVariable("DMS_API_KEY") ?? throw new ArgumentException("Set --api-key or DMS_API_KEY.");
-        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(uri.UserInfo)) throw new ArgumentException("Invalid Controller URL.");
-        var services = new ServiceCollection(); services.AddLogging(); services.AddAiurProtocolClient();
-        services.AddHttpClient(string.Empty).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
-        using var provider = services.BuildServiceProvider();
-        var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), endpoint, key);
+        using var provider = CreateProvider();
+        var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), credentials.Endpoint, credentials.ApiKey);
         var response = await RequestAsync(client, context);
         DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
             Callstack, !Console.IsOutputRedirected,
             Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: Catalog, audit: Audit);
+    }
+
+    internal static ServiceProvider CreateProvider()
+    {
+        var services = new ServiceCollection(); services.AddLogging(); services.AddAiurProtocolClient();
+        services.AddHttpClient(string.Empty).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+        return services.BuildServiceProvider();
     }
 }

@@ -9,6 +9,7 @@ namespace Aiursoft.DMS.Client;
 public static class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
+        .WithFeature(new LoginCommand())
         .WithFeature(new Group("cluster", [new ManagementCommand("list", "clusters"), new ManagementCommand("create", "create"), new ManagementCommand("rename", "rename"), new ManagementCommand("drop", "drop"), StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine),
             new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
         .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("set-grant", "grant"), new ManagementCommand("set-self-approval", "self"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
