@@ -21,6 +21,9 @@
       <data name="Aiursoft" xml:space="preserve">
     <value>Aiursoft</value>
   </data>
+  <data name="Aiursoft DMS - Approved server operations with a traceable workflow history." xml:space="preserve">
+    <value>Aiursoft DMS - Goedgekeurde serverbewerkingen met een traceerbare workflowgeschiedenis.</value>
+  </data>
   <data name="Aiursoft Template - A modern, feature-rich, and highly extensible foundation for your next web application." xml:space="preserve">
     <value>Aiursoft Template - Een moderne, functierijke en zeer uitbreidbare basis voor uw volgende webapplicatie.</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Github" xml:space="preserve">
     <value>GitHub</value>
+  </data>
+  <data name="Issues" xml:space="preserve">
+    <value>Problemen</value>
   </data>
   <data name="Legal" xml:space="preserve">
     <value>Juridisch</value>

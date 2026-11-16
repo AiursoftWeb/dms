@@ -75,6 +75,9 @@
   <data name="Consistency Validation" xml:space="preserve">
     <value>التحقق من الاتساق</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
   <data name="Develop exclusively in UTC while the system automatically converts and displays dates in the user&apos;s local time zone." xml:space="preserve">
     <value>طور بشكل حصري باستخدام التوقيت العالمي الموحد (UTC) بينما يقوم النظام تلقائيًا بتحويل وتظهر التواريخ بالتوقيت المحلي للمستخدم.</value>
   </data>
@@ -102,6 +105,9 @@
   <data name="Features a built-in file management system with automatic avatar compression." xml:space="preserve">
     <value>يتميز بنظام مدمج لإدارة الملفات مع ضغط تلقائي للصور الشخصية.</value>
   </data>
+  <data name="Follow the callstack and inspect execution traces." xml:space="preserve">
+    <value>تتبّع مكدس الاستدعاءات وافحص آثار التنفيذ.</value>
+  </data>
   <data name="Handle recurring jobs like cleanup and synchronization with a comprehensive GUI for monitoring execution history and logs." xml:space="preserve">
     <value>قم بإدارة المهام المتكررة مثل التنظيف والمزامنة باستخدام واجهة رسومية شاملة لمراقبة سجلات تاريخ التنفيذ والسجلات.</value>
   </data>
@@ -113,6 +119,15 @@
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>إدارة الملفات المتكاملة</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>صناديق الأمانات</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>الأجهزة</value>
+  </data>
+  <data name="Manage servers through approved workflows." xml:space="preserve">
+    <value>إدارة الخوادم من خلال مسارات العمل المعتمدة.</value>
   </data>
   <data name="Models are validated on both client and server sides based on data annotations." xml:space="preserve">
     <value>تتم مصادقة النماذج على الطرفين العميل والخادم بناءً على ملاحظات البيانات.</value>
@@ -134,6 +149,12 @@
   </data>
   <data name="Responsive Design" xml:space="preserve">
     <value>تصميم متجاوب</value>
+  </data>
+  <data name="Review requests" xml:space="preserve">
+    <value>مراجعة الطلبات</value>
+  </data>
+  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
+    <value>راجع العملية المطلوبة والمعلمات والأهداف الثابتة.</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>اختبارات دمج قوية</value>
@@ -165,11 +186,23 @@
   <data name="This is a template project, where we start the voyager..." xml:space="preserve">
     <value>هذا مشروع قالب، حيث نبدأ رحلة المستكشف...</value>
   </data>
+  <data name="View Agent connectivity and machine history." xml:space="preserve">
+    <value>عرض اتصال الوكيل وسجل الأجهزة.</value>
+  </data>
+  <data name="View history" xml:space="preserve">
+    <value>عرض السجل</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>عرض الأجهزة</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>مرحباً</value>
   </data>
   <data name="Why use the Aiursoft Template?" xml:space="preserve">
     <value>لماذا نستخدم قالب Aiursoft؟</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>سجل سير العمل</value>
   </data>
 
 </root>

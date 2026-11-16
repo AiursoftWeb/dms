@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent identity" xml:space="preserve">
+    <value>Tożsamość agenta</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>Zatwierdzanie</value>
+  </data>
+  <data name="Auto" xml:space="preserve">
+    <value>Automatycznie</value>
+  </data>
+  <data name="Automatically approve" xml:space="preserve">
+    <value>Zatwierdzaj automatycznie</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>Klaster</value>
+  </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Dostęp do klastra</value>
+  </data>
+  <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
+    <value>Skopiuj teraz ten klucz agenta. Poprzedni klucz został unieważniony.</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>Utwórz</value>
+  </data>
+  <data name="Create cluster" xml:space="preserve">
+    <value>Utwórz klaster</value>
+  </data>
+  <data name="Current permissions" xml:space="preserve">
+    <value>Bieżące uprawnienia</value>
+  </data>
+  <data name="Issue Agent key" xml:space="preserve">
+    <value>Wydaj klucz agenta</value>
+  </data>
+  <data name="Issue a key after an approved machine registration. Issuing another key revokes the previous one." xml:space="preserve">
+    <value>Wygeneruj klucz po zatwierdzeniu rejestracji maszyny. Wygenerowanie kolejnego klucza unieważnia poprzedni.</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Maszyna</value>
+  </data>
+  <data name="May approve" xml:space="preserve">
+    <value>Może zatwierdzać</value>
+  </data>
+  <data name="May approve own requests" xml:space="preserve">
+    <value>Może zatwierdzać własne wnioski</value>
+  </data>
+  <data name="May request" xml:space="preserve">
+    <value>Może składać wnioski</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nazwa</value>
+  </data>
+  <data name="Request" xml:space="preserve">
+    <value>Żądanie</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>Poziom ryzyka</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Zapisz</value>
+  </data>
+  <data name="Save permissions" xml:space="preserve">
+    <value>Zapisz uprawnienia</value>
+  </data>
+  <data name="Self approval" xml:space="preserve">
+    <value>Samodzielne zatwierdzanie</value>
+  </data>
+  <data name="Set risk permissions" xml:space="preserve">
+    <value>Ustaw uprawnienia dotyczące poziomu ryzyka</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>Użytkownik</value>
+  </data>
+
+</root>

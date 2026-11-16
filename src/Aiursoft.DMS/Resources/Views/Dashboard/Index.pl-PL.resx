@@ -75,6 +75,9 @@
   <data name="Consistency Validation" xml:space="preserve">
     <value>Weryfikacja spójności</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
   <data name="Develop exclusively in UTC while the system automatically converts and displays dates in the user&apos;s local time zone." xml:space="preserve">
     <value>Twórz wyłączni w strefie czasowej UTC, podczas gdy system automatycznie konwertuje i wyświetla daty w strefie czasowej użytkownika.</value>
   </data>
@@ -102,6 +105,9 @@
   <data name="Features a built-in file management system with automatic avatar compression." xml:space="preserve">
     <value>Oferuje wbudowany system zarządzania plikami z automatyczną kompresją awatarów.</value>
   </data>
+  <data name="Follow the callstack and inspect execution traces." xml:space="preserve">
+    <value>Śledź stos wywołań i analizuj ślady wykonania.</value>
+  </data>
   <data name="Handle recurring jobs like cleanup and synchronization with a comprehensive GUI for monitoring execution history and logs." xml:space="preserve">
     <value>Kieruj powtarzalnymi zadaniami, takimi jak oczyszczanie i synchronizacja, za pomocą kompleksowego interfejsu graficznego do monitorowania historii wykonywania i dzienników.</value>
   </data>
@@ -113,6 +119,15 @@
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Zintegrowany System Zarządzania Plikami</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Sejfy</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Maszyny</value>
+  </data>
+  <data name="Manage servers through approved workflows." xml:space="preserve">
+    <value>Zarządzaj serwerami za pomocą zatwierdzonych procedur.</value>
   </data>
   <data name="Models are validated on both client and server sides based on data annotations." xml:space="preserve">
     <value>Modele są weryfikowane po stronie klienta i serwera na podstawie adnotacji danych.</value>
@@ -134,6 +149,12 @@
   </data>
   <data name="Responsive Design" xml:space="preserve">
     <value>Responsywny Design</value>
+  </data>
+  <data name="Review requests" xml:space="preserve">
+    <value>Przejrzyj zgłoszenia</value>
+  </data>
+  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
+    <value>Sprawdź żądaną operację, parametry i stałe cele.</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Solidne testy integracyjne</value>
@@ -165,11 +186,23 @@
   <data name="This is a template project, where we start the voyager..." xml:space="preserve">
     <value>To jest projekt szablonu, od którego rozpoczynamy naszą podróż...</value>
   </data>
+  <data name="View Agent connectivity and machine history." xml:space="preserve">
+    <value>Wyświetl łączność agentów i historię maszyn.</value>
+  </data>
+  <data name="View history" xml:space="preserve">
+    <value>Wyświetl historię</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>Wyświetl maszyny</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>Witamy</value>
   </data>
   <data name="Why use the Aiursoft Template?" xml:space="preserve">
     <value>Dlaczego warto używać szablonu Aiursoft?</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Historia przepływu pracy</value>
   </data>
 
 </root>
