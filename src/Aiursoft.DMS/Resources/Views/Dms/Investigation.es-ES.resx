@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>Todos los tipos</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Todos los estados</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>Cualquier modo de aprobación</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>Contexto de aprobación</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>Aprobador</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID del aprobador</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Aprobación automática</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>Seleccione filtros de investigación válidos y un intervalo de tiempo de como máximo 31 días. Use horas ISO 8601 con un desplazamiento UTC.</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>Clúster</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Evento</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>Tipo de evento</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>Estado del evento</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>Tipo de flujo de trabajo de la instancia</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Investigación</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>ID de lockbox</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Máquina</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>ID de máquina</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>Más filtros</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Siguiente</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>Ningún evento archivado coincide con estos filtros.</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>Solo se muestran eventos archivados. Los cambios recientes pueden estar aún pendientes de entrega. El estado del evento es histórico, no el estado actual del flujo de trabajo.</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>Personas y aprobación</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>Registrado (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>Registrado desde (incluido, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>Registrado hasta (exclusivo, UTC)</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>Solicitado</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>Tipo de flujo de trabajo solicitado</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>Solicitante</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>ID del solicitante</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>ID del workflow raíz</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>Buscar en el archivo</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>La ventana predeterminada son las últimas 24 horas. Cada consulta admite un máximo de 31 días.</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>El archivo de investigación no está disponible o no está configurado. Inténtelo de nuevo más tarde; los eventos pendientes siguen siendo duraderos.</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Flujo de trabajo</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID de flujo de trabajo</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Sí</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>No tiene acceso a ningún clúster.</value>
+  </data>
+
+</root>
