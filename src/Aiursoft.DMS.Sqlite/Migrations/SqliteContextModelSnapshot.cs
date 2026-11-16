@@ -106,56 +106,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.ToTable("AuditEvents");
                 });
 
-            modelBuilder.Entity("Aiursoft.DMS.Entities.Cluster", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Clusters");
-                });
-
-            modelBuilder.Entity("Aiursoft.DMS.Entities.ClusterGrant", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("AutoApprove")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("CanApprove")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("CanRequest")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("ClusterId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Risk")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClusterId", "UserId", "Risk")
-                        .IsUnique();
-
-                    b.ToTable("ClusterGrants");
-                });
-
             modelBuilder.Entity("Aiursoft.DMS.Entities.GlobalSetting", b =>
                 {
                     b.Property<string>("Key")
@@ -173,9 +123,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ClusterId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -204,8 +151,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClusterId");
-
                     b.HasIndex("IssuerId");
 
                     b.HasIndex("KeyHash")
@@ -228,9 +173,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<Guid>("ClientRequestId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ClusterId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -301,9 +243,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.Property<string>("AgentVersion")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ClusterId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Disabled")
@@ -380,9 +319,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("CanApproveOwnRequests")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -475,9 +411,6 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ClusterId")
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -528,9 +461,9 @@ namespace Aiursoft.DMS.Sqlite.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RootId");
+                    b.HasIndex("CreatedAt");
 
-                    b.HasIndex("ClusterId", "CreatedAt");
+                    b.HasIndex("RootId");
 
                     b.HasIndex("MachineId", "CreatedAt");
 
@@ -693,19 +626,11 @@ namespace Aiursoft.DMS.Sqlite.Migrations
 
             modelBuilder.Entity("Aiursoft.DMS.Entities.JoinKey", b =>
                 {
-                    b.HasOne("Aiursoft.DMS.Entities.Cluster", "Cluster")
-                        .WithMany()
-                        .HasForeignKey("ClusterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Aiursoft.DMS.Entities.User", "Issuer")
                         .WithMany()
                         .HasForeignKey("IssuerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Cluster");
 
                     b.Navigation("Issuer");
                 });

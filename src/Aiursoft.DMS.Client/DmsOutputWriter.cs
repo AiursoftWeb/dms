@@ -44,7 +44,6 @@ public static class DmsOutputWriter
         {
             if (catalog && data is JObject details && details["Definitions"] is JArray definitions)
                 data = new JArray(definitions.OfType<JObject>().Select(item => new JObject(
-                    new JProperty("ClusterId", details["ClusterId"]?.DeepClone()),
                     new JProperty("CanApproveOwnRequests", details["CanApproveOwnRequests"]?.DeepClone()),
                     item.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())))));
             if (data is JObject identity && identity["RiskPermissions"] is JArray risks)

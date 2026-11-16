@@ -6,7 +6,7 @@
     var query = Model.AuditQuery;
     var routes = new Dictionary<string, string>
     {
-        ["ClusterId"] = query.ClusterId.ToString(), ["From"] = query.From?.ToString("O", CultureInfo.InvariantCulture) ?? "", ["Until"] = query.Until?.ToString("O", CultureInfo.InvariantCulture) ?? "",
+        ["From"] = query.From?.ToString("O", CultureInfo.InvariantCulture) ?? "", ["Until"] = query.Until?.ToString("O", CultureInfo.InvariantCulture) ?? "",
         ["MachineId"] = query.MachineId?.ToString() ?? "", ["WorkflowId"] = query.WorkflowId?.ToString() ?? "",
         ["RootWorkflowId"] = query.RootWorkflowId?.ToString() ?? "", ["LockboxId"] = query.LockboxId?.ToString() ?? "",
         ["RequesterId"] = query.RequesterId ?? "", ["ApproverId"] = query.ApproverId ?? "", ["Definition"] = query.Definition ?? "",
@@ -15,91 +15,79 @@
     };
 }
 <h1>@Localizer["Investigation"]</h1>
-@if (Model.Clusters.Count == 0)
+<form method="get" class="card mb-3"><div class="card-body">
+    <div class="row g-3">
+        <div class="col-md-4"><label for="From" class="form-label">@Localizer["Recorded from (inclusive, UTC)"]</label><input id="From" name="From" value="@query.From?.ToString("O", CultureInfo.InvariantCulture)" placeholder="2026-11-14T00:00:00Z" class="form-control" /></div>
+        <div class="col-md-4"><label for="Until" class="form-label">@Localizer["Recorded until (exclusive, UTC)"]</label><input id="Until" name="Until" value="@query.Until?.ToString("O", CultureInfo.InvariantCulture)" placeholder="2026-11-15T00:00:00Z" class="form-control" /></div>
+        <div class="col-md-4"><label for="MachineId" class="form-label">@Localizer["Machine ID"]</label><input id="MachineId" name="MachineId" value="@query.MachineId" class="form-control" /></div>
+        <div class="col-md-4"><label for="RequesterId" class="form-label">@Localizer["Requester ID"]</label><input id="RequesterId" name="RequesterId" value="@query.RequesterId" maxlength="200" class="form-control" /></div>
+        <div class="col-md-4"><label for="ApproverId" class="form-label">@Localizer["Approver ID"]</label><input id="ApproverId" name="ApproverId" value="@query.ApproverId" maxlength="200" class="form-control" /></div>
+        <div class="col-md-4"><label for="RequestedDefinition" class="form-label">@Localizer["Requested workflow type"]</label><input id="RequestedDefinition" name="RequestedDefinition" value="@query.RequestedDefinition" maxlength="200" class="form-control" /></div>
+        <div class="col-md-4"><label for="Definition" class="form-label">@Localizer["Instance workflow type"]</label><input id="Definition" name="Definition" value="@query.Definition" maxlength="200" class="form-control" /></div>
+        <div class="col-md-4"><label for="State" class="form-label">@Localizer["Event state"]</label><select id="State" name="State" class="form-select"><option value="">@Localizer["All states"]</option>
+            @foreach (var state in Enum.GetValues<RunState>()) { <option value="@state" selected="@(query.State == state)">@state</option> }
+        </select></div>
+    </div>
+    <details class="mt-3"><summary>@Localizer["More filters"]</summary><div class="row g-3 mt-1">
+        <div class="col-md-4"><label for="WorkflowId" class="form-label">@Localizer["Workflow ID"]</label><input id="WorkflowId" name="WorkflowId" value="@query.WorkflowId" class="form-control" /></div>
+        <div class="col-md-4"><label for="RootWorkflowId" class="form-label">@Localizer["Root workflow ID"]</label><input id="RootWorkflowId" name="RootWorkflowId" value="@query.RootWorkflowId" class="form-control" /></div>
+        <div class="col-md-4"><label for="LockboxId" class="form-label">@Localizer["Lockbox ID"]</label><input id="LockboxId" name="LockboxId" value="@query.LockboxId" class="form-control" /></div>
+        <div class="col-md-4"><label for="Kind" class="form-label">@Localizer["Event kind"]</label><select id="Kind" name="Kind" class="form-select"><option value="">@Localizer["All kinds"]</option>
+            @foreach (var kind in Enum.GetValues<WorkflowAuditKind>()) { <option value="@kind" selected="@(query.Kind == kind)">@kind</option> }
+        </select></div>
+        <div class="col-md-4"><label for="AutomaticApproval" class="form-label">@Localizer["Automatic approval"]</label><select id="AutomaticApproval" name="AutomaticApproval" class="form-select">
+            <option value="">@Localizer["Any approval mode"]</option><option value="true" selected="@(query.AutomaticApproval == true)">@Localizer["Yes"]</option><option value="false" selected="@(query.AutomaticApproval == false)">@Localizer["No"]</option>
+        </select></div>
+    </div></details>
+    <p class="text-muted mt-3">@Localizer["The default window is the last 24 hours. Each query supports at most 31 days."]</p>
+    <button class="btn btn-primary">@Localizer["Search archive"]</button>
+</div></form>
+<p class="text-muted">@Localizer["Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state."]</p>
+@if (Model.AuditError == 503)
 {
-    <p>@Localizer["No clusters have been created."]</p>
+    <div class="alert alert-warning"><div class="alert-message">@Localizer["The investigation archive is unavailable or not configured. Retry later; pending events remain durable."]</div></div>
 }
-else
+else if (Model.AuditError != 0)
 {
-    <form method="get" class="card mb-3"><div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-4"><label for="ClusterId" class="form-label">@Localizer["Cluster"]</label>
-                <select id="ClusterId" name="ClusterId" class="form-select">
-                    @foreach (var cluster in Model.Clusters) { <option value="@cluster.Id" selected="@(query.ClusterId == cluster.Id)">@cluster.Name</option> }
-                </select>
-            </div>
-            <div class="col-md-4"><label for="From" class="form-label">@Localizer["Recorded from (inclusive, UTC)"]</label><input id="From" name="From" value="@query.From?.ToString("O", CultureInfo.InvariantCulture)" placeholder="2026-11-14T00:00:00Z" class="form-control" /></div>
-            <div class="col-md-4"><label for="Until" class="form-label">@Localizer["Recorded until (exclusive, UTC)"]</label><input id="Until" name="Until" value="@query.Until?.ToString("O", CultureInfo.InvariantCulture)" placeholder="2026-11-15T00:00:00Z" class="form-control" /></div>
-            <div class="col-md-4"><label for="MachineId" class="form-label">@Localizer["Machine ID"]</label><input id="MachineId" name="MachineId" value="@query.MachineId" class="form-control" /></div>
-            <div class="col-md-4"><label for="RequesterId" class="form-label">@Localizer["Requester ID"]</label><input id="RequesterId" name="RequesterId" value="@query.RequesterId" maxlength="200" class="form-control" /></div>
-            <div class="col-md-4"><label for="ApproverId" class="form-label">@Localizer["Approver ID"]</label><input id="ApproverId" name="ApproverId" value="@query.ApproverId" maxlength="200" class="form-control" /></div>
-            <div class="col-md-4"><label for="RequestedDefinition" class="form-label">@Localizer["Requested workflow type"]</label><input id="RequestedDefinition" name="RequestedDefinition" value="@query.RequestedDefinition" maxlength="200" class="form-control" /></div>
-            <div class="col-md-4"><label for="Definition" class="form-label">@Localizer["Instance workflow type"]</label><input id="Definition" name="Definition" value="@query.Definition" maxlength="200" class="form-control" /></div>
-            <div class="col-md-4"><label for="State" class="form-label">@Localizer["Event state"]</label><select id="State" name="State" class="form-select"><option value="">@Localizer["All states"]</option>
-                @foreach (var state in Enum.GetValues<RunState>()) { <option value="@state" selected="@(query.State == state)">@state</option> }
-            </select></div>
-        </div>
-        <details class="mt-3"><summary>@Localizer["More filters"]</summary><div class="row g-3 mt-1">
-            <div class="col-md-4"><label for="WorkflowId" class="form-label">@Localizer["Workflow ID"]</label><input id="WorkflowId" name="WorkflowId" value="@query.WorkflowId" class="form-control" /></div>
-            <div class="col-md-4"><label for="RootWorkflowId" class="form-label">@Localizer["Root workflow ID"]</label><input id="RootWorkflowId" name="RootWorkflowId" value="@query.RootWorkflowId" class="form-control" /></div>
-            <div class="col-md-4"><label for="LockboxId" class="form-label">@Localizer["Lockbox ID"]</label><input id="LockboxId" name="LockboxId" value="@query.LockboxId" class="form-control" /></div>
-            <div class="col-md-4"><label for="Kind" class="form-label">@Localizer["Event kind"]</label><select id="Kind" name="Kind" class="form-select"><option value="">@Localizer["All kinds"]</option>
-                @foreach (var kind in Enum.GetValues<WorkflowAuditKind>()) { <option value="@kind" selected="@(query.Kind == kind)">@kind</option> }
-            </select></div>
-            <div class="col-md-4"><label for="AutomaticApproval" class="form-label">@Localizer["Automatic approval"]</label><select id="AutomaticApproval" name="AutomaticApproval" class="form-select">
-                <option value="">@Localizer["Any approval mode"]</option><option value="true" selected="@(query.AutomaticApproval == true)">@Localizer["Yes"]</option><option value="false" selected="@(query.AutomaticApproval == false)">@Localizer["No"]</option>
-            </select></div>
-        </div></details>
-        <p class="text-muted mt-3">@Localizer["The default window is the last 24 hours. Each query supports at most 31 days."]</p>
-        <button class="btn btn-primary">@Localizer["Search archive"]</button>
-    </div></form>
-    <p class="text-muted">@Localizer["Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state."]</p>
-    @if (Model.AuditError == 503)
+    <div class="alert alert-danger"><div class="alert-message">@Localizer["Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset."]</div></div>
+}
+else if (Model.AuditPage != null)
+{
+    <div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr>
+        <th>@Localizer["Recorded (UTC)"]</th><th>@Localizer["Event"]</th><th>@Localizer["Workflow"]</th><th>@Localizer["Machine"]</th><th>@Localizer["People and approval"]</th><th>@Localizer["State"]</th>
+    </tr></thead><tbody>
+    @foreach (var row in Model.AuditPage.Entries)
     {
-        <div class="alert alert-warning"><div class="alert-message">@Localizer["The investigation archive is unavailable or not configured. Retry later; pending events remain durable."]</div></div>
+        var fact = row.Fact;
+        <tr>
+            <td>@fact.RecordedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)<br /><small>@fact.OccurredAt.ToString("O", CultureInfo.InvariantCulture)</small></td>
+            <td>@fact.Kind<br /><small>@row.EventId</small><br /><small>#@row.ControllerSequence</small></td>
+            <td><a asp-action="Operation" asp-route-id="@fact.WorkflowId">@fact.Definition</a><br /><small>@fact.WorkflowId</small>
+                <div>@Localizer["Requested"]: @fact.RequestedDefinition @fact.RequestedVersion</div>
+                <a asp-action="Lockbox" asp-route-id="@fact.LockboxId">@Localizer["Approval context"]</a>
+            </td>
+            <td><a asp-action="Operations" asp-route-machineId="@fact.MachineId">@fact.MachineId</a><br /><small>@fact.InstallationId</small></td>
+            <td>@Localizer["Requester"]: @fact.RequesterId<br />@Localizer["Approver"]: @fact.ApproverId
+                @if (fact.AutomaticApproval == true) { <div>@Localizer["Automatic approval"]</div> }
+                <div>@fact.RequestedRisk @fact.Decision</div>
+            </td>
+            <td>
+                @if (fact.PreviousState != null) { <small>@fact.PreviousState →</small> }
+                @if (fact.State != null) { <span class="badge bg-@DmsViewModel.Color(fact.State.Value)">@fact.State</span> }
+            </td>
+        </tr>
     }
-    else if (Model.AuditError != 0)
+    </tbody></table>
+    @if (Model.AuditPage.Entries.Count == 0) { <p>@Localizer["No archived events match these filters."]</p> }
+    </div></div>
+    @if (query.Page > 0)
     {
-        <div class="alert alert-danger"><div class="alert-message">@Localizer["Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset."]</div></div>
+        routes["Page"] = (query.Page - 1).ToString();
+        <a class="btn btn-secondary" asp-all-route-data="routes">@Localizer["Previous"]</a>
     }
-    else if (Model.AuditPage != null)
+    @if (Model.AuditPage.HasNextPage)
     {
-        <div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr>
-            <th>@Localizer["Recorded (UTC)"]</th><th>@Localizer["Event"]</th><th>@Localizer["Workflow"]</th><th>@Localizer["Machine"]</th><th>@Localizer["People and approval"]</th><th>@Localizer["State"]</th>
-        </tr></thead><tbody>
-        @foreach (var row in Model.AuditPage.Entries)
-        {
-            var fact = row.Fact;
-            <tr>
-                <td>@fact.RecordedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)<br /><small>@fact.OccurredAt.ToString("O", CultureInfo.InvariantCulture)</small></td>
-                <td>@fact.Kind<br /><small>@row.EventId</small><br /><small>#@row.ControllerSequence</small></td>
-                <td><a asp-action="Operation" asp-route-id="@fact.WorkflowId">@fact.Definition</a><br /><small>@fact.WorkflowId</small>
-                    <div>@Localizer["Requested"]: @fact.RequestedDefinition @fact.RequestedVersion</div>
-                    <a asp-action="Lockbox" asp-route-id="@fact.LockboxId">@Localizer["Approval context"]</a>
-                </td>
-                <td><a asp-action="Operations" asp-route-machineId="@fact.MachineId" asp-route-clusterId="@fact.ClusterId">@fact.MachineId</a><br /><small>@fact.InstallationId</small></td>
-                <td>@Localizer["Requester"]: @fact.RequesterId<br />@Localizer["Approver"]: @fact.ApproverId
-                    @if (fact.AutomaticApproval == true) { <div>@Localizer["Automatic approval"]</div> }
-                    <div>@fact.RequestedRisk @fact.Decision</div>
-                </td>
-                <td>
-                    @if (fact.PreviousState != null) { <small>@fact.PreviousState →</small> }
-                    @if (fact.State != null) { <span class="badge bg-@DmsViewModel.Color(fact.State.Value)">@fact.State</span> }
-                </td>
-            </tr>
-        }
-        </tbody></table>
-        @if (Model.AuditPage.Entries.Count == 0) { <p>@Localizer["No archived events match these filters."]</p> }
-        </div></div>
-        @if (query.Page > 0)
-        {
-            routes["Page"] = (query.Page - 1).ToString();
-            <a class="btn btn-secondary" asp-all-route-data="routes">@Localizer["Previous"]</a>
-        }
-        @if (Model.AuditPage.HasNextPage)
-        {
-            routes["Page"] = (query.Page + 1).ToString();
-            <a class="btn btn-secondary" asp-all-route-data="routes">@Localizer["Next"]</a>
-        }
+        routes["Page"] = (query.Page + 1).ToString();
+        <a class="btn btn-secondary" asp-all-route-data="routes">@Localizer["Next"]</a>
     }
 }

@@ -111,56 +111,6 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.ToTable("AuditEvents");
                 });
 
-            modelBuilder.Entity("Aiursoft.DMS.Entities.Cluster", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Clusters");
-                });
-
-            modelBuilder.Entity("Aiursoft.DMS.Entities.ClusterGrant", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<bool>("AutoApprove")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("CanApprove")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<bool>("CanRequest")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<Guid>("ClusterId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<int>("Risk")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("varchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClusterId", "UserId", "Risk")
-                        .IsUnique();
-
-                    b.ToTable("ClusterGrants");
-                });
-
             modelBuilder.Entity("Aiursoft.DMS.Entities.GlobalSetting", b =>
                 {
                     b.Property<string>("Key")
@@ -178,9 +128,6 @@ namespace Aiursoft.DMS.MySql.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("ClusterId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -209,8 +156,6 @@ namespace Aiursoft.DMS.MySql.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClusterId");
-
                     b.HasIndex("IssuerId");
 
                     b.HasIndex("KeyHash")
@@ -233,9 +178,6 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<Guid>("ClientRequestId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<Guid>("ClusterId")
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -307,9 +249,6 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<Guid>("ClusterId")
-                        .HasColumnType("char(36)");
 
                     b.Property<bool>("Disabled")
                         .HasColumnType("tinyint(1)");
@@ -385,9 +324,6 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)");
-
-                    b.Property<bool>("CanApproveOwnRequests")
-                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -482,9 +418,6 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("ClusterId")
-                        .HasColumnType("char(36)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
@@ -535,9 +468,9 @@ namespace Aiursoft.DMS.MySql.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RootId");
+                    b.HasIndex("CreatedAt");
 
-                    b.HasIndex("ClusterId", "CreatedAt");
+                    b.HasIndex("RootId");
 
                     b.HasIndex("MachineId", "CreatedAt");
 
@@ -704,19 +637,11 @@ namespace Aiursoft.DMS.MySql.Migrations
 
             modelBuilder.Entity("Aiursoft.DMS.Entities.JoinKey", b =>
                 {
-                    b.HasOne("Aiursoft.DMS.Entities.Cluster", "Cluster")
-                        .WithMany()
-                        .HasForeignKey("ClusterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Aiursoft.DMS.Entities.User", "Issuer")
                         .WithMany()
                         .HasForeignKey("IssuerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Cluster");
 
                     b.Navigation("Issuer");
                 });

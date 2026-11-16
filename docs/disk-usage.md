@@ -3,12 +3,12 @@
 Submit a Safe, read-only operation for a frozen set of machines:
 
 ```bash
-dms cluster get disk-usage --cluster-id CLUSTER_ID --all-machines --reason "Review cluster capacity"
+dms machine disk-usage --all-machines --reason "Review all machine capacity"
 # Or select specific machines:
-dms cluster get disk-usage --cluster-id CLUSTER_ID --machine-id MACHINE_ID_1 MACHINE_ID_2 --reason "Review selected capacity"
+dms machine disk-usage --machine-id MACHINE_ID_1 MACHINE_ID_2 --reason "Review selected capacity"
 ```
 
-The command returns a Lockbox request. The cluster's existing Safe policy decides whether it is automatically approved or needs another approver. After approval, use the operation ID returned by `lockbox get`:
+The command returns a Lockbox request. The global Safe permissions determine whether it is automatically approved or needs another approver. After approval, use the operation ID returned by `lockbox get`:
 
 ```bash
 dms operation get-workflow --id OPERATION_ID

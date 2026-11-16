@@ -11,11 +11,11 @@ public class InvestigationOutputTests
     public void InvestigationFormatsRetainIdsHistoricalStatesAndFlatCsvFacts()
     {
         var workflow = Guid.NewGuid(); var at = DateTime.UtcNow;
-        var fact = new WorkflowAuditEntry(WorkflowAuditKind.WorkflowStateChanged, at, at, workflow, workflow, null, Guid.NewGuid(), Guid.NewGuid(),
+        var fact = new WorkflowAuditEntry(WorkflowAuditKind.WorkflowStateChanged, at, at, workflow, workflow, null, Guid.NewGuid(),
             WorkflowLocation.Machine, Guid.NewGuid(), Guid.NewGuid(), "internal.process", "1", "engineer", "reviewer", false, RiskLevel.Low,
             "example,\"quoted\"\nrequest", "1", DecisionState.Approved, at, RunState.Running, RunState.NeedsVerification);
         var row = new WorkflowAuditRow(Guid.NewGuid(), 42, fact);
-        var result = new DmsResponse { Message = "Request completed.", Data = new WorkflowAuditPage(new WorkflowAuditQuery { ClusterId = fact.ClusterId, From = at.AddHours(-1), Until = at }, [row], true) };
+        var result = new DmsResponse { Message = "Request completed.", Data = new WorkflowAuditPage(new WorkflowAuditQuery { From = at.AddHours(-1), Until = at }, [row], true) };
         using var table = new StringWriter(); DmsOutputWriter.Write(table, result, OutputFormat.Table, false, false, audit: true);
         StringAssert.Contains(table.ToString(), workflow.ToString()); StringAssert.Contains(table.ToString(), "NeedsVerification");
         StringAssert.Contains(table.ToString(), "not a current snapshot"); Assert.DoesNotContain("\u001b", table.ToString());
@@ -34,10 +34,10 @@ public class InvestigationOutputTests
     }
 
     [TestMethod]
-    public async Task InvestigationCliRequiresClusterInsteadOfAnOperationId()
+    public async Task InvestigationCliRequiresAuthenticationInsteadOfAnOperationId()
     {
         var result = await DmsCommandApp.Create().TestRunAsync(["operation", "query-audit"]);
-        Assert.AreNotEqual(0, result.ProgramReturn); StringAssert.Contains(result.StdErr, "--cluster-id");
+        Assert.AreNotEqual(0, result.ProgramReturn); StringAssert.Contains(result.StdErr, "dms login");
         Assert.DoesNotContain("--id' is required", result.StdErr);
     }
 }

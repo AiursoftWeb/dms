@@ -29,7 +29,6 @@ public static class WorkflowNames
 public sealed class OperationRequest
 {
     public Guid RequestId { get; set; } = Guid.NewGuid();
-    public Guid ClusterId { get; set; }
     public string Workflow { get; set; } = string.Empty;
     public List<Guid> MachineIds { get; set; } = [];
     public bool AllMachines { get; set; }

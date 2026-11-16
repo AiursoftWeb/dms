@@ -48,36 +48,16 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     });
 
     [HttpGet("access/join-keys"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> JoinKeys(Guid clusterId) => Handle(async () => await enrollment.KeysAsync(Actor, clusterId));
+    public Task<IActionResult> JoinKeys() => Handle(async () => await enrollment.KeysAsync(Actor));
 
     [HttpDelete("access/join-keys/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> RevokeJoinKey(Guid id) => Handle(async () => await enrollment.RevokeAsync(Actor, id));
 
     [HttpGet("access/enrollments"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> Enrollments(Guid clusterId) => Handle(async () => await enrollment.ListAsync(Actor, clusterId));
-
-    [HttpGet("clusters")]
-    public Task<IActionResult> Clusters() => Handle(async () => await management.ClustersAsync(Actor, User.HasClaim(AppPermissions.Type, "CanManageDmsAccess")));
+    public Task<IActionResult> Enrollments() => Handle(async () => await enrollment.ListAsync(Actor));
 
     [HttpGet("access"), Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> Access() => Handle(async () => await management.SnapshotAsync(Actor));
-
-    [HttpPost("clusters"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> CreateCluster([FromBody] CreateClusterInput? input) => Handle(async () =>
-    {
-        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid cluster creation request.");
-        return await management.CreateAsync(Actor, input);
-    });
-
-    [HttpPut("clusters/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> RenameCluster(Guid id, [FromBody] ClusterNameInput? input) => Handle(async () =>
-    {
-        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid cluster name.");
-        return await management.RenameAsync(Actor, id, input.Name);
-    });
-
-    [HttpDelete("clusters/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> DropCluster(Guid id) => Handle(async () => await management.DropAsync(Actor, id));
 
     [HttpPost("access/machines/{id:guid}/key"), Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> IssueAgentKey(Guid id) => Handle(async () => await management.AgentKeyAsync(Actor, id));
@@ -90,7 +70,7 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     });
 
     [HttpGet("workflow-definitions")]
-    public Task<IActionResult> Definitions(Guid clusterId) => Handle(async () => await workflows.ListDefinitionsAsync(Actor, clusterId));
+    public Task<IActionResult> Definitions() => Handle(async () => await workflows.ListDefinitionsAsync(Actor));
 
     [HttpGet("audit-events")]
     public Task<IActionResult> AuditEvents([FromQuery] WorkflowAuditQuery query) => Handle(async () =>

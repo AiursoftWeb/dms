@@ -7,6 +7,11 @@ namespace Aiursoft.DMS.Tests;
 
 internal static class DmsTestPermissions
 {
+    public static void DeactivatePreviousMachines(TemplateDbContext db)
+    {
+        foreach (var machine in db.Machines) machine.Disabled = true;
+    }
+
     public static void Set(TemplateDbContext db, string user, string permission, bool enabled = true)
     {
         var existing = db.UserClaims.Where(c => c.UserId == user && c.ClaimType == AppPermissions.Type && c.ClaimValue == permission).ToList();

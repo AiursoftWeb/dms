@@ -7,10 +7,10 @@ public sealed partial class TraceDatabase
 {
     public Task<IReadOnlyList<WorkflowAuditRow>> ReadAuditAsync(WorkflowAuditQuery query)
     {
-        var predicates = new List<string> { "ClusterId = {cluster:String}", "RecordedAt >= {from:DateTime64(7)}", "RecordedAt < {until:DateTime64(7)}" };
+        var predicates = new List<string> { "RecordedAt >= {from:DateTime64(7)}", "RecordedAt < {until:DateTime64(7)}" };
         var values = new Dictionary<string, object?>
         {
-            ["cluster"] = query.ClusterId.ToString(), ["from"] = query.From!.Value.UtcDateTime,
+            ["from"] = query.From!.Value.UtcDateTime,
             ["until"] = query.Until!.Value.UtcDateTime, ["skip"] = query.Page * 50
         };
         Add("machine", "MachineId", query.MachineId?.ToString()); Add("workflow", "WorkflowId", query.WorkflowId?.ToString());
@@ -24,7 +24,7 @@ public sealed partial class TraceDatabase
         }
         return QueryAsync("""
             SELECT EventId, ControllerSequence, Kind, OccurredAt, RecordedAt,
-                   WorkflowId, RootWorkflowId, ParentWorkflowId, LockboxId, ClusterId,
+                   WorkflowId, RootWorkflowId, ParentWorkflowId, LockboxId,
                    Location, MachineId, InstallationId, Definition, Version,
                    RequesterId, ApproverId, AutomaticApproval, RequestedRisk, RequestedDefinition, RequestedVersion,
                    Decision, DecidedAt, PreviousState, State
@@ -47,9 +47,9 @@ public sealed partial class TraceDatabase
         DateTime Time(int i) => DateTime.SpecifyKind(row.GetDateTime(i), DateTimeKind.Utc);
         return new WorkflowAuditRow(Guid.Parse(row.GetString(0)), row.GetInt64(1), new WorkflowAuditEntry(
             Enum.Parse<WorkflowAuditKind>(row.GetString(2)), Time(3), Time(4),
-            Guid.Parse(row.GetString(5)), Guid.Parse(row.GetString(6)), Id(7), Guid.Parse(row.GetString(8)), Guid.Parse(row.GetString(9)),
-            Enum.Parse<WorkflowLocation>(row.GetString(10)), Id(11), Id(12), row.GetString(13), row.GetString(14),
-            Text(15), Text(16), row.IsDBNull(17) ? null : row.GetBoolean(17), Value<RiskLevel>(18), Text(19), Text(20),
-            Value<DecisionState>(21), row.IsDBNull(22) ? null : Time(22), Value<RunState>(23), Value<RunState>(24)));
+            Guid.Parse(row.GetString(5)), Guid.Parse(row.GetString(6)), Id(7), Guid.Parse(row.GetString(8)),
+            Enum.Parse<WorkflowLocation>(row.GetString(9)), Id(10), Id(11), row.GetString(12), row.GetString(13),
+            Text(14), Text(15), row.IsDBNull(16) ? null : row.GetBoolean(16), Value<RiskLevel>(17), Text(18), Text(19),
+            Value<DecisionState>(20), row.IsDBNull(21) ? null : Time(21), Value<RunState>(22), Value<RunState>(23)));
     }
 }

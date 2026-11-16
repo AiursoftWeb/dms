@@ -10,8 +10,8 @@ args=("$@")
 while (($#)); do
     case "$1" in
         --controller-url) controller="${2:?Controller URL is required}"; shift 2 ;;
-        --api-key|--cluster-name|--name) [[ $# -ge 2 ]] || { echo 'An option value is missing.' >&2; exit 1; }; shift 2 ;;
-        *) echo 'Supported installer options: --controller-url, --api-key, --cluster-name, --name.' >&2; exit 1 ;;
+        --api-key|--name) [[ $# -ge 2 ]] || { echo 'An option value is missing.' >&2; exit 1; }; shift 2 ;;
+        *) echo 'Supported installer options: --controller-url, --api-key, --name.' >&2; exit 1 ;;
     esac
 done
 if [[ ! "$controller" =~ ^https?://[^/?\#[:space:]]+/?$ ]] || [[ "$controller" == *@* ]]; then

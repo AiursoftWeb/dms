@@ -11,8 +11,6 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
 {
     public DbSet<GlobalSetting> GlobalSettings => Set<GlobalSetting>();
 
-    public DbSet<Cluster> Clusters => Set<Cluster>();
-    public DbSet<ClusterGrant> ClusterGrants => Set<ClusterGrant>();
     public DbSet<Machine> Machines => Set<Machine>();
     public DbSet<PersonalApiKey> PersonalApiKeys => Set<PersonalApiKey>();
     public DbSet<JoinKey> JoinKeys => Set<JoinKey>();
@@ -26,12 +24,10 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
     {
         base.OnModelCreating(builder);
         builder.Entity<WorkflowAuditOutbox>().HasIndex(x => x.EventId).IsUnique();
-        builder.Entity<ClusterGrant>().HasIndex(x => new { x.ClusterId, x.UserId, x.Risk }).IsUnique();
         builder.Entity<PersonalApiKey>().HasIndex(x => x.KeyHash).IsUnique();
         builder.Entity<Machine>().HasIndex(x => x.KeyHash).IsUnique();
         builder.Entity<Machine>().HasIndex(x => x.InstallationId).IsUnique();
         builder.Entity<JoinKey>().HasIndex(x => x.KeyHash).IsUnique();
-        builder.Entity<JoinKey>().HasOne(x => x.Cluster).WithMany().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<JoinKey>().HasOne(x => x.Issuer).WithMany().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<AgentEnrollment>().HasIndex(x => x.ReceiptHash).IsUnique();
         builder.Entity<AgentEnrollment>().HasIndex(x => x.AgentKeyHash).IsUnique();
@@ -42,7 +38,7 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
         builder.Entity<AgentEnrollment>().HasOne(x => x.Machine).WithMany().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<LockboxRequest>().HasIndex(x => new { x.RequesterId, x.ClientRequestId }).IsUnique();
         builder.Entity<WorkflowRun>().HasIndex(x => x.RootId);
-        builder.Entity<WorkflowRun>().HasIndex(x => new { x.ClusterId, x.CreatedAt });
+        builder.Entity<WorkflowRun>().HasIndex(x => x.CreatedAt);
         builder.Entity<WorkflowRun>().HasIndex(x => new { x.MachineId, x.CreatedAt });
         builder.Entity<AuditEvent>().HasIndex(x => new { x.ResourceId, x.Time });
     }

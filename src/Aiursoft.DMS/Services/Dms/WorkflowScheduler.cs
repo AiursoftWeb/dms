@@ -75,7 +75,7 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             if (session?.Ready != true) continue;
             if (machine.Disabled || session.KeyHash != machine.KeyHash) { session.Abort(); continue; }
             var lockbox = await db.Lockboxes.SingleAsync(l => l.Id == task.LockboxId, token);
-            if (lockbox.Decision != DecisionState.Approved || machine.ClusterId != lockbox.ClusterId) continue;
+            if (lockbox.Decision != DecisionState.Approved) continue;
             var cancel = task.State == RunState.CancelRequested;
             if (!cancel) task.State = RunState.Offered;
             await db.SaveChangesAsync(token); // Persist the offer before sending; reconnect repeats the same ID.

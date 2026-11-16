@@ -31,7 +31,7 @@ public class AgentUpgradeTests
             using (var journal = new TaskJournal(Path.Combine(state, "journal")))
             {
                 installation = journal.InstallationId;
-                new AgentConfiguration("http://controller", "cluster", Guid.NewGuid(), installation, "test", "", "dmsa_test", machine).Save(state);
+                new AgentConfiguration("http://controller", Guid.NewGuid(), installation, "test", "", "dmsa_test", machine).Save(state);
                 journal.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.AgentUpgrade, Version = MachineWorkflows.AgentUpgrade.Version, Input = MachineWorkflows.AgentUpgrade.Serialize(input) });
                 Assert.IsNotNull(journal.Start(id));
                 File.WriteAllText(Path.Combine(state, "upgrade.json"), JsonSerializer.Serialize(new UpgradeHandoff(id, id, null,

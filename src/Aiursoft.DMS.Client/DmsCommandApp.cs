@@ -10,10 +10,11 @@ public static class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
         .WithFeature(new LoginCommand())
-        .WithFeature(new Group("cluster", [new ManagementCommand("list", "clusters"), new ManagementCommand("create", "create"), new ManagementCommand("rename", "rename"), new ManagementCommand("drop", "drop"), StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine),
-            new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
         .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
         .WithFeature(new Group("machine", [
+            StandardCommand("list", ClusterWorkflows.GetMachines, _ => new EmptyInput()),
+            StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
+            new ActionCommand("add", WorkflowNames.AddMachine),
             new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand()]),
             new Group("box", [new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
@@ -96,8 +97,7 @@ public static class DmsCommandApp
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
         protected override string Description => IsSubmission ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
-        private readonly Option<Guid> _cluster = new("--cluster-id") { Description = "Cluster ID; may be omitted when exactly one cluster exists." };
-        private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true, Description = "Explicit machines; may be omitted when the cluster has exactly one active machine." };
+        private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true, Description = "Explicit machines; may be omitted when this Controller has exactly one active machine." };
         private readonly Option<bool> _all = new("--all-machines");
         private readonly Option<Guid> _id = new("--id");
         private readonly Option<Guid> _request = new("--request-id") { Description = "Reuse this ID only to retry the same submission." };
@@ -124,23 +124,18 @@ public static class DmsCommandApp
             if (IsSubmission)
             {
                 _reason.Required = true;
-                yield return _cluster; yield return _request; yield return _reason;
+                yield return _request; yield return _reason;
                 if (definition?.RequiresTargets == true) { yield return _machines; yield return _all; }
                 foreach (var option in options ?? []) yield return option;
                 if (action == WorkflowNames.AddMachine) { _machineName.Required = true; yield return _machineName; }
                 if (action == WorkflowNames.Kill) { _id.Required = true; yield return _id; }
             }
-            else if (action == "definitions")
-            {
-                _cluster.Required = true; yield return _cluster;
-            }
             else if (action == "audit")
             {
-                _cluster.Required = true; yield return _cluster;
                 foreach (var option in new Option[] { _from, _until, _machineFilter, _workflowFilter, _rootFilter, _lockboxFilter,
                     _requester, _approver, _definitionFilter, _requestedDefinition, _kind, _state, _automatic, _page }) yield return option;
             }
-            else
+            else if (action != "definitions")
             {
                 _id.Required = true; yield return _id;
                 if (action is "approve" or "deny") yield return _reason;
@@ -162,7 +157,7 @@ public static class DmsCommandApp
                 response = await client.SubmitAsync(new OperationRequest
                 {
                     RequestId = requestId == Guid.Empty ? Guid.NewGuid() : requestId,
-                    ClusterId = context.GetValue(_cluster), Workflow = action, MachineIds = (context.GetValue(_machines) ?? []).ToList(),
+                    Workflow = action, MachineIds = (context.GetValue(_machines) ?? []).ToList(),
                     AllMachines = context.GetValue(_all), Reason = context.GetValue(_reason) ?? string.Empty,
                     Input = action == WorkflowNames.AgentUpgrade ? MachineWorkflows.AgentUpgrade.Serialize(new AgentUpgradeInput((await client.AgentReleasesAsync()).Data)) : input?.Invoke(context) ?? "{}",
                     MachineName = context.GetValue(_machineName) ?? string.Empty,
@@ -173,14 +168,14 @@ public static class DmsCommandApp
             {
                 "audit" => await client.AuditEventsAsync(new WorkflowAuditQuery
                 {
-                    ClusterId = context.GetValue(_cluster), From = context.GetValue(_from), Until = context.GetValue(_until),
+                    From = context.GetValue(_from), Until = context.GetValue(_until),
                     MachineId = context.GetValue(_machineFilter), WorkflowId = context.GetValue(_workflowFilter),
                     RootWorkflowId = context.GetValue(_rootFilter), LockboxId = context.GetValue(_lockboxFilter),
                     RequesterId = context.GetValue(_requester), ApproverId = context.GetValue(_approver),
                     Definition = context.GetValue(_definitionFilter), RequestedDefinition = context.GetValue(_requestedDefinition),
                     Kind = context.GetValue(_kind), State = context.GetValue(_state), AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
                 }),
-                "definitions" => await client.ListDefinitionsAsync(context.GetValue(_cluster)),
+                "definitions" => await client.ListDefinitionsAsync(),
                 "get" => await client.GetLockboxAsync(id),
                 "approve" or "deny" => await client.DecideAsync(id, action == "approve", context.GetValue(_reason) ?? string.Empty),
                 "workflow" => await client.GetWorkflowAsync(id),

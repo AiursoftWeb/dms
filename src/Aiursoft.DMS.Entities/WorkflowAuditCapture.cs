@@ -53,7 +53,7 @@ public abstract partial class TemplateDbContext
                     machine = Machines.Local.FirstOrDefault(m => m.Id == run.MachineId)
                         ?? await Machines.FindAsync([run.MachineId.Value], cancellationToken).ConfigureAwait(false);
                 var item = new WorkflowAuditEntry(kind, occurred, recorded, run.Id, run.RootId, run.ParentId, run.LockboxId,
-                    run.ClusterId, run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
+                    run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run.MachineId, machine?.InstallationId, run.Definition, run.Version, box?.RequesterId, box?.ApproverId,
                     box?.Automatic, box?.Risk, box?.Definition, box?.Version, box?.Decision, box?.DecidedAt, previous, state);
                 captured.Add(new WorkflowAuditOutbox { Metadata = JsonSerializer.Serialize(item) });

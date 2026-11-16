@@ -6,7 +6,7 @@ DMS archives structured approval and execution facts to `DmsWorkflowAudit` in th
 
 ## Events and attribution
 
-The archive appends `LockboxSubmitted`, `LockboxApproved`, `LockboxDenied`, `WorkflowCreated` and `WorkflowStateChanged` events. Every workflow instance, including internal subworkflows, retains its own ID, root, direct parent, Lockbox, cluster, name/version and execution location. Machine events also include the machine and the installation identity known at capture time. Cluster steps have no fabricated machine identity.
+The archive appends `LockboxSubmitted`, `LockboxApproved`, `LockboxDenied`, `WorkflowCreated` and `WorkflowStateChanged` events. Every workflow instance, including internal subworkflows, retains its own ID, root, direct parent, Lockbox, name/version and execution location. Machine events also include the machine and the installation identity known at capture time. Cluster steps have no fabricated machine identity.
 
 `RequesterId` is the human/API Key owner who requested execution. `ApproverId` identifies the reviewer; automatic approval is explicit and has no human reviewer. Subworkflows inherit their Lockbox context without creating new approval events. `RequestedDefinition`, `RequestedVersion` and `RequestedRisk` identify the original Lockbox request separately from each instance's own definition/version. A denied request therefore remains identifiable even though it creates no business child. Approval context is a snapshot when the event is saved; pending events are not rewritten after approval. Unavailable context is null rather than an invented identity.
 
@@ -30,31 +30,30 @@ Only IDs, names/versions, locations, risks, decisions, states and timestamps ent
 
 ## Operator investigation example
 
-Authorized database operators can inspect one cluster directly:
+Authorized database operators can inspect this instance directly:
 
 ```sql
 SELECT RecordedAt, OccurredAt, ControllerSequence, Kind, MachineId,
        RequesterId, ApproverId, AutomaticApproval, RequestedDefinition, RequestedVersion, Definition, Version,
        PreviousState, State, WorkflowId, RootWorkflowId, ParentWorkflowId, LockboxId
 FROM DmsWorkflowAudit FINAL
-WHERE ClusterId = '<cluster-id>'
 ORDER BY RecordedAt, ControllerSequence;
 ```
 
-Direct database access requires its own authorization. This example does not expose an arbitrary-SQL DMS command. A future public investigation endpoint must enforce the same per-cluster visibility as other DMS management queries.
+Direct database access requires its own authorization. This example does not expose an arbitrary-SQL DMS command. The investigation endpoint uses the global Read DMS operations permission.
 
 ## Authorized investigation queries
 
-`GET /api/v1/dms/audit-events` and `dms operation query-audit` read archived facts directly. They do not create a Lockbox or workflow. A personal API Key and an explicit visible Cluster are required; Agent keys cannot use this management endpoint. Queries use current per-cluster visibility, including revocations, and authorized query attempts are recorded in the existing access audit.
+`GET /api/v1/dms/audit-events` and `dms operation query-audit` read archived facts directly. They do not create a Lockbox or workflow. A personal API Key and Read DMS operations permission are required; Agent keys cannot use this management endpoint. Queries use current global read permission, including revocations, and authorized query attempts are recorded in the existing access audit.
 
 ```sh
-dms operation query-audit --cluster-id "$CLUSTER" --state Failed
+dms operation query-audit --state Failed
 
-dms operation query-audit --cluster-id "$CLUSTER" \
+dms operation query-audit \
   --from 2026-11-14T00:00:00Z --until 2026-11-15T00:00:00Z \
   --requested-definition cluster.disk-usage --output-format json
 
-dms operation query-audit --cluster-id "$CLUSTER" \
+dms operation query-audit \
   --machine-id "$MACHINE" --output-format csv
 ```
 
@@ -64,4 +63,4 @@ Time filtering uses Controller `RecordedAt`, with an inclusive `--from` and excl
 
 `--page` is zero based, with 50 events per page. Ordering is RecordedAt, ControllerSequence and EventId descending after `FINAL` deduplication. Preserve the returned From and Until when requesting another page. These bounds stabilize the requested window; delivery of previously captured events can still change page boundaries. This is an eventually consistent archive, not a database snapshot. Recent changes may still be awaiting delivery. ClickHouse being disabled or unavailable returns an explicit 503, never a fabricated empty success; queries do not merge the pending queue into the archive.
 
-The Web **Investigation** page uses the same authorization, filters and pagination, with links to workflow details, machine history and approval context. Only visible Clusters appear. Time labels and values use UTC. No arbitrary SQL, cross-cluster search, output-body search or live workflow control is exposed by this query feature.
+The Web **Investigation** page uses the same authorization, filters and pagination, with links to workflow details, machine history and approval context. Time labels and values use UTC. No arbitrary SQL or output-body search or live workflow control is exposed by this query feature.

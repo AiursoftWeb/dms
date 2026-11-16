@@ -48,18 +48,18 @@ public class AgentUpgradeSchedulingTests : TestBase
         using var stopping = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         try
         {
-            Guid clusterId; Guid machineId; string userId;
+             Guid machineId; string userId;
             using (var scope = Server.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
                 var user = new User { Id = Guid.NewGuid().ToString(), UserName = Guid.NewGuid().ToString(), DisplayName = "Drain operator" }; userId = user.Id;
-                var cluster = new Cluster { Name = "Upgrade drain" }; clusterId = cluster.Id;
-                var machine = new Machine { ClusterId = cluster.Id, Name = "Drain node", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }; machineId = machine.Id;
-                db.Users.Add(user); db.Clusters.Add(cluster); db.Machines.Add(machine);
+
+                var machine = new Machine { Name = "Drain node", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }; machineId = machine.Id;
+                db.Users.Add(user); db.Machines.Add(machine);
                 foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.High })
                     DmsTestPermissions.Risk(db, user.Id, risk, request: true, automatic: true, approve: false);
                 await db.SaveChangesAsync();
-                await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, hold.Request(clusterId, new EmptyInput(), "Hold an existing task", [machineId]));
+                await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, hold.Request(new EmptyInput(), "Hold an existing task", [machineId]));
             }
             using var journal = new TaskJournal(path);
             var agent = new AgentClient(Http.BaseAddress!, key, journal, registry, installedState: path).RunAsync(stopping.Token);
@@ -67,10 +67,10 @@ public class AgentUpgradeSchedulingTests : TestBase
             {
                 await started.Task.WaitAsync(stopping.Token);
                 using (var scope = Server.Services.CreateScope())
-                    await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, MachineWorkflows.AgentUpgrade.Request(clusterId, input, "Drain before updating", [machineId]));
+                    await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, MachineWorkflows.AgentUpgrade.Request(input, "Drain before updating", [machineId]));
                 while (!journal.Snapshot().Any(t => t.Definition == WorkflowNames.AgentUpgrade && t.State == RunState.Running)) await Task.Delay(50, stopping.Token);
                 using (var scope = Server.Services.CreateScope())
-                    await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, after.Request(clusterId, new EmptyInput(), "Queue during maintenance", [machineId]));
+                    await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, after.Request(new EmptyInput(), "Queue during maintenance", [machineId]));
                 await Task.Delay(1500, stopping.Token);
                 Assert.IsFalse(following.Task.IsCompleted, "New work must not start while the Agent is draining.");
                 Assert.AreEqual(RunState.Running, journal.Snapshot().Single(t => t.Definition == hold.Name).State);

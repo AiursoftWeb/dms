@@ -55,10 +55,10 @@ public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLeve
     public override string Normalize(string input) => Serialize(ReadInput(input));
     public TResult ReadResult(string result) => JsonSerializer.Deserialize<TResult>(result, WorkflowJson.Options)
         ?? throw new InvalidDataException("Workflow returned a null result.");
-    public OperationRequest Request(Guid cluster, TInput input, string reason, IEnumerable<Guid>? machines = null,
+    public OperationRequest Request(TInput input, string reason, IEnumerable<Guid>? machines = null,
         bool allMachines = false, Guid? requestId = null) => new()
     {
-        RequestId = requestId ?? Guid.NewGuid(), ClusterId = cluster, Workflow = Name, Input = Serialize(input),
+        RequestId = requestId ?? Guid.NewGuid(), Workflow = Name, Input = Serialize(input),
         MachineIds = machines?.ToList() ?? [], AllMachines = allMachines, Reason = reason
     };
 }

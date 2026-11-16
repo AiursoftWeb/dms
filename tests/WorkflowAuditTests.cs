@@ -12,10 +12,10 @@ public class WorkflowAuditTests
     private static SqliteContext Open(SqliteConnection connection) => new(new DbContextOptionsBuilder<SqliteContext>().UseSqlite(connection).Options);
     private static (LockboxRequest Box, WorkflowRun Root) Request(SqliteContext db, DecisionState decision = DecisionState.Pending)
     {
-        var box = new LockboxRequest { RequesterId = "engineer", ClientRequestId = Guid.NewGuid(), ClusterId = Guid.NewGuid(),
+        var box = new LockboxRequest { RequesterId = "engineer", ClientRequestId = Guid.NewGuid(),
             Definition = "example.operation", Risk = RiskLevel.Medium, Decision = decision, Automatic = decision == DecisionState.Approved,
             Parameters = "never-archive-parameters", Reason = "never-archive-reason", DecisionReason = "never-archive-decision" };
-        var root = new WorkflowRun { RootId = box.WorkflowId = Guid.NewGuid(), ClusterId = box.ClusterId,
+        var root = new WorkflowRun { RootId = box.WorkflowId = Guid.NewGuid(),
             LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.WaitingApproval };
         root.Id = root.RootId;
         db.Lockboxes.Add(box); db.WorkflowRuns.Add(root);
@@ -28,8 +28,8 @@ public class WorkflowAuditTests
         await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
         await using var db = Open(connection); await db.Database.EnsureCreatedAsync();
         var (box, root) = Request(db, DecisionState.Approved); box.DecidedAt = DateTime.UtcNow; root.State = RunState.Running;
-        var machine = new Machine { ClusterId = box.ClusterId, InstallationId = Guid.NewGuid(), KeyHash = "never-archive-key" };
-        var child = new WorkflowRun { ClusterId = box.ClusterId, RootId = root.Id, ParentId = root.Id, LockboxId = box.Id,
+        var machine = new Machine { InstallationId = Guid.NewGuid(), KeyHash = "never-archive-key" };
+        var child = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id,
             MachineId = machine.Id, Definition = "internal.process", Version = "process-1", State = RunState.Queued,
             Input = "never-archive-input", Result = "never-archive-output" };
         db.Machines.Add(machine); db.WorkflowRuns.Add(child); db.SaveChanges();
