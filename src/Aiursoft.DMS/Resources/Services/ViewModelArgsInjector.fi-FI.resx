@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API-avaimet</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Pääsy estetty</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Klikkaa kirjautuaksesi</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Klusterin käyttöoikeus</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Luo rooli</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Luo käyttäjä</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Hallintapaneeli</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>Sisäinen palvelinvirhe</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Tutkinta</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Lukkot</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Lukitus</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Kirjaudu sisään saadaksesi pääsyn kaikkiin ominaisuuksiin.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Koneet</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Hallinnoi</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Ei löytynyt</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operaatiot</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>Oikeuksien tiedot</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Kirjaudu ulos</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Standardityyöt</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>Järjestelmä</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Käyttäjät</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Työvirran historia</value>
   </data>
 
 </root>

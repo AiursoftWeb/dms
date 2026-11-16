@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API-nøgler</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Adgang nægtet</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Klik for at logge ind</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Clusteradgang</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Opret rolle</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Opret bruger</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>Intern serverfejl</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Undersøgelse</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Låseskabe</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Låst ud</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Log ind for at få adgang til alle funktioner.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Maskiner</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Administrer</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Ikke fundet</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Drift</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>Tilladelsesdetaljer</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Log ud</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Standardprocesser</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>System</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Brugere</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Workflowhistorik</value>
   </data>
 
 </root>

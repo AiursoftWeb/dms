@@ -1,11 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>dms</AssemblyName>
     <RootNamespace>Aiursoft.DMS.Client</RootNamespace>
-    <Description>Request approved server operations and inspect DMS workflows.</Description>
     <IsTestProject>false</IsTestProject>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
@@ -15,6 +14,7 @@
     <Nullable>enable</Nullable>
     <Company>Aiursoft</Company>
     <Product>DMS command-line client</Product>
+    <Description>Request approved server operations and inspect DMS workflows.</Description>
     <PackageId>Aiursoft.DMS.Client</PackageId>
     <PackageTags>dms server operations workflows cli</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

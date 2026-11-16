@@ -60,6 +60,9 @@
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Kullanıcılara Rol Atama</value>
   </data>
+  <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
+    <value>Kümeleri oluşturun, küme yetkilerini yapılandırın ve Agent kimliklerini yönetin.</value>
+  </data>
   <data name="Delete Roles" xml:space="preserve">
     <value>Rolleri Sil</value>
   </data>
@@ -80,6 +83,9 @@
   </data>
   <data name="Grants permission to restart the application instance. May cause availability interruptions but all settings and cache will be reloaded." xml:space="preserve">
     <value>Uygulama örneğini yeniden başlatma iznini verir. Kullanılabilirlik kesintilerine neden olabilir ancak tüm ayarlar ve önbellek yeniden yüklenecektir.</value>
+  </data>
+  <data name="Manage DMS access" xml:space="preserve">
+    <value>DMS erişimini yönet</value>
   </data>
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Genel Ayarları Yönet</value>

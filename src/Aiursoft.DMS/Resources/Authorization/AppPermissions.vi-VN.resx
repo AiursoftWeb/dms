@@ -60,6 +60,9 @@
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Gán Vai trò cho Người dùng</value>
   </data>
+  <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
+    <value>Tạo các cụm, cấu hình quyền cấp phát cụm và quản lý danh tính Agent.</value>
+  </data>
   <data name="Delete Roles" xml:space="preserve">
     <value>Xóa Vai trò</value>
   </data>
@@ -80,6 +83,9 @@
   </data>
   <data name="Grants permission to restart the application instance. May cause availability interruptions but all settings and cache will be reloaded." xml:space="preserve">
     <value>Cấp quyền khởi động lại phiên bản ứng dụng. Có thể gây ra gián đoạn về tính khả dụng nhưng tất cả cài đặt và bộ nhớ đệm sẽ được tải lại.</value>
+  </data>
+  <data name="Manage DMS access" xml:space="preserve">
+    <value>Quản lý quyền truy cập DMS</value>
   </data>
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Quản lý Cài đặt Toàn cầu</value>

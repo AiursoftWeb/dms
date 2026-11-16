@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API Anahtarları</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Erişim Reddedildi</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Giriş yapmak için tıklayın</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Küme erişimi</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Rol Oluştur</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Kullanıcı Oluştur</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Gösterge Paneli</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>İç Sunucu Hatası</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Soruşturma</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Kilit Kutuları</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Kilitlendi</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Tüm özelliklere erişmek için giriş yapın.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Makinalar</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Yönet</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Bulunamadı</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operasyonlar</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>İzin Detayları</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Çıkış Yap</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Standart iş akışları</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>Sistem</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Kullanıcılar</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Akış geçmişi</value>
   </data>
 
 </root>

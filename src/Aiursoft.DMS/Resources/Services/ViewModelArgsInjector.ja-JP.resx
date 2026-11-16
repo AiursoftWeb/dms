@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>APIキー</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>アクセスが拒否されました</value>
   </data>
   <data name="Account Settings" xml:space="preserve">
@@ -54,11 +57,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>ログインするにはクリック</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>クラスターアクセス</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>ロールの作成</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>ユーザーを作成</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>ダッシュボード</value>
@@ -102,6 +111,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>内部サーバーエラー</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>調査</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>ロックボックス</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>ロックアウト</value>
   </data>
@@ -111,11 +126,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>すべての機能にアクセスするにはログインしてください。</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>マシン</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>管理</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Not Found</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>運用</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>権限の詳細</value>
@@ -147,6 +168,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>サインアウト</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>標準ワークフロー</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>システム</value>
   </data>
@@ -164,6 +188,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>ユーザー</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>ワークフロー履歴</value>
   </data>
 
 </root>

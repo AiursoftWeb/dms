@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API 金鑰</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>存取被拒</value>
   </data>
   <data name="Account Settings" xml:space="preserve">
@@ -54,11 +57,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>點擊登入</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>叢集存取</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>建立角色</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>建立使用者</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>儀表板</value>
@@ -102,6 +111,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>內部伺服器錯誤</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>調查</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>金鑰庫</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>帳戶鎖定</value>
   </data>
@@ -111,11 +126,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>登入以使用所有功能。</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>機器</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>管理</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>找不到</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>操作</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>權限詳細資訊</value>
@@ -147,6 +168,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>登出</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>標準工作流程</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>系統</value>
   </data>
@@ -164,6 +188,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>使用者</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>工作流程歷史</value>
   </data>
 
 </root>

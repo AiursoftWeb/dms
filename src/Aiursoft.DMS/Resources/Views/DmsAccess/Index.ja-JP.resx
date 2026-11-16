@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent identity" xml:space="preserve">
+    <value>エージェントのアイデンティティ</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
+    <value>承認</value>
+  </data>
+  <data name="Auto" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="Automatically approve" xml:space="preserve">
+    <value>自動承認</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>クラスタ</value>
+  </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>クラスタアクセス</value>
+  </data>
+  <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
+    <value>このAgentキーを今すぐコピーしてください。以前のキーは無効化されています。</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>作成</value>
+  </data>
+  <data name="Create cluster" xml:space="preserve">
+    <value>クラスタの作成</value>
+  </data>
+  <data name="Current permissions" xml:space="preserve">
+    <value>現在の権限</value>
+  </data>
+  <data name="Issue Agent key" xml:space="preserve">
+    <value>エージェントキーを発行</value>
+  </data>
+  <data name="Issue a key after an approved machine registration. Issuing another key revokes the previous one." xml:space="preserve">
+    <value>承認されたマシンの登録後にキーを発行してください。新しいキーを発行すると、以前のキーは無効になります。</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>マシン</value>
+  </data>
+  <data name="May approve" xml:space="preserve">
+    <value>承認可能</value>
+  </data>
+  <data name="May approve own requests" xml:space="preserve">
+    <value>自身のリクエストを承認可能</value>
+  </data>
+  <data name="May request" xml:space="preserve">
+    <value>リクエストを許可</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名前</value>
+  </data>
+  <data name="Request" xml:space="preserve">
+    <value>リクエスト</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>リスク</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Save permissions" xml:space="preserve">
+    <value>権限を保存</value>
+  </data>
+  <data name="Self approval" xml:space="preserve">
+    <value>自己承認</value>
+  </data>
+  <data name="Set risk permissions" xml:space="preserve">
+    <value>リスク権限を設定</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>ユーザー</value>
+  </data>
+
+</root>

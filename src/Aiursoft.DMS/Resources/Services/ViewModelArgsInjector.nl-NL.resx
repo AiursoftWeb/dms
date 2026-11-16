@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API-sleutels</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>Toegang geweigerd</value>
   </data>
   <data name="Admin" xml:space="preserve">
@@ -51,11 +54,17 @@
   <data name="Click to login" xml:space="preserve">
     <value>Klik om in te loggen</value>
   </data>
+  <data name="Cluster access" xml:space="preserve">
+    <value>Cluster-toegang</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>Rol aanmaken</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>Gebruiker aanmaken</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Dashboard</value>
@@ -99,6 +108,12 @@
   <data name="Internal Server Error" xml:space="preserve">
     <value>Interne serverfout</value>
   </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Onderzoek</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Lockboxes</value>
+  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Blokkade</value>
   </data>
@@ -108,11 +123,17 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>Log in om toegang te krijgen tot alle functies.</value>
   </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Machines</value>
+  </data>
   <data name="Manage" xml:space="preserve">
     <value>Beheren</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Niet gevonden</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Bewerkingen</value>
   </data>
   <data name="Permission Details" xml:space="preserve">
     <value>Toegangsdetails</value>
@@ -144,6 +165,9 @@
   <data name="Sign out" xml:space="preserve">
     <value>Uitloggen</value>
   </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Standaard workflows</value>
+  </data>
   <data name="System" xml:space="preserve">
     <value>Systeem</value>
   </data>
@@ -161,6 +185,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Gebruikers</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Workflowgeschiedenis</value>
   </data>
 
 </root>

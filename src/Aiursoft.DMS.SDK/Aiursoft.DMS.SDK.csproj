@@ -11,6 +11,5 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Aiursoft.DMS.Contracts/Aiursoft.DMS.Contracts.csproj" />
-    <PackageReference Include="Aiursoft.AiurProtocol" Version="10.0.33" />
   </ItemGroup>
 </Project>

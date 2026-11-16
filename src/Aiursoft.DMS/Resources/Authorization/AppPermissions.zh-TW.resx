@@ -60,6 +60,9 @@
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>指派角色給使用者</value>
   </data>
+  <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
+    <value>建立叢集、設定叢集授權並管理 Agent 識別碼。</value>
+  </data>
   <data name="Delete Roles" xml:space="preserve">
     <value>刪除角色</value>
   </data>
@@ -80,6 +83,9 @@
   </data>
   <data name="Grants permission to restart the application instance. May cause availability interruptions but all settings and cache will be reloaded." xml:space="preserve">
     <value>授予重新啟動應用程式實例的權限。可能導致服務中斷，但所有設定和快取都將重新載入。</value>
+  </data>
+  <data name="Manage DMS access" xml:space="preserve">
+    <value>管理 DMS 存取權</value>
   </data>
   <data name="Manage Global Settings" xml:space="preserve">
     <value>管理全域設定</value>

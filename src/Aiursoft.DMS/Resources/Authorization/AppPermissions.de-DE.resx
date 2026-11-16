@@ -60,6 +60,9 @@
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Rollen Benutzern zuweisen</value>
   </data>
+  <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
+    <value>Cluster erstellen, Cluster-Berechtigungen konfigurieren und Agent-Identitäten verwalten.</value>
+  </data>
   <data name="Delete Roles" xml:space="preserve">
     <value>Rollen löschen</value>
   </data>
@@ -80,6 +83,9 @@
   </data>
   <data name="Grants permission to restart the application instance. May cause availability interruptions but all settings and cache will be reloaded." xml:space="preserve">
     <value>Erteilt die Berechtigung, die Anwendungsinstanz neu zu starten. Kann zu Verfügbarkeitsunterbrechungen führen, aber alle Einstellungen und der Cache werden neu geladen.</value>
+  </data>
+  <data name="Manage DMS access" xml:space="preserve">
+    <value>DMS-Zugriff verwalten</value>
   </data>
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Globale Einstellungen verwalten</value>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>所有類型</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>所有狀態</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>任何核准模式</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>核准情境</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>核准者</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>核准者 ID</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>自動核准</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>請選擇有效的調查篩選條件，時間範圍最多 31 天。請使用包含 UTC 時區偏移量的 ISO 8601 時間格式。</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>叢集</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>事件</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>事件類型</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>事件狀態</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>執行個體工作流類型</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>調查</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>Lockbox ID</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>機器</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>機器 ID</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>更多篩選條件</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>下一頁</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>沒有符合這些篩選條件的封存事件。</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>僅顯示已封存的事件。近期的變更可能仍在等待送達。事件狀態為歷史狀態，而非目前的工作流程狀態。</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>人員與核准</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>上一頁</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>記錄時間（UTC）</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>記錄起始時間（含，UTC）</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>記錄時間至（不含，UTC）</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>已請求</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>請求的工作流程類型</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>申請人</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>申請者 ID</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>根工作流 ID</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>搜尋封存檔</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>狀態</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>預設時間範圍為最近 24 小時。每個查詢最多支援 31 天。</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>調查檔案庫無法使用或未設定。請稍後再試；暫掛事件仍會持久保留。</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>工作流</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>工作階段 ID</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>您沒有權限存取任何叢集。</value>
+  </data>
+
+</root>

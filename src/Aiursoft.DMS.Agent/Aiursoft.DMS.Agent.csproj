@@ -1,20 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <Version>1.0.20</Version>
     <TargetFramework>net10.0</TargetFramework>
-    <Version>1.0.19</Version>
     <AssemblyName>Aiursoft.DMS.Agent</AssemblyName>
-    <Description>Enroll and run a DMS machine Agent.</Description>
     <RootNamespace>Aiursoft.DMS.Agent</RootNamespace>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Company>Aiursoft</Company>
+    <Product>Agent</Product>
+    <Description>Enroll and run a DMS machine Agent.</Description>
+    <PackageId>Aiursoft.DMS.Agent</PackageId>
+    <PackageTags>nuget package dotnet csproj dependencies</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://gitlab.aiursoft.com/aiursoft/dms</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://gitlab.aiursoft.com/aiursoft/dms.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../Aiursoft.DMS.Contracts/Aiursoft.DMS.Contracts.csproj" />
     <ProjectReference Include="../Aiursoft.DMS.Workflows/Aiursoft.DMS.Workflows.csproj" />
     <ProjectReference Include="../Aiursoft.DMS.SDK/Aiursoft.DMS.SDK.csproj" />
     <PackageReference Include="Aiursoft.CommandFramework" Version="10.0.19" />
+    <None Include="../../README.md" Pack="true" PackagePath="." />
   </ItemGroup>
 </Project>
