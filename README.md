@@ -69,7 +69,7 @@ Add the SDK to your .NET project after version `10.0.0` is published by the defa
 dotnet add package Aiursoft.DMS.SDK
 ```
 
-The SDK connects to your own DMS server; install and configure that server separately. The existing release pipeline publishes the same package to NuGet.org and the internal Nupkg registry.
+The SDK connects to your own DMS server; install and configure that server separately. The existing release pipeline publishes the same package to NuGet.org and the internal Nupkg registry. See the [SDK source](https://github.com/aiursoftweb/dms/tree/master/src/Aiursoft.DMS.SDK) for the available client methods and models.
 
 ## Try
 
