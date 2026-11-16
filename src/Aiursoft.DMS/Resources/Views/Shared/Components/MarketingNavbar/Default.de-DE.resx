@@ -30,6 +30,15 @@
   <data name="GitHub" xml:space="preserve">
     <value>GitHub</value>
   </data>
+  <data name="GitLab" xml:space="preserve">
+    <value>GitLab</value>
+  </data>
+  <data name="Issues" xml:space="preserve">
+    <value>Issues</value>
+  </data>
+  <data name="Open DMS" xml:space="preserve">
+    <value>DMS öffnen</value>
+  </data>
   <data name="Source Code" xml:space="preserve">
     <value>Quellcode</value>
   </data>

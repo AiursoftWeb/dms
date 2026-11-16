@@ -75,6 +75,9 @@
   <data name="Consistency Validation" xml:space="preserve">
     <value>Xác thực tính nhất quán</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
   <data name="Develop exclusively in UTC while the system automatically converts and displays dates in the user&apos;s local time zone." xml:space="preserve">
     <value>Phát triển riêng biệt bằng múi giờ UTC, trong khi hệ thống tự động chuyển đổi và hiển thị ngày tháng theo múi giờ địa phương của người dùng.</value>
   </data>
@@ -102,6 +105,9 @@
   <data name="Features a built-in file management system with automatic avatar compression." xml:space="preserve">
     <value>Tích hợp hệ thống quản lý tập tin với tính năng nén avatar tự động.</value>
   </data>
+  <data name="Follow the callstack and inspect execution traces." xml:space="preserve">
+    <value>Theo dõi callstack và kiểm tra vết thực thi.</value>
+  </data>
   <data name="Handle recurring jobs like cleanup and synchronization with a comprehensive GUI for monitoring execution history and logs." xml:space="preserve">
     <value>Xử lý các công việc lặp lại như dọn dẹp và đồng bộ hóa với giao diện người dùng toàn diện để theo dõi lịch sử thực thi và nhật ký.</value>
   </data>
@@ -113,6 +119,15 @@
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Quản lý Tập tin Tích hợp</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Hộp khóa</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Máy chủ</value>
+  </data>
+  <data name="Manage servers through approved workflows." xml:space="preserve">
+    <value>Quản lý máy chủ thông qua các quy trình làm việc được phê duyệt.</value>
   </data>
   <data name="Models are validated on both client and server sides based on data annotations." xml:space="preserve">
     <value>Các mô hình được xác thực ở cả phía client và phía server dựa trên các chú thích dữ liệu.</value>
@@ -134,6 +149,12 @@
   </data>
   <data name="Responsive Design" xml:space="preserve">
     <value>Thiết kế đáp ứng</value>
+  </data>
+  <data name="Review requests" xml:space="preserve">
+    <value>Xem xét các yêu cầu</value>
+  </data>
+  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
+    <value>Xem xét các thao tác được yêu cầu, tham số và các mục tiêu cố định.</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Kiểm thử tích hợp mạnh mẽ</value>
@@ -165,11 +186,23 @@
   <data name="This is a template project, where we start the voyager..." xml:space="preserve">
     <value>Đây là một dự án mẫu, nơi chúng ta bắt đầu hành trình khám phá...</value>
   </data>
+  <data name="View Agent connectivity and machine history." xml:space="preserve">
+    <value>Xem kết nối Agent và lịch sử máy.</value>
+  </data>
+  <data name="View history" xml:space="preserve">
+    <value>Xem lịch sử</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>Xem các máy</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>Chào mừng</value>
   </data>
   <data name="Why use the Aiursoft Template?" xml:space="preserve">
     <value>Tại sao nên sử dụng Mẫu Aiursoft?</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Lịch sử quy trình</value>
   </data>
 
 </root>
