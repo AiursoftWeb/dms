@@ -1,15 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
+    <Version>10.0.0</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aiursoft.DMS.SDK</AssemblyName>
     <RootNamespace>Aiursoft.DMS.SDK</RootNamespace>
     <IsTestProject>false</IsTestProject>
-    <IsPackable>false</IsPackable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Company>Aiursoft</Company>
+    <Product>Aiursoft.DMS.SDK</Product>
+    <Description>Request approved server operations and inspect workflows on an Aiursoft DMS Controller.</Description>
+    <PackageId>Aiursoft.DMS.SDK</PackageId>
+    <PackageTags>aiursoft dms sdk</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/aiursoftweb/dms</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/aiursoftweb/dms.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="." />
     <ProjectReference Include="../Aiursoft.DMS.Contracts/Aiursoft.DMS.Contracts.csproj" />
   </ItemGroup>
 </Project>
