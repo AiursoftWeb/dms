@@ -12,7 +12,7 @@ version=$(dotnet msbuild "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.
 package_version=$(dotnet msbuild "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" -getProperty:Version)
 [[ "$package_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
 dotnet pack "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" --configuration Release \
-    --output "$temporary/packages" "${source_args[@]}"
+    -p:GeneratePackageOnBuild=false --output "$temporary/packages" "${source_args[@]}"
 cp "$temporary/packages/Aiursoft.DMS.Agent.$package_version.nupkg" "$output/agent.nupkg"
 package_hash=$(sha256sum "$output/agent.nupkg" | cut -d ' ' -f 1)
 tool_assembly_hash=$(sha256sum "$repository/src/Aiursoft.DMS.Agent/bin/Release/net10.0/Aiursoft.DMS.Agent.dll" | cut -d ' ' -f 1)
