@@ -20,11 +20,21 @@ public sealed class AgentDownloadController(IWebHostEnvironment environment, Age
     }
 
     [HttpGet("install.sh")]
-    public IActionResult Installer() => Asset("install.sh", "text/x-shellscript");
+    public IActionResult Installer()
+    {
+        var file = Path.Combine(environment.ContentRootPath, "agent-assets", "install.sh");
+        if (!System.IO.File.Exists(file)) return NotFound();
+        var origin = new Uri($"{Request.Scheme}://{Request.Host}").GetLeftPart(UriPartial.Authority);
+        var literal = "'" + origin.Replace("'", "'\\''", StringComparison.Ordinal) + "'";
+        return Content(System.IO.File.ReadAllText(file).Replace("controller=''", "controller=" + literal, StringComparison.Ordinal), "text/x-shellscript");
+    }
 
     [HttpGet("download/{architecture}")]
     public IActionResult Download(string architecture) => architecture is "linux-x64" or "linux-arm64"
         ? Asset(architecture + ".tar.gz", "application/gzip") : NotFound();
+
+    [HttpGet("package")]
+    public IActionResult Package() => Asset("agent.nupkg", "application/octet-stream");
 
     private IActionResult Asset(string name, string contentType)
     {

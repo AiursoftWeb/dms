@@ -45,7 +45,7 @@ dotnet publish src/Aiursoft.DMS.Agent -c Release \
 dotnet ./bin/client/dms.dll --help
 ```
 
-These source publishes are framework-dependent applications. Install the .NET 10 runtime on each host that runs one, and distribute the entire publish directory. Both clients are also available as .NET tools. Managed servers use the Controller's self-contained Agent installer below, which includes the runtime and service setup.
+These source publishes are framework-dependent applications. Install the .NET 10 runtime on each host that runs one, and distribute the entire publish directory. Both clients are also available as .NET tools. Managed servers use the Controller's Tool installer below, which prepares the SDK and service setup.
 
 ## Configure access
 
@@ -211,17 +211,16 @@ dotnet ./bin/client/dms.dll access create-join-key \
 
 The key is displayed once. It can enroll several machines into this Controller until it expires or is revoked. It can only submit registration requests; it cannot approve requests, query inventory or execute workflows. Its issuer needs permission to request the Medium registration workflow. Registration uses the issuer's current request and automatic-approval permissions.
 
-On each managed Linux x64 or arm64 host, run this once from Bash:
+On each managed Ubuntu or AnduinOS x64 or arm64 host, run this once from Bash:
 
 ```sh
 curl --fail --silent --show-error https://dms.example.com/agent/install.sh | \
-  sudo bash -s -- --controller-url https://dms.example.com/ \
-  --api-key '<join-key>'
+  sudo bash -s -- --api-key '<join-key>'
 ```
 
-The host needs `curl`, `tar`, systemd and access to the Controller. The Controller supplies a self-contained Agent, including its .NET runtime; the managed host needs neither internet access nor a preinstalled .NET runtime. Use HTTPS for production. The installer runs the Agent as root so approved operating-system workflows can execute. Add `--name server-01` to override the hostname.
+The host needs `curl`, systemd and access to the Controller. The installer uses `apt-get update` and `apt-get install -y dotnet10` if the .NET 10 SDK is missing; the configured APT source may be an internal mirror. It then downloads the bundled NuGet Tool package from the Controller and installs it with `dotnet tool update --tool-path`, using only a temporary local package source. No public NuGet access is needed. The script includes its Controller origin; `--controller-url` can override it. After initial SDK setup, Agent operation and approved Tool upgrades only require access to the Controller. Use HTTPS for production. The installer runs the Agent as root so approved operating-system workflows can execute. Add `--name server-01` to override the hostname.
 
-The installer creates `/opt/aiursoft-dms-agent`, the `/usr/local/bin/dms-agent` symlink and `dms-agent.service`. It persists the private installation identity, enrollment receipt and machine credential under `/var/lib/aiursoft-dms-agent` (directory 0700, configuration 0600). It never persists the reusable join key or a human personal key. Keep this state directory when restarting or upgrading the Agent.
+The installer keeps versioned Tool installations under `/opt/aiursoft-dms-agent/tools`, the active `/opt/aiursoft-dms-agent/dms-agent` link, the `/usr/local/bin/dms-agent` symlink and `dms-agent.service`. It persists the private installation identity, enrollment receipt and machine credential under `/var/lib/aiursoft-dms-agent` (directory 0700, configuration 0600). It never persists the reusable join key or a human personal key. Keep this state directory when restarting or upgrading the Agent.
 
 The join prints the enrollment, Lockbox, workflow and installation IDs. The service starts immediately and waits for approval without requiring another visit to the machine. An authorized approver can inspect and approve the request:
 
@@ -251,7 +250,7 @@ dms-agent join --controller-url https://dms.example.com/ \
 dms-agent run --state-path "$HOME/.local/state/aiursoft-dms-agent"
 ```
 
-The foreground Agent waits for the same registration approval and uses the same persistent identity and task journal. It runs workflows as the current operating-system user. This installation does not register a service. Use the Controller installer above for managed servers and the approved upgrade workflow below for their lifecycle; that path requires no NuGet or internet access on the managed host. Do not add a scheduled `dotnet tool update` job to managed servers. Remove a development tool with `dotnet tool uninstall --global Aiursoft.DMS.Agent`.
+The foreground Agent waits for the same registration approval and uses the same persistent identity and task journal. It runs workflows as the current operating-system user. This installation does not register a service. Use the Controller installer above for managed servers and the approved upgrade workflow below for their lifecycle; that path uses the Controller package and requires no public NuGet access on the managed host. Do not add a scheduled `dotnet tool update` job to managed servers. Remove a development tool with `dotnet tool uninstall --global Aiursoft.DMS.Agent`.
 
 Repeated joins resume the same pending request. A denied or unavailable request can be retried with a valid join key, producing a new request while preserving the installation identity. Once joined, repeating the installer preserves credentials and running tasks; it does not implicitly upgrade or restart an active Agent. Joining a different Controller is rejected while the existing identity remains in place.
 
@@ -269,20 +268,20 @@ Revocation prevents new registrations and activation of pending registrations. P
 Submit an upgrade from the CLI:
 
 ```sh
-dotnet ./bin/cli/dms.dll machine agent upgrade \
+dms machine agent upgrade \
   --machine-id <machine-id> \
   --reason "Install the Controller's Agent release"
 ```
 
 This creates a **High** risk Lockbox. It freezes the selected machines and both architectures' exact release versions, archive digests and Agent assembly digests. Review and approve that Lockbox through the usual commands. The permission to approve your own request remains separate. If the Controller's release changes before approval, submit a new request; the approved operation never silently changes to a newer payload.
 
-The installed Agent downloads its native self-contained bundle from its registered Controller, verifies the approved identity, pauses new task starts and waits up to one minute for running work to finish. Uncertain tasks must be reconciled first. A one-shot systemd unit installs the payload and restarts `dms-agent.service`. The machine keeps its installation identity, credential and task journal. It needs no internet connection or inbound SSH.
+The installed Agent downloads its architecture-specific upgrade bundle from its registered Controller, verifies the approved identity, pauses new task starts and waits up to one minute for running work to finish. Uncertain tasks must be reconciled first. The bundle includes an independent native helper, the Tool package and its package/assembly digests, all covered by the approved archive digest. A one-shot systemd unit installs the Tool from that local package, verifies the installed assembly, switches the service executable and restarts `dms-agent.service`. The machine keeps its installation identity, credential and task journal. Existing native services migrate through the same approved workflow; if they lack the .NET 10 SDK, the helper prepares `dotnet10` through APT before stopping the old service. Later Tool upgrades use only the Controller and the installed SDK, with no inbound SSH or public NuGet connection.
 
 Follow the same Workflow ID using `operation get-workflow`, `get-callstack` and `get-trace`. Success is reported only by the matching new Agent over its authenticated Controller connection. A failed download leaves the old service running. An interrupted or unconfirmed switch requires verification and is never retried automatically. Cancellation after the handoff cannot roll back the switch. A child upgrade does not resume an interrupted parent's C# stack.
 
 Use an installed Agent release that already supports this workflow for the first upgrade. Development Agents started from arbitrary publish directories cannot update themselves. This command does not provide scheduled updates, a historical version repository or automatic rollback. Hosts whose Agent cannot contact the Controller need an operator to restore connectivity.
 
-### Build self-contained Agent assets
+### Build Agent installation and upgrade assets
 
 Controller Docker images and APKG packages include both Linux architectures. For a manual Controller publish, create the assets beside the Controller's published assembly:
 
@@ -290,7 +289,7 @@ Controller Docker images and APKG packages include both Linux architectures. For
 bash scripts/build-agent-assets.sh ./bin/controller/agent-assets
 ```
 
-The build requires the .NET 10 SDK and restores both architectures' runtime and host packs. The asset script explicitly ships serviced runtime patch 10.0.15, independently of the SDK's bundled runtime. Update that patch in the script when servicing the Agent runtime; admission and vulnerability checks still apply. The script also generates `releases.json` from the published assembly version and actual artifact digests. The Controller serves only the supported `linux-x64` and `linux-arm64` bundles. Its installation endpoints return 404 when those assets have not been packaged.
+The build requires the .NET 10 SDK and restores both architectures' runtime and host packs. The asset script explicitly ships serviced runtime patch 10.0.15, independently of the SDK's bundled runtime. Update that patch in the script when servicing the Agent runtime; admission and vulnerability checks still apply. The script also packs the standard NuGet Tool, embeds its package version and digest in the installer, and generates `releases.json` from the published assembly version and actual artifact digests. The Controller serves the Tool package at `/agent/package` and only the supported `linux-x64` and `linux-arm64` upgrade bundles. Its installation endpoints return 404 when those assets have not been packaged.
 
 ### Run an Agent during development
 

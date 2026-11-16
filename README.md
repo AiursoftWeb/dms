@@ -58,7 +58,7 @@ dotnet tool install --global Aiursoft.DMS.Agent
 dms-agent --help
 ```
 
-For managed servers, use the [one-time Agent installer](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent). It supplies the .NET runtime from the Controller and registers the systemd service. The tool is useful for foreground development with an existing .NET installation; see the same guide for `join` and `run`.
+For managed servers, use the [one-time Agent installer](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent). On Ubuntu and AnduinOS, it prepares `dotnet10` through APT, installs the Tool package supplied by the Controller and registers the systemd service. The tool also supports foreground development; see the same guide for `join` and `run`.
 
 Run the interactive login, follow its link to create a personal API key, then check your identity:
 
@@ -155,7 +155,7 @@ Open `http://localhost:8080` for this local-build example. The standard [install
 sudo bash install.sh 8080
 ```
 
-The Controller image includes self-contained Linux x64 and arm64 Agent bundles. Run its installation command once on each managed host, then approve registration through Lockbox. See [Agent installation](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent).
+The Controller image includes the Agent Tool package and Linux x64 and arm64 upgrade helpers. Run its installation command once on each managed host, then approve registration through Lockbox. See [Agent installation](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent).
 
 ## Usage
 
