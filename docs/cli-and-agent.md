@@ -45,7 +45,7 @@ dotnet publish src/Aiursoft.DMS.Agent -c Release \
 dotnet ./bin/client/dms.dll --help
 ```
 
-These source publishes are framework-dependent applications. Install the .NET 10 runtime on each host that runs one, and distribute the entire publish directory. The CLI is also available as the global tool above. Agents use the Controller's self-contained installer below rather than a NuGet tool.
+These source publishes are framework-dependent applications. Install the .NET 10 runtime on each host that runs one, and distribute the entire publish directory. Both clients are also available as .NET tools. Managed servers use the Controller's self-contained Agent installer below, which includes the runtime and service setup.
 
 ## Configure access
 
@@ -240,6 +240,18 @@ If the Agent binary is already installed, the equivalent registration command is
 sudo dms-agent join --controller-url https://dms.example.com/ \
   --api-key '<join-key>'
 ```
+
+For foreground development on a machine with the .NET 10 SDK, Agent version 1.1.1 and later can also be installed as a NuGet tool:
+
+```sh
+dotnet tool install --global Aiursoft.DMS.Agent
+dms-agent --help
+dms-agent join --controller-url https://dms.example.com/ \
+  --api-key '<join-key>' --state-path "$HOME/.local/state/aiursoft-dms-agent"
+dms-agent run --state-path "$HOME/.local/state/aiursoft-dms-agent"
+```
+
+The foreground Agent waits for the same registration approval and uses the same persistent identity and task journal. It runs workflows as the current operating-system user. This installation does not register a service. Use the Controller installer above for managed servers and the approved upgrade workflow below for their lifecycle; that path requires no NuGet or internet access on the managed host. Do not add a scheduled `dotnet tool update` job to managed servers. Remove a development tool with `dotnet tool uninstall --global Aiursoft.DMS.Agent`.
 
 Repeated joins resume the same pending request. A denied or unavailable request can be retried with a valid join key, producing a new request while preserving the installation identity. Once joined, repeating the installer preserves credentials and running tasks; it does not implicitly upgrade or restart an active Agent. Joining a different Controller is rejected while the existing identity remains in place.
 
