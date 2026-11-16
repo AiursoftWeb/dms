@@ -8,7 +8,7 @@
 
 DMS is a server operations platform for humans and AI, built on Aiursoft Template. Request an operation, approve its scope through Lockbox, and follow its execution across your machines.
 
-![DMS local preview](https://github.com/aiursoftweb/dms/blob/master/screenshot.png)
+![DMS local preview](https://raw.githubusercontent.com/aiursoftweb/dms/master/screenshot.png)
 
 On an empty database, the default local account is `admin@default.com` with password `Admin@123456!`. Change the password before exposing the application.
 
