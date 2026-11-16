@@ -9,24 +9,23 @@ namespace Aiursoft.DMS.Services.Dms;
 
 public sealed class EnrollmentService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowService workflows)
 {
-    private static JoinKeySummary Summary(JoinKey key) => new(key.Id, key.ClusterId, key.Name, key.IssuerId, key.ExpiresAt, key.Revoked);
+    private static JoinKeySummary Summary(JoinKey key) => new(key.Id, key.Name, key.IssuerId, key.ExpiresAt, key.Revoked);
     private static bool ValidSecret(string? key, string prefix) => key is { Length: 69 } && key.StartsWith(prefix, StringComparison.Ordinal) && key[5..].All(char.IsAsciiHexDigit);
 
     public Task<IssuedJoinKey> IssueAsync(string actor, JoinKeyInput input) => gate.RunAsync(async () =>
     {
         if (string.IsNullOrWhiteSpace(input.Name) || input.Name.Length > 100 || input.Name.Any(char.IsControl) || input.Days is < 1 or > 365)
             throw new DmsException(400, "A key name and expiry of between 1 and 365 days are required.");
-        if (!await db.Clusters.NotCacheable().AnyAsync(c => c.Id == input.ClusterId)) throw new DmsException(404, "Cluster not found.");
         var raw = "dmsj_" + Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
-        var key = new JoinKey { ClusterId = input.ClusterId, IssuerId = actor, Name = input.Name.Trim(), KeyHash = DmsKeyAuthenticationHandler.Hash(raw), ExpiresAt = DateTime.UtcNow.AddDays(input.Days) };
-        db.JoinKeys.Add(key); access.Audit(actor, "key.join.issue", key.Id, $"Cluster={key.ClusterId}; Expires={key.ExpiresAt:O}");
+        var key = new JoinKey { IssuerId = actor, Name = input.Name.Trim(), KeyHash = DmsKeyAuthenticationHandler.Hash(raw), ExpiresAt = DateTime.UtcNow.AddDays(input.Days) };
+        db.JoinKeys.Add(key); access.Audit(actor, "key.join.issue", key.Id, $"Expires={key.ExpiresAt:O}");
         await db.SaveChangesAsync(); return new IssuedJoinKey(Summary(key), raw);
     });
 
-    public Task<List<JoinKeySummary>> KeysAsync(string actor, Guid cluster) => gate.RunAsync(async () =>
+    public Task<List<JoinKeySummary>> KeysAsync(string actor) => gate.RunAsync(async () =>
     {
-        var keys = await db.JoinKeys.AsNoTracking().NotCacheable().Where(k => k.ClusterId == cluster).OrderBy(k => k.CreatedAt).ToListAsync();
-        access.Audit(actor, "key.join.list", cluster); await db.SaveChangesAsync(); return keys.Select(Summary).ToList();
+        var keys = await db.JoinKeys.AsNoTracking().NotCacheable().OrderBy(k => k.CreatedAt).ToListAsync();
+        access.Audit(actor, "key.join.list"); await db.SaveChangesAsync(); return keys.Select(Summary).ToList();
     });
 
     public Task<JoinKeySummary> RevokeAsync(string actor, Guid id) => gate.RunAsync(async () =>
@@ -35,13 +34,13 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
         key.Revoked = true; access.Audit(actor, "key.join.revoke", id); await db.SaveChangesAsync(); return Summary(key);
     });
 
-    public Task<List<EnrollmentStatus>> ListAsync(string actor, Guid cluster) => gate.RunAsync(async () =>
+    public Task<List<EnrollmentStatus>> ListAsync(string actor) => gate.RunAsync(async () =>
     {
         var items = await db.AgentEnrollments.NotCacheable().Include(e => e.JoinKey).Include(e => e.Lockbox)
-            .Where(e => e.JoinKey.ClusterId == cluster).OrderBy(e => e.CreatedAt).ToListAsync();
+            .OrderBy(e => e.CreatedAt).ToListAsync();
         var result = new List<EnrollmentStatus>();
         foreach (var item in items) result.Add(await StatusCoreAsync(item));
-        access.Audit(actor, "enrollment.list", cluster); await db.SaveChangesAsync(); return result;
+        access.Audit(actor, "enrollment.list"); await db.SaveChangesAsync(); return result;
     });
 
     public Task<EnrollmentStatus> SubmitAsync(Guid keyId, EnrollmentInput input) => gate.RunAsync(() =>
@@ -51,12 +50,11 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
     {
         // A retry after a rolled-back transaction must not reuse tracked, partially saved entities.
         db.ChangeTracker.Clear();
-        if (input.Id == Guid.Empty || input.InstallationId == Guid.Empty || string.IsNullOrWhiteSpace(input.ClusterName) || string.IsNullOrWhiteSpace(input.MachineName) || input.MachineName.Length > 100 || input.MachineName.Any(char.IsControl)
+        if (input.Id == Guid.Empty || input.InstallationId == Guid.Empty || string.IsNullOrWhiteSpace(input.MachineName) || input.MachineName.Length > 100 || input.MachineName.Any(char.IsControl)
             || !ValidSecret(input.ReceiptKey, "dmsr_") || !ValidSecret(input.AgentKey, "dmsa_")) throw new DmsException(400, "Invalid enrollment identity, name or credentials.");
-        var key = await db.JoinKeys.NotCacheable().Include(k => k.Cluster).Include(k => k.Issuer).SingleOrDefaultAsync(k => k.Id == keyId)
+        var key = await db.JoinKeys.NotCacheable().Include(k => k.Issuer).SingleOrDefaultAsync(k => k.Id == keyId)
             ?? throw new DmsException(401, "Invalid join key.");
         if (key.Revoked || key.ExpiresAt <= DateTime.UtcNow || key.Issuer.LockoutEnd > DateTimeOffset.UtcNow) throw new DmsException(403, "Join key is unavailable.");
-        if (!string.Equals(key.Cluster.Name, input.ClusterName.Trim(), StringComparison.OrdinalIgnoreCase)) throw new DmsException(409, "The cluster name does not match this join key.");
         var receipt = DmsKeyAuthenticationHandler.Hash(input.ReceiptKey); var agent = DmsKeyAuthenticationHandler.Hash(input.AgentKey);
         var prior = await db.AgentEnrollments.NotCacheable().Include(e => e.JoinKey).Include(e => e.Lockbox).SingleOrDefaultAsync(e => e.Id == input.Id);
         if (prior != null)
@@ -74,7 +72,7 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
         await using var transaction = await db.Database.BeginTransactionAsync();
         var box = await workflows.SubmitCoreAsync(key.IssuerId, new OperationRequest
         {
-            RequestId = input.Id, ClusterId = key.ClusterId, Workflow = WorkflowNames.AddMachine, MachineName = input.MachineName,
+            RequestId = input.Id, Workflow = WorkflowNames.AddMachine, MachineName = input.MachineName,
             Input = JsonSerializer.Serialize(new { EnrollmentId = input.Id, input.InstallationId }),
             Reason = $"Agent enrollment: {input.MachineName}; Installation={input.InstallationId}; JoinKey={key.Id}"
         });
@@ -101,6 +99,6 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
             var run = await db.WorkflowRuns.AsNoTracking().NotCacheable().SingleAsync(r => r.Id == operation);
             if (run.State is RunState.Failed or RunState.Cancelled or RunState.NeedsVerification) state = "Failed";
         }
-        return new EnrollmentStatus(item.Id, item.InstallationId, item.JoinKey.ClusterId, item.MachineName, item.LockboxId, item.Lockbox.WorkflowId, item.MachineId, state);
+        return new EnrollmentStatus(item.Id, item.InstallationId, item.MachineName, item.LockboxId, item.Lockbox.WorkflowId, item.MachineId, state);
     }
 }

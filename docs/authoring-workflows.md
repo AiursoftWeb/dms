@@ -96,7 +96,7 @@ An unknown outcome is different: `WorkflowNeedsVerificationException` makes the 
 A public definition can use the typed SDK overload:
 
 ```csharp
-await client.SubmitAsync(AuthoringExamples.Total, clusterId,
+await client.SubmitAsync(AuthoringExamples.Total,
     new RepeatInput(7, 3), "Review the example", allMachines: true);
 ```
 
@@ -108,7 +108,6 @@ On the wire, `OperationRequest.Input` is a **JSON-encoded string**, matching the
 {
   "Workflow": "machine.systemctl.status",
   "Input": "{\"Service\":\"example.service\"}",
-  "ClusterId": "00000000-0000-0000-0000-000000000001",
   "MachineIds": ["00000000-0000-0000-0000-000000000002"],
   "RequestId": "00000000-0000-0000-0000-000000000003",
   "Reason": "Inspect the service"

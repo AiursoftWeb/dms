@@ -16,7 +16,7 @@ public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run
 
     public void CallMachine(string name, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
     {
-        RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId, ClusterId = run.ClusterId,
+        RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId,
         MachineId = machine, Definition = name, Input = Parameters.Input,
         Version = lockbox.Version, IsMachineTask = true, State = RunState.Queued
     });
@@ -36,7 +36,7 @@ public sealed class LockboxWorkflow : ClusterWorkflow
         var child = new WorkflowRun
         {
             RootId = context.Run.Id, ParentId = context.Run.Id, LockboxId = context.Lockbox.Id,
-            ClusterId = context.Lockbox.ClusterId, State = RunState.Queued,
+            State = RunState.Queued,
             Definition = context.Definition?.Location == WorkflowLocation.Machine
                 ? WorkflowNames.Batch : context.Lockbox.Definition,
             Input = context.Parameters.Input, Version = context.Lockbox.Version
@@ -58,8 +58,8 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
         var targets = JsonSerializer.Deserialize<List<Guid>>(context.Lockbox.TargetMachines)!;
         foreach (var id in targets)
         {
-            if (!await context.Inventory.Machines.AnyAsync(m => m.Id == id && m.ClusterId == context.Run.ClusterId && !m.Disabled))
-                throw new InvalidOperationException("An approved machine is no longer available in this cluster.");
+            if (!await context.Inventory.Machines.AnyAsync(m => m.Id == id && !m.Disabled))
+                throw new InvalidOperationException("An approved machine is no longer available.");
         }
         foreach (var id in targets) context.CallMachine(context.Lockbox.Definition, id);
         context.Run.State = RunState.Running;
@@ -70,7 +70,6 @@ public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<Machi
 {
     public override Task<List<MachineSummary>> ExecuteAsync(WorkflowExecutionContext context, EmptyInput input, CancellationToken token) =>
         context.WithInventoryAsync(db => db.Machines.AsNoTracking()
-            .Where(m => m.ClusterId == context.ClusterId)
             .Select(m => new MachineSummary(m.Id, m.Name, m.AgentVersion, m.LastSeen, m.Disabled)).ToListAsync(token), token);
 }
 
@@ -82,11 +81,11 @@ public sealed class AddMachineWorkflow : ClusterWorkflow
         if (enrollment != null && (enrollment.JoinKey.Revoked || enrollment.JoinKey.ExpiresAt <= DateTime.UtcNow
             || await context.Inventory.Machines.AnyAsync(m => m.InstallationId == enrollment.InstallationId)))
             throw new InvalidOperationException("Enrollment is unavailable or this installation has already joined.");
-        var machine = new Machine { ClusterId = context.Run.ClusterId, Name = context.Parameters.MachineName,
+        var machine = new Machine { Name = context.Parameters.MachineName,
             KeyHash = enrollment?.AgentKeyHash ?? DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)), InstallationId = enrollment?.InstallationId };
         context.Inventory.Machines.Add(machine);
         if (enrollment != null) enrollment.MachineId = machine.Id;
-        context.Run.Result = JsonSerializer.Serialize(new { machine.Id, machine.Name, machine.ClusterId });
+        context.Run.Result = JsonSerializer.Serialize(new { machine.Id, machine.Name });
         context.Run.State = RunState.Succeeded;
     }
 }

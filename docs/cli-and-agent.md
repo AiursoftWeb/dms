@@ -61,7 +61,7 @@ Subsequent terminal sessions use the saved login automatically:
 
 ```sh
 dms access whoami
-dms cluster list
+dms machine list --reason "Inspect inventory"
 ```
 
 Run `dms login` again to change the saved Controller or key. `dms login --server https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
@@ -80,27 +80,20 @@ dms access whoami
 
 The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox workflow apply equally to both forms.
 
-### Manage clusters and permissions
+### Manage Agent access and permissions
 
-Users with **Manage DMS access** can manage inventory and Agent identities through the CLI or **DMS access** web page. Configure workflow permissions in **Administration → Directory → Roles → Edit**. See [role permissions](permissions.md) for the five-risk matrix and upgrade requirements. Permissions apply to every machine in the instance; Cluster fields are inventory filters only.
+Users with **Manage DMS access** can inspect inventory and manage Agent identities through the CLI or **DMS access** web page. Configure workflow permissions in **Administration → Directory → Roles → Edit**. See [role permissions](permissions.md) for the five-risk matrix and upgrade requirements. Permissions apply to every machine in the instance.
 
 ```sh
 dms access whoami
 dms access whoami --output-format json
 dms access whoami --output-format csv
-dms cluster create --name aiursoft-prod
-dms cluster list
+dms machine list --reason "Inspect inventory"
 dms access get
 ```
 
-`access set-grant` and `access set-self-approval` have been removed. `access get` lists inventory and Agent identity metadata, without a second permissions configuration surface. Creating inventory or issuing a key never grants workflow execution privileges.
+`access set-grant` and `access set-self-approval` have been removed. `access get` lists inventory and Agent identity metadata, without a second permissions configuration surface. Issuing a key never grants workflow execution privileges. `machine list` is a Safe standard workflow and creates a Lockbox; `access get` is an authenticated administrative inspection.
 
-```sh
-dotnet ./bin/client/dms.dll cluster rename --cluster-id <cluster-id> --name <new-name>
-dotnet ./bin/client/dms.dll cluster drop --cluster-id <cluster-id>
-```
-
-Deletion requires no machines, operation history or enrollment keys (including revoked keys). The audit record is retained.
 
 ## Manage Docker containers
 
@@ -118,7 +111,7 @@ dotnet ./bin/client/dms.dll machine docker exec --container <full-container-id> 
 dotnet ./bin/client/dms.dll machine docker kill --container <full-container-id> --reason "Stop this container"
 ```
 
-Use `--cluster-id` and `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires VeryHigh, and kill requires High. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
+Use `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires VeryHigh, and kill requires High. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
 
 Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an optional `--since` timestamp with UTC offset. They do not follow indefinitely. Logs and command output are available through `operation get-trace`; they may contain application secrets, so grant access accordingly. Arguments after `--` are passed literally, without an implicit host shell. Do not put secrets in command arguments: approved inputs and output are recorded in the audit trail.
 
@@ -129,17 +122,17 @@ Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an option
 With `DMS_SERVER` and `DMS_API_KEY` configured, an enrolled Box can request:
 
 ```bash
-# One accessible cluster with one active machine: refresh the main Puller inventory.
+# One active machine: refresh the main Puller inventory.
 dms machine box puller force-update --reason "Refresh configured mirrors"
 
 # Select one machine and image explicitly.
 dms machine box puller force-update \
-  --cluster-id "$CLUSTER_ID" --machine-id "$MACHINE_ID" \
+  --machine-id "$MACHINE_ID" \
   --image aiursoft/dms:latest --reason "Refresh DMS mirror"
 
 # Refresh the CN Puller's configured inventory on the selected machine.
 dms machine box puller force-update \
-  --cluster-id "$CLUSTER_ID" --machine-id "$MACHINE_ID" \
+  --machine-id "$MACHINE_ID" \
   --puller cn --reason "Refresh configured China mirrors"
 ```
 
@@ -149,9 +142,8 @@ it does not discover every image in a registry. An explicitly empty or invalid
 image is rejected. Add `--output-format json` or `csv` for structured output;
 table remains the default.
 
-For workflow submissions, `--cluster-id` may be omitted only when the caller
-has exactly one accessible cluster. Machine targets may be omitted only when
-the selected cluster has exactly one active (not disabled) machine; online status
+For workflow submissions, machine targets may be omitted only when this
+Controller has exactly one active (not disabled) machine; online status
 does not determine selection. With multiple machines, use explicit
 `--machine-id` values or intentionally request `--all-machines`. The Controller
 resolves these defaults under its existing submission gate and stores the
@@ -166,7 +158,7 @@ requires `CanAutoApproveHighRiskWorkflow`; otherwise a reviewer needs
 `CanApproveOwnWorkflow`. These are global role permissions; a role's name alone
 does not authorize any action.
 
-The Lockbox stores the actual cluster/machines, selected Puller and
+The Lockbox stores the actual machines, selected Puller and
 `ImageScope: SingleImage` or `AllConfiguredImages` in canonical typed input.
 The image scope must match `Image`; a contradictory scope is rejected. For the
 all-images mode, approval covers the selected Puller's configured inventory at
@@ -210,21 +202,21 @@ dms operation get-trace --id "$WORKFLOW_ID"
 
 ## Install and join an Agent
 
-An administrator with **Manage DMS access** issues a dedicated join key for one cluster:
+An administrator with **Manage DMS access** issues a dedicated join key for this Controller:
 
 ```sh
 dotnet ./bin/client/dms.dll access create-join-key \
-  --cluster-id <cluster-id> --name 'Production enrollment' --days 7
+  --name 'Production enrollment' --days 7
 ```
 
-The key is displayed once. It can enroll several machines into that cluster until it expires or is revoked. It can only submit registration requests; it cannot approve requests, query inventory or execute workflows. Its issuer needs permission to request the Medium registration workflow in that cluster. Registration uses the issuer's current request and automatic-approval permissions.
+The key is displayed once. It can enroll several machines into this Controller until it expires or is revoked. It can only submit registration requests; it cannot approve requests, query inventory or execute workflows. Its issuer needs permission to request the Medium registration workflow. Registration uses the issuer's current request and automatic-approval permissions.
 
 On each managed Linux x64 or arm64 host, run this once from Bash:
 
 ```sh
 curl --fail --silent --show-error https://dms.example.com/agent/install.sh | \
   sudo bash -s -- --controller-url https://dms.example.com/ \
-  --api-key '<join-key>' --cluster-name aiursoft-prod
+  --api-key '<join-key>'
 ```
 
 The host needs `curl`, `tar`, systemd and access to the Controller. The Controller supplies a self-contained Agent, including its .NET runtime; the managed host needs neither internet access nor a preinstalled .NET runtime. Use HTTPS for production. The installer runs the Agent as root so approved operating-system workflows can execute. Add `--name server-01` to override the hostname.
@@ -234,7 +226,7 @@ The installer creates `/opt/aiursoft-dms-agent`, the `/usr/local/bin/dms-agent` 
 The join prints the enrollment, Lockbox, workflow and installation IDs. The service starts immediately and waits for approval without requiring another visit to the machine. An authorized approver can inspect and approve the request:
 
 ```sh
-dotnet ./bin/client/dms.dll access list-enrollments --cluster-id <cluster-id>
+dotnet ./bin/client/dms.dll access list-enrollments
 dotnet ./bin/client/dms.dll lockbox get --id <lockbox-id>
 dotnet ./bin/client/dms.dll lockbox approve \
   --id <lockbox-id> --reason 'Verified machine registration'
@@ -246,15 +238,15 @@ If the Agent binary is already installed, the equivalent registration command is
 
 ```sh
 sudo dms-agent join --controller-url https://dms.example.com/ \
-  --api-key '<join-key>' --cluster-name aiursoft-prod
+  --api-key '<join-key>'
 ```
 
-Repeated joins resume the same pending request. A denied or unavailable request can be retried with a valid join key, producing a new request while preserving the installation identity. Once joined, repeating the installer preserves credentials and running tasks; it does not implicitly upgrade or restart an active Agent. Joining a different Controller or cluster is rejected while the existing identity remains in place.
+Repeated joins resume the same pending request. A denied or unavailable request can be retried with a valid join key, producing a new request while preserving the installation identity. Once joined, repeating the installer preserves credentials and running tasks; it does not implicitly upgrade or restart an active Agent. Joining a different Controller is rejected while the existing identity remains in place.
 
 Administrators can inspect or revoke join keys:
 
 ```sh
-dotnet ./bin/client/dms.dll access list-join-keys --cluster-id <cluster-id>
+dotnet ./bin/client/dms.dll access list-join-keys
 dotnet ./bin/client/dms.dll access revoke-join-key --id <join-key-id>
 ```
 
@@ -266,7 +258,7 @@ Submit an upgrade from the CLI:
 
 ```sh
 dotnet ./bin/cli/dms.dll machine agent upgrade \
-  --cluster-id <cluster-id> --machine-id <machine-id> \
+  --machine-id <machine-id> \
   --reason "Install the Controller's Agent release"
 ```
 
@@ -290,7 +282,7 @@ The build requires the .NET 10 SDK and restores both architectures' runtime and 
 
 ### Run an Agent during development
 
-For an isolated development environment, register a machine with `cluster add-machine`, approve its Lockbox, then issue a machine key with `access issue-agent-key --machine-id <machine-id>`. Issuing another key replaces the previous one. Run the framework-dependent publish using a private persistent state directory:
+For an isolated development environment, register a machine with `machine add`, approve its Lockbox, then issue a machine key with `access issue-agent-key --machine-id <machine-id>`. Issuing another key replaces the previous one. Run the framework-dependent publish using a private persistent state directory:
 
 ```sh
 export DMS_CONTROLLER=http://localhost:5000
@@ -303,26 +295,26 @@ This development mode requires a .NET 10 runtime. Preserve the installation iden
 
 ## Discover standard workflows
 
-Use `dms operation list-definitions --cluster-id <cluster-id>` to see the Controller's registered public standard workflows and your permissions across the instance. The command supports `--output-format table|json|csv` and creates no Lockbox. The same catalog is available under **Standard workflows** in the web UI. See [workflow discovery](workflow-discovery.md) for permission and output details.
+Use `dms operation list-definitions` to see the Controller's registered public standard workflows and your permissions across the instance. The command supports `--output-format table|json|csv` and creates no Lockbox. The same catalog is available under **Standard workflows** in the web UI. See [workflow discovery](workflow-discovery.md) for permission and output details.
 
 ## Request and inspect operations
 
 ```sh
-dotnet ./bin/client/dms.dll cluster get-machines \
-  --cluster-id <cluster-id> --reason 'Inspect inventory'
+dotnet ./bin/client/dms.dll machine list \
+  --reason 'Inspect inventory'
 dotnet ./bin/client/dms.dll machine performance info \
-  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect capacity'
+  --machine-id <machine-id> --reason 'Inspect capacity'
 dotnet ./bin/client/dms.dll machine agent status \
-  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect Agent'
+  --machine-id <machine-id> --reason 'Inspect Agent'
 dotnet ./bin/client/dms.dll machine systemctl status \
-  --cluster-id <cluster-id> --machine-id <machine-id> \
+  --machine-id <machine-id> \
   --service example.service --reason 'Inspect service'
 dotnet ./bin/client/dms.dll machine layout lsblk \
-  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect block devices'
+  --machine-id <machine-id> --reason 'Inspect block devices'
 dotnet ./bin/client/dms.dll machine layout df \
-  --cluster-id <cluster-id> --machine-id <machine-id> --reason 'Inspect local capacity'
+  --machine-id <machine-id> --reason 'Inspect local capacity'
 dotnet ./bin/client/dms.dll machine systemctl restart \
-  --cluster-id <cluster-id> --machine-id <machine-id> \
+  --machine-id <machine-id> \
   --service example.service --reason 'Approved maintenance'
 dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id>
 dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id>
@@ -331,9 +323,9 @@ dotnet ./bin/client/dms.dll operation get-trace --id <workflow-id>
 
 Each operational command creates a Lockbox before execution. The Lockbox ID, its own workflow ID and the approved operation's workflow ID are distinct; use the returned ID for the corresponding inspection command. Inspection and `lockbox approve`/`deny` use authenticated management APIs without creating another Lockbox.
 
-Use `--all-machines` instead of `--machine-id` to freeze the cluster's current machines into a request. A request targets only one cluster. Use `--request-id` when retrying the same submission and `--output-format json` for automation.
+Use `--all-machines` instead of `--machine-id` to freeze all currently active machines into a request. Use `--request-id` when retrying the same submission and `--output-format json` for automation.
 
-`operation kill-workflow --cluster-id <cluster-id> --id <workflow-id> --reason 'Stop operation'` creates a new Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation).
+`operation kill-workflow --id <workflow-id> --reason 'Stop operation'` creates a new Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation).
 
 Agent status, performance information, `layout lsblk` and `layout df` use the Safe risk policy; `systemctl status` uses Low and restart uses Medium. Service commands require a concrete `.service` name. Status reads fixed systemd properties without reading the journal. Block-device queries exclude loop devices, and capacity queries cover local filesystems. No extra command arguments or shell expressions are accepted.
 

@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
 using Aiursoft.DMS.Services.Authentication;
@@ -22,7 +21,6 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Dms
     [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "DMS", CascadedLinksIcon = "shield", LinkText = "DMS access", LinkOrder = 1)]
     public async Task<IActionResult> Index() => this.StackView(new DmsViewModel
     {
-        Clusters = await db.Clusters.ToListAsync(),
         Machines = await db.Machines.ToListAsync(),
         NewKey = TempData["DmsNewKey"] as string, Notice = TempData["DmsNotice"] as string
     });
@@ -32,10 +30,6 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Dms
         try { await action(); return RedirectToAction(nameof(Index)); }
         catch (DmsException exception) { return StatusCode(exception.StatusCode, exception.Message); }
     }
-
-    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> CreateCluster(string name) => ManageAsync(async () =>
-        await management.CreateAsync(Actor, new CreateClusterInput(Guid.NewGuid(), name)));
 
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> AgentKey(Guid machineId) => ManageAsync(async () =>

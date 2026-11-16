@@ -24,19 +24,19 @@ public class WorkflowAuthoringTests : TestBase
             return await action(scope.ServiceProvider.GetRequiredService<TemplateDbContext>());
         });
 
-    private async Task<(Guid Cluster, string User, string Approver, Guid[] Machines, string[] Keys, string Key)> ArrangeAsync()
+    private async Task<(string User, string Approver, Guid[] Machines, string[] Keys, string Key)> ArrangeAsync()
     {
         AuthoringExamples.RegisterMachines(Server!.Services.GetRequiredService<MachineWorkflowRegistry>());
         AuthoringExamples.RegisterCluster(Server.Services.GetRequiredService<ClusterWorkflowRegistry>());
         return await DatabaseAsync(async db =>
         {
+            DmsTestPermissions.DeactivatePreviousMachines(db);
             var user = new User { UserName = "requester" + Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
             var approver = new User { Id = Guid.NewGuid().ToString(), UserName = "reviewer", DisplayName = "Reviewer" };
-            var cluster = new Cluster { Name = "Authoring" };
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
-            var machines = keys.Select((key, i) => new Machine { ClusterId = cluster.Id, Name = $"example-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
+            var machines = keys.Select((key, i) => new Machine { Name = $"example-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
             var personal = DmsKeyAuthenticationHandler.CreateKey(false);
-            db.Users.Add(approver); db.Clusters.Add(cluster); db.Machines.AddRange(machines);
+            db.Users.Add(approver); db.Machines.AddRange(machines);
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Authoring", KeyHash = DmsKeyAuthenticationHandler.Hash(personal), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             foreach (var risk in Enum.GetValues<RiskLevel>())
             {
@@ -44,7 +44,7 @@ public class WorkflowAuthoringTests : TestBase
                 DmsTestPermissions.Risk(db, approver.Id, risk, request: false, automatic: false, approve: true);
             }
             await db.SaveChangesAsync();
-            return (cluster.Id, user.Id, approver.Id, machines.Select(m => m.Id).ToArray(), keys, personal);
+            return (user.Id, approver.Id, machines.Select(m => m.Id).ToArray(), keys, personal);
         });
     }
 
@@ -67,17 +67,17 @@ public class WorkflowAuthoringTests : TestBase
         var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), Http.BaseAddress!.ToString(), setup.Key);
         var input = new RepeatInput(7, 3, ProbeFailure: true);
         var requestId = Guid.NewGuid();
-        var response = await client.SubmitAsync(AuthoringExamples.Total, setup.Cluster, input, "Typed authoring example", allMachines: true, requestId: requestId);
+        var response = await client.SubmitAsync(AuthoringExamples.Total, input, "Typed authoring example", allMachines: true, requestId: requestId);
         Assert.AreEqual(0, (int)response.Code);
         var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == requestId));
         Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.AreEqual(RiskLevel.Medium, box.Risk);
         Assert.AreEqual(AuthoringExamples.Total.Version, box.Version); Assert.IsNull(box.OperationId);
         Assert.AreEqual(input, JsonSerializer.Deserialize<RepeatInput>(JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input));
-        await DatabaseAsync(async db => { db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Late", KeyHash = "late" }); await db.SaveChangesAsync(); return true; });
+        await DatabaseAsync(async db => { db.Machines.Add(new Machine { Name = "Late", KeyHash = "late" }); await db.SaveChangesAsync(); return true; });
         using (var scope = Server!.Services.CreateScope())
         {
             var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-            var changed = AuthoringExamples.Total.Request(setup.Cluster, input with { Copies = 4 }, "Typed authoring example", allMachines: true, requestId: requestId);
+            var changed = AuthoringExamples.Total.Request(input with { Copies = 4 }, "Typed authoring example", allMachines: true, requestId: requestId);
             Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, changed))).StatusCode);
             await service.DecideAsync(setup.Approver, box.Id, true, "Only the two original machines");
         }
@@ -98,7 +98,7 @@ public class WorkflowAuthoringTests : TestBase
             var result = AuthoringExamples.Total.ReadResult(parent.Result);
             Assert.AreEqual(42L, result.Units); Assert.AreEqual(2, result.Machines);
             CollectionAssert.AreEquivalent(journals.Select(j => j.InstallationId).ToList(), result.Installations);
-            Assert.HasCount(1, await DatabaseAsync(db => db.Lockboxes.Where(l => l.ClusterId == setup.Cluster).ToListAsync()));
+            Assert.HasCount(1, await DatabaseAsync(db => db.Lockboxes.Where(l => l.RequesterId == setup.User).ToListAsync()));
             Assert.AreEqual(box.WorkflowId, parent.RootId); Assert.AreEqual(box.WorkflowId, parent.ParentId);
             Assert.AreEqual(tree.Count, tree.Select(r => r.Id).Distinct().Count()); Assert.IsTrue(tree.All(r => r.Id != Guid.Empty));
             var failed = tree.Where(r => r.State == RunState.Failed).ToList(); Assert.HasCount(2, failed);
@@ -133,9 +133,9 @@ public class WorkflowAuthoringTests : TestBase
     {
         var setup = await ArrangeAsync();
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
-        var request = new OperationRequest { ClusterId = setup.Cluster, Workflow = AuthoringExamples.Total.Name, AllMachines = true, Input = input, Reason = "Invalid input" };
+        var request = new OperationRequest { Workflow = AuthoringExamples.Total.Name, AllMachines = true, Input = input, Reason = "Invalid input" };
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", request)).StatusCode);
-        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster)));
+        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.RequesterId == setup.User)));
     }
 
     [TestMethod]
@@ -146,9 +146,9 @@ public class WorkflowAuthoringTests : TestBase
     {
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
-        var request = new OperationRequest { ClusterId = setup.Cluster, Workflow = name, MachineIds = [setup.Machines[0]], Input = "{\"Units\":1}", Reason = "Cannot expose internal execution" };
+        var request = new OperationRequest { Workflow = name, MachineIds = [setup.Machines[0]], Input = "{\"Units\":1}", Reason = "Cannot expose internal execution" };
         Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, request))).StatusCode);
-        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster)));
+        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.RequesterId == setup.User)));
     }
 
     [TestMethod]
@@ -158,7 +158,7 @@ public class WorkflowAuthoringTests : TestBase
         using var scope = Server!.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var box = await service.SubmitAsync(setup.User,
-            AuthoringExamples.Repeat.Request(setup.Cluster, new RepeatInput(9, 2), "Versioned request", [setup.Machines[0]]));
+            AuthoringExamples.Repeat.Request(new RepeatInput(9, 2), "Versioned request", [setup.Machines[0]]));
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         box.Version = "previous-version";
         await db.SaveChangesAsync();
@@ -173,7 +173,7 @@ public class WorkflowAuthoringTests : TestBase
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var box = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
-            AuthoringExamples.Repeat.Request(setup.Cluster, new RepeatInput(9, 2), "Machine entry", [setup.Machines[0]]));
+            AuthoringExamples.Repeat.Request(new RepeatInput(9, 2), "Machine entry", [setup.Machines[0]]));
         Assert.AreEqual(RiskLevel.Low, box.Risk); Assert.AreEqual("repeat-1", box.Version);
         Assert.AreEqual(AuthoringExamples.Repeat.Serialize(new RepeatInput(9, 2)), JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
     }

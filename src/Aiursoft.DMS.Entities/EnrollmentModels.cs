@@ -8,8 +8,6 @@ namespace Aiursoft.DMS.Entities;
 public sealed class JoinKey
 {
     [Key] public Guid Id { get; init; } = Guid.NewGuid();
-    public required Guid ClusterId { get; init; }
-    [JsonIgnore, ForeignKey(nameof(ClusterId)), NotNull] public Cluster? Cluster { get; set; }
     [MaxLength(450)] public required string IssuerId { get; init; }
     [JsonIgnore, ForeignKey(nameof(IssuerId)), NotNull] public User? Issuer { get; set; }
     [MaxLength(100)] public required string Name { get; init; }

@@ -18,7 +18,7 @@ Child workflows inherit their root's approval. Calling a higher-risk internal he
 
 ## Upgrade and role configuration
 
-This release switches authorization completely to Role/Permission claims. Old ClusterGrant rows and the stored user self-approval flag are ignored; their configuration APIs and CLI commands are removed. Database columns and Cluster inventory filters remain temporarily for the subsequent resource-removal release. They do not restrict or grant permissions. Existing histories, identities and keys are retained.
+This release switches authorization completely to Role/Permission claims. The old scoped grant tables, stored user self-approval flag and machine-group resource are removed. Their configuration APIs and CLI commands no longer exist. Existing histories, identities and keys are retained.
 
 Before enabling operations after a Controller upgrade, use an administrator with the existing role-editing permissions to configure the required checkboxes. No old Cluster grants are copied or unioned into global permissions. Existing roles are not silently modified. A new local installation retains Template's seeded Administrators role; existing OIDC installations continue using their configured roles.
 
@@ -26,4 +26,4 @@ For the company roles, root is intended to have all request and manual approval 
 
 Personal API keys resolve the user's current Identity permissions on each request, so changing roles does not require a replacement key. Delegated machine enrollment uses the join-key issuer's current request permissions. Web sessions retain the normal Template identity/session lifecycle; operational decisions and the effective matrix are resolved from current Identity claims.
 
-Update the Controller and CLI together (`Aiursoft.DMS.Client` 1.0.3). Agent task/response payloads do not change in this stage; existing Agent installations can stay connected. Operations still return Lockbox/workflow IDs and use the same `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace` commands.
+Update the Controller and CLI together (`Aiursoft.DMS.Client` 1.1.0). Agent task/response payloads do not change; existing Agent installations can stay connected and upgrade through DMS. Agent 1.1.0 supplies the scope-free join CLI. See the [inventory upgrade procedure](configuration.md#upgrade-to-instance-wide-inventory) before migrating existing data. Operations still return Lockbox/workflow IDs and use the same `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace` commands.

@@ -15,7 +15,7 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class EnrollmentTests : TestBase
 {
-    private async Task<(string User, string Key, Guid Cluster)> ArrangeAsync(bool automatic = false)
+    private async Task<(string User, string Key)> ArrangeAsync(bool automatic = false)
     {
         using var scope = Server!.Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
@@ -25,12 +25,12 @@ public class EnrollmentTests : TestBase
         Assert.IsTrue((await users.AddClaimAsync(user, new System.Security.Claims.Claim(AppPermissions.Type, "CanManageDmsAccess"))).Succeeded);
         var raw = DmsKeyAuthenticationHandler.CreateKey(false);
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        DmsTestPermissions.DeactivatePreviousMachines(db);
         db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Enrollment fixture", KeyHash = DmsKeyAuthenticationHandler.Hash(raw), ExpiresAt = DateTime.UtcNow.AddHours(1) });
         await db.SaveChangesAsync();
-        var cluster = await CliAsync<ClusterSummary>(raw, "cluster", "create", "--name", "Join-" + suffix);
         DmsTestPermissions.Risk(db, user.Id, RiskLevel.Medium, request: true, automatic: automatic, approve: true);
         await db.SaveChangesAsync();
-        return (user.Id, raw, cluster.Id);
+        return (user.Id, raw);
     }
 
     private async Task SetSelfApprovalAsync(string user)
@@ -58,7 +58,7 @@ public class EnrollmentTests : TestBase
         return (response.StatusCode, response.Content.Headers.ContentType?.MediaType == "application/json" ? JObject.Parse(content) : new JObject());
     }
 
-    private static EnrollmentInput Input(string name = "node") => new(Guid.NewGuid(), Guid.NewGuid(), name, "fixture-node",
+    private static EnrollmentInput Input(string name = "node") => new(Guid.NewGuid(), Guid.NewGuid(), name,
         "dmsr_" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32)), DmsKeyAuthenticationHandler.CreateKey(true));
     private async Task<EnrollmentStatus> SubmitAsync(string key, EnrollmentInput input)
     {
@@ -87,15 +87,14 @@ public class EnrollmentTests : TestBase
     public async Task JoinKeyUsesIssuersCurrentRequestPermission()
     {
         var setup = await ArrangeAsync();
-        var cluster = (await CliAsync<List<ClusterSummary>>(setup.Key, "cluster", "list")).Single(c => c.Id == setup.Cluster);
-        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Permission revocation");
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Permission revocation");
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Medium), false);
             await db.SaveChangesAsync();
         }
-        var input = Input(cluster.Name);
+        var input = Input();
         Assert.AreEqual(HttpStatusCode.Forbidden, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", input)).Status);
         using var check = Server!.Services.CreateScope();
         var database = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
@@ -106,12 +105,11 @@ public class EnrollmentTests : TestBase
     public async Task JoinKeysAndReceiptsCannotUseHumanOrAgentCapabilities()
     {
         var setup = await ArrangeAsync();
-        var cluster = (await CliAsync<List<ClusterSummary>>(setup.Key, "cluster", "list")).Single(c => c.Id == setup.Cluster);
-        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Bootstrap", "--days", "1");
-        var input = Input(cluster.Name); var submitted = await SubmitAsync(issued.Key, input);
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Bootstrap", "--days", "1");
+        var input = Input(); var submitted = await SubmitAsync(issued.Key, input);
         Assert.AreEqual("PendingApproval", submitted.State); Assert.IsNull(submitted.MachineId);
-        Assert.AreEqual(input.Id, submitted.Id); Assert.AreEqual(setup.Cluster, submitted.ClusterId); Assert.AreEqual(input.MachineName, submitted.MachineName);
-        Assert.AreEqual(setup.Cluster, issued.Details.ClusterId); Assert.AreEqual("Bootstrap", issued.Details.Name);
+        Assert.AreEqual(input.Id, submitted.Id); Assert.AreEqual(input.MachineName, submitted.MachineName);
+        Assert.AreEqual("Bootstrap", issued.Details.Name);
         Assert.IsFalse(issued.Details.Revoked); Assert.IsTrue(issued.Details.ExpiresAt > DateTime.UtcNow);
         foreach (var key in new[] { issued.Key, input.ReceiptKey })
         {
@@ -123,29 +121,27 @@ public class EnrollmentTests : TestBase
         Assert.AreEqual(HttpStatusCode.Forbidden, (await RequestAsync(input.ReceiptKey, HttpMethod.Post, "/api/v1/agent/enrollment", input)).Status);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await RequestAsync(issued.Key, HttpMethod.Get, "/api/v1/agent/enrollment")).Status);
         Assert.AreEqual(HttpStatusCode.Unauthorized, (await RequestAsync(input.AgentKey, HttpMethod.Get, "/api/agent/channel")).Status);
-        Assert.AreEqual(HttpStatusCode.Conflict, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input("wrong cluster"))).Status);
-        var listed = await CliAsync<List<JoinKeySummary>>(setup.Key, "access", "list-join-keys", "--cluster-id", setup.Cluster.ToString());
-        Assert.AreEqual(issued.Details.Id, listed.Single().Id); Assert.AreEqual(setup.User, listed.Single().IssuerId);
+        Assert.AreEqual(HttpStatusCode.BadRequest, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input(""))).Status);
+        var listed = await CliAsync<List<JoinKeySummary>>(setup.Key, "access", "list-join-keys");
+        Assert.AreEqual(issued.Details.Id, listed.Single(k => k.Id == issued.Details.Id).Id); Assert.AreEqual(setup.User, listed.Single(k => k.Id == issued.Details.Id).IssuerId);
         Assert.DoesNotContain(issued.Key, Newtonsoft.Json.JsonConvert.SerializeObject(listed));
-        Assert.AreEqual(HttpStatusCode.Conflict, (await RequestAsync(setup.Key, HttpMethod.Delete, $"/api/v1/dms/clusters/{setup.Cluster}")).Status);
     }
 
     [TestMethod]
     public async Task EnrollmentIsIdempotentAndCannotCreateAMachineBeforeIndependentApproval()
     {
         var setup = await ArrangeAsync();
-        var cluster = (await CliAsync<List<ClusterSummary>>(setup.Key, "cluster", "list")).Single(c => c.Id == setup.Cluster);
-        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Reusable");
-        var input = Input(cluster.Name); var submitted = await SubmitAsync(issued.Key, input);
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Reusable");
+        var input = Input(); var submitted = await SubmitAsync(issued.Key, input);
         Assert.AreEqual(submitted, await SubmitAsync(issued.Key, input));
         Assert.AreEqual(HttpStatusCode.Conflict, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", input with { MachineName = "tampered" })).Status);
-        Assert.AreEqual(HttpStatusCode.Conflict, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input(cluster.Name) with { InstallationId = input.InstallationId })).Status);
+        Assert.AreEqual(HttpStatusCode.Conflict, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input() with { InstallationId = input.InstallationId })).Status);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await RequestAsync(setup.Key, HttpMethod.Post, $"/api/v1/dms/lockboxes/{submitted.LockboxId}/decision", new { Approve = true, Reason = "No self approval" })).Status);
         using (var before = Server!.Services.CreateScope())
         {
             var db = before.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            Assert.AreEqual(0, await db.Machines.CountAsync(m => m.ClusterId == setup.Cluster));
-            Assert.AreEqual(1, await db.Lockboxes.CountAsync(b => b.ClusterId == setup.Cluster));
+            Assert.AreEqual(0, await db.Machines.CountAsync(m => m.InstallationId == input.InstallationId));
+            Assert.AreEqual(1, await db.Lockboxes.CountAsync(b => b.RequesterId == setup.User));
             Assert.AreEqual(DmsKeyAuthenticationHandler.Hash(issued.Key), (await db.JoinKeys.SingleAsync(k => k.Id == issued.Details.Id)).KeyHash);
         }
         await SetSelfApprovalAsync(setup.User);
@@ -163,20 +159,19 @@ public class EnrollmentTests : TestBase
     public async Task RevokedAndExpiredKeysBlockNewOrPendingEnrollmentButNotApprovedMachines()
     {
         var setup = await ArrangeAsync(true);
-        var cluster = (await CliAsync<List<ClusterSummary>>(setup.Key, "cluster", "list")).Single(c => c.Id == setup.Cluster);
-        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Approved nodes");
-        var first = Input(cluster.Name); await SubmitAsync(issued.Key, first); var joined = await JoinedAsync(first.ReceiptKey);
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Approved nodes");
+        var first = Input(); await SubmitAsync(issued.Key, first); var joined = await JoinedAsync(first.ReceiptKey);
         await CliAsync<JoinKeySummary>(setup.Key, "access", "revoke-join-key", "--id", issued.Details.Id.ToString());
         Assert.AreEqual("Joined", (await StatusAsync(first.ReceiptKey)).State);
-        Assert.AreEqual(HttpStatusCode.Unauthorized, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input(cluster.Name))).Status);
-        var pendingKey = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Pending nodes");
+        Assert.AreEqual(HttpStatusCode.Unauthorized, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input())).Status);
+        var pendingKey = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Pending nodes");
         using (var permissionScope = Server!.Services.CreateScope())
         {
             var permissionDb = permissionScope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             DmsTestPermissions.Set(permissionDb, setup.User, DmsPermissions.AutoApprove(RiskLevel.Medium), false);
             await permissionDb.SaveChangesAsync();
         }
-        var pending = Input(cluster.Name); var request = await SubmitAsync(pendingKey.Key, pending);
+        var pending = Input(); var request = await SubmitAsync(pendingKey.Key, pending);
         await CliAsync<JoinKeySummary>(setup.Key, "access", "revoke-join-key", "--id", pendingKey.Details.Id.ToString());
         Assert.AreEqual("Unavailable", (await StatusAsync(pending.ReceiptKey)).State);
         await SetSelfApprovalAsync(setup.User);
@@ -185,15 +180,46 @@ public class EnrollmentTests : TestBase
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            db.JoinKeys.Add(new JoinKey { ClusterId = setup.Cluster, IssuerId = setup.User, Name = "Expired fixture",
+            db.JoinKeys.Add(new JoinKey { IssuerId = setup.User, Name = "Expired fixture",
                 KeyHash = DmsKeyAuthenticationHandler.Hash(expired), ExpiresAt = DateTime.UtcNow.AddMinutes(-1) });
             await db.SaveChangesAsync();
         }
-        Assert.AreEqual(HttpStatusCode.Unauthorized, (await RequestAsync(expired, HttpMethod.Post, "/api/v1/agent/enrollment", Input(cluster.Name))).Status);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, (await RequestAsync(expired, HttpMethod.Post, "/api/v1/agent/enrollment", Input())).Status);
         await Task.Delay(1500);
         using var check = Server!.Services.CreateScope(); var verify = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        Assert.AreEqual(1, await verify.Machines.CountAsync(m => m.ClusterId == setup.Cluster));
-        Assert.AreEqual(joined.MachineId, (await verify.Machines.SingleAsync(m => m.ClusterId == setup.Cluster)).Id);
+        Assert.AreEqual(1, await verify.Machines.CountAsync(m => m.InstallationId == first.InstallationId));
+        Assert.AreEqual(joined.MachineId, (await verify.Machines.SingleAsync(m => m.InstallationId == first.InstallationId)).Id);
+    }
+
+    [TestMethod]
+    public async Task JoinedAgentRewritesLegacyConfigurationWhilePreservingIdentityAndJournal()
+    {
+        var state = Directory.CreateTempSubdirectory("DmsExistingIdentity-").FullName;
+        try
+        {
+            Guid installation; var task = Guid.NewGuid(); var machine = Guid.NewGuid();
+            using (var journal = new TaskJournal(Path.Combine(state, "journal")))
+            {
+                installation = journal.InstallationId;
+                journal.Accept(new AgentMessage { TaskId = task, Definition = WorkflowNames.AgentStatus, Version = MachineWorkflows.AgentStatus.Version });
+                Assert.IsNotNull(journal.Start(task));
+            }
+            var configuration = new AgentConfiguration("http://controller.invalid", Guid.NewGuid(), installation, "existing-node", "", "dmsa_existing", machine);
+            var json = System.Text.Json.JsonSerializer.SerializeToNode(configuration)!;
+            json["ClusterName"] = "former-resource";
+            await File.WriteAllTextAsync(Path.Combine(state, "connection.json"), json.ToJsonString());
+            var result = await AgentCommandApp.Create().TestRunAsync(["join", "--controller-url", configuration.Controller,
+                "--api-key", "not-used-for-an-already-joined-installation", "--state-path", state]);
+            Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+            Assert.AreEqual(configuration, AgentConfiguration.Load(state));
+            Assert.DoesNotContain("ClusterName", await File.ReadAllTextAsync(Path.Combine(state, "connection.json")));
+            using var recovered = new TaskJournal(Path.Combine(state, "journal"));
+            Assert.AreEqual(installation, recovered.InstallationId);
+            Assert.AreEqual(task, recovered.Snapshot().Single().Id);
+            Assert.AreEqual(RunState.NeedsVerification, recovered.Snapshot().Single().State);
+            Assert.IsNull(recovered.Start(task));
+        }
+        finally { Directory.Delete(state, true); }
     }
 
     [TestMethod]
@@ -214,7 +240,7 @@ public class EnrollmentTests : TestBase
             Assert.AreEqual("Error: Invalid Agent state. Restore the existing state before restarting." + Environment.NewLine, corrupt.StdErr);
             Assert.AreEqual("{", await File.ReadAllTextAsync(file));
             using (new TaskJournal(Path.Combine(state, "journal")))
-                new AgentConfiguration("http://localhost:5000", "fixture", Guid.NewGuid(), Guid.Empty,
+                new AgentConfiguration("http://localhost:5000", Guid.NewGuid(), Guid.Empty,
                     "fixture-node", "unused-receipt", "unused-key").Save(state);
             var original = await File.ReadAllTextAsync(file);
             var mismatch = await AgentCommandApp.Create().TestRunAsync(args);
@@ -229,15 +255,14 @@ public class EnrollmentTests : TestBase
     public async Task AgentJoinPersistsPrivateIdentityAndResumesWithoutPersistingTheJoinKey()
     {
         var setup = await ArrangeAsync();
-        var cluster = (await CliAsync<List<ClusterSummary>>(setup.Key, "cluster", "list")).Single(c => c.Id == setup.Cluster);
-        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Agent command");
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Agent command");
         var state = Directory.CreateTempSubdirectory("DmsJoin-").FullName;
         try
         {
-            var args = new[] { "join", "--controller-url", Http.BaseAddress!.ToString(), "--api-key", issued.Key, "--cluster-name", cluster.Name, "--state-path", state };
+            var args = new[] { "join", "--controller-url", Http.BaseAddress!.ToString(), "--api-key", issued.Key, "--state-path", state };
             // Simulate an interruption after private state was saved but before the Controller received the request.
             using (var journal = new TaskJournal(Path.Combine(state, "journal")))
-                new AgentConfiguration(AgentConfiguration.ControllerUrl(Http.BaseAddress.ToString()), cluster.Name, Guid.NewGuid(), journal.InstallationId,
+                new AgentConfiguration(AgentConfiguration.ControllerUrl(Http.BaseAddress.ToString()), Guid.NewGuid(), journal.InstallationId,
                     "resumed-node", "dmsr_" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32)), DmsKeyAuthenticationHandler.CreateKey(true)).Save(state);
             var result = await AgentCommandApp.Create().TestRunAsync(args); Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
             var config = AgentConfiguration.Load(state)!;

@@ -24,7 +24,7 @@ public class AgentUpgradeIntegrationTests : TestBase
         var input = new AgentUpgradeInput([release, release with { Architecture = "linux-arm64" }]);
         File.WriteAllText(metadata, JsonSerializer.Serialize(input.Releases));
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
-        Guid clusterId; Guid machineId; string userId;
+        Guid machineId; string userId;
         try
         {
             using (var scope = Server.Services.CreateScope())
@@ -33,19 +33,19 @@ public class AgentUpgradeIntegrationTests : TestBase
                 var user = new User { Id = Guid.NewGuid().ToString(), UserName = "upgrade-" + Guid.NewGuid().ToString("N"), DisplayName = "Upgrade operator" };
                 db.Users.Add(user);
                 userId = user.Id;
-                var cluster = new Cluster { Name = "Upgrade approval" }; clusterId = cluster.Id;
-                var machine = new Machine { ClusterId = cluster.Id, Name = "Upgrade target" }; machineId = machine.Id;
-                db.Clusters.Add(cluster); db.Machines.Add(machine);
+
+                var machine = new Machine { Name = "Upgrade target" }; machineId = machine.Id;
+                db.Machines.Add(machine);
                 db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Upgrade CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
                 DmsTestPermissions.Risk(db, user.Id, RiskLevel.High, request: true, automatic: false, approve: true);
                 await db.SaveChangesAsync();
             }
-            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "agent", "upgrade", "--cluster-id", clusterId.ToString(),
+            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "agent", "upgrade",
                 "--machine-id", machineId.ToString(), "--reason", "Upgrade to the frozen Controller release", "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             using var inspection = Server.Services.CreateScope();
             var database = inspection.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            var request = await database.Lockboxes.SingleAsync(l => l.ClusterId == clusterId);
+            var request = await database.Lockboxes.SingleAsync(l => l.RequesterId == userId);
             Assert.AreEqual(RiskLevel.High, request.Risk);
             Assert.AreEqual(DecisionState.Pending, request.Decision);
             CollectionAssert.AreEqual(new List<Guid> { machineId }, JsonSerializer.Deserialize<List<Guid>>(request.TargetMachines)!);

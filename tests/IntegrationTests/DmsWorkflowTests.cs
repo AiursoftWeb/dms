@@ -18,12 +18,13 @@ public class DmsWorkflowTests : TestBase
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
-        var run = new WorkflowRun { ClusterId = setup.Cluster, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        var run = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
         run.RootId = run.Id;
         int before;
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        DmsTestPermissions.DeactivatePreviousMachines(db);
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "CLI errors", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             db.WorkflowRuns.Add(run);
             await db.SaveChangesAsync();
@@ -35,13 +36,12 @@ public class DmsWorkflowTests : TestBase
             {
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], key, "Workflow not found."),
                 (["operation", "get-trace", "--id", run.Id.ToString()], key, "ClickHouse is not configured."),
-                (["operation", "query-audit", "--cluster-id", setup.Cluster.ToString()], key, "ClickHouse is not configured."),
-                (["operation", "list-definitions", "--cluster-id", Guid.NewGuid().ToString()], key, "Cluster not found."),
+                (["operation", "query-audit"], key, "ClickHouse is not configured."),
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
-                (["machine", "systemctl", "status", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
-                (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
-                (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
-                (["cluster", "get-machines", "--cluster-id", setup.Cluster.ToString(), "--reason", new string('a', 2001)], key, "A request ID and a reason of at most 2000 characters are required.")
+                (["machine", "systemctl", "status", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
+                (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
+                (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
+                (["machine", "list", "--reason", new string('a', 2001)], key, "A request ID and a reason of at most 2000 characters are required.")
             })
             {
                 var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--server", Http.BaseAddress!.ToString(), "--api-key", credential, "--output-format", format]);
@@ -64,13 +64,13 @@ public class DmsWorkflowTests : TestBase
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
         var agentKey = DmsKeyAuthenticationHandler.CreateKey(true);
-        var root = new WorkflowRun { ClusterId = setup.Cluster, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        var root = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
         root.RootId = root.Id;
-        var parent = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.Batch, State = RunState.Succeeded };
-        var child = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
-        var sibling = new WorkflowRun { ClusterId = setup.Cluster, RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
-        var hidden = new Cluster { Name = "Hidden" };
-        var hiddenRun = new WorkflowRun { ClusterId = hidden.Id, Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.Batch, State = RunState.Succeeded };
+        var child = new WorkflowRun { RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
+        var sibling = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
+
+        var hiddenRun = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
         hiddenRun.RootId = hiddenRun.Id;
         int lockboxes;
         using (var scope = Server!.Services.CreateScope())
@@ -78,7 +78,7 @@ public class DmsWorkflowTests : TestBase
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Inspection", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(agentKey);
-            db.Clusters.Add(hidden); db.WorkflowRuns.AddRange(root, parent, child, sibling, hiddenRun);
+            db.WorkflowRuns.AddRange(root, parent, child, sibling, hiddenRun);
             await db.SaveChangesAsync(); lockboxes = await db.Lockboxes.CountAsync();
         }
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", key);
@@ -90,7 +90,7 @@ public class DmsWorkflowTests : TestBase
             var details = body.GetValue("Data", StringComparison.OrdinalIgnoreCase)!.ToObject<WorkflowDetails>()!;
             Assert.AreEqual(run.Id, details.WorkflowId); Assert.AreEqual(root.Id, details.RootWorkflowId);
             Assert.AreEqual(run.ParentId, details.ParentWorkflowId);
-            Assert.AreEqual(run.LockboxId, details.LockboxId); Assert.AreEqual(setup.Cluster, details.ClusterId);
+            Assert.AreEqual(run.LockboxId, details.LockboxId);
             Assert.AreEqual(run.MachineId, details.MachineId); Assert.AreEqual(run.Definition, details.Definition);
             Assert.AreEqual(run.State, details.State); Assert.AreEqual(run.Result, details.Result);
             Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);
@@ -211,30 +211,29 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
-    public async Task WebHistoryFiltersClustersAndKeepsFiltersWhenPaging()
+    public async Task WebHistoryFiltersWorkflowLocationsAndKeepsFiltersWhenPaging()
     {
         var setup = await ArrangeAsync();
-        var other = new Cluster { Name = "Other visible cluster" };
-        var hidden = new Cluster { Name = "Hidden cluster" };
+        var definition = "history." + Guid.NewGuid().ToString("N");
         var runs = Enumerable.Range(0, 51).Select(i => new WorkflowRun
         {
-            ClusterId = setup.Cluster, Definition = WorkflowNames.ListMachines,
+            Definition = definition,
             State = RunState.Succeeded, CreatedAt = DateTime.UtcNow.AddMinutes(-i)
         }).ToList();
-        var machineRun = new WorkflowRun { ClusterId = setup.Cluster, MachineId = setup.Machine, Definition = WorkflowNames.Performance, State = RunState.Succeeded };
-        var otherRun = new WorkflowRun { ClusterId = other.Id, Definition = WorkflowNames.ListMachines, State = RunState.Succeeded };
-        var hiddenRun = new WorkflowRun { ClusterId = hidden.Id, Definition = WorkflowNames.ListMachines, State = RunState.Succeeded };
+        var machineRun = new WorkflowRun { MachineId = setup.Machine, Definition = WorkflowNames.Performance, State = RunState.Succeeded };
+        var otherRun = new WorkflowRun { Definition = "other." + definition, State = RunState.Succeeded };
+        var hiddenRun = new WorkflowRun { Definition = "other." + definition, State = RunState.Succeeded };
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            db.Clusters.AddRange(other, hidden);
+
             DmsTestPermissions.Risk(db, setup.User, RiskLevel.Safe, request: true, automatic: false, approve: false);
             db.WorkflowRuns.AddRange(runs);
             db.WorkflowRuns.AddRange(machineRun, otherRun, hiddenRun);
             await db.SaveChangesAsync();
         }
         await LoginAsAdmin();
-        var path = $"/Dms/Operations?clusterId={setup.Cluster}&clusterWorkflowsOnly=true&definition={WorkflowNames.ListMachines}";
+        var path = $"/Dms/Operations?clusterWorkflowsOnly=true&definition={definition}";
         var first = await Http.GetAsync(path);
         Assert.AreEqual(HttpStatusCode.OK, first.StatusCode);
         var html = await first.Content.ReadAsStringAsync();
@@ -242,25 +241,21 @@ public class DmsWorkflowTests : TestBase
         Assert.DoesNotContain(runs[50].Id.ToString(), html);
         Assert.DoesNotContain(otherRun.Id.ToString(), html);
         Assert.DoesNotContain(hiddenRun.Id.ToString(), html);
-        StringAssert.Contains(html, hidden.Name);
         var next = System.Text.RegularExpressions.Regex.Matches(html, "href=\"([^\"]+)\"")
             .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
             .Single(link => link.Contains("page=1", StringComparison.Ordinal));
-        StringAssert.Contains(next, $"clusterId={setup.Cluster}");
-        StringAssert.Contains(next, $"definition={WorkflowNames.ListMachines}");
+        StringAssert.Contains(next, $"definition={definition}");
         Assert.IsTrue(next.Contains("clusterWorkflowsOnly=True", StringComparison.OrdinalIgnoreCase));
         var second = await Http.GetAsync(next);
         Assert.AreEqual(HttpStatusCode.OK, second.StatusCode);
         var secondHtml = await second.Content.ReadAsStringAsync();
         StringAssert.Contains(secondHtml, runs[50].Id.ToString());
         Assert.DoesNotContain(runs[0].Id.ToString(), secondHtml);
-        var clusterOnly = await Http.GetStringAsync($"/Dms/Operations?clusterId={setup.Cluster}&clusterWorkflowsOnly=true");
+        var clusterOnly = await Http.GetStringAsync($"/Dms/Operations?clusterWorkflowsOnly=true");
         Assert.DoesNotContain(machineRun.Id.ToString(), clusterOnly);
-        var machineOnly = await Http.GetStringAsync($"/Dms/Operations?clusterId={setup.Cluster}&machineId={setup.Machine}");
+        var machineOnly = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}");
         StringAssert.Contains(machineOnly, machineRun.Id.ToString());
         Assert.DoesNotContain(runs[0].Id.ToString(), machineOnly);
-        var forbidden = await Http.GetAsync($"/Dms/Operations?clusterId={hidden.Id}");
-        Assert.AreEqual(HttpStatusCode.OK, forbidden.StatusCode);
     }
 
     [TestMethod]
@@ -273,17 +268,17 @@ public class DmsWorkflowTests : TestBase
         db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Docker CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
         await db.SaveChangesAsync();
         var container = new string('a', 64);
-        string[] common = ["--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Docker command",
+        string[] common = ["--machine-id", setup.Machine.ToString(), "--reason", "Docker command",
             "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"];
         string[] exec = ["machine", "docker", "exec", .. common, "--container", container, "--", "/start.sh", "a b", "$(id)", "--server", "unchanged"];
         var denied = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(1, denied.ProgramReturn);
-        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster));
+        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
         DmsTestPermissions.Risk(db, setup.User, RiskLevel.VeryHigh, request: true, automatic: false, approve: false);
         await db.SaveChangesAsync();
         var accepted = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(0, accepted.ProgramReturn, accepted.StdErr);
-        var box = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster);
+        var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
         Assert.AreEqual(RiskLevel.VeryHigh, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
         var request = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
         var input = MachineWorkflows.DockerExec.ReadInput(request.Input);
@@ -295,29 +290,30 @@ public class DmsWorkflowTests : TestBase
 
         var ps = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "ps", .. common, "--all", "--grep-name", "nugetninja.worker"]);
         Assert.AreEqual(0, ps.ProgramReturn, ps.StdErr);
-        var psBox = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster && l.Definition == "machine.docker.ps");
+        var psBox = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User && l.Definition == "machine.docker.ps");
         var psInput = MachineWorkflows.DockerPs.ReadInput(JsonSerializer.Deserialize<OperationRequest>(psBox.Parameters)!.Input);
         Assert.IsTrue(psInput.All); Assert.AreEqual("nugetninja.worker", psInput.GrepName);
         var logs = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "logs", .. common, "--container", container]);
         Assert.AreEqual(0, logs.ProgramReturn, logs.StdErr);
-        var logsBox = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster && l.Definition == "machine.docker.logs");
+        var logsBox = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User && l.Definition == "machine.docker.logs");
         Assert.AreEqual(100, MachineWorkflows.DockerLogs.ReadInput(JsonSerializer.Deserialize<OperationRequest>(logsBox.Parameters)!.Input).Tail);
         var kill = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "kill", .. common, "--container", container]);
         Assert.AreEqual(0, kill.ProgramReturn, kill.StdErr);
-        var killBox = await db.Lockboxes.SingleAsync(l => l.ClusterId == setup.Cluster && l.Definition == "machine.docker.kill");
+        var killBox = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User && l.Definition == "machine.docker.kill");
         Assert.AreEqual(RiskLevel.High, killBox.Risk);
         Assert.IsNull(killBox.OperationId);
     }
 
-    private async Task<(Guid Cluster, string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false)
+    private async Task<(string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false)
     {
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        DmsTestPermissions.DeactivatePreviousMachines(db);
         var user = new User { UserName = Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
         var approver = new User { DisplayName = "Approver", UserName = "approver", Id = Guid.NewGuid().ToString() };
         db.Users.Add(approver);
-        var cluster = new Cluster { Name = "Test" }; db.Clusters.Add(cluster);
-        var machine = new Machine { ClusterId = cluster.Id, Name = "Test machine", KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
+
+        var machine = new Machine { Name = "Test machine", KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
         db.Machines.Add(machine);
         foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Low, RiskLevel.Medium, RiskLevel.High })
         {
@@ -325,12 +321,12 @@ public class DmsWorkflowTests : TestBase
             DmsTestPermissions.Risk(db, approver.Id, risk, request: false, automatic: false, approve: true);
         }
         await db.SaveChangesAsync();
-        return (cluster.Id, user.Id, approver.Id, machine.Id);
+        return (user.Id, approver.Id, machine.Id);
     }
 
-    private OperationRequest Request(Guid cluster, Guid machine) => new()
+    private OperationRequest Request(Guid machine) => new()
     {
-        ClusterId = cluster, Workflow = WorkflowNames.Restart, MachineIds = [machine], Input = JsonSerializer.Serialize(new ServiceInput("dms-test.service")), Reason = "Business acceptance"
+        Workflow = WorkflowNames.Restart, MachineIds = [machine], Input = JsonSerializer.Serialize(new ServiceInput("dms-test.service")), Reason = "Business acceptance"
     };
 
     [TestMethod]
@@ -341,7 +337,7 @@ public class DmsWorkflowTests : TestBase
         using (var scope = Server!.Services.CreateScope())
         {
             var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-            var item = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
+            var item = await service.SubmitAsync(setup.User, Request(setup.Machine));
             Assert.AreEqual(DecisionState.Pending, item.Decision); Assert.IsNull(item.OperationId); id = item.Id;
             var forbidden = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.User, id, true, "Self approval"));
             Assert.AreEqual(403, forbidden.StatusCode);
@@ -364,11 +360,11 @@ public class DmsWorkflowTests : TestBase
         var setup = await ArrangeAsync(true);
         using var scope = Server!.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var request = Request(setup.Cluster, setup.Machine); request.AllMachines = true; request.MachineIds.Clear();
+        var request = Request(setup.Machine); request.AllMachines = true; request.MachineIds.Clear();
         var item = await service.SubmitAsync(setup.User, request);
         Assert.IsTrue(item.Automatic); Assert.AreEqual(DecisionState.Approved, item.Decision); Assert.IsNull(item.ApproverId);
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Added after submission", KeyHash = "another" }); await db.SaveChangesAsync();
+        db.Machines.Add(new Machine { Name = "Added after submission", KeyHash = "another" }); await db.SaveChangesAsync();
         Assert.AreEqual(item.Id, (await service.SubmitAsync(setup.User, request)).Id);
         var targets = JsonSerializer.Deserialize<List<Guid>>(item.TargetMachines)!;
         CollectionAssert.AreEqual(new[] { setup.Machine }, targets);
@@ -383,27 +379,27 @@ public class DmsWorkflowTests : TestBase
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var item = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
+        var item = await service.SubmitAsync(setup.User, Request(setup.Machine));
         await service.DecideAsync(setup.Approver, item.Id, false, "Maintenance window closed");
         Assert.IsNull(item.OperationId);
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanApproveOwnWorkflow); await db.SaveChangesAsync();
-        var second = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
+        var second = await service.SubmitAsync(setup.User, Request(setup.Machine));
         await service.DecideAsync(setup.User, second.Id, true, "Explicit self approval grant");
         Assert.AreEqual(DecisionState.Approved, second.Decision);
     }
 
     [TestMethod]
-    public async Task CrossClusterAndInternalWorkflowRequestsAreRejected()
+    public async Task UnavailableMachinesAndInternalWorkflowRequestsAreRejected()
     {
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        var other = new Cluster { Name = "Other" }; db.Clusters.Add(other); await db.SaveChangesAsync();
+await db.SaveChangesAsync();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, Request(other.Id, setup.Machine)));
+        var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, Request(Guid.NewGuid())));
         Assert.AreEqual(400, denied.StatusCode);
-        var request = Request(setup.Cluster, setup.Machine); request.Workflow = WorkflowNames.Process;
+        var request = Request(setup.Machine); request.Workflow = WorkflowNames.Process;
         var invalid = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request)); Assert.AreEqual(400, invalid.StatusCode);
     }
 
@@ -421,21 +417,21 @@ public class DmsWorkflowTests : TestBase
             await db.SaveChangesAsync();
         }
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", agentKey);
-        var denied = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", Request(setup.Cluster, setup.Machine));
+        var denied = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", Request(setup.Machine));
         Assert.AreEqual(HttpStatusCode.Forbidden, denied.StatusCode);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", personal);
-        var accepted = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", Request(setup.Cluster, setup.Machine));
+        var accepted = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", Request(setup.Machine));
         Assert.AreEqual(HttpStatusCode.OK, accepted.StatusCode);
         var websocket = await Http.GetAsync("/api/agent/channel"); Assert.AreEqual(HttpStatusCode.Forbidden, websocket.StatusCode);
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([
             "machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
-            "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--output-format", "json"]);
+            "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "WorkflowId");
         foreach (var command in new[] { new[] { "agent", "status" }, new[] { "systemctl", "status" }, new[] { "layout", "lsblk" }, new[] { "layout", "df" } })
         {
             var args = new List<string> { "machine", command[0], command[1], "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
-                "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--output-format", "json" };
+                "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--output-format", "json" };
             if (command[0] == "systemctl") args.AddRange(["--service", "dms-test.service"]);
             var result = await Client.DmsCommandApp.Create().TestRunAsync(args.ToArray());
             Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
@@ -446,11 +442,11 @@ public class DmsWorkflowTests : TestBase
         foreach (var format in new[] { "yaml", "999" })
         {
             var badFormat = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
-                "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Must not submit", "--output-format", format]);
+                "--machine-id", setup.Machine.ToString(), "--reason", "Must not submit", "--output-format", format]);
             Assert.AreNotEqual(0, badFormat.ProgramReturn);
         }
         using (var countScope = Server!.Services.CreateScope()) Assert.AreEqual(beforeInvalidFormat, await countScope.ServiceProvider.GetRequiredService<TemplateDbContext>().Lockboxes.CountAsync());
-        var invalidRequest = Request(setup.Cluster, setup.Machine);
+        var invalidRequest = Request(setup.Machine);
         invalidRequest.Input = JsonSerializer.Serialize(new ServiceInput("*.service"));
         var invalid = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", invalidRequest);
         Assert.AreEqual(HttpStatusCode.BadRequest, invalid.StatusCode);
@@ -467,7 +463,7 @@ public class DmsWorkflowTests : TestBase
         var setup = await ArrangeAsync();
         Guid id;
         using (var scope = Server!.Services.CreateScope())
-            id = (await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine))).Id;
+            id = (await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Machine))).Id;
         async Task<bool> Decide()
         {
             using var scope = Server.Services.CreateScope();
@@ -492,12 +488,12 @@ public class DmsWorkflowTests : TestBase
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        for (var i = 1; i < 10; i++) db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = $"Machine {i}", KeyHash = Guid.NewGuid().ToString() });
+        for (var i = 1; i < 10; i++) db.Machines.Add(new Machine { Name = $"Machine {i}", KeyHash = Guid.NewGuid().ToString() });
         await db.SaveChangesAsync();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var request = Request(setup.Cluster, setup.Machine); request.AllMachines = true; request.MachineIds.Clear();
+        var request = Request(setup.Machine); request.AllMachines = true; request.MachineIds.Clear();
         var item = await service.SubmitAsync(setup.User, request);
-        var late = new Machine { ClusterId = setup.Cluster, Name = "Eleventh machine", KeyHash = Guid.NewGuid().ToString() };
+        var late = new Machine { Name = "Eleventh machine", KeyHash = Guid.NewGuid().ToString() };
         db.Machines.Add(late); await db.SaveChangesAsync();
         await service.DecideAsync(setup.Approver, item.Id, true, "Ten machines approved");
         var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.OperationId);
@@ -524,7 +520,7 @@ public class DmsWorkflowTests : TestBase
         Guid operationId;
         using (var scope = Server!.Services.CreateScope())
         {
-            var input = Request(setup.Cluster, setup.Machine); input.Workflow = WorkflowNames.AgentStatus; input.Input = JsonSerializer.Serialize(new EmptyInput());
+            var input = Request(setup.Machine); input.Workflow = WorkflowNames.AgentStatus; input.Input = JsonSerializer.Serialize(new EmptyInput());
             var item = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
             operationId = item.OperationId!.Value;
         }
@@ -558,7 +554,7 @@ public class DmsWorkflowTests : TestBase
         foreach (var format in new[] { "table", "json", "csv" })
         {
             var request = Guid.NewGuid();
-            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(),
+            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update",
                 "--machine-id", setup.Machine.ToString(), "--image", "aiursoft/dms:latest", "--puller", puller, "--reason", "Update DMS mirror", "--request-id", request.ToString(),
                 "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
@@ -587,14 +583,12 @@ public class DmsWorkflowTests : TestBase
         db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Default CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
         await db.SaveChangesAsync();
         var request = Guid.NewGuid();
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--reason", "Refresh configured mirrors", "--request-id", request.ToString(),
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--reason", "Refresh configured mirrors", "--request-id", request.ToString(),
             "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
         Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision);
-        Assert.AreEqual(setup.Cluster, box.ClusterId);
         var frozen = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
-        Assert.AreEqual(setup.Cluster, frozen.ClusterId);
         CollectionAssert.AreEqual(new[] { setup.Machine }, frozen.MachineIds);
         var selection = MachineWorkflows.PullerForceUpdate.ReadInput(frozen.Input);
         Assert.IsNull(selection.Image); Assert.AreEqual("main", selection.Puller); Assert.AreEqual("AllConfiguredImages", selection.ImageScope);
@@ -609,18 +603,20 @@ public class DmsWorkflowTests : TestBase
     {
         var setup = await ArrangeAsync();
         var requestId = Guid.NewGuid();
-        OperationRequest RequestDefault() => new() { RequestId = requestId, ClusterId = setup.Cluster, Workflow = workflow, Reason = "Frozen defaults" };
+        OperationRequest RequestDefault() => new() { RequestId = requestId, Workflow = workflow, Reason = "Frozen defaults" };
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var first = await service.SubmitAsync(setup.User, RequestDefault());
         var saved = JsonSerializer.Deserialize<OperationRequest>(first.Parameters)!;
-        Assert.AreEqual(setup.Cluster, saved.ClusterId);
         CollectionAssert.AreEqual(new[] { setup.Machine }, saved.MachineIds);
         if (workflow == WorkflowNames.PullerForceUpdate) StringAssert.Contains(saved.Input, "AllConfiguredImages");
-        db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Added after approval scope was selected" });
-        var other = new Cluster { Name = "Added cluster" }; db.Clusters.Add(other);
+        db.Machines.Add(new Machine { Name = "Added after approval scope was selected" });
+
         DmsTestPermissions.Risk(db, setup.User, RiskLevel.Safe, request: true, automatic: false, approve: false);
+        await db.SaveChangesAsync();
+        // MySQL JSON_REMOVE may reformat persisted parameters. Retries compare the same JSON values.
+        first.Parameters = JsonSerializer.Serialize(JsonSerializer.Deserialize<OperationRequest>(first.Parameters), new JsonSerializerOptions { WriteIndented = true });
         await db.SaveChangesAsync();
         var retry = await service.SubmitAsync(setup.User, RequestDefault());
         Assert.AreEqual(first.Id, retry.Id);
@@ -638,18 +634,16 @@ public class DmsWorkflowTests : TestBase
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var extra = new Machine { ClusterId = setup.Cluster, Name = "Second active machine" }; db.Machines.Add(extra);
+        var extra = new Machine { Name = "Second active machine" }; db.Machines.Add(extra);
         await db.SaveChangesAsync();
-        var ambiguous = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, Reason = "Choose a machine" }));
+        var ambiguous = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "Choose a machine" }));
         StringAssert.Contains(ambiguous.Message, "--machine-id or --all-machines");
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
-        var other = new Cluster { Name = "Other accessible cluster" }; db.Clusters.Add(other);
+
         DmsTestPermissions.Risk(db, setup.User, RiskLevel.Safe, request: true, automatic: false, approve: false);
         await db.SaveChangesAsync();
-        var clusterError = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "Choose a cluster" }));
-        StringAssert.Contains(clusterError.Message, "--cluster-id");
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
-        var explicitAll = await service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, AllMachines = true, Reason = "Explicit batch" });
+        var explicitAll = await service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, AllMachines = true, Reason = "Explicit batch" });
         CollectionAssert.AreEquivalent(new[] { setup.Machine, extra.Id }, JsonSerializer.Deserialize<Guid[]>(explicitAll.TargetMachines));
         Assert.AreEqual(RiskLevel.High, explicitAll.Risk);
     }
@@ -663,11 +657,11 @@ public class DmsWorkflowTests : TestBase
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High), false);
         await db.SaveChangesAsync();
-        await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, Reason = "No high permission" }));
+        await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No high permission" }));
         DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High));
         (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).Disabled = true;
         await db.SaveChangesAsync();
-        var missing = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, Reason = "No active target" }));
+        var missing = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No active target" }));
         StringAssert.Contains(missing.Message, "--machine-id or --all-machines");
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
     }
@@ -695,7 +689,7 @@ public class DmsWorkflowTests : TestBase
             await db.SaveChangesAsync();
         }
         DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(risk), false); await db.SaveChangesAsync();
-        var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
+        var input = Request(setup.Machine); input.Workflow = definition;
         input.Input = definition switch
         {
             WorkflowNames.ServiceStatus => input.Input,
@@ -713,7 +707,7 @@ public class DmsWorkflowTests : TestBase
         var item = await service.SubmitAsync(setup.User, input);
         Assert.AreEqual(risk, item.Risk); Assert.AreEqual(DecisionState.Pending, item.Decision);
         Assert.IsNull(item.OperationId);
-        db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Late target", KeyHash = "late" });
+        db.Machines.Add(new Machine { Name = "Late target", KeyHash = "late" });
         await db.SaveChangesAsync();
         await service.DecideAsync(setup.Approver, item.Id, true, "Read only approval");
         var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.OperationId);
@@ -738,7 +732,7 @@ public class DmsWorkflowTests : TestBase
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(key);
             await db.SaveChangesAsync();
-            var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition; if (definition != WorkflowNames.ServiceStatus) input.Input = JsonSerializer.Serialize(new EmptyInput());
+            var input = Request(setup.Machine); input.Workflow = definition; if (definition != WorkflowNames.ServiceStatus) input.Input = JsonSerializer.Serialize(new EmptyInput());
             request = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
         }
         var path = Path.Combine(Path.GetTempPath(), "dms-real-agent-" + Guid.NewGuid());

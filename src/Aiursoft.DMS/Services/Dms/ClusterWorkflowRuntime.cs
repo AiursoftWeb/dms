@@ -36,10 +36,9 @@ public sealed class ClusterWorkflowRegistry
             : throw new InvalidDataException("Unsupported cluster workflow definition.");
 }
 
-public sealed class WorkflowExecutionContext(ClusterWorkflowRuntime runtime, Guid id, Guid clusterId, CancellationToken executionToken)
+public sealed class WorkflowExecutionContext(ClusterWorkflowRuntime runtime, Guid id, CancellationToken executionToken)
 {
     public Guid Id => id;
-    public Guid ClusterId => clusterId;
     internal bool HasWarnings { get; private set; }
     public Task<IReadOnlyList<Guid>> GetApprovedMachinesAsync(CancellationToken token) => runtime.ApprovedMachinesAsync(id, token);
     public Task<T> WithInventoryAsync<T>(Func<TemplateDbContext, Task<T>> action, CancellationToken token) => runtime.WithInventoryAsync(id, action, token);
@@ -131,7 +130,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
             throw new OperationCanceledException("The parent workflow is no longer executing.", token);
         }
         var box = await db.Lockboxes.SingleAsync(l => l.Id == run.LockboxId, token);
-        if (box.Decision != DecisionState.Approved || box.ClusterId != run.ClusterId)
+        if (box.Decision != DecisionState.Approved)
             throw new InvalidOperationException("The root Lockbox does not authorize this execution.");
         return run;
     }
@@ -172,11 +171,11 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
             var parent = await ParentAsync(db, parentId, token);
             var box = await db.Lockboxes.SingleAsync(l => l.Id == parent.LockboxId, token);
             if (machine != null && (!JsonSerializer.Deserialize<List<Guid>>(box.TargetMachines)!.Contains(machine.Value)
-                || !await db.Machines.AnyAsync(m => m.Id == machine && m.ClusterId == parent.ClusterId && !m.Disabled, token)))
+                || !await db.Machines.AnyAsync(m => m.Id == machine && !m.Disabled, token)))
                 throw new InvalidOperationException("Machine is outside the approved active target snapshot.");
             var child = new WorkflowRun
             {
-                RootId = parent.RootId, ParentId = parent.Id, LockboxId = parent.LockboxId, ClusterId = parent.ClusterId,
+                RootId = parent.RootId, ParentId = parent.Id, LockboxId = parent.LockboxId,
                 MachineId = machine, Definition = definition, Input = input, Version = (machine == null ? workflows.FindDefinition(definition) : machines.FindDefinition(definition))!.Version,
                 IsMachineTask = machine != null, State = RunState.Queued
             };
@@ -219,7 +218,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         try
         {
             var run = await DatabaseAsync(async db => await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == id));
-            context = new WorkflowExecutionContext(this, id, run.ClusterId, token);
+            context = new WorkflowExecutionContext(this, id, token);
             if (workflows.FindDefinition(run.Definition)?.Version != run.Version) throw new InvalidOperationException("The approved workflow version is no longer available.");
             result = await workflows.ExecuteAsync(run.Definition, context, run.Input, token);
             if (result.Length > 32768) throw new InvalidDataException("Workflow result exceeds the size limit.");

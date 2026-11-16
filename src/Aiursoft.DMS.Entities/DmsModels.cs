@@ -3,27 +3,9 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Entities;
 
-public class Cluster
-{
-    public Guid Id { get; set; } = Guid.NewGuid();
-    [MaxLength(100)] public string Name { get; set; } = string.Empty;
-}
-
-public class ClusterGrant
-{
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid ClusterId { get; set; }
-    [MaxLength(450)] public string UserId { get; set; } = string.Empty;
-    public RiskLevel Risk { get; set; }
-    public bool CanRequest { get; set; }
-    public bool AutoApprove { get; set; }
-    public bool CanApprove { get; set; }
-}
-
 public class Machine
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid ClusterId { get; set; }
     [MaxLength(100)] public string Name { get; set; } = string.Empty;
     [MaxLength(64)] public string KeyHash { get; set; } = string.Empty;
     [MaxLength(100)] public string AgentVersion { get; set; } = string.Empty;
@@ -45,7 +27,6 @@ public class LockboxRequest
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid ClientRequestId { get; set; }
-    public Guid ClusterId { get; set; }
     [MaxLength(450)] public string RequesterId { get; set; } = string.Empty;
     [MaxLength(100)] public string Definition { get; set; } = string.Empty;
     [MaxLength(30)] public string Version { get; set; } = WorkflowNames.Version;
@@ -69,7 +50,6 @@ public class WorkflowRun
     public Guid RootId { get; set; }
     public Guid? ParentId { get; set; }
     public Guid LockboxId { get; set; }
-    public Guid ClusterId { get; set; }
     public Guid? MachineId { get; set; }
     [MaxLength(100)] public string Definition { get; set; } = string.Empty;
     public RunState State { get; set; }

@@ -19,35 +19,35 @@ public class WorkflowInvestigationTests : TestBase
             return await action(scope.ServiceProvider.GetRequiredService<TemplateDbContext>());
         });
 
-    private async Task<(Guid Cluster, Guid Hidden, string Key, string AgentKey)> ArrangeAsync()
+    private async Task<(string User, string Key, string AgentKey)> ArrangeAsync()
     {
         return await DatabaseAsync(async db =>
         {
+            DmsTestPermissions.DeactivatePreviousMachines(db);
             var user = new User { UserName = "requester" + Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
-            var cluster = new Cluster { Name = "Investigation <script>unsafe()</script>" }; var hidden = new Cluster { Name = "Hidden investigation cluster" };
             var key = DmsKeyAuthenticationHandler.CreateKey(false); var agentKey = DmsKeyAuthenticationHandler.CreateKey(true);
-            db.Clusters.AddRange(cluster, hidden);
-            db.Machines.Add(new Machine { ClusterId = cluster.Id, Name = "Agent", KeyHash = DmsKeyAuthenticationHandler.Hash(agentKey) });
+
+            db.Machines.Add(new Machine { Name = "Agent", KeyHash = DmsKeyAuthenticationHandler.Hash(agentKey) });
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Investigation", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true, automatic: false, approve: false);
-            await db.SaveChangesAsync(); return (cluster.Id, hidden.Id, key, agentKey);
+            await db.SaveChangesAsync(); return (user.Id, key, agentKey);
         });
     }
 
     [TestMethod]
     public async Task ArchiveRequiresHumanKeyAndReadPermissionBeforeAvailabilityOrFilters()
     {
-        var setup = await ArrangeAsync(); var route = $"/api/v1/dms/audit-events?ClusterId={setup.Cluster}";
+        var setup = await ArrangeAsync(); var route = $"/api/v1/dms/audit-events";
         Assert.AreEqual(HttpStatusCode.Unauthorized, (await Http.GetAsync(route)).StatusCode);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.AgentKey);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync(route)).StatusCode);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
-        foreach (var id in new[] { setup.Hidden, Guid.Empty, Guid.NewGuid() })
+        foreach (var state in new[] { "bad-value", "999" })
         {
-            var response = await Http.GetAsync($"/api/v1/dms/audit-events?ClusterId={id}&State=bad-value");
+            var response = await Http.GetAsync($"/api/v1/dms/audit-events?State={state}");
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode); Assert.DoesNotContain("ClickHouse", await response.Content.ReadAsStringAsync());
         }
-        Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync("/api/v1/dms/audit-events")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, (await Http.GetAsync("/api/v1/dms/audit-events")).StatusCode);
         await DatabaseAsync(async db => { DmsTestPermissions.Set(db, (await db.PersonalApiKeys.SingleAsync(k => k.KeyHash == DmsKeyAuthenticationHandler.Hash(setup.Key))).UserId, AppPermissionNames.CanReadDmsOperations, false); await db.SaveChangesAsync(); return true; });
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync(route)).StatusCode);
     }
@@ -65,33 +65,33 @@ public class WorkflowInvestigationTests : TestBase
     public async Task InvalidFiltersAreRejectedWithoutAttemptingAnArchiveQuery(string filter)
     {
         var setup = await ArrangeAsync(); Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
-        Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync($"/api/v1/dms/audit-events?ClusterId={setup.Cluster}&{filter}")).StatusCode);
-        Assert.AreEqual(0, await DatabaseAsync(db => db.AuditEvents.CountAsync(e => e.Action == "operation.audit-query" && e.ResourceId == setup.Cluster)));
+        Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync($"/api/v1/dms/audit-events?{filter}")).StatusCode);
+        Assert.AreEqual(0, await DatabaseAsync(db => db.AuditEvents.CountAsync(e => e.Action == "operation.audit-query" && e.ActorId == setup.User)));
     }
 
     [TestMethod]
     public async Task UnconfiguredArchiveIsAuditedAndExplicitlyUnavailableWithoutCreatingWork()
     {
         var setup = await ArrangeAsync(); Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
-        var response = await Http.GetAsync($"/api/v1/dms/audit-events?ClusterId={setup.Cluster}&From=2026-11-14T08:00:00%2B08:00&Until=2026-11-15T08:00:00%2B08:00");
+        var response = await Http.GetAsync($"/api/v1/dms/audit-events?From=2026-11-14T08:00:00%2B08:00&Until=2026-11-15T08:00:00%2B08:00");
         Assert.AreEqual(HttpStatusCode.ServiceUnavailable, response.StatusCode);
         StringAssert.Contains(await response.Content.ReadAsStringAsync(), "durable backlog");
-        var audit = await DatabaseAsync(db => db.AuditEvents.SingleAsync(e => e.Action == "operation.audit-query" && e.ResourceId == setup.Cluster));
+        var audit = await DatabaseAsync(db => db.AuditEvents.SingleAsync(e => e.Action == "operation.audit-query" && e.ActorId == setup.User));
         StringAssert.Contains(audit.Detail, "From=2026-11-14T00:00:00.0000000+00:00");
-        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster)));
-        Assert.AreEqual(0, await DatabaseAsync(db => db.WorkflowRuns.CountAsync(r => r.ClusterId == setup.Cluster)));
+        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.RequesterId == setup.User)));
+        Assert.AreEqual(0, await DatabaseAsync(db => db.WorkflowRuns.CountAsync(r => db.Lockboxes.Any(l => l.Id == r.LockboxId && l.RequesterId == setup.User))));
     }
 
     [TestMethod]
-    public async Task WebInvestigationUsesVisibleClustersAndShowsAnOutageRatherThanAnEmptyResult()
+    public async Task WebInvestigationShowsAnOutageRatherThanAnEmptyResult()
     {
-        var setup = await ArrangeAsync(); Assert.AreEqual(HttpStatusCode.Found, (await Http.GetAsync("/Dms/Investigation")).StatusCode);
-        await LoginAsAdmin(); var response = await Http.GetAsync($"/Dms/Investigation?ClusterId={setup.Cluster}");
+        await ArrangeAsync(); Assert.AreEqual(HttpStatusCode.Found, (await Http.GetAsync("/Dms/Investigation")).StatusCode);
+        await LoginAsAdmin(); var response = await Http.GetAsync($"/Dms/Investigation");
         Assert.AreEqual(HttpStatusCode.ServiceUnavailable, response.StatusCode); var html = await response.Content.ReadAsStringAsync();
-        StringAssert.Contains(html, "unavailable or not configured"); StringAssert.Contains(html, "&lt;script&gt;");
-        Assert.DoesNotContain("<script>unsafe()", html); StringAssert.Contains(html, "Hidden investigation cluster");
+        StringAssert.Contains(html, "unavailable or not configured");
+        Assert.DoesNotContain("name=\"ClusterId\"", html);
         Assert.DoesNotContain("No archived events match", html);
-        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, (await Http.GetAsync($"/Dms/Investigation?ClusterId={setup.Hidden}")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, (await Http.GetAsync($"/Dms/Investigation")).StatusCode);
         await RegisterAndLoginAsync();
         Assert.AreEqual(HttpStatusCode.Found, (await Http.GetAsync("/Dms/Investigation")).StatusCode);
     }

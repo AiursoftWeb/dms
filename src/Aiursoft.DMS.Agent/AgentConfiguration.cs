@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Aiursoft.DMS.Agent;
 
-public sealed record AgentConfiguration(string Controller, string ClusterName, Guid EnrollmentId, Guid InstallationId,
+public sealed record AgentConfiguration(string Controller, Guid EnrollmentId, Guid InstallationId,
     string MachineName, string ReceiptKey, string AgentKey, Guid? MachineId = null)
 {
     private static string FilePath(string state) => Path.Combine(state, "connection.json");

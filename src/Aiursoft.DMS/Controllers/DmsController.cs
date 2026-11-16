@@ -29,23 +29,16 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Machines", LinkOrder = 1)]
     public async Task<IActionResult> Index()
     {
-        var clusters = await db.Clusters.Select(c => c.Id).ToListAsync();
         return this.StackView(new DmsViewModel
         {
-            Clusters = await db.Clusters.Where(c => clusters.Contains(c.Id)).ToListAsync(),
-            Machines = await db.Machines.Where(m => clusters.Contains(m.ClusterId)).OrderBy(m => m.Name).Take(1000).ToListAsync()
+            Machines = await db.Machines.OrderBy(m => m.Name).Take(1000).ToListAsync()
         });
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Investigation", LinkOrder = 5)]
     public async Task<IActionResult> Investigation([FromQuery] WorkflowAuditQuery query)
     {
-        var visible = await db.Clusters.Select(c => c.Id).ToListAsync();
-        if (query.ClusterId != Guid.Empty && !visible.Contains(query.ClusterId)) return StatusCode(403);
-        var clusters = await db.Clusters.Where(c => visible.Contains(c.Id)).OrderBy(c => c.Name).ThenBy(c => c.Id).ToListAsync();
-        if (query.ClusterId == Guid.Empty && clusters.Count > 0) query = query with { ClusterId = clusters[0].Id };
-        var model = new DmsViewModel { PageTitle = "Investigation", Clusters = clusters, AuditQuery = query };
-        if (clusters.Count == 0) return this.StackView(model);
+        var model = new DmsViewModel { PageTitle = "Investigation", AuditQuery = query };
         try
         {
             if (!ModelState.IsValid) throw new DmsException(400, "Invalid investigation filters.");
@@ -61,18 +54,14 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Standard workflows", LinkOrder = 4)]
-    public async Task<IActionResult> Definitions(Guid? clusterId = null)
+    public async Task<IActionResult> Definitions()
     {
-        var visible = await db.Clusters.Select(c => c.Id).ToListAsync();
-        if (clusterId != null && !visible.Contains(clusterId.Value)) return StatusCode(403);
-        var clusters = await db.Clusters.Where(c => visible.Contains(c.Id)).OrderBy(c => c.Name).ThenBy(c => c.Id).ToListAsync();
-        clusterId ??= clusters.FirstOrDefault()?.Id;
         try
         {
             return this.StackView(new DmsViewModel
             {
-                PageTitle = "Standard workflows", Clusters = clusters, ClusterId = clusterId,
-                Catalog = clusterId == null ? null : await workflows.ListDefinitionsAsync(Actor, clusterId.Value)
+                PageTitle = "Standard workflows",
+                Catalog = await workflows.ListDefinitionsAsync(Actor)
             });
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
@@ -82,8 +71,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     public async Task<IActionResult> Lockboxes(int page = 0)
     {
         page = Math.Clamp(page, 0, 100000);
-        var clusters = await db.Clusters.Select(c => c.Id).ToListAsync();
-        var items = await db.Lockboxes.Where(l => clusters.Contains(l.ClusterId)).OrderByDescending(l => l.CreatedAt).Skip(page * 50).Take(51).ToListAsync();
+        var items = await db.Lockboxes.OrderByDescending(l => l.CreatedAt).Skip(page * 50).Take(51).ToListAsync();
         return this.StackView(new DmsViewModel { Lockboxes = items.Take(50).ToList(), Page = page, HasNextPage = items.Count > 50 });
     }
 
@@ -110,13 +98,10 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Workflow history", LinkOrder = 3)]
-    public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null, Guid? clusterId = null, bool clusterWorkflowsOnly = false)
+    public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null, bool clusterWorkflowsOnly = false)
     {
         page = Math.Clamp(page, 0, 100000);
-        var clusters = await db.Clusters.Select(c => c.Id).ToListAsync();
-        if (clusterId != null && !clusters.Contains(clusterId.Value)) return StatusCode(403);
-        var query = db.WorkflowRuns.Where(r => clusters.Contains(r.ClusterId));
-        if (clusterId != null) query = query.Where(r => r.ClusterId == clusterId);
+        var query = db.WorkflowRuns.AsQueryable();
         if (clusterWorkflowsOnly) query = query.Where(r => r.MachineId == null);
         if (machineId != null) query = query.Where(r => r.MachineId == machineId);
         if (!string.IsNullOrWhiteSpace(definition)) query = query.Where(r => r.Definition == definition);
@@ -124,8 +109,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         return this.StackView(new DmsViewModel
         {
             Runs = items.Take(50).ToList(), Page = page, HasNextPage = items.Count > 50,
-            MachineId = machineId, Definition = definition, ClusterId = clusterId, ClusterWorkflowsOnly = clusterWorkflowsOnly,
-            Clusters = await db.Clusters.Where(c => clusters.Contains(c.Id)).OrderBy(c => c.Name).ToListAsync()
+            MachineId = machineId, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly
         });
     }
 

@@ -2,7 +2,6 @@ namespace Aiursoft.DMS.Contracts;
 
 public sealed record WorkflowAuditQuery
 {
-    public Guid ClusterId { get; init; }
     public DateTimeOffset? From { get; init; }
     public DateTimeOffset? Until { get; init; }
     public Guid? MachineId { get; init; }

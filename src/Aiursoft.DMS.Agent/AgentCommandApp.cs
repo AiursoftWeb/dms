@@ -18,18 +18,17 @@ public static class AgentCommandApp
     private sealed class AgentCommand(string name) : ExecutableCommandHandlerBuilder
     {
         protected override string Name => name;
-        protected override string Description => name == "join" ? "Request enrollment using a cluster-scoped join key. Approval is required." : "Run the installed Agent and resume pending enrollment.";
+        protected override string Description => name == "join" ? "Request enrollment using a Controller join key. Approval is required." : "Run the installed Agent and resume pending enrollment.";
         private readonly Option<Guid> _id = new("--id") { Required = true };
         private readonly Option<string> _controller = new("--controller-url") { Required = true };
         private readonly Option<string> _key = new("--api-key") { Required = true };
-        private readonly Option<string> _cluster = new("--cluster-name") { Required = true };
         private readonly Option<string> _state = new("--state-path") { DefaultValueFactory = _ => "/var/lib/aiursoft-dms-agent" };
         private readonly Option<string> _machine = new("--name") { DefaultValueFactory = _ => Environment.MachineName };
         protected override IEnumerable<Option> GetCommandOptions()
         {
             yield return _state;
             if (name == "apply-upgrade") yield return _id;
-            if (name == "join") { yield return _controller; yield return _key; yield return _cluster; yield return _machine; }
+            if (name == "join") { yield return _controller; yield return _key; yield return _machine; }
         }
         public override Command BuildAsCommand()
         {
@@ -58,10 +57,9 @@ public static class AgentCommandApp
             if (name == "apply-upgrade") { await AgentUpgrade.ApplyAsync(state, context.GetValue(_id)); return; }
             if (name == "run") { await AgentRuntime.RunInstalledAsync(state); return; }
             var controller = AgentConfiguration.ControllerUrl(context.GetValue(_controller)!);
-            var cluster = context.GetValue(_cluster)!.Trim();
             var config = AgentConfiguration.Load(state);
-            if (config != null && (config.Controller != controller || !string.Equals(config.ClusterName, cluster, StringComparison.OrdinalIgnoreCase)))
-                throw new ArgumentException("This Agent already belongs to another Controller or cluster. Its identity has been preserved.");
+            if (config != null && (config.Controller != controller))
+                throw new ArgumentException("This Agent already belongs to another Controller. Its identity has been preserved.");
             using var provider = AgentRuntime.Services();
             var http = provider.GetRequiredService<AiurProtocolClient>();
             if (config != null && config.MachineId == null)
@@ -75,16 +73,16 @@ public static class AgentCommandApp
                 catch (AiurUnexpectedServerResponseException exception) when (exception.Response.Code == Code.NotFound) { }
                 catch (AiurHttpResponseException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Unauthorized) { }
             }
-            if (config?.MachineId != null) { context.InvocationConfiguration.Output.WriteLine($"Already joined: machine {config.MachineId}; installation {config.InstallationId}. Existing credentials and tasks were preserved."); return; }
+            if (config?.MachineId != null) { config.Save(state); context.InvocationConfiguration.Output.WriteLine($"Already joined: machine {config.MachineId}; installation {config.InstallationId}. Existing credentials and tasks were preserved."); return; }
             if (config == null)
             {
                 using var journal = new TaskJournal(Path.Combine(state, "journal"));
-                config = new AgentConfiguration(controller, cluster, Guid.NewGuid(), journal.InstallationId, context.GetValue(_machine)!,
+                config = new AgentConfiguration(controller, Guid.NewGuid(), journal.InstallationId, context.GetValue(_machine)!,
                     "dmsr_" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32)), "dmsa_" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32)));
                 config.Save(state);
             }
             var result = (await new EnrollmentClient(http, controller, context.GetValue(_key)!).SubmitAsync(new EnrollmentInput(config.EnrollmentId,
-                config.InstallationId, cluster, config.MachineName, config.ReceiptKey, config.AgentKey))).Data!;
+                config.InstallationId, config.MachineName, config.ReceiptKey, config.AgentKey))).Data!;
             if (result.MachineId != null) { config = config with { MachineId = result.MachineId, ReceiptKey = "" }; config.Save(state); }
             context.InvocationConfiguration.Output.WriteLine($"Enrollment {result.Id}: {result.State}\nLockbox: {result.LockboxId}\nWorkflow: {result.WorkflowId}\nInstallation: {result.InstallationId}");
         }

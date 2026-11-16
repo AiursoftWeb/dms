@@ -19,22 +19,22 @@ public class ClusterDiskUsageTests : TestBase
             return await action(scope.ServiceProvider.GetRequiredService<TemplateDbContext>());
         });
 
-    private async Task<(Guid Cluster, string User, string Approver, Guid[] Machines, string[] Keys, string Key)> ArrangeAsync()
+    private async Task<(string User, string Approver, Guid[] Machines, string[] Keys, string Key)> ArrangeAsync()
     {
         return await DatabaseAsync(async db =>
         {
+            DmsTestPermissions.DeactivatePreviousMachines(db);
             var user = new User { UserName = "requester" + Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
             var approver = new User { Id = Guid.NewGuid().ToString(), UserName = "disk-reviewer", DisplayName = "Disk reviewer" };
-            var cluster = new Cluster { Name = "Disk usage" };
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
-            var machines = keys.Select((key, i) => new Machine { ClusterId = cluster.Id, Name = $"disk-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
+            var machines = keys.Select((key, i) => new Machine { Name = $"disk-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
             var personal = DmsKeyAuthenticationHandler.CreateKey(false);
-            db.Users.Add(approver); db.Clusters.Add(cluster); db.Machines.AddRange(machines);
+            db.Users.Add(approver); db.Machines.AddRange(machines);
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Disk usage", KeyHash = DmsKeyAuthenticationHandler.Hash(personal), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true, automatic: false, approve: false);
             DmsTestPermissions.Risk(db, approver.Id, RiskLevel.Safe, request: false, automatic: false, approve: true);
             await db.SaveChangesAsync();
-            return (cluster.Id, user.Id, approver.Id, machines.Select(m => m.Id).ToArray(), keys, personal);
+            return (user.Id, approver.Id, machines.Select(m => m.Id).ToArray(), keys, personal);
         });
     }
 
@@ -67,11 +67,11 @@ public class ClusterDiskUsageTests : TestBase
         await db.SaveChangesAsync(); return true;
     });
 
-    private async Task<LockboxRequest> SubmitAsync(Guid cluster, string user, string approver)
+    private async Task<LockboxRequest> SubmitAsync(string user, string approver)
     {
         using var scope = Server!.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var box = await service.SubmitAsync(user, ClusterWorkflows.DiskUsage.Request(cluster, new EmptyInput(), "Disk usage acceptance", allMachines: true));
+        var box = await service.SubmitAsync(user, ClusterWorkflows.DiskUsage.Request(new EmptyInput(), "Disk usage acceptance", allMachines: true));
         Assert.AreEqual(RiskLevel.Safe, box.Risk);
         return await service.DecideAsync(approver, box.Id, true, "Read the frozen machines");
     }
@@ -80,12 +80,12 @@ public class ClusterDiskUsageTests : TestBase
     public async Task ClusterCommandUsesApprovedSnapshotAndTwoActualAgents()
     {
         var setup = await ArrangeAsync();
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["cluster", "get", "disk-usage", "--cluster-id", setup.Cluster.ToString(), "--all-machines", "--reason", "Real disk query", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "disk-usage", "--all-machines", "--reason", "Real disk query", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
-        var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClusterId == setup.Cluster));
+        var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(l => l.RequesterId == setup.User));
         Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
         Assert.AreEqual(RiskLevel.Safe, box.Risk); Assert.AreEqual(ClusterWorkflows.DiskUsage.Version, box.Version);
-        await DatabaseAsync(async db => { db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Late disk machine", KeyHash = "late" }); await db.SaveChangesAsync(); return true; });
+        await DatabaseAsync(async db => { db.Machines.Add(new Machine { Name = "Late disk machine", KeyHash = "late" }); await db.SaveChangesAsync(); return true; });
         using (var scope = Server!.Services.CreateScope())
             box = await scope.ServiceProvider.GetRequiredService<WorkflowService>().DecideAsync(setup.Approver, box.Id, true, "Only original two machines");
         var paths = setup.Machines.Select(_ => Directory.CreateTempSubdirectory("dms-disk-agent-").FullName).ToArray();
@@ -137,7 +137,7 @@ public class ClusterDiskUsageTests : TestBase
     [DataRow(RunState.NeedsVerification)]
     public async Task AnIncompleteMachineDoesNotPublishSuccessfulPartialTotals(RunState state)
     {
-        var setup = await ArrangeAsync(); var box = await SubmitAsync(setup.Cluster, setup.User, setup.Approver);
+        var setup = await ArrangeAsync(); var box = await SubmitAsync(setup.User, setup.Approver);
         var first = await ChildAsync(box.OperationId!.Value, 1);
         await CompleteAsync(first, RunState.Succeeded, new DiskUsageResult(first.Id, 100, 20, 70, 1));
         var second = await ChildAsync(box.OperationId.Value, 2);
@@ -153,7 +153,7 @@ public class ClusterDiskUsageTests : TestBase
     [TestMethod]
     public async Task ClusterSumCannotWrapLargeByteCountsIntoSuccess()
     {
-        var setup = await ArrangeAsync(); var box = await SubmitAsync(setup.Cluster, setup.User, setup.Approver);
+        var setup = await ArrangeAsync(); var box = await SubmitAsync(setup.User, setup.Approver);
         var first = await ChildAsync(box.OperationId!.Value, 1);
         await CompleteAsync(first, RunState.Succeeded, new DiskUsageResult(first.Id, long.MaxValue, 0, 0, 1));
         var second = await ChildAsync(box.OperationId.Value, 2);
@@ -170,12 +170,12 @@ public class ClusterDiskUsageTests : TestBase
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Safe), false); await db.SaveChangesAsync();
         Assert.AreEqual(403, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
-            ClusterWorkflows.DiskUsage.Request(setup.Cluster, new EmptyInput(), "No Safe grant", allMachines: true)))).StatusCode);
+            ClusterWorkflows.DiskUsage.Request(new EmptyInput(), "No Safe grant", allMachines: true)))).StatusCode);
         DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Safe)); await db.SaveChangesAsync();
         Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
-            ClusterWorkflows.DiskUsage.Request(setup.Cluster, new EmptyInput(), "No targets")))).StatusCode);
+            ClusterWorkflows.DiskUsage.Request(new EmptyInput(), "No targets")))).StatusCode);
         Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
-            MachineWorkflows.DiskUsage.Request(setup.Cluster, new EmptyInput(), "Internal helper", setup.Machines)))).StatusCode);
-        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster));
+            MachineWorkflows.DiskUsage.Request(new EmptyInput(), "Internal helper", setup.Machines)))).StatusCode);
+        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
     }
 }

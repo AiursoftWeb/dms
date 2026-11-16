@@ -32,14 +32,15 @@ public class SubworkflowTests : TestBase
         Server!.Services.GetRequiredService<ClusterWorkflowRegistry>().Register(definition, () => new ExampleWorkflow(execute));
         return await DatabaseAsync(async db =>
         {
-            var cluster = new Cluster { Name = "Subworkflow test" };
+            DmsTestPermissions.DeactivatePreviousMachines(db);
+
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
-            var machines = keys.Select((key, index) => new Machine { ClusterId = cluster.Id, Name = $"node-{index}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
-            var box = new LockboxRequest { WorkflowId = Guid.NewGuid(), ClientRequestId = Guid.NewGuid(), ClusterId = cluster.Id, Decision = DecisionState.Approved, TargetMachines = JsonSerializer.Serialize(machines.Select(m => m.Id)), Definition = definition.Name };
-            var root = new WorkflowRun { Id = box.WorkflowId, RootId = box.WorkflowId, ClusterId = cluster.Id, LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.Running };
-            var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, ClusterId = cluster.Id, Definition = definition.Name, Input = definition.Serialize(new EmptyInput()), State = initial };
+            var machines = keys.Select((key, index) => new Machine { Name = $"node-{index}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
+            var box = new LockboxRequest { WorkflowId = Guid.NewGuid(), ClientRequestId = Guid.NewGuid(), Decision = DecisionState.Approved, TargetMachines = JsonSerializer.Serialize(machines.Select(m => m.Id)), Definition = definition.Name };
+            var root = new WorkflowRun { Id = box.WorkflowId, RootId = box.WorkflowId, LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.Running };
+            var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, Definition = definition.Name, Input = definition.Serialize(new EmptyInput()), State = initial };
             box.OperationId = parent.Id;
-            db.Clusters.Add(cluster); db.Machines.AddRange(machines); db.Lockboxes.Add(box); db.WorkflowRuns.AddRange(root, parent);
+            db.Machines.AddRange(machines); db.Lockboxes.Add(box); db.WorkflowRuns.AddRange(root, parent);
             await db.SaveChangesAsync();
             return (parent, machines, keys);
         });
@@ -99,8 +100,10 @@ public class SubworkflowTests : TestBase
         {
             var installations = await context.CallAsync(nestedDefinition, new EmptyInput(), token);
             var inventory = await context.CallAsync(ClusterWorkflows.GetMachines, new EmptyInput(), token);
-            Assert.HasCount(2, inventory);
-            foreach (var machine in inventory)
+            var approved = await context.GetApprovedMachinesAsync(token);
+            var selected = inventory.Where(machine => approved.Contains(machine.Id)).ToList();
+            Assert.HasCount(2, selected);
+            foreach (var machine in selected)
             {
                 Assert.AreNotEqual(Guid.Empty, machine.Id); StringAssert.StartsWith(machine.Name, "node-");
                 Assert.IsFalse(string.IsNullOrWhiteSpace(machine.AgentVersion)); Assert.IsNotNull(machine.LastSeen);
@@ -211,7 +214,7 @@ public class SubworkflowTests : TestBase
         });
         var lateMachine = await DatabaseAsync(async db =>
         {
-            var machine = new Machine { ClusterId = setup.Parent.ClusterId, Name = "Added after approval" };
+            var machine = new Machine { Name = "Added after approval" };
             db.Machines.Add(machine); await db.SaveChangesAsync(); return machine.Id;
         });
         added.SetResult(lateMachine);
@@ -254,9 +257,9 @@ public class SubworkflowTests : TestBase
         var child = await NextChildAsync(setup.Parent.Id, 1);
         await DatabaseAsync(async db =>
         {
-            var box = new LockboxRequest { ClusterId = setup.Parent.ClusterId, Decision = DecisionState.Approved,
+            var box = new LockboxRequest { Decision = DecisionState.Approved,
                 Parameters = JsonSerializer.Serialize(new OperationRequest { TargetWorkflowId = setup.Parent.Id }) };
-            var cancellation = new WorkflowRun { ClusterId = setup.Parent.ClusterId, LockboxId = box.Id, Definition = WorkflowNames.Kill };
+            var cancellation = new WorkflowRun { LockboxId = box.Id, Definition = WorkflowNames.Kill };
             await new CancelWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, cancellation, box));
             await db.SaveChangesAsync(); return true;
         });

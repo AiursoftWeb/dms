@@ -1,64 +1,47 @@
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using Aiursoft.DMS.Contracts
 <h1>@Localizer["Standard workflows"]</h1>
-@if (Model.Clusters.Count == 0)
+@if (Model.Catalog != null)
 {
-    <p>@Localizer["No clusters have been created."]</p>
-}
-else
-{
-    <form method="get" class="mb-3">
-        <label for="clusterId" class="form-label">@Localizer["Cluster"]</label>
-        <select id="clusterId" name="clusterId" class="form-select mb-2">
-            @foreach (var cluster in Model.Clusters)
+    <p>@Localizer["May approve own requests"]: <strong>@(Model.Catalog.CanApproveOwnRequests ? @Localizer["Yes"] : @Localizer["No"])</strong></p>
+    <div class="card"><div class="card-body table-responsive">
+        <table class="table align-middle">
+            <thead><tr>
+                <th>@Localizer["Workflow"]</th><th>@Localizer["Location"]</th><th>@Localizer["Risk"]</th>
+                <th>@Localizer["Requires machine targets"]</th><th>@Localizer["May request"]</th>
+                <th>@Localizer["Automatically approve"]</th><th>@Localizer["May approve"]</th>
+            </tr></thead>
+            <tbody>
+            @foreach (var item in Model.Catalog.Definitions)
             {
-                <option value="@cluster.Id" selected="@(Model.ClusterId == cluster.Id)">@cluster.Name</option>
+                <tr>
+                    <td><a asp-action="Operations" asp-route-definition="@item.Name">@item.Name</a><br /><small>@Localizer["Version"] @item.Version</small></td>
+                    <td>@switch (item.Location)
+                    {
+                        case WorkflowLocation.Cluster: @Localizer["Cluster"] break;
+                        case WorkflowLocation.Machine: @Localizer["Machine"] break;
+                    }</td>
+                    <td>@switch (item.Risk)
+                    {
+                        case RiskLevel.Safe: @Localizer["Safe"] break;
+                        case RiskLevel.Low: @Localizer["Low"] break;
+                        case RiskLevel.Medium: @Localizer["Medium"] break;
+                        case RiskLevel.High: @Localizer["High"] break;
+                        case RiskLevel.VeryHigh: @Localizer["Very high"] break;
+                    }</td>
+                    <td>@(item.RequiresTargets ? @Localizer["Yes"] : @Localizer["No"])</td>
+                    <td>@(item.CanRequest ? @Localizer["Yes"] : @Localizer["No"])</td>
+                    <td>@(item.AutoApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
+                    <td>@(item.CanApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
+                </tr>
             }
-        </select>
-        <button class="btn btn-primary">@Localizer["Show workflows"]</button>
-    </form>
-    @if (Model.Catalog != null)
-    {
-        <p>@Localizer["May approve own requests"]: <strong>@(Model.Catalog.CanApproveOwnRequests ? @Localizer["Yes"] : @Localizer["No"])</strong></p>
-        <div class="card"><div class="card-body table-responsive">
-            <table class="table align-middle">
-                <thead><tr>
-                    <th>@Localizer["Workflow"]</th><th>@Localizer["Location"]</th><th>@Localizer["Risk"]</th>
-                    <th>@Localizer["Requires machine targets"]</th><th>@Localizer["May request"]</th>
-                    <th>@Localizer["Automatically approve"]</th><th>@Localizer["May approve"]</th>
-                </tr></thead>
-                <tbody>
-                @foreach (var item in Model.Catalog.Definitions)
-                {
-                    <tr>
-                        <td><a asp-action="Operations" asp-route-clusterId="@Model.ClusterId" asp-route-definition="@item.Name">@item.Name</a><br /><small>@Localizer["Version"] @item.Version</small></td>
-                        <td>@switch (item.Location)
-                        {
-                            case WorkflowLocation.Cluster: @Localizer["Cluster"] break;
-                            case WorkflowLocation.Machine: @Localizer["Machine"] break;
-                        }</td>
-                        <td>@switch (item.Risk)
-                        {
-                            case RiskLevel.Safe: @Localizer["Safe"] break;
-                            case RiskLevel.Low: @Localizer["Low"] break;
-                            case RiskLevel.Medium: @Localizer["Medium"] break;
-                            case RiskLevel.High: @Localizer["High"] break;
-                            case RiskLevel.VeryHigh: @Localizer["Very high"] break;
-                        }</td>
-                        <td>@(item.RequiresTargets ? @Localizer["Yes"] : @Localizer["No"])</td>
-                        <td>@(item.CanRequest ? @Localizer["Yes"] : @Localizer["No"])</td>
-                        <td>@(item.AutoApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
-                        <td>@(item.CanApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-            @if (Model.Catalog.Definitions.Count == 0) { <p>@Localizer["No public standard workflows are registered."]</p> }
-        </div></div>
-        <details class="mt-3">
-            <summary>@Localizer["About these permissions"]</summary>
-            <p>@Localizer["Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission."]</p>
-            <p>@Localizer["This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed."]</p>
-        </details>
-    }
+            </tbody>
+        </table>
+        @if (Model.Catalog.Definitions.Count == 0) { <p>@Localizer["No public standard workflows are registered."]</p> }
+    </div></div>
+    <details class="mt-3">
+        <summary>@Localizer["About these permissions"]</summary>
+        <p>@Localizer["Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission."]</p>
+        <p>@Localizer["This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed."]</p>
+    </details>
 }

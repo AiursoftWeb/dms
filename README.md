@@ -56,10 +56,10 @@ Run the interactive login, follow its link to create a personal API key, then ch
 ```sh
 dms login
 dms access whoami
-dms cluster list
+dms machine list --reason "Inspect inventory"
 ```
 
-The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require global role risk permissions and Lockbox approval. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
+The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and administrative inspection queries do not create Lockboxes. `machine list` is a Safe workflow and submits a Lockbox. Server operations still require global role risk permissions and Lockbox approval. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
 
 ### SDK
 
@@ -158,14 +158,14 @@ Create a personal key under **API Keys** in the Controller, then set its URL and
 export DMS_SERVER=https://dms.example.com
 export DMS_API_KEY='<personal-key>'
 dms access whoami
-dms cluster list
+dms machine list --reason "Inspect inventory"
 ```
 
-These identity and management queries create no Lockbox. Server operations submit a Lockbox and require the global request Permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
+`access whoami` creates no Lockbox; `machine list` submits a Safe Lockbox request. Server operations submit a Lockbox and require the global request Permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
 
 ### Join and manage machines
 
-An administrator creates a Cluster join key; an operator runs the [one-time Agent installation](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent) on each host. The service waits for registration approval, then connects outward to the Controller. Subsequent operations, including [Agent upgrades](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#upgrade-an-installed-agent), run through approved workflows. Keep personal keys, join keys and machine credentials separate.
+An administrator creates a Controller join key; an operator runs the [one-time Agent installation](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent) on each host. The service waits for registration approval, then connects outward to the Controller. Subsequent operations, including [Agent upgrades](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#upgrade-an-installed-agent), run through approved workflows. Keep personal keys, join keys and machine credentials separate.
 
 ## Configuration
 
@@ -335,7 +335,7 @@ See [configuration and persistence](https://github.com/aiursoftweb/dms/blob/mast
 ## Documentation
 
 - [Issue tracker](https://github.com/AiursoftWeb/dms/issues)
-- [CLI, authentication, Cluster management and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md)
+- [CLI, authentication and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md)
 - [Configuration, persistence, recovery and cancellation](https://github.com/aiursoftweb/dms/blob/master/docs/configuration.md)
 - [Available workflows and role permissions](https://github.com/aiursoftweb/dms/blob/master/docs/workflow-discovery.md)
 - [Workflow authoring](https://github.com/aiursoftweb/dms/blob/master/docs/authoring-workflows.md)

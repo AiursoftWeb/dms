@@ -42,9 +42,21 @@ Preserve each Agent's private `DMS_STATE_PATH` directory independently of the Co
 
 Configure local accounts or OIDC through the existing Template settings. When deploying with OIDC, set `AppSettings__AuthProvider=OIDC` explicitly and provide the identity provider settings; Local remains the source default.
 
-Workflow authorization uses the existing role Permission claims globally within one DMS instance. Five risk levels each have independent request, automatic approval and approval permissions; self approval is a separate Permission. No risk implies another. Read DMS operations permits inspection across all machines. Cluster fields temporarily remain inventory filters, with no authorization effect. See [role permissions](permissions.md) for configuration and upgrade requirements.
+Workflow authorization uses the existing role Permission claims globally within one DMS instance. Five risk levels each have independent request, automatic approval and approval permissions; self approval is a separate Permission. No risk implies another. Read DMS operations permits inspection across all machines. All machines belong directly to this DMS instance. See [role permissions](permissions.md) for configuration and upgrade requirements.
 
 Personal API keys identify CLI users. Machine API keys identify Agents. Keep both types private and revoke them through their management pages when no longer needed.
+
+## Upgrade to instance-wide inventory
+
+Controller and Client 1.1.0 remove the Cluster resource and all `--cluster-id` / `--cluster-name` parameters. A Cluster Workflow still means C# orchestration on the Controller, including inventory access and typed subworkflow calls. Separate DMS instances use separate business databases and ClickHouse namespaces; they do not share an inventory or API keys.
+
+Before upgrading an existing installation, stop its old Controller and preserve the business database, state directory and archive through the deployment's approved backup procedure. Run only one Controller against these stores. Do not start an old Controller against the migrated schema. Downgrade cannot reconstruct former group memberships and is explicitly refused; recovery requires restoring the pre-upgrade stores and the matching application version.
+
+The relational migrations retain users, roles, permission claims, personal keys, machine/installation identities, join keys, enrollments, decisions, workflow IDs and states. They remove only the old resource/grant tables and fields, including the unused stored self-approval flag. Stored request parameters and undelivered audit facts lose their old resource field without changing event IDs, request IDs or frozen machine lists. Old scoped grants are never converted into global permission claims.
+
+When ClickHouse archival is enabled, the first audit initialization rebuilds the old table into `DmsWorkflowAuditMigration`, copies deduplicated facts, verifies event counts and a fingerprint over every retained column, atomically exchanges the tables, and removes staging. The database must use the Atomic or Shared engine for [atomic table exchange](https://clickhouse.com/docs/sql-reference/statements/exchange). Stop the old Controller before this step. A partial copy is safely rebuilt on retry; after a successful exchange, startup only finishes cleanup. A verification failure leaves the original authoritative table and durable outbox intact, and audit queries report an unavailable archive. Allow temporary space for the copy. The detailed trace table and disk queue do not change.
+
+Existing connected Agents retain their identities and task journals; registration does not need to be repeated. Use Agent 1.1.0 for the simplified join command. Installed Agents can receive it through the existing approved Agent upgrade workflow. On loading/saving the new configuration, the removed group field is discarded while Controller, machine ID, installation ID and credentials stay unchanged. Check the explicit role permission matrix before resuming operations; an API key's owner still needs the appropriate request/approval permissions.
 
 ## Recovery and cancellation
 
