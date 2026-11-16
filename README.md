@@ -63,7 +63,7 @@ The CLI uses table output by default; add `--output-format json` or `csv` for st
 
 ### SDK
 
-Add the SDK to your .NET project after version `10.0.0` is published by the default-branch release pipeline:
+Add the SDK to your .NET project after version `10.1.0` is published by the default-branch release pipeline:
 
 ```bash
 dotnet add package Aiursoft.DMS.SDK
