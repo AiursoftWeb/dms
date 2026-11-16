@@ -231,14 +231,14 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         return directory == Destination || directory.StartsWith(Destination + "/tools/", StringComparison.Ordinal);
     }
 
-    private sealed record ToolRelease(string Version, string PackageSha256, string AssemblySha256);
+    private sealed record ToolRelease(string PackageVersion, string PackageSha256, string AssemblySha256);
     private sealed record InstalledTool(string Directory, string AssemblySha256);
 
     private static async Task<InstalledTool> InstallToolAsync(string payload)
     {
         var release = JsonSerializer.Deserialize<ToolRelease>(File.ReadAllText(Path.Combine(payload, "tool.json")))
             ?? throw new InvalidDataException("Missing Agent Tool release.");
-        if (!System.Version.TryParse(release.Version, out var version) || version.ToString(3) != System.Version.Parse(Version).ToString(3)
+        if (!System.Version.TryParse(release.PackageVersion, out var version) || version.ToString(3) != System.Version.Parse(Version).ToString(3)
             || release.PackageSha256.Length != 64 || release.AssemblySha256.Length != 64
             || !release.PackageSha256.All(char.IsAsciiHexDigit) || !release.AssemblySha256.All(char.IsAsciiHexDigit)
             || Hash(Path.Combine(payload, "agent.nupkg")) != release.PackageSha256)
@@ -246,10 +246,10 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         // The tool package is entirely bundled: install from this local feed, with no external NuGet source.
         var feed = Path.Combine(payload, "feed");
         Directory.CreateDirectory(feed);
-        File.Copy(Path.Combine(payload, "agent.nupkg"), Path.Combine(feed, $"Aiursoft.DMS.Agent.{release.Version}.nupkg"), true);
+        File.Copy(Path.Combine(payload, "agent.nupkg"), Path.Combine(feed, $"Aiursoft.DMS.Agent.{release.PackageVersion}.nupkg"), true);
         var config = Path.Combine(feed, "nuget.config");
         await File.WriteAllTextAsync(config, "<configuration><packageSources><clear/><add key=\"controller\" value=\".\"/></packageSources></configuration>");
-        var directory = Path.Combine(Destination, "tools", release.Version + "-" + release.PackageSha256[..12]);
+        var directory = Path.Combine(Destination, "tools", release.PackageVersion + "-" + release.PackageSha256[..12]);
         // Existing native services need the same one-time SDK preparation as the installer.
         if (!File.Exists("/usr/bin/dotnet") || !(await RunAsync("/usr/bin/dotnet", ["--list-sdks"], CancellationToken.None))
                 .Split('\n').Any(line => line.StartsWith("10.", StringComparison.Ordinal)))
@@ -257,7 +257,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             await RunAsync("/usr/bin/apt-get", ["update"], CancellationToken.None);
             await RunAsync("/usr/bin/apt-get", ["install", "-y", "dotnet10"], CancellationToken.None);
         }
-        await RunAsync("/usr/bin/dotnet", ["tool", "update", "Aiursoft.DMS.Agent", "--version", release.Version,
+        await RunAsync("/usr/bin/dotnet", ["tool", "update", "Aiursoft.DMS.Agent", "--version", release.PackageVersion,
             "--tool-path", directory, "--configfile", config], CancellationToken.None, Path.Combine(feed, "packages"));
         var assemblies = Directory.GetFiles(Path.Combine(directory, ".store"), "Aiursoft.DMS.Agent.dll", SearchOption.AllDirectories);
         if (assemblies.Length != 1 || Hash(assemblies[0]) != release.AssemblySha256)

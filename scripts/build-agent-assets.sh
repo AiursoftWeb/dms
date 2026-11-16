@@ -16,7 +16,7 @@ dotnet pack "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" --con
 cp "$temporary/packages/Aiursoft.DMS.Agent.$package_version.nupkg" "$output/agent.nupkg"
 package_hash=$(sha256sum "$output/agent.nupkg" | cut -d ' ' -f 1)
 tool_assembly_hash=$(sha256sum "$repository/src/Aiursoft.DMS.Agent/bin/Release/net10.0/Aiursoft.DMS.Agent.dll" | cut -d ' ' -f 1)
-printf '{"Version":"%s","PackageSha256":"%s","AssemblySha256":"%s"}\n' \
+printf '{"PackageVersion":"%s","PackageSha256":"%s","AssemblySha256":"%s"}\n' \
     "$package_version" "$package_hash" "$tool_assembly_hash" > "$temporary/tool.json"
 metadata=()
 for runtime in linux-x64 linux-arm64; do
