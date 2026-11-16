@@ -12,6 +12,29 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 public class AgentUpgradeIntegrationTests : TestBase
 {
     [TestMethod]
+    public async Task BootstrapIncludesControllerOriginAndServesOnlyThePackagedTool()
+    {
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, (await Http.GetAsync("/agent/install.sh")).StatusCode);
+        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, (await Http.GetAsync("/agent/package")).StatusCode);
+        var directory = Path.Combine(Server!.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath, "agent-assets");
+        Directory.CreateDirectory(directory);
+        var installer = Path.Combine(directory, "install.sh");
+        var package = Path.Combine(directory, "agent.nupkg");
+        try
+        {
+            await File.WriteAllTextAsync(installer, "#!/bin/bash\ncontroller=''\n");
+            await File.WriteAllBytesAsync(package, [1, 2, 3]);
+            var response = await Http.GetAsync("/agent/install.sh");
+            response.EnsureSuccessStatusCode();
+            StringAssert.Contains(await response.Content.ReadAsStringAsync(), "controller='" + Http.BaseAddress!.GetLeftPart(UriPartial.Authority) + "'");
+            Assert.IsTrue(response.Headers.CacheControl!.NoStore);
+            CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, await Http.GetByteArrayAsync("/agent/package"));
+            Assert.AreEqual(System.Net.HttpStatusCode.NotFound, (await Http.GetAsync("/agent/download/unsupported")).StatusCode);
+        }
+        finally { File.Delete(installer); File.Delete(package); }
+    }
+
+    [TestMethod]
     public async Task CliFreezesReleaseAndHighRiskApprovalRejectsAssetChanges()
     {
         var environment = Server!.Services.GetRequiredService<IWebHostEnvironment>();

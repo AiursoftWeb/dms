@@ -10,7 +10,7 @@ using Aiursoft.DMS.Workflows;
 namespace Aiursoft.DMS.Agent;
 
 public sealed record UpgradeHandoff(Guid TaskId, Guid WorkflowId, Guid? ParentId, Guid InstallationId, Guid MachineId,
-    AgentRelease Release, string PreviousVersion, DateTime Deadline, string Phase);
+    AgentRelease Release, string PreviousVersion, DateTime Deadline, string Phase, string? ToolAssemblySha256 = null, string? Failure = null);
 
 // Only an approved compiled workflow can prepare this handoff. The one-shot systemd unit survives its Agent.
 public sealed class AgentUpgrade(string state, TaskJournal journal)
@@ -29,7 +29,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
 
     public async Task<AgentUpgradeResult> PrepareAsync(Guid taskId, MachineWorkflowContext context, AgentUpgradeInput input, CancellationToken token)
     {
-        if (!OperatingSystem.IsLinux() || Path.GetFullPath(AppContext.BaseDirectory).TrimEnd('/') != Destination)
+        if (!OperatingSystem.IsLinux() || !InstalledService())
             throw new InvalidOperationException("Agent upgrades require the installed Linux systemd Agent.");
         var config = AgentConfiguration.Load(state) ?? throw new InvalidDataException("Missing installed Agent identity.");
         if (config.MachineId == null || config.InstallationId != journal.InstallationId)
@@ -101,7 +101,8 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             while (DateTime.UtcNow < handoff.Deadline.AddMinutes(5))
             {
                 await Task.Delay(2000, CancellationToken.None);
-                if (Read(Marker).Phase == "failed") throw new IOException("The Agent update helper failed before replacement.");
+                var current = Read(Marker);
+                if (current.Phase == "failed") throw new IOException(current.Failure ?? "The Agent update helper failed before replacement.");
             }
             Save(Marker, handoff with { Phase = "uncertain" });
             throw new WorkflowNeedsVerificationException(context.Id);
@@ -139,7 +140,8 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         var matches = recorded && handoff.Phase == "installed" && handoff.Deadline > DateTime.UtcNow
             && config?.InstallationId == handoff.InstallationId && config.MachineId == handoff.MachineId
             && journal.InstallationId == handoff.InstallationId && handoff.Release.Version == Version
-            && Hash(typeof(AgentUpgrade).Assembly.Location) == handoff.Release.AssemblySha256;
+            && handoff.ToolAssemblySha256 != null
+            && Hash(typeof(AgentUpgrade).Assembly.Location) == handoff.ToolAssemblySha256;
         await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = handoff.WorkflowId, ParentId = handoff.ParentId,
             IsTrace = true, Message = matches ? $"Agent {Version} started with the approved assembly and retained installation {journal.InstallationId}. Reporting over the authenticated Controller session."
                 : "Agent update outcome requires verification. The update will not be repeated automatically." });
@@ -169,34 +171,137 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             || Version != handoff.Release.Version || Hash(typeof(AgentUpgrade).Assembly.Location) != handoff.Release.AssemblySha256
             || Path.GetFullPath(AppContext.BaseDirectory).TrimEnd('/') != payload)
             throw new InvalidDataException("Invalid or expired Agent update handoff.");
-        Save(marker, handoff with { Phase = "stopping" });
-        await RunAsync("/usr/bin/systemctl", ["stop", "dms-agent.service"], CancellationToken.None);
-        using (var journal = new TaskJournal(Path.Combine(state, "journal")))
+        // Both the package and its manifest are covered by the original approved archive hash.
+        // A native helper keeps older installed Agents able to migrate without a second bootstrap.
+        var stopped = false;
+        try
         {
-            if (journal.InstallationId != handoff.InstallationId) throw new InvalidDataException("Installation changed during update.");
-            await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
-                IsTrace = true, Source = "updater", Message = "Old Agent stopped. Installing the approved payload; task identities are preserved." });
-            Save(marker, handoff with { Phase = "installing" });
-            foreach (var file in Directory.EnumerateFiles(payload, "*", SearchOption.AllDirectories))
+            if (Hash(Path.Combine(Stage(state, id), "agent.tar.gz")) != handoff.Release.ArchiveSha256)
+                throw new InvalidDataException("Agent release archive differs from the approved release.");
+            var tool = await InstallToolAsync(payload);
+            if (handoff.Deadline <= DateTime.UtcNow || Read(marker).Phase != "prepared")
+                throw new InvalidDataException("Agent update handoff expired or changed during preparation.");
+            handoff = handoff with { ToolAssemblySha256 = tool.AssemblySha256 };
+            Save(marker, handoff with { Phase = "stopping" });
+            stopped = true; // Even an unconfirmed stop can have affected the running service.
+            await RunAsync("/usr/bin/systemctl", ["stop", "dms-agent.service"], CancellationToken.None);
+            using (var journal = new TaskJournal(Path.Combine(state, "journal")))
             {
-                var destination = Path.Combine(Destination, Path.GetRelativePath(payload, file));
-                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-                File.Copy(file, destination, overwrite: true);
+                if (journal.InstallationId != handoff.InstallationId) throw new InvalidDataException("Installation changed during update.");
+                await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
+                    IsTrace = true, Source = "updater", Message = "Old Agent stopped. Activating the approved Tool; task identities are preserved." });
+                Save(marker, handoff with { Phase = "installing" });
+                ActivateTool(tool.Directory);
+                await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
+                    IsTrace = true, Source = "updater", Message = $"Agent {handoff.Release.Version} Tool installed. Starting the service; confirmation is still pending." });
+                Save(marker, handoff with { Phase = "installed" });
             }
-            if (Hash(Path.Combine(Destination, "Aiursoft.DMS.Agent.dll")) != handoff.Release.AssemblySha256)
-                throw new InvalidDataException("Installed Agent assembly differs from the approved release.");
-            await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
-                IsTrace = true, Source = "updater", Message = $"Agent {handoff.Release.Version} payload installed. Starting the service; confirmation is still pending." });
-            Save(marker, handoff with { Phase = "installed" });
+            await RunAsync("/usr/bin/systemctl", ["daemon-reload"], CancellationToken.None);
+            await RunAsync("/usr/bin/systemctl", ["start", "dms-agent.service"], CancellationToken.None);
         }
-        await RunAsync("/usr/bin/systemctl", ["start", "dms-agent.service"], CancellationToken.None);
+        catch (Exception exception)
+        {
+            var failure = exception.Message[..Math.Min(exception.Message.Length, 2000)];
+            Save(marker, handoff with { Phase = stopped ? "uncertain" : "failed", Failure = failure });
+            if (stopped)
+            {
+                using (var journal = new TaskJournal(Path.Combine(state, "journal")))
+                {
+                    await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
+                        IsTrace = true, Source = "updater", Message = "Agent Tool update requires verification: " + failure });
+                    await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
+                        Definition = WorkflowNames.AgentUpgrade, Version = MachineWorkflows.AgentUpgrade.Version, State = RunState.NeedsVerification });
+                }
+                // Restore service availability where possible, without replaying the operation.
+                try
+                {
+                    await RunAsync("/usr/bin/systemctl", ["daemon-reload"], CancellationToken.None);
+                    await RunAsync("/usr/bin/systemctl", ["start", "dms-agent.service"], CancellationToken.None);
+                }
+                catch (IOException) { }
+            }
+            throw;
+        }
+        // Temporary-file cleanup must not change the outcome of an already activated Agent.
         Directory.Delete(Stage(state, id), true);
     }
 
-    private static async Task RunAsync(string executable, string[] arguments, CancellationToken token)
+    private static bool InstalledService()
+    {
+        var directory = Path.GetFullPath(AppContext.BaseDirectory).TrimEnd('/');
+        return directory == Destination || directory.StartsWith(Destination + "/tools/", StringComparison.Ordinal);
+    }
+
+    private sealed record ToolRelease(string PackageVersion, string PackageSha256, string AssemblySha256);
+    private sealed record InstalledTool(string Directory, string AssemblySha256);
+
+    private static async Task<InstalledTool> InstallToolAsync(string payload)
+    {
+        var release = JsonSerializer.Deserialize<ToolRelease>(File.ReadAllText(Path.Combine(payload, "tool.json")))
+            ?? throw new InvalidDataException("Missing Agent Tool release.");
+        if (!System.Version.TryParse(release.PackageVersion, out var version) || version.ToString(3) != System.Version.Parse(Version).ToString(3)
+            || release.PackageSha256.Length != 64 || release.AssemblySha256.Length != 64
+            || !release.PackageSha256.All(char.IsAsciiHexDigit) || !release.AssemblySha256.All(char.IsAsciiHexDigit)
+            || Hash(Path.Combine(payload, "agent.nupkg")) != release.PackageSha256)
+            throw new InvalidDataException("Agent Tool package differs from the approved release.");
+        // The tool package is entirely bundled: install from this local feed, with no external NuGet source.
+        var feed = Path.Combine(payload, "feed");
+        Directory.CreateDirectory(feed);
+        File.Copy(Path.Combine(payload, "agent.nupkg"), Path.Combine(feed, $"Aiursoft.DMS.Agent.{release.PackageVersion}.nupkg"), true);
+        var config = Path.Combine(feed, "nuget.config");
+        await File.WriteAllTextAsync(config, "<configuration><packageSources><clear/><add key=\"controller\" value=\".\"/></packageSources></configuration>");
+        var directory = Path.Combine(Destination, "tools", release.PackageVersion + "-" + release.PackageSha256[..12]);
+        // Existing native services need the same one-time SDK preparation as the installer.
+        if (!File.Exists("/usr/bin/dotnet") || !(await RunAsync("/usr/bin/dotnet", ["--list-sdks"], CancellationToken.None))
+                .Split('\n').Any(line => line.StartsWith("10.", StringComparison.Ordinal)))
+        {
+            await RunAsync("/usr/bin/apt-get", ["update"], CancellationToken.None);
+            await RunAsync("/usr/bin/apt-get", ["install", "-y", "dotnet10"], CancellationToken.None);
+        }
+        await RunAsync("/usr/bin/dotnet", ["tool", "update", "Aiursoft.DMS.Agent", "--version", release.PackageVersion,
+            "--tool-path", directory, "--configfile", config], CancellationToken.None, Path.Combine(feed, "packages"));
+        var assemblies = Directory.GetFiles(Path.Combine(directory, ".store"), "Aiursoft.DMS.Agent.dll", SearchOption.AllDirectories);
+        if (assemblies.Length != 1 || Hash(assemblies[0]) != release.AssemblySha256)
+            throw new InvalidDataException("Installed Agent Tool assembly differs from the approved release.");
+        await RunAsync(Path.Combine(directory, "dms-agent"), ["--version"], CancellationToken.None);
+        return new InstalledTool(directory, release.AssemblySha256);
+    }
+
+    private static void ActivateTool(string directory)
+    {
+        var executable = Path.Combine(Destination, "dms-agent");
+        var next = executable + ".next";
+        File.Delete(next);
+        File.CreateSymbolicLink(next, Path.Combine(directory, "dms-agent"));
+        File.Move(next, executable, true);
+        File.Delete("/usr/local/bin/dms-agent");
+        File.CreateSymbolicLink("/usr/local/bin/dms-agent", executable);
+        const string unit = "/etc/systemd/system/dms-agent.service";
+        File.WriteAllText(unit + ".next", """
+            [Unit]
+            Description=Aiursoft DMS Agent
+            Wants=network-online.target
+            After=network-online.target
+
+            [Service]
+            Type=simple
+            User=root
+            ExecStart=/opt/aiursoft-dms-agent/dms-agent run
+            Restart=on-failure
+            RestartSec=15
+            UMask=0077
+
+            [Install]
+            WantedBy=multi-user.target
+            """ + "\n");
+        File.Move(unit + ".next", unit, true);
+    }
+
+    private static async Task<string> RunAsync(string executable, string[] arguments, CancellationToken token, string? packages = null)
     {
         using var process = new Process();
         process.StartInfo = new ProcessStartInfo(executable) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        if (packages != null) process.StartInfo.Environment["NUGET_PACKAGES"] = packages;
         foreach (var argument in arguments) process.StartInfo.ArgumentList.Add(argument);
         process.Start();
         using var cancellation = token.Register(static state =>
@@ -208,9 +313,10 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         var output = process.StandardOutput.ReadToEndAsync(token);
         var error = process.StandardError.ReadToEndAsync(token);
         await process.WaitForExitAsync(token);
-        await output;
+        var standardOutput = await output;
         var diagnostic = (await error).Trim();
         if (process.ExitCode != 0) throw new IOException($"Agent lifecycle process {Path.GetFileName(executable)} failed with exit code {process.ExitCode}: {diagnostic[..Math.Min(diagnostic.Length, 2000)]}");
+        return standardOutput;
     }
     private static string Hash(string path)
     {

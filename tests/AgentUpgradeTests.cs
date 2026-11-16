@@ -10,12 +10,13 @@ namespace Aiursoft.DMS.Tests;
 public class AgentUpgradeTests
 {
     [TestMethod]
-    [DataRow("installed", true, 10, true)]
-    [DataRow("prepared", true, -6, false)]
-    [DataRow("installing", true, -6, false)]
-    [DataRow("installed", false, 10, false)]
-    [DataRow("installed", true, -1, false)]
-    public async Task OnlyMatchingInstalledAgentConfirmsOriginalWorkflow(string phase, bool correctHash, int minutes, bool success)
+    [DataRow("installed", true, 10, true, true)]
+    [DataRow("prepared", true, -6, true, false)]
+    [DataRow("installing", true, -6, true, false)]
+    [DataRow("installed", false, 10, true, false)]
+    [DataRow("installed", true, -1, true, false)]
+    [DataRow("installed", true, 10, false, false)]
+    public async Task OnlyMatchingInstalledAgentConfirmsOriginalWorkflow(string phase, bool correctHash, int minutes, bool toolIdentity, bool success)
     {
         var state = Path.Combine(Path.GetTempPath(), "dms-upgrade-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(state);
@@ -23,8 +24,8 @@ public class AgentUpgradeTests
         Guid installation;
         var machine = Guid.NewGuid();
         using var assembly = File.OpenRead(typeof(AgentUpgrade).Assembly.Location);
-        var release = new AgentRelease(AgentUpgrade.Architecture, AgentUpgrade.Version, new string('a', 64),
-            correctHash ? Convert.ToHexStringLower(SHA256.HashData(assembly)) : new string('b', 64));
+        var toolHash = correctHash ? Convert.ToHexStringLower(SHA256.HashData(assembly)) : new string('c', 64);
+        var release = new AgentRelease(AgentUpgrade.Architecture, AgentUpgrade.Version, new string('a', 64), new string('b', 64));
         var input = new AgentUpgradeInput([release, release with { Architecture = AgentUpgrade.Architecture == "linux-x64" ? "linux-arm64" : "linux-x64" }]);
         try
         {
@@ -35,7 +36,8 @@ public class AgentUpgradeTests
                 journal.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.AgentUpgrade, Version = MachineWorkflows.AgentUpgrade.Version, Input = MachineWorkflows.AgentUpgrade.Serialize(input) });
                 Assert.IsNotNull(journal.Start(id));
                 File.WriteAllText(Path.Combine(state, "upgrade.json"), JsonSerializer.Serialize(new UpgradeHandoff(id, id, null,
-                    installation, machine, release, "1.0.15.0", DateTime.UtcNow.AddMinutes(minutes), phase)));
+                    installation, machine, release, "1.0.15.0", DateTime.UtcNow.AddMinutes(minutes), phase,
+                    toolIdentity ? toolHash : null)));
             }
             using var recovered = new TaskJournal(Path.Combine(state, "journal"));
             await new AgentUpgrade(state, recovered).ConfirmAsync();
