@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
@@ -7,20 +8,28 @@ using Aiursoft.DMS.Services;
 using Aiursoft.UiStack.Navigation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Controllers;
 
-[Authorize]
+[Authorize(Policy = AppPermissionNames.CanReadDmsOperations)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces, WorkflowInvestigation investigation) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
+    public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    {
+        try { await access.RequireViewAsync(Actor); }
+        catch (DmsException exception) { context.Result = StatusCode(exception.StatusCode); return; }
+        await next();
+    }
+
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Machines", LinkOrder = 1)]
     public async Task<IActionResult> Index()
     {
-        var clusters = await access.VisibleClustersAsync(Actor);
+        var clusters = await db.Clusters.Select(c => c.Id).ToListAsync();
         return this.StackView(new DmsViewModel
         {
             Clusters = await db.Clusters.Where(c => clusters.Contains(c.Id)).ToListAsync(),
@@ -31,7 +40,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Investigation", LinkOrder = 5)]
     public async Task<IActionResult> Investigation([FromQuery] WorkflowAuditQuery query)
     {
-        var visible = await access.VisibleClustersAsync(Actor);
+        var visible = await db.Clusters.Select(c => c.Id).ToListAsync();
         if (query.ClusterId != Guid.Empty && !visible.Contains(query.ClusterId)) return StatusCode(403);
         var clusters = await db.Clusters.Where(c => visible.Contains(c.Id)).OrderBy(c => c.Name).ThenBy(c => c.Id).ToListAsync();
         if (query.ClusterId == Guid.Empty && clusters.Count > 0) query = query with { ClusterId = clusters[0].Id };
@@ -54,7 +63,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Standard workflows", LinkOrder = 4)]
     public async Task<IActionResult> Definitions(Guid? clusterId = null)
     {
-        var visible = await access.VisibleClustersAsync(Actor);
+        var visible = await db.Clusters.Select(c => c.Id).ToListAsync();
         if (clusterId != null && !visible.Contains(clusterId.Value)) return StatusCode(403);
         var clusters = await db.Clusters.Where(c => visible.Contains(c.Id)).OrderBy(c => c.Name).ThenBy(c => c.Id).ToListAsync();
         clusterId ??= clusters.FirstOrDefault()?.Id;
@@ -73,14 +82,22 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     public async Task<IActionResult> Lockboxes(int page = 0)
     {
         page = Math.Clamp(page, 0, 100000);
-        var clusters = await access.VisibleClustersAsync(Actor);
+        var clusters = await db.Clusters.Select(c => c.Id).ToListAsync();
         var items = await db.Lockboxes.Where(l => clusters.Contains(l.ClusterId)).OrderByDescending(l => l.CreatedAt).Skip(page * 50).Take(51).ToListAsync();
         return this.StackView(new DmsViewModel { Lockboxes = items.Take(50).ToList(), Page = page, HasNextPage = items.Count > 50 });
     }
 
     public async Task<IActionResult> Lockbox(Guid id)
     {
-        try { return this.StackView(new DmsViewModel { Lockbox = await workflows.GetLockboxAsync(Actor, id), Notice = TempData["DmsNotice"] as string }); }
+        try
+        {
+            var item = await workflows.GetLockboxAsync(Actor, id);
+            return this.StackView(new DmsViewModel
+            {
+                Lockbox = item, Notice = TempData["DmsNotice"] as string,
+                CanDecide = DmsPermissions.CanDecide(await access.PrincipalAsync(Actor), item.Risk, item.RequesterId == Actor)
+            });
+        }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
 
@@ -96,7 +113,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null, Guid? clusterId = null, bool clusterWorkflowsOnly = false)
     {
         page = Math.Clamp(page, 0, 100000);
-        var clusters = await access.VisibleClustersAsync(Actor);
+        var clusters = await db.Clusters.Select(c => c.Id).ToListAsync();
         if (clusterId != null && !clusters.Contains(clusterId.Value)) return StatusCode(403);
         var query = db.WorkflowRuns.Where(r => clusters.Contains(r.ClusterId));
         if (clusterId != null) query = query.Where(r => r.ClusterId == clusterId);

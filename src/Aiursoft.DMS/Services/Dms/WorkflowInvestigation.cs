@@ -7,11 +7,11 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
 {
     public async Task<WorkflowAuditPage> ReadAsync(string actor, WorkflowAuditQuery query)
     {
-        // Check the selected cluster before revealing archive availability or accepting other filters.
-        await access.RequireViewAsync(actor, query.ClusterId);
+        // Check global read permission before revealing archive availability or accepting filters.
+        await access.RequireViewAsync(actor);
         var until = query.Until?.ToUniversalTime() ?? DateTimeOffset.UtcNow;
         var from = query.From?.ToUniversalTime() ?? until.AddDays(-1);
-        if (from < DateTimeOffset.UnixEpoch || until.Year > 2261 || from >= until || until - from > TimeSpan.FromDays(31) || query.Page is < 0 or > 10000 ||
+        if (query.ClusterId == Guid.Empty || from < DateTimeOffset.UnixEpoch || until.Year > 2261 || from >= until || until - from > TimeSpan.FromDays(31) || query.Page is < 0 or > 10000 ||
             (query.Kind != null && !Enum.IsDefined(query.Kind.Value)) || (query.State != null && !Enum.IsDefined(query.State.Value)) ||
             new[] { query.RequesterId, query.ApproverId, query.Definition, query.RequestedDefinition }.Any(s => s?.Length > 200))
             throw new DmsException(400, "Choose a valid time range of at most 31 days, page, and investigation filters.");

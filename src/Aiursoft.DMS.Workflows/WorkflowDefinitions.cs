@@ -27,9 +27,12 @@ public sealed class MachineWorkflowRegistry
     }
 
     public void Register<TInput, TResult>(MachineWorkflowDefinition<TInput, TResult> definition,
-        Func<TInput, AgentEnvironment, MachineWorkflow> factory) =>
+        Func<TInput, AgentEnvironment, MachineWorkflow> factory)
+    {
+        if (!Enum.IsDefined(definition.Risk)) throw new ArgumentOutOfRangeException(nameof(definition));
         _definitions.Add(definition.Name, (definition, (input, environment) => new ValidatedWorkflow(definition,
             factory(definition.ReadInput(input), environment), result => { definition.ReadResult(result); })));
+    }
 
     private sealed class ValidatedWorkflow(WorkflowDefinition definition, MachineWorkflow workflow, Action<string> validate) : MachineWorkflow
     {

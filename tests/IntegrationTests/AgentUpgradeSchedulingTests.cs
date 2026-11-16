@@ -28,8 +28,8 @@ public class AgentUpgradeSchedulingTests : TestBase
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var following = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var hold = new MachineWorkflowDefinition<EmptyInput, EmptyInput>("test.upgrade-hold", RiskLevel.Safe);
-        var after = new MachineWorkflowDefinition<EmptyInput, EmptyInput>("test.upgrade-after", RiskLevel.Safe);
+        var hold = new MachineWorkflowDefinition<EmptyInput, EmptyInput>("test.upgrade-hold", RiskLevel.Safe, PublicEntry: true);
+        var after = new MachineWorkflowDefinition<EmptyInput, EmptyInput>("test.upgrade-after", RiskLevel.Safe, PublicEntry: true);
         var registry = new MachineWorkflowRegistry();
         foreach (var target in new[] { registry, Server!.Services.GetRequiredService<MachineWorkflowRegistry>() })
         {
@@ -57,7 +57,7 @@ public class AgentUpgradeSchedulingTests : TestBase
                 var machine = new Machine { ClusterId = cluster.Id, Name = "Drain node", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }; machineId = machine.Id;
                 db.Users.Add(user); db.Clusters.Add(cluster); db.Machines.Add(machine);
                 foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.High })
-                    db.ClusterGrants.Add(new ClusterGrant { UserId = user.Id, ClusterId = cluster.Id, Risk = risk, CanRequest = true, AutoApprove = true });
+                    DmsTestPermissions.Risk(db, user.Id, risk, request: true, automatic: true, approve: false);
                 await db.SaveChangesAsync();
                 await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, hold.Request(clusterId, new EmptyInput(), "Hold an existing task", [machineId]));
             }

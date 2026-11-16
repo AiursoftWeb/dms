@@ -1,3 +1,4 @@
+using Aiursoft.DMS.Authorization;
 using System.Net;
 using System.Net.Http.Headers;
 using Aiursoft.AiurProtocol;
@@ -29,8 +30,7 @@ public class WorkflowDiscoveryTests : TestBase
         AuthoringExamples.RegisterCluster(Server.Services.GetRequiredService<ClusterWorkflowRegistry>());
         return await DatabaseAsync(async db =>
         {
-            var user = await db.Users.SingleAsync(u => u.UserName == "admin");
-            user.CanApproveOwnRequests = false;
+            var user = new User { UserName = "catalog" + Guid.NewGuid().ToString("N"), Email = "catalog@example.test", DisplayName = "Catalog" }; db.Users.Add(user);
             var first = new Cluster { Name = "First <script>unsafe()</script>" };
             var second = new Cluster { Name = "Second" };
             var hidden = new Cluster { Name = "Hidden cluster" };
@@ -39,11 +39,9 @@ public class WorkflowDiscoveryTests : TestBase
             db.Clusters.AddRange(first, second, hidden);
             db.Machines.Add(new Machine { ClusterId = first.Id, Name = "Agent", KeyHash = DmsKeyAuthenticationHandler.Hash(agentKey) });
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Catalog", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
-            db.ClusterGrants.AddRange(
-                new ClusterGrant { UserId = user.Id, ClusterId = first.Id, Risk = RiskLevel.Safe, CanRequest = true, AutoApprove = true },
-                new ClusterGrant { UserId = user.Id, ClusterId = first.Id, Risk = RiskLevel.Low, CanRequest = true },
-                new ClusterGrant { UserId = user.Id, ClusterId = first.Id, Risk = RiskLevel.Medium, CanApprove = true },
-                new ClusterGrant { UserId = user.Id, ClusterId = second.Id, Risk = RiskLevel.Low, CanApprove = true, AutoApprove = true });
+            DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true, automatic: true);
+            DmsTestPermissions.Risk(db, user.Id, RiskLevel.Low, request: true);
+            DmsTestPermissions.Risk(db, user.Id, RiskLevel.Medium, approve: true);
             await db.SaveChangesAsync();
             return (first.Id, second.Id, hidden.Id, user.Id, key, agentKey);
         });
@@ -58,7 +56,7 @@ public class WorkflowDiscoveryTests : TestBase
     }
 
     [TestMethod]
-    public async Task CatalogDiscoversRegisteredPublicDefinitionsAndClusterSpecificIndependentPermissions()
+    public async Task CatalogDiscoversRegisteredPublicDefinitionsAndGlobalIndependentPermissions()
     {
         var setup = await ArrangeAsync();
         var first = await ReadAsync(setup.First, setup.Key);
@@ -74,9 +72,8 @@ public class WorkflowDiscoveryTests : TestBase
         Assert.AreEqual(RiskLevel.Medium, cluster.Risk); Assert.IsFalse(cluster.CanRequest || cluster.AutoApprove); Assert.IsTrue(cluster.CanApprove);
         Assert.IsFalse(first.Definitions.Single(d => d.Name == ClusterWorkflows.GetMachines.Name).RequiresTargets);
         var second = await ReadAsync(setup.Second, setup.Key);
-        Assert.IsTrue(second.Definitions.Where(d => d.Risk == RiskLevel.Low).All(d => !d.CanRequest && d.AutoApprove && d.CanApprove));
-        Assert.IsTrue(second.Definitions.Where(d => d.Risk != RiskLevel.Low).All(d => !d.CanRequest && !d.AutoApprove && !d.CanApprove));
-        await DatabaseAsync(async db => { (await db.Users.SingleAsync(u => u.Id == setup.User)).CanApproveOwnRequests = true; await db.SaveChangesAsync(); return true; });
+        CollectionAssert.AreEqual(first.Definitions.ToList(), second.Definitions.ToList());
+        await DatabaseAsync(async db => { DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanApproveOwnWorkflow); await db.SaveChangesAsync(); return true; });
         Assert.IsTrue((await ReadAsync(setup.Second, setup.Key)).CanApproveOwnRequests);
         Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(l => l.ClusterId == setup.First || l.ClusterId == setup.Second)));
         Assert.AreEqual(0, await DatabaseAsync(db => db.WorkflowRuns.CountAsync(r => r.ClusterId == setup.First || r.ClusterId == setup.Second)));
@@ -92,9 +89,9 @@ public class WorkflowDiscoveryTests : TestBase
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.AgentKey);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync(route)).StatusCode);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
-        foreach (var cluster in new[] { setup.Hidden, Guid.Empty, Guid.NewGuid() })
-            Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/workflow-definitions?clusterId={cluster}")).StatusCode);
-        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync("/api/v1/dms/workflow-definitions")).StatusCode);
+        foreach (var cluster in new[] { Guid.Empty, Guid.NewGuid() })
+            Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync($"/api/v1/dms/workflow-definitions?clusterId={cluster}")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync("/api/v1/dms/workflow-definitions")).StatusCode);
         Assert.AreEqual(0, await DatabaseAsync(db => db.AuditEvents.CountAsync(e => e.Action == "workflow.definitions" && (e.ResourceId == setup.First || e.ResourceId == setup.Second))));
     }
 
@@ -140,20 +137,19 @@ public class WorkflowDiscoveryTests : TestBase
         var html = await page.Content.ReadAsStringAsync();
         StringAssert.Contains(html, "example.total"); StringAssert.Contains(html, "repeat-1");
         StringAssert.Contains(html, "May approve own requests"); StringAssert.Contains(html, "&lt;script&gt;");
-        Assert.DoesNotContain("<script>unsafe()", html); Assert.DoesNotContain("Hidden cluster", html); Assert.DoesNotContain("example.unit", html);
+        Assert.DoesNotContain("<script>unsafe()", html); StringAssert.Contains(html, "Hidden cluster"); Assert.DoesNotContain("example.unit", html);
         StringAssert.Contains(html, $"clusterId={setup.First}"); StringAssert.Contains(html, "definition=example.total");
-        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/Dms/Definitions?clusterId={setup.Hidden}")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/Dms/Definitions?clusterId={setup.Hidden}")).StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/Dms/Definitions?clusterId={setup.Second}")).StatusCode);
         await RegisterAndLoginAsync();
-        html = await Http.GetStringAsync("/Dms/Definitions");
-        StringAssert.Contains(html, "You do not have access to any clusters."); Assert.DoesNotContain("example.total", html);
+        Assert.AreEqual(HttpStatusCode.Found, (await Http.GetAsync("/Dms/Definitions")).StatusCode);
     }
 
     [TestMethod]
     public void CrossLocationNameCollisionIsRejectedEvenForInternalDefinitions()
     {
         var machines = new MachineWorkflowRegistry(); var clusters = new ClusterWorkflowRegistry();
-        clusters.Register(new ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>>(MachineWorkflows.Performance.Name), () => new GetMachinesWorkflow());
+        clusters.Register(new ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>>(MachineWorkflows.Performance.Name, RiskLevel.Safe), () => new GetMachinesWorkflow());
         Assert.Throws<InvalidOperationException>(() => new WorkflowCatalog(machines, clusters).PublicDefinitions());
     }
 }

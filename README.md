@@ -17,7 +17,7 @@ DMS is a server operations platform for humans and AI, built on Aiursoft Templat
 - A web console for machine inventory, approvals and workflow history.
 - A CLI and reusable SDK for requesting operations and inspecting their results.
 - Linux Agents that connect outward to the Controller over WebSocket. Managed machines need access to the Controller, without requiring internet access or an SSH service.
-- Cluster permissions with independent request, automatic approval and approval rights for five risk levels.
+- Role permissions with independent request, automatic approval and approval rights for five risk levels.
 - Persistent workflow state, parent/child callstacks and ClickHouse trace archives.
 - Shared Aiursoft accounts, OIDC, roles, themes and localization.
 
@@ -40,13 +40,13 @@ dms access whoami
 dms cluster list
 ```
 
-The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require their Cluster's risk permissions and Lockbox approval.
+The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require global role risk permissions and Lockbox approval.
 
 Use `dotnet tool update --global Aiursoft.DMS.Client` to update or `dotnet tool uninstall --global Aiursoft.DMS.Client` to uninstall. See [CLI and Agent setup](./docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples. The [SDK source](./src/Aiursoft.DMS.SDK) is included in this repository and is not published as a separate NuGet package.
 
 ## Try
 
-Open [DMS](https://dms.aiursoft.com) with an authorized company account. Cluster permissions determine which machines, requests and workflows you can access.
+Open [DMS](https://dms.aiursoft.com) with an authorized company account. Role permissions determine which risk levels you can request and approve across all machines.
 
 ## Install with Docker
 
@@ -72,7 +72,7 @@ dotnet run --project Aiursoft.DMS.csproj -- --urls http://localhost:5000
 
 Open `http://localhost:5000`. The default local administrator is `admin@default.com` with password `Admin@123456!`. Change this password before exposing a deployment.
 
-The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to create clusters, configure their permissions and issue cluster join keys; **Cluster access** provides the same management operations in the web UI. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
+The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to manage inventory and issue join keys; **DMS access** provides inventory and Agent identity management in the web UI. Configure workflow risk permissions on the existing **Roles** page. See [CLI and Agent setup](./docs/cli-and-agent.md) for registration and the first operation.
 
 ## Run in Microsoft Visual Studio
 
@@ -119,7 +119,7 @@ dotnet ./bin/client/dms.dll access whoami
 dotnet ./bin/client/dms.dll cluster list
 ```
 
-These identity and management queries create no Lockbox. Server operations submit a Lockbox and require the selected Cluster's request permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
+These identity and management queries create no Lockbox. Server operations submit a Lockbox and require the global request Permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
 
 ### Join and manage machines
 
@@ -135,7 +135,7 @@ See [configuration and persistence](./docs/configuration.md) for database settin
 
 - [CLI, authentication, Cluster management and Agent setup](docs/cli-and-agent.md)
 - [Configuration, persistence, recovery and cancellation](docs/configuration.md)
-- [Available workflows and Cluster permissions](docs/workflow-discovery.md)
+- [Available workflows and role permissions](docs/workflow-discovery.md)
 - [Workflow authoring](docs/authoring-workflows.md)
 
 ## How to contribute

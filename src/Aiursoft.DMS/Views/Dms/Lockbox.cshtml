@@ -18,7 +18,7 @@
 <a asp-action="Operation" asp-route-id="@item.WorkflowId">@Localizer["Lockbox callstack"]</a>
 @if (item.OperationId != null) { <a class="ms-3" asp-action="Operation" asp-route-id="@item.OperationId">@Localizer["Operation"]</a> }
 </div></div>
-@if (item.Decision == DecisionState.Pending)
+@if (item.Decision == DecisionState.Pending && Model.CanDecide)
 {
     <form asp-action="Decide" method="post" class="card"><div class="card-body">
         <input type="hidden" name="id" value="@item.Id" />

@@ -12,7 +12,7 @@ public static class DmsCommandApp
         .WithFeature(new LoginCommand())
         .WithFeature(new Group("cluster", [new ManagementCommand("list", "clusters"), new ManagementCommand("create", "create"), new ManagementCommand("rename", "rename"), new ManagementCommand("drop", "drop"), StandardCommand("get-machines", ClusterWorkflows.GetMachines, _ => new EmptyInput()), new ActionCommand("add-machine", WorkflowNames.AddMachine),
             new Group("get", [StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput())])]))
-        .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("set-grant", "grant"), new ManagementCommand("set-self-approval", "self"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
+        .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
         .WithFeature(new Group("machine", [
             new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand()]),
             new Group("box", [new Group("puller", [PullerCommand()])]),
@@ -96,7 +96,7 @@ public static class DmsCommandApp
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
         protected override string Description => IsSubmission ? "Submit a Lockbox request. Execution starts only after approval." : "Inspect or decide an existing workflow request.";
-        private readonly Option<Guid> _cluster = new("--cluster-id") { Description = "Cluster ID; may be omitted when exactly one cluster is accessible." };
+        private readonly Option<Guid> _cluster = new("--cluster-id") { Description = "Cluster ID; may be omitted when exactly one cluster exists." };
         private readonly Option<Guid[]> _machines = new("--machine-id") { AllowMultipleArgumentsPerToken = true, Description = "Explicit machines; may be omitted when the cluster has exactly one active machine." };
         private readonly Option<bool> _all = new("--all-machines");
         private readonly Option<Guid> _id = new("--id");

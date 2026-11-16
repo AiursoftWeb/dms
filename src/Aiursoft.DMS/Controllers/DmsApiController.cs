@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Authorization;
-using EFCoreSecondLevelCacheInterceptor;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
@@ -36,9 +35,9 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     [HttpGet("access/identity")]
     public Task<IActionResult> Identity() => Handle(async () =>
     {
-        var self = await db.Users.AsNoTracking().NotCacheable().Where(u => u.Id == Actor).Select(u => u.CanApproveOwnRequests).SingleAsync();
+        var identity = DmsPermissions.Describe(await access.PrincipalAsync(Actor));
         access.Audit(Actor, "access.identity"); await db.SaveChangesAsync();
-        return new CurrentUser(Actor, User.Identity?.Name ?? "", self, User.FindAll(AppPermissions.Type).Select(c => c.Value).Distinct().Order().ToList());
+        return identity;
     });
 
     [HttpPost("access/join-keys"), Authorize(Policy = "CanManageDmsAccess")]
@@ -80,20 +79,6 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     [HttpDelete("clusters/{id:guid}"), Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> DropCluster(Guid id) => Handle(async () => await management.DropAsync(Actor, id));
 
-    [HttpPut("access/grants"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> SetGrant([FromBody] RiskGrant? input) => Handle(async () =>
-    {
-        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid risk grant.");
-        return await management.GrantAsync(Actor, input);
-    });
-
-    [HttpPut("access/self-approval"), Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> SetSelfApproval([FromBody] SelfApprovalInput? input) => Handle(async () =>
-    {
-        if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid self-approval setting.");
-        return await management.SelfApprovalAsync(Actor, input);
-    });
-
     [HttpPost("access/machines/{id:guid}/key"), Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> IssueAgentKey(Guid id) => Handle(async () => await management.AgentKeyAsync(Actor, id));
 
@@ -110,7 +95,7 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     [HttpGet("audit-events")]
     public Task<IActionResult> AuditEvents([FromQuery] WorkflowAuditQuery query) => Handle(async () =>
     {
-        await access.RequireViewAsync(Actor, query.ClusterId);
+        await access.RequireViewAsync(Actor);
         if (!ModelState.IsValid) throw new DmsException(400, "Invalid investigation filters.");
         return await investigation.ReadAsync(Actor, query);
     });
@@ -141,8 +126,8 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     public Task<IActionResult> Trace(Guid id, int skip = 0) => Handle(async () =>
     {
         if (skip < 0) throw new DmsException(400, "Offset cannot be negative.");
-        var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
-        await access.RequireViewAsync(Actor, run.ClusterId);
+        if (!await db.WorkflowRuns.AnyAsync(r => r.Id == id)) throw new DmsException(404, "Workflow not found.");
+        await access.RequireViewAsync(Actor);
         access.Audit(Actor, "operation.trace", id); await db.SaveChangesAsync();
         if (!traces.Enabled) throw new DmsException(503, "ClickHouse is not configured. Trace remains in the durable backlog.");
         try

@@ -1,3 +1,4 @@
+using Aiursoft.DMS.Authorization;
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
@@ -31,12 +32,12 @@ public class AgentUpgradeIntegrationTests : TestBase
                 var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
                 var user = new User { Id = Guid.NewGuid().ToString(), UserName = "upgrade-" + Guid.NewGuid().ToString("N"), DisplayName = "Upgrade operator" };
                 db.Users.Add(user);
-                userId = user.Id; user.CanApproveOwnRequests = false;
+                userId = user.Id;
                 var cluster = new Cluster { Name = "Upgrade approval" }; clusterId = cluster.Id;
                 var machine = new Machine { ClusterId = cluster.Id, Name = "Upgrade target" }; machineId = machine.Id;
                 db.Clusters.Add(cluster); db.Machines.Add(machine);
                 db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Upgrade CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
-                db.ClusterGrants.Add(new ClusterGrant { UserId = user.Id, ClusterId = cluster.Id, Risk = RiskLevel.High, CanRequest = true, CanApprove = true });
+                DmsTestPermissions.Risk(db, user.Id, RiskLevel.High, request: true, automatic: false, approve: true);
                 await db.SaveChangesAsync();
             }
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "agent", "upgrade", "--cluster-id", clusterId.ToString(),
@@ -52,7 +53,7 @@ public class AgentUpgradeIntegrationTests : TestBase
             CollectionAssert.AreEqual(input.Releases, MachineWorkflows.AgentUpgrade.ReadInput(parameters.Input).Releases);
             var service = inspection.ServiceProvider.GetRequiredService<WorkflowService>();
             Assert.AreEqual(403, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(userId, request.Id, true, "No implicit self approval"))).StatusCode);
-            (await database.Users.SingleAsync(u => u.Id == userId)).CanApproveOwnRequests = true;
+            DmsTestPermissions.Set(database, userId, AppPermissionNames.CanApproveOwnWorkflow);
             await database.SaveChangesAsync();
             File.WriteAllText(metadata, JsonSerializer.Serialize(input.Releases.Select(r => r with { ArchiveSha256 = new string('c', 64) })));
             Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(userId, request.Id, true, "Assets changed"))).StatusCode);

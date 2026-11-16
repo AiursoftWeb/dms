@@ -28,9 +28,17 @@ public class EnrollmentTests : TestBase
         db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Enrollment fixture", KeyHash = DmsKeyAuthenticationHandler.Hash(raw), ExpiresAt = DateTime.UtcNow.AddHours(1) });
         await db.SaveChangesAsync();
         var cluster = await CliAsync<ClusterSummary>(raw, "cluster", "create", "--name", "Join-" + suffix);
-        var flags = automatic ? new[] { "--can-request", "--can-approve", "--auto-approve" } : ["--can-request", "--can-approve"];
-        await CliAsync<RiskGrant>(raw, ["access", "set-grant", "--cluster-id", cluster.Id.ToString(), "--user-id", user.Id, "--risk", "Medium", .. flags]);
+        DmsTestPermissions.Risk(db, user.Id, RiskLevel.Medium, request: true, automatic: automatic, approve: true);
+        await db.SaveChangesAsync();
         return (user.Id, raw, cluster.Id);
+    }
+
+    private async Task SetSelfApprovalAsync(string user)
+    {
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        DmsTestPermissions.Set(db, user, AppPermissionNames.CanApproveOwnWorkflow);
+        await db.SaveChangesAsync();
     }
 
     private async Task<T> CliAsync<T>(string key, params string[] args)
@@ -73,6 +81,25 @@ public class EnrollmentTests : TestBase
             await Task.Delay(50);
         }
         throw new AssertFailedException("The approved enrollment did not complete.");
+    }
+
+    [TestMethod]
+    public async Task JoinKeyUsesIssuersCurrentRequestPermission()
+    {
+        var setup = await ArrangeAsync();
+        var cluster = (await CliAsync<List<ClusterSummary>>(setup.Key, "cluster", "list")).Single(c => c.Id == setup.Cluster);
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Permission revocation");
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Medium), false);
+            await db.SaveChangesAsync();
+        }
+        var input = Input(cluster.Name);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", input)).Status);
+        using var check = Server!.Services.CreateScope();
+        var database = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        Assert.IsFalse(await database.AgentEnrollments.AnyAsync(e => e.InstallationId == input.InstallationId));
     }
 
     [TestMethod]
@@ -121,7 +148,7 @@ public class EnrollmentTests : TestBase
             Assert.AreEqual(1, await db.Lockboxes.CountAsync(b => b.ClusterId == setup.Cluster));
             Assert.AreEqual(DmsKeyAuthenticationHandler.Hash(issued.Key), (await db.JoinKeys.SingleAsync(k => k.Id == issued.Details.Id)).KeyHash);
         }
-        await CliAsync<SelfApprovalInput>(setup.Key, "access", "set-self-approval", "--user-id", setup.User, "--enabled");
+        await SetSelfApprovalAsync(setup.User);
         await CliAsync<object>(setup.Key, "lockbox", "approve", "--id", submitted.LockboxId.ToString(), "--reason", "Explicit root attribute fixture");
         var joined = await JoinedAsync(input.ReceiptKey);
         Assert.AreEqual(input.InstallationId, joined.InstallationId); Assert.IsNotNull(joined.MachineId);
@@ -143,11 +170,16 @@ public class EnrollmentTests : TestBase
         Assert.AreEqual("Joined", (await StatusAsync(first.ReceiptKey)).State);
         Assert.AreEqual(HttpStatusCode.Unauthorized, (await RequestAsync(issued.Key, HttpMethod.Post, "/api/v1/agent/enrollment", Input(cluster.Name))).Status);
         var pendingKey = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--cluster-id", setup.Cluster.ToString(), "--name", "Pending nodes");
-        await CliAsync<RiskGrant>(setup.Key, "access", "set-grant", "--cluster-id", setup.Cluster.ToString(), "--user-id", setup.User, "--risk", "Medium", "--can-request", "--can-approve");
+        using (var permissionScope = Server!.Services.CreateScope())
+        {
+            var permissionDb = permissionScope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            DmsTestPermissions.Set(permissionDb, setup.User, DmsPermissions.AutoApprove(RiskLevel.Medium), false);
+            await permissionDb.SaveChangesAsync();
+        }
         var pending = Input(cluster.Name); var request = await SubmitAsync(pendingKey.Key, pending);
         await CliAsync<JoinKeySummary>(setup.Key, "access", "revoke-join-key", "--id", pendingKey.Details.Id.ToString());
         Assert.AreEqual("Unavailable", (await StatusAsync(pending.ReceiptKey)).State);
-        await CliAsync<SelfApprovalInput>(setup.Key, "access", "set-self-approval", "--user-id", setup.User, "--enabled");
+        await SetSelfApprovalAsync(setup.User);
         await CliAsync<object>(setup.Key, "lockbox", "approve", "--id", request.LockboxId.ToString(), "--reason", "Late approval must not activate revoked enrollment");
         var expired = "dmsj_" + Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         using (var scope = Server!.Services.CreateScope())
@@ -215,11 +247,11 @@ public class EnrollmentTests : TestBase
             var retry = await AgentCommandApp.Create().TestRunAsync(args); Assert.AreEqual(0, retry.ProgramReturn, retry.StdErr);
             Assert.AreEqual(config, AgentConfiguration.Load(state));
             var pending = await StatusAsync(config.ReceiptKey);
-            await CliAsync<SelfApprovalInput>(setup.Key, "access", "set-self-approval", "--user-id", setup.User, "--enabled");
+            await SetSelfApprovalAsync(setup.User);
             await CliAsync<object>(setup.Key, "lockbox", "deny", "--id", pending.LockboxId.ToString(), "--reason", "Retry enrollment fixture");
             var newAttempt = await AgentCommandApp.Create().TestRunAsync(args); Assert.AreEqual(0, newAttempt.ProgramReturn, newAttempt.StdErr);
             var next = AgentConfiguration.Load(state)!; Assert.AreEqual(config.InstallationId, next.InstallationId); Assert.AreNotEqual(config.EnrollmentId, next.EnrollmentId);
-            await CliAsync<SelfApprovalInput>(setup.Key, "access", "set-self-approval", "--user-id", setup.User, "--enabled");
+            await SetSelfApprovalAsync(setup.User);
             await CliAsync<object>(setup.Key, "lockbox", "approve", "--id", (await StatusAsync(next.ReceiptKey)).LockboxId.ToString(), "--reason", "Approve retry");
             await JoinedAsync(next.ReceiptKey);
             var active = await AgentCommandApp.Create().TestRunAsync(args); Assert.AreEqual(0, active.ProgramReturn, active.StdErr);

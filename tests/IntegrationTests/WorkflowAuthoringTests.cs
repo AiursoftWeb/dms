@@ -30,7 +30,7 @@ public class WorkflowAuthoringTests : TestBase
         AuthoringExamples.RegisterCluster(Server.Services.GetRequiredService<ClusterWorkflowRegistry>());
         return await DatabaseAsync(async db =>
         {
-            var user = await db.Users.SingleAsync(u => u.UserName == "admin");
+            var user = new User { UserName = "requester" + Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
             var approver = new User { Id = Guid.NewGuid().ToString(), UserName = "reviewer", DisplayName = "Reviewer" };
             var cluster = new Cluster { Name = "Authoring" };
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
@@ -40,8 +40,8 @@ public class WorkflowAuthoringTests : TestBase
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Authoring", KeyHash = DmsKeyAuthenticationHandler.Hash(personal), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             foreach (var risk in Enum.GetValues<RiskLevel>())
             {
-                db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = risk, CanRequest = true });
-                db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = approver.Id, Risk = risk, CanApprove = true });
+                DmsTestPermissions.Risk(db, user.Id, risk, request: true, automatic: false, approve: false);
+                DmsTestPermissions.Risk(db, approver.Id, risk, request: false, automatic: false, approve: true);
             }
             await db.SaveChangesAsync();
             return (cluster.Id, user.Id, approver.Id, machines.Select(m => m.Id).ToArray(), keys, personal);

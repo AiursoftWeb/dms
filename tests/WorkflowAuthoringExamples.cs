@@ -27,11 +27,11 @@ public sealed record TotalResult(long Units, int Machines, List<Guid> Installati
 public static class AuthoringExamples
 {
     public static readonly MachineWorkflowDefinition<UnitInput, UnitResult> Unit = new(
-        "example.unit", Version: "unit-1", ValidateInput: input => input.Validate());
+        "example.unit", RiskLevel.VeryHigh, Version: "unit-1", ValidateInput: input => input.Validate());
     public static readonly MachineWorkflowDefinition<RepeatInput, RepeatedResult> Repeat = new(
-        "example.repeat", RiskLevel.Low, "repeat-1", input => input.Validate());
+        "example.repeat", RiskLevel.Low, "repeat-1", input => input.Validate(), PublicEntry: true);
     public static readonly ClusterWorkflowDefinition<RepeatInput, TotalResult> Total = new(
-        "example.total", RiskLevel.Medium, "total-1", input => input.Validate(), SelectMachines: true);
+        "example.total", RiskLevel.Medium, "total-1", input => input.Validate(), SelectMachines: true, PublicEntry: true);
 
     public static void RegisterMachines(MachineWorkflowRegistry registry)
     {

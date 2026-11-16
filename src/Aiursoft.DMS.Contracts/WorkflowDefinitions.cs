@@ -6,6 +6,7 @@ namespace Aiursoft.DMS.Contracts;
 
 public enum WorkflowLocation { Cluster, Machine }
 public sealed record EmptyInput;
+public sealed record ProcessInput(string Executable, IReadOnlyList<string> Arguments, bool CaptureOutput);
 public sealed partial record ServiceInput(string Service)
 {
     public static bool ValidService(string? service) => service != null && ServiceName().IsMatch(service);
@@ -26,7 +27,7 @@ internal static class WorkflowJson
     };
 }
 
-public abstract record WorkflowDefinition(string Name, RiskLevel? PublicRisk, string Version)
+public abstract record WorkflowDefinition(string Name, RiskLevel Risk, string Version, bool PublicEntry)
 {
     public abstract WorkflowLocation Location { get; }
     public abstract bool RequiresTargets { get; }
@@ -34,8 +35,8 @@ public abstract record WorkflowDefinition(string Name, RiskLevel? PublicRisk, st
     public abstract string Normalize(string input);
 }
 
-public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLevel? PublicRisk, string Version,
-    Action<TInput>? ValidateInput) : WorkflowDefinition(Name, PublicRisk, Version)
+public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLevel Risk, string Version,
+    Action<TInput>? ValidateInput, bool PublicEntry) : WorkflowDefinition(Name, Risk, Version, PublicEntry)
 {
     public string Serialize(TInput input)
     {
@@ -62,17 +63,17 @@ public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLeve
     };
 }
 
-public sealed record MachineWorkflowDefinition<TInput, TResult>(string Name, RiskLevel? PublicRisk = null,
-    string Version = WorkflowNames.Version, Action<TInput>? ValidateInput = null)
-    : WorkflowDefinition<TInput, TResult>(Name, PublicRisk, Version, ValidateInput)
+public sealed record MachineWorkflowDefinition<TInput, TResult>(string Name, RiskLevel Risk,
+    string Version = WorkflowNames.Version, Action<TInput>? ValidateInput = null, bool PublicEntry = false)
+    : WorkflowDefinition<TInput, TResult>(Name, Risk, Version, ValidateInput, PublicEntry)
 {
     public override WorkflowLocation Location => WorkflowLocation.Machine;
     public override bool RequiresTargets => true;
 }
 
-public sealed record ClusterWorkflowDefinition<TInput, TResult>(string Name, RiskLevel? PublicRisk = null,
-    string Version = WorkflowNames.Version, Action<TInput>? ValidateInput = null, bool SelectMachines = false)
-    : WorkflowDefinition<TInput, TResult>(Name, PublicRisk, Version, ValidateInput)
+public sealed record ClusterWorkflowDefinition<TInput, TResult>(string Name, RiskLevel Risk,
+    string Version = WorkflowNames.Version, Action<TInput>? ValidateInput = null, bool SelectMachines = false, bool PublicEntry = false)
+    : WorkflowDefinition<TInput, TResult>(Name, Risk, Version, ValidateInput, PublicEntry)
 {
     public override WorkflowLocation Location => WorkflowLocation.Cluster;
     public override bool RequiresTargets => SelectMachines;
@@ -81,23 +82,25 @@ public sealed record ClusterWorkflowDefinition<TInput, TResult>(string Name, Ris
 // Definitions are shared contracts. Only explicit execution-factory registration makes them runnable.
 public static class MachineWorkflows
 {
-    public static readonly MachineWorkflowDefinition<DockerPsInput, ProcessResult> DockerPs = new("machine.docker.ps", RiskLevel.Low, "1", input => input.Validate());
-    public static readonly MachineWorkflowDefinition<DockerLogsInput, ProcessResult> DockerLogs = new("machine.docker.logs", RiskLevel.Low, "1", input => input.Validate());
-    public static readonly MachineWorkflowDefinition<DockerExecInput, ProcessResult> DockerExec = new("machine.docker.exec", RiskLevel.VeryHigh, "1", input => input.Validate());
-    public static readonly MachineWorkflowDefinition<DockerContainerInput, ProcessResult> DockerKill = new("machine.docker.kill", RiskLevel.High, "1", input => input.Validate());
-    public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", Version: "1");
-    public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, RiskLevel.High, "2", input => input.Validate());
-    public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe);
-    public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> Restart = new(WorkflowNames.Restart, RiskLevel.Medium, ValidateInput: input => input.Validate());
-    public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> ServiceStatus = new(WorkflowNames.ServiceStatus, RiskLevel.Low, ValidateInput: input => input.Validate());
-    public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> ListBlockDevices = new(WorkflowNames.ListBlockDevices, RiskLevel.Safe);
-    public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DiskFree = new(WorkflowNames.DiskFree, RiskLevel.Safe);
-    public static readonly MachineWorkflowDefinition<AgentUpgradeInput, AgentUpgradeResult> AgentUpgrade = new(WorkflowNames.AgentUpgrade, RiskLevel.High, "1", input => input.Validate());
-    public static readonly MachineWorkflowDefinition<EmptyInput, AgentStatusResult> AgentStatus = new(WorkflowNames.AgentStatus, RiskLevel.Safe);
+    // Metadata for the compiled local helper; deliberately absent from remote dispatch registration.
+    public static readonly MachineWorkflowDefinition<ProcessInput, ProcessResult> Process = new(WorkflowNames.Process, RiskLevel.VeryHigh);
+    public static readonly MachineWorkflowDefinition<DockerPsInput, ProcessResult> DockerPs = new("machine.docker.ps", RiskLevel.Low, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<DockerLogsInput, ProcessResult> DockerLogs = new("machine.docker.logs", RiskLevel.Low, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<DockerExecInput, ProcessResult> DockerExec = new("machine.docker.exec", RiskLevel.VeryHigh, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<DockerContainerInput, ProcessResult> DockerKill = new("machine.docker.kill", RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", RiskLevel.Safe, Version: "1");
+    public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, RiskLevel.High, "2", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe, PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> Restart = new(WorkflowNames.Restart, RiskLevel.Medium, ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> ServiceStatus = new(WorkflowNames.ServiceStatus, RiskLevel.Low, ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> ListBlockDevices = new(WorkflowNames.ListBlockDevices, RiskLevel.Safe, PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DiskFree = new(WorkflowNames.DiskFree, RiskLevel.Safe, PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<AgentUpgradeInput, AgentUpgradeResult> AgentUpgrade = new(WorkflowNames.AgentUpgrade, RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<EmptyInput, AgentStatusResult> AgentStatus = new(WorkflowNames.AgentStatus, RiskLevel.Safe, PublicEntry: true);
 }
 
 public static class ClusterWorkflows
 {
-    public static readonly ClusterWorkflowDefinition<EmptyInput, ClusterDiskUsageResult> DiskUsage = new("cluster.disk-usage", RiskLevel.Safe, "1", SelectMachines: true);
-    public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines, RiskLevel.Safe);
+    public static readonly ClusterWorkflowDefinition<EmptyInput, ClusterDiskUsageResult> DiskUsage = new("cluster.disk-usage", RiskLevel.Safe, "1", SelectMachines: true, PublicEntry: true);
+    public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines, RiskLevel.Safe, PublicEntry: true);
 }
