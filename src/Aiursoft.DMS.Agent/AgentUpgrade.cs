@@ -198,7 +198,6 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             }
             await RunAsync("/usr/bin/systemctl", ["daemon-reload"], CancellationToken.None);
             await RunAsync("/usr/bin/systemctl", ["start", "dms-agent.service"], CancellationToken.None);
-            Directory.Delete(Stage(state, id), true);
         }
         catch (Exception exception)
         {
@@ -223,6 +222,8 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             }
             throw;
         }
+        // Temporary-file cleanup must not change the outcome of an already activated Agent.
+        Directory.Delete(Stage(state, id), true);
     }
 
     private static bool InstalledService()
