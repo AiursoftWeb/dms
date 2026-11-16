@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="About these permissions" xml:space="preserve">
+    <value>Over deze machtigingen</value>
+  </data>
+  <data name="Automatically approve" xml:space="preserve">
+    <value>Automatisch goedkeuren</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>Cluster</value>
+  </data>
+  <data name="High" xml:space="preserve">
+    <value>Hoog</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Locatie</value>
+  </data>
+  <data name="Low" xml:space="preserve">
+    <value>Laag</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Machine</value>
+  </data>
+  <data name="May approve" xml:space="preserve">
+    <value>Mag goedkeuren</value>
+  </data>
+  <data name="May approve own requests" xml:space="preserve">
+    <value>Mag eigen verzoeken goedkeuren</value>
+  </data>
+  <data name="May request" xml:space="preserve">
+    <value>Mag aanvragen</value>
+  </data>
+  <data name="Medium" xml:space="preserve">
+    <value>Gemiddeld</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Nee</value>
+  </data>
+  <data name="No public standard workflows are registered." xml:space="preserve">
+    <value>Er zijn geen openbare standaardworkflows geregistreerd.</value>
+  </data>
+  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
+    <value>Machtigingen gelden voor het geselecteerde cluster en het risiconiveau van elke workflow. Voor automatische goedkeuring is de machtiging nodig om aanvragen in te dienen. Om je eigen aanvraag goed te keuren, is ook de machtiging voor zelfgoedkeuring vereist.</value>
+  </data>
+  <data name="Requires machine targets" xml:space="preserve">
+    <value>Vereist machinedoelen</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>Risico</value>
+  </data>
+  <data name="Safe" xml:space="preserve">
+    <value>Veilig</value>
+  </data>
+  <data name="Show workflows" xml:space="preserve">
+    <value>Workflows weergeven</value>
+  </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Standaardworkflows</value>
+  </data>
+  <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
+    <value>Deze catalogus bevat openbare standaardworkflows die beschikbaar zijn op de Controller. Tijdens de uitvoering wordt gecontroleerd of de agents beschikbaar zijn en of de versies worden ondersteund. Speciale beheerbewerkingen en interne subworkflows worden niet vermeld.</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Versie</value>
+  </data>
+  <data name="Very high" xml:space="preserve">
+    <value>Zeer hoog</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>U hebt geen toegang tot clusters.</value>
+  </data>
+
+</root>

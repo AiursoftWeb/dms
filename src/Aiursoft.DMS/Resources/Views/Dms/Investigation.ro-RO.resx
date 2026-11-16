@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>Toate tipurile</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Toate stările</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>Orice mod de aprobare</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>Contextul aprobării</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>Aprobator</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID-ul aprobator</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Aprobare automată</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>Alegeți filtre de investigare valide și un interval de timp de cel mult 31 de zile. Folosiți momente în format ISO 8601, cu decalaj UTC.</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>Cluster</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Eveniment</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>Tipul evenimentului</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>Starea evenimentului</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>Tipul fluxului de lucru al instanței</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Investigație</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>ID-ul casetei de securitate</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Mașină</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>ID-ul mașinii</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>Mai multe filtre</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Următorul</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Nu</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>Nu există evenimente arhivate care să corespundă acestor filtre.</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>Sunt afișate doar evenimentele arhivate. Este posibil ca modificările recente să nu fi fost încă livrate. Starea evenimentului este una istorică, nu starea curentă a fluxului de lucru.</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>Persoane și aprobări</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>Înregistrat (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>Înregistrat de la (inclusiv, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>Înregistrat până la (exclusiv, UTC)</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>Solicitat</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>Tipul de flux de lucru solicitat</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>Solicitant</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>ID-ul solicitantului</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>ID-ul fluxului de lucru rădăcină</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>Caută în arhivă</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>Intervalul implicit este de 24 de ore, începând cu ultimele 24 de ore. Fiecare interogare poate acoperi cel mult 31 de zile.</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>Arhiva de investigație nu este disponibilă sau nu este configurată. Încercați din nou mai târziu; evenimentele în așteptare sunt păstrate în siguranță.</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Flux de lucru</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID-ul fluxului de lucru</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Da</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>Nu aveți acces la niciun cluster.</value>
+  </data>
+
+</root>

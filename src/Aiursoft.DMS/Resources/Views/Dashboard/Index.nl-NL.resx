@@ -75,6 +75,9 @@
   <data name="Consistency Validation" xml:space="preserve">
     <value>Consistentievalidatie</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
   <data name="Develop exclusively in UTC while the system automatically converts and displays dates in the user&apos;s local time zone." xml:space="preserve">
     <value>Ontwikkel uitsluitend in UTC terwijl het systeem data automatisch converteert en weergeeft in de lokale tijdzone van de gebruiker.</value>
   </data>
@@ -102,6 +105,9 @@
   <data name="Features a built-in file management system with automatic avatar compression." xml:space="preserve">
     <value>Beschikt over een ingebouwd bestandsbeheersysteem met automatische avatarcompressie.</value>
   </data>
+  <data name="Follow the callstack and inspect execution traces." xml:space="preserve">
+    <value>Volg de callstack en bekijk uitvoeringstraces.</value>
+  </data>
   <data name="Handle recurring jobs like cleanup and synchronization with a comprehensive GUI for monitoring execution history and logs." xml:space="preserve">
     <value>Verwerk herhalende taken zoals opschonen en synchronisatie met een uitgebreide GUI voor het bewaken van uitvoeringsgeschiedenis en logbestanden.</value>
   </data>
@@ -113,6 +119,15 @@
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Geïntegreerd Bestandsbeheer</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Kluizen</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Machines</value>
+  </data>
+  <data name="Manage servers through approved workflows." xml:space="preserve">
+    <value>Beheer servers via goedgekeurde workflows.</value>
   </data>
   <data name="Models are validated on both client and server sides based on data annotations." xml:space="preserve">
     <value>Modellen worden gevalideerd aan zowel de client- als de serverside op basis van dataannotaties.</value>
@@ -134,6 +149,12 @@
   </data>
   <data name="Responsive Design" xml:space="preserve">
     <value>Responsief Ontwerp</value>
+  </data>
+  <data name="Review requests" xml:space="preserve">
+    <value>Aanvragen beoordelen</value>
+  </data>
+  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
+    <value>Controleer de aangevraagde bewerking, parameters en vaste doelen.</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Robuuste integratietests</value>
@@ -165,11 +186,23 @@
   <data name="This is a template project, where we start the voyager..." xml:space="preserve">
     <value>Dit is een sjabloonproject, waar we de verkenner starten...</value>
   </data>
+  <data name="View Agent connectivity and machine history." xml:space="preserve">
+    <value>Bekijk de verbinding van de agent en de machinegeschiedenis.</value>
+  </data>
+  <data name="View history" xml:space="preserve">
+    <value>Geschiedenis bekijken</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>Machines bekijken</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>Welkom</value>
   </data>
   <data name="Why use the Aiursoft Template?" xml:space="preserve">
     <value>Waarom de Aiursoft Template gebruiken?</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Workflowgeschiedenis</value>
   </data>
 
 </root>
