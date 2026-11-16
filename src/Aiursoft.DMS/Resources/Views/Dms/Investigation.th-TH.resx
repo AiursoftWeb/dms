@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>ทุกประเภท</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>ทุกสถานะ</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>โหมดการอนุมัติใดๆ</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>บริบทการอนุมัติ</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>ผู้อนุมัติ</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>รหัสผู้อนุมัติ</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>การอนุมัติอัตโนมัติ</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>เลือกตัวกรองการตรวจสอบที่ถูกต้องและช่วงเวลาที่นานไม่เกิน 31 วัน ใช้เวลาตามรูปแบบ ISO 8601 พร้อมค่าออฟเซ็ต UTC</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>คลัสเตอร์</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>เหตุการณ์</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>ประเภทเหตุการณ์</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>สถานะเหตุการณ์</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>ประเภทเวิร์กโฟลว์อินสแตนซ์</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>การตรวจสอบ</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>รหัส Lockbox</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>เครื่อง</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>รหัสเครื่อง</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>ตัวกรองเพิ่มเติม</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>ถัดไป</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>ไม่</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>ไม่พบเหตุการณ์ที่เก็บถาวรซึ่งตรงกับตัวกรองเหล่านี้</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>แสดงเฉพาะเหตุการณ์ที่ถูกรวมในคลังเท่านั้น การเปลี่ยนแปลงล่าสุดอาจยังไม่ได้รับการส่งมอบ สถานะของเหตุการณ์เป็นข้อมูลย้อนหลัง ไม่ใช่สถานะเวิร์กโฟลว์ปัจจุบัน</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>บุคคลและการอนุมัติ</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>ก่อนหน้า</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>บันทึก (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>บันทึกตั้งแต่วันที่ (รวม, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>บันทึกถึง (ไม่รวม, UTC)</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>ที่ร้องขอ</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>ประเภทเวิร์กโฟลว์ที่ขอ</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>ผู้ขอ</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>ID ผู้ร้องขอ</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>ID การทำงานหลัก</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>ค้นหาคลังข้อมูล</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>สถานะ</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>หน้าต่างเริ่มต้นคือ 24 ชั่วโมงที่ผ่านมา การสอบถามแต่ละครั้งรองรับได้สูงสุด 31 วัน</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>คลังข้อมูลการตรวจสอบไม่พร้อมใช้งานหรือไม่มีการกำหนดค่า ลองใหม่อีกครั้งในภายหลัง เหตุการณ์ที่รอดำเนินการยังคงมีอยู่อย่างปลอดภัย</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>รหัส Workflow</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>ใช่</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>คุณไม่มีสิทธิ์เข้าถึงคลัสเตอร์ใด ๆ</value>
+  </data>
+
+</root>

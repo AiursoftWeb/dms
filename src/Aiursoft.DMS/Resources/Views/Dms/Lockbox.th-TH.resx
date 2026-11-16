@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Approve" xml:space="preserve">
+    <value>อนุมัติ</value>
+  </data>
+  <data name="Approved target machines" xml:space="preserve">
+    <value>เครื่องเป้าหมายที่ได้รับการอนุมัติ</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>สร้างเมื่อ</value>
+  </data>
+  <data name="Decision" xml:space="preserve">
+    <value>การตัดสินใจ</value>
+  </data>
+  <data name="Decision reason" xml:space="preserve">
+    <value>เหตุผลในการตัดสินใจ</value>
+  </data>
+  <data name="Deny" xml:space="preserve">
+    <value>ปฏิเสธ</value>
+  </data>
+  <data name="ID" xml:space="preserve">
+    <value>รหัสประจำตัว</value>
+  </data>
+  <data name="Lockbox" xml:space="preserve">
+    <value>กล่องล็อก</value>
+  </data>
+  <data name="Lockbox callstack" xml:space="preserve">
+    <value>คอลสตาคของล็อกบ็อกซ์</value>
+  </data>
+  <data name="Operation" xml:space="preserve">
+    <value>การดำเนินงาน</value>
+  </data>
+  <data name="Parameters" xml:space="preserve">
+    <value>พารามิเตอร์</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>เหตุผล</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>ผู้ขอ</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>ความเสี่ยง</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์</value>
+  </data>
+
+</root>

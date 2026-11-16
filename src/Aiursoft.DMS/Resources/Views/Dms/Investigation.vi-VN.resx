@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>Tất cả các loại</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Tất cả các trạng thái</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>Mọi chế độ phê duyệt</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>Bối cảnh phê duyệt</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>Người phê duyệt</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID người phê duyệt</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Duyệt tự động</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>Chọn bộ lọc điều tra hợp lệ và phạm vi thời gian tối đa 31 ngày. Sử dụng thời gian ISO 8601 với múi giờ UTC.</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>Nhóm</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Sự kiện</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>Loại sự kiện</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>Trạng thái sự kiện</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>Loại luồng công việc của bản thể</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Điều tra</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>ID hộp khóa</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Máy</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>ID máy</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>Bộ lọc bổ sung</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Tiếp theo</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Không</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>Không có sự kiện nào đã lưu trữ phù hợp với các bộ lọc này.</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>Chỉ hiển thị các sự kiện đã được lưu trữ. Các thay đổi gần đây có thể vẫn đang chờ giao. Trạng thái sự kiện mang tính lịch sử, không phải trạng thái quy trình làm việc hiện tại.</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>Người dùng và phê duyệt</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Trước</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>Đã ghi nhận (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>Ghi nhận từ (bao gồm, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>Được ghi lại đến (không bao gồm, UTC)</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>Đã yêu cầu</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>Loại quy trình công việc yêu cầu</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>Người yêu cầu</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>ID người yêu cầu</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>ID quy trình gốc</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>Tìm kiếm trong kho lưu trữ</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Trạng thái</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>Khoảng thời gian mặc định là 24 giờ gần nhất. Mỗi truy vấn hỗ trợ tối đa 31 ngày.</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>Lưu trữ điều tra không khả dụng hoặc chưa được cấu hình. Hãy thử lại sau; các sự kiện đang chờ vẫn được bảo toàn.</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Quy trình làm việc</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID quy trình</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Có</value>
+  </data>
+  <data name="You do not have access to any clusters." xml:space="preserve">
+    <value>Bạn không có quyền truy cập vào bất kỳ cụm nào.</value>
+  </data>
+
+</root>
