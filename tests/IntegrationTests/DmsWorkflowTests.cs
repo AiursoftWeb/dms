@@ -1,3 +1,4 @@
+using Aiursoft.DMS.Authorization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -35,7 +36,7 @@ public class DmsWorkflowTests : TestBase
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], key, "Workflow not found."),
                 (["operation", "get-trace", "--id", run.Id.ToString()], key, "ClickHouse is not configured."),
                 (["operation", "query-audit", "--cluster-id", setup.Cluster.ToString()], key, "ClickHouse is not configured."),
-                (["operation", "list-definitions", "--cluster-id", Guid.NewGuid().ToString()], key, "Access to this cluster is denied."),
+                (["operation", "list-definitions", "--cluster-id", Guid.NewGuid().ToString()], key, "Cluster not found."),
                 (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
                 (["machine", "systemctl", "status", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
                 (["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
@@ -125,8 +126,8 @@ public class DmsWorkflowTests : TestBase
         Assert.AreEqual(0, subtree.ProgramReturn, subtree.StdErr);
         StringAssert.Contains(subtree.StdOut, parent.Id.ToString()); StringAssert.Contains(subtree.StdOut, child.Id.ToString());
         Assert.DoesNotContain(sibling.Id.ToString(), subtree.StdOut); Assert.DoesNotContain("└──", subtree.StdOut);
-        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}")).StatusCode);
-        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}/callstack")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}/callstack")).StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync($"/api/v1/dms/operations/{Guid.NewGuid()}")).StatusCode);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", agentKey);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{child.Id}")).StatusCode);
@@ -227,7 +228,7 @@ public class DmsWorkflowTests : TestBase
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             db.Clusters.AddRange(other, hidden);
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = other.Id, UserId = setup.User, Risk = RiskLevel.Safe, CanRequest = true });
+            DmsTestPermissions.Risk(db, setup.User, RiskLevel.Safe, request: true, automatic: false, approve: false);
             db.WorkflowRuns.AddRange(runs);
             db.WorkflowRuns.AddRange(machineRun, otherRun, hiddenRun);
             await db.SaveChangesAsync();
@@ -241,7 +242,7 @@ public class DmsWorkflowTests : TestBase
         Assert.DoesNotContain(runs[50].Id.ToString(), html);
         Assert.DoesNotContain(otherRun.Id.ToString(), html);
         Assert.DoesNotContain(hiddenRun.Id.ToString(), html);
-        Assert.DoesNotContain(hidden.Name, html);
+        StringAssert.Contains(html, hidden.Name);
         var next = System.Text.RegularExpressions.Regex.Matches(html, "href=\"([^\"]+)\"")
             .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value))
             .Single(link => link.Contains("page=1", StringComparison.Ordinal));
@@ -259,7 +260,7 @@ public class DmsWorkflowTests : TestBase
         StringAssert.Contains(machineOnly, machineRun.Id.ToString());
         Assert.DoesNotContain(runs[0].Id.ToString(), machineOnly);
         var forbidden = await Http.GetAsync($"/Dms/Operations?clusterId={hidden.Id}");
-        Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, forbidden.StatusCode);
     }
 
     [TestMethod]
@@ -278,7 +279,7 @@ public class DmsWorkflowTests : TestBase
         var denied = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(1, denied.ProgramReturn);
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.ClusterId == setup.Cluster));
-        db.ClusterGrants.Add(new ClusterGrant { ClusterId = setup.Cluster, UserId = setup.User, Risk = RiskLevel.VeryHigh, CanRequest = true });
+        DmsTestPermissions.Risk(db, setup.User, RiskLevel.VeryHigh, request: true, automatic: false, approve: false);
         await db.SaveChangesAsync();
         var accepted = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(0, accepted.ProgramReturn, accepted.StdErr);
@@ -308,14 +309,11 @@ public class DmsWorkflowTests : TestBase
         Assert.IsNull(killBox.OperationId);
     }
 
-    private async Task<(Guid Cluster, string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false, bool isolatedRequester = false)
+    private async Task<(Guid Cluster, string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false)
     {
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        var user = isolatedRequester
-            ? new User { DisplayName = "Isolated requester", UserName = Guid.NewGuid().ToString(), Id = Guid.NewGuid().ToString() }
-            : await db.Users.SingleAsync(u => u.UserName == "admin");
-        if (isolatedRequester) db.Users.Add(user);
+        var user = new User { UserName = Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
         var approver = new User { DisplayName = "Approver", UserName = "approver", Id = Guid.NewGuid().ToString() };
         db.Users.Add(approver);
         var cluster = new Cluster { Name = "Test" }; db.Clusters.Add(cluster);
@@ -323,8 +321,8 @@ public class DmsWorkflowTests : TestBase
         db.Machines.Add(machine);
         foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Low, RiskLevel.Medium, RiskLevel.High })
         {
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = risk, CanRequest = true, AutoApprove = automatic, CanApprove = true });
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = approver.Id, Risk = risk, CanApprove = true });
+            DmsTestPermissions.Risk(db, user.Id, risk, request: true, automatic: automatic, approve: true);
+            DmsTestPermissions.Risk(db, approver.Id, risk, request: false, automatic: false, approve: true);
         }
         await db.SaveChangesAsync();
         return (cluster.Id, user.Id, approver.Id, machine.Id);
@@ -389,7 +387,7 @@ public class DmsWorkflowTests : TestBase
         await service.DecideAsync(setup.Approver, item.Id, false, "Maintenance window closed");
         Assert.IsNull(item.OperationId);
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        var user = await db.Users.SingleAsync(u => u.Id == setup.User); user.CanApproveOwnRequests = true; await db.SaveChangesAsync();
+        DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanApproveOwnWorkflow); await db.SaveChangesAsync();
         var second = await service.SubmitAsync(setup.User, Request(setup.Cluster, setup.Machine));
         await service.DecideAsync(setup.User, second.Id, true, "Explicit self approval grant");
         Assert.AreEqual(DecisionState.Approved, second.Decision);
@@ -404,7 +402,7 @@ public class DmsWorkflowTests : TestBase
         var other = new Cluster { Name = "Other" }; db.Clusters.Add(other); await db.SaveChangesAsync();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, Request(other.Id, setup.Machine)));
-        Assert.AreEqual(403, denied.StatusCode);
+        Assert.AreEqual(400, denied.StatusCode);
         var request = Request(setup.Cluster, setup.Machine); request.Workflow = WorkflowNames.Process;
         var invalid = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request)); Assert.AreEqual(400, invalid.StatusCode);
     }
@@ -582,14 +580,14 @@ public class DmsWorkflowTests : TestBase
     [DataRow("csv")]
     public async Task MinimalPullerCliFreezesAllConfiguredImagesAndUniqueTargets(string format)
     {
-        var setup = await ArrangeAsync(isolatedRequester: true);
+        var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Default CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
         await db.SaveChangesAsync();
         var request = Guid.NewGuid();
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--reason", "Refresh configured mirrors", "--request-id", request.ToString(),
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--cluster-id", setup.Cluster.ToString(), "--reason", "Refresh configured mirrors", "--request-id", request.ToString(),
             "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
@@ -609,9 +607,9 @@ public class DmsWorkflowTests : TestBase
     [DataRow(WorkflowNames.AgentStatus)]
     public async Task ImplicitScopeIsFrozenAndRetriesDoNotRetarget(string workflow)
     {
-        var setup = await ArrangeAsync(isolatedRequester: true);
+        var setup = await ArrangeAsync();
         var requestId = Guid.NewGuid();
-        OperationRequest RequestDefault() => new() { RequestId = requestId, Workflow = workflow, Reason = "Frozen defaults" };
+        OperationRequest RequestDefault() => new() { RequestId = requestId, ClusterId = setup.Cluster, Workflow = workflow, Reason = "Frozen defaults" };
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
@@ -622,7 +620,7 @@ public class DmsWorkflowTests : TestBase
         if (workflow == WorkflowNames.PullerForceUpdate) StringAssert.Contains(saved.Input, "AllConfiguredImages");
         db.Machines.Add(new Machine { ClusterId = setup.Cluster, Name = "Added after approval scope was selected" });
         var other = new Cluster { Name = "Added cluster" }; db.Clusters.Add(other);
-        db.ClusterGrants.Add(new ClusterGrant { UserId = setup.User, ClusterId = other.Id, Risk = RiskLevel.Safe, CanRequest = true });
+        DmsTestPermissions.Risk(db, setup.User, RiskLevel.Safe, request: true, automatic: false, approve: false);
         await db.SaveChangesAsync();
         var retry = await service.SubmitAsync(setup.User, RequestDefault());
         Assert.AreEqual(first.Id, retry.Id);
@@ -636,17 +634,17 @@ public class DmsWorkflowTests : TestBase
     [TestMethod]
     public async Task DefaultsRejectAmbiguityAndNeverExpandToAllMachines()
     {
-        var setup = await ArrangeAsync(isolatedRequester: true);
+        var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var extra = new Machine { ClusterId = setup.Cluster, Name = "Second active machine" }; db.Machines.Add(extra);
         await db.SaveChangesAsync();
-        var ambiguous = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "Choose a machine" }));
+        var ambiguous = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, Reason = "Choose a machine" }));
         StringAssert.Contains(ambiguous.Message, "--machine-id or --all-machines");
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
         var other = new Cluster { Name = "Other accessible cluster" }; db.Clusters.Add(other);
-        db.ClusterGrants.Add(new ClusterGrant { UserId = setup.User, ClusterId = other.Id, Risk = RiskLevel.Safe, CanRequest = true });
+        DmsTestPermissions.Risk(db, setup.User, RiskLevel.Safe, request: true, automatic: false, approve: false);
         await db.SaveChangesAsync();
         var clusterError = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "Choose a cluster" }));
         StringAssert.Contains(clusterError.Message, "--cluster-id");
@@ -659,18 +657,17 @@ public class DmsWorkflowTests : TestBase
     [TestMethod]
     public async Task DefaultSelectionDoesNotBypassRequestPermissionsOrSelectDisabledMachines()
     {
-        var setup = await ArrangeAsync(isolatedRequester: true);
+        var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        var high = await db.ClusterGrants.SingleAsync(g => g.UserId == setup.User && g.ClusterId == setup.Cluster && g.Risk == RiskLevel.High);
-        high.CanRequest = false;
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High), false);
         await db.SaveChangesAsync();
-        await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No high permission" }));
-        high.CanRequest = true;
+        await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, Reason = "No high permission" }));
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High));
         (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).Disabled = true;
         await db.SaveChangesAsync();
-        var missing = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No active target" }));
+        var missing = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { ClusterId = setup.Cluster, Workflow = WorkflowNames.PullerForceUpdate, Reason = "No active target" }));
         StringAssert.Contains(missing.Message, "--machine-id or --all-machines");
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
     }
@@ -693,12 +690,11 @@ public class DmsWorkflowTests : TestBase
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         if (risk == RiskLevel.VeryHigh)
         {
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = setup.Cluster, UserId = setup.User, Risk = risk, CanRequest = true });
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = setup.Cluster, UserId = setup.Approver, Risk = risk, CanApprove = true });
+            DmsTestPermissions.Risk(db, setup.User, risk, request: true, automatic: false, approve: false);
+            DmsTestPermissions.Risk(db, setup.Approver, risk, request: false, automatic: false, approve: true);
             await db.SaveChangesAsync();
         }
-        var grant = await db.ClusterGrants.SingleAsync(g => g.ClusterId == setup.Cluster && g.UserId == setup.User && g.Risk == risk);
-        grant.CanRequest = false; await db.SaveChangesAsync();
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(risk), false); await db.SaveChangesAsync();
         var input = Request(setup.Cluster, setup.Machine); input.Workflow = definition;
         input.Input = definition switch
         {
@@ -712,7 +708,7 @@ public class DmsWorkflowTests : TestBase
         };
         var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, input));
         Assert.AreEqual(403, denied.StatusCode);
-        grant.CanRequest = true; await db.SaveChangesAsync();
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(risk)); await db.SaveChangesAsync();
         input.AllMachines = true; input.MachineIds.Clear();
         var item = await service.SubmitAsync(setup.User, input);
         Assert.AreEqual(risk, item.Risk); Assert.AreEqual(DecisionState.Pending, item.Decision);

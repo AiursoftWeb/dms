@@ -1,18 +1,8 @@
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
-@using Aiursoft.DMS.Contracts
-<h1>@Localizer["Cluster access"]</h1>
+<h1>@Localizer["DMS access"]</h1>
 @if (Model.NewKey != null) { <div class="alert alert-warning"><div class="alert-message">@Localizer["Copy this Agent key now. The previous key is revoked."]<pre>@Model.NewKey</pre></div></div> }
 <div class="row"><div class="col-lg-6"><form asp-action="CreateCluster" method="post" class="card"><div class="card-body"><h2>@Localizer["Create cluster"]</h2><label for="cluster-name" class="form-label">@Localizer["Name"]</label><input id="cluster-name" name="name" class="form-control mb-2" maxlength="100" required /><button class="btn btn-primary">@Localizer["Create"]</button></div></form>
-<form asp-action="Grant" method="post" class="card"><div class="card-body"><h2>@Localizer["Set risk permissions"]</h2>
-<label for="cluster" class="form-label">@Localizer["Cluster"]</label><select id="cluster" name="clusterId" class="form-select mb-2">@foreach (var c in Model.Clusters) { <option value="@c.Id">@c.Name (@c.Id)</option> }</select>
-<label for="grant-user" class="form-label">@Localizer["User"]</label><select id="grant-user" name="userId" class="form-select mb-2">@foreach (var u in Model.Users) { <option value="@u.Id">@u.DisplayName</option> }</select>
-<label for="risk" class="form-label">@Localizer["Risk"]</label><select id="risk" name="risk" class="form-select mb-2">@foreach (var r in Enum.GetValues<RiskLevel>()) { <option value="@r">@r</option> }</select>
-<label class="form-check"><input class="form-check-input" name="canRequest" type="checkbox" value="true" />@Localizer["May request"]</label>
-<label class="form-check"><input class="form-check-input" name="autoApprove" type="checkbox" value="true" />@Localizer["Automatically approve"]</label>
-<label class="form-check"><input class="form-check-input" name="canApprove" type="checkbox" value="true" />@Localizer["May approve"]</label>
-<button class="btn btn-primary mt-2">@Localizer["Save permissions"]</button></div></form></div>
-<div class="col-lg-6"><form asp-action="SelfApproval" method="post" class="card"><div class="card-body"><h2>@Localizer["Self approval"]</h2><label for="self-user" class="form-label">@Localizer["User"]</label><select id="self-user" name="userId" class="form-select mb-2">@foreach (var u in Model.Users) { <option value="@u.Id">@u.DisplayName — @u.CanApproveOwnRequests</option> }</select><label class="form-check"><input class="form-check-input" name="enabled" type="checkbox" value="true" />@Localizer["May approve own requests"]</label><button class="btn btn-primary mt-2">@Localizer["Save"]</button></div></form>
-<form asp-action="AgentKey" method="post" class="card"><div class="card-body"><h2>@Localizer["Agent identity"]</h2><label for="machine" class="form-label">@Localizer["Machine"]</label><select id="machine" name="machineId" class="form-select mb-2">@foreach (var m in Model.Machines) { <option value="@m.Id">@m.Name (@m.Id)</option> }</select><p>@Localizer["Issue a key after an approved machine registration. Issuing another key revokes the previous one."]</p><button class="btn btn-warning">@Localizer["Issue Agent key"]</button></div></form></div></div>
-<div class="card"><div class="card-body table-responsive"><h2>@Localizer["Current permissions"]</h2><table class="table"><thead><tr><th>@Localizer["Cluster"]</th><th>@Localizer["User"]</th><th>@Localizer["Risk"]</th><th>@Localizer["Request"]</th><th>@Localizer["Auto"]</th><th>@Localizer["Approve"]</th></tr></thead><tbody>
-@foreach (var g in Model.Grants) { <tr><td>@Model.Clusters.FirstOrDefault(c => c.Id == g.ClusterId)?.Name</td><td>@Model.Users.FirstOrDefault(u => u.Id == g.UserId)?.DisplayName</td><td>@g.Risk</td><td>@g.CanRequest</td><td>@g.AutoApprove</td><td>@g.CanApprove</td></tr> }
-</tbody></table></div></div>
+</div>
+<div class="col-lg-6"><form asp-action="AgentKey" method="post" class="card"><div class="card-body"><h2>@Localizer["Agent identity"]</h2><label for="machine" class="form-label">@Localizer["Machine"]</label><select id="machine" name="machineId" class="form-select mb-2">@foreach (var m in Model.Machines) { <option value="@m.Id">@m.Name (@m.Id)</option> }</select><p>@Localizer["Issue a key after an approved machine registration. Issuing another key revokes the previous one."]</p><button class="btn btn-warning">@Localizer["Issue Agent key"]</button></div></form></div></div>
+<p>@Localizer["Configure workflow risk permissions on roles. They apply to every machine in this DMS instance."]</p>
+<a asp-controller="Roles" asp-action="Index">@Localizer["Roles"]</a>

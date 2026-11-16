@@ -5,6 +5,26 @@ namespace Aiursoft.DMS.Authorization;
 /// </summary>
 public static class AppPermissionNames
 {
+    // DMS operations (global within this Controller).
+    public const string CanRequestSafeRiskWorkflow = nameof(CanRequestSafeRiskWorkflow);
+    public const string CanAutoApproveSafeRiskWorkflow = nameof(CanAutoApproveSafeRiskWorkflow);
+    public const string CanApproveSafeRiskWorkflow = nameof(CanApproveSafeRiskWorkflow);
+    public const string CanRequestLowRiskWorkflow = nameof(CanRequestLowRiskWorkflow);
+    public const string CanAutoApproveLowRiskWorkflow = nameof(CanAutoApproveLowRiskWorkflow);
+    public const string CanApproveLowRiskWorkflow = nameof(CanApproveLowRiskWorkflow);
+    public const string CanRequestMediumRiskWorkflow = nameof(CanRequestMediumRiskWorkflow);
+    public const string CanAutoApproveMediumRiskWorkflow = nameof(CanAutoApproveMediumRiskWorkflow);
+    public const string CanApproveMediumRiskWorkflow = nameof(CanApproveMediumRiskWorkflow);
+    public const string CanRequestHighRiskWorkflow = nameof(CanRequestHighRiskWorkflow);
+    public const string CanAutoApproveHighRiskWorkflow = nameof(CanAutoApproveHighRiskWorkflow);
+    public const string CanApproveHighRiskWorkflow = nameof(CanApproveHighRiskWorkflow);
+    public const string CanRequestVeryHighRiskWorkflow = nameof(CanRequestVeryHighRiskWorkflow);
+    public const string CanAutoApproveVeryHighRiskWorkflow = nameof(CanAutoApproveVeryHighRiskWorkflow);
+    public const string CanApproveVeryHighRiskWorkflow = nameof(CanApproveVeryHighRiskWorkflow);
+    public const string CanApproveOwnWorkflow = nameof(CanApproveOwnWorkflow);
+    public const string CanReadDmsOperations = nameof(CanReadDmsOperations);
+    public const string CanManageDmsAccess = nameof(CanManageDmsAccess);
+
     // User Management
     public const string CanReadUsers = nameof(CanReadUsers);
     public const string CanDeleteUsers = nameof(CanDeleteUsers);

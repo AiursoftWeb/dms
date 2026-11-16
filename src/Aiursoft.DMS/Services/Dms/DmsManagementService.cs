@@ -15,11 +15,7 @@ public sealed class DmsManagementService(TemplateDbContext db, AccessService acc
     public Task<List<ClusterSummary>> ClustersAsync(string actor, bool manager) => gate.RunAsync(async () =>
     {
         var query = db.Clusters.AsNoTracking().NotCacheable();
-        if (!manager)
-        {
-            var visible = await access.VisibleClustersAsync(actor);
-            query = query.Where(c => visible.Contains(c.Id));
-        }
+        if (!manager) await access.RequireViewAsync(actor);
         var rows = await query.OrderBy(c => c.Name).Select(c => new ClusterSummary(c.Id, c.Name)).ToListAsync();
         access.Audit(actor, "access.cluster.list"); await db.SaveChangesAsync(); return rows;
     });
@@ -28,8 +24,6 @@ public sealed class DmsManagementService(TemplateDbContext db, AccessService acc
     {
         var result = new AccessSnapshot(
             await db.Clusters.AsNoTracking().NotCacheable().OrderBy(c => c.Name).Select(c => new ClusterSummary(c.Id, c.Name)).ToListAsync(),
-            await db.Users.AsNoTracking().NotCacheable().OrderBy(u => u.UserName).Select(u => new AccessUser(u.Id, u.UserName ?? "", u.DisplayName, u.CanApproveOwnRequests)).ToListAsync(),
-            await db.ClusterGrants.AsNoTracking().NotCacheable().Select(g => new RiskGrant(g.ClusterId, g.UserId, g.Risk, g.CanRequest, g.AutoApprove, g.CanApprove)).ToListAsync(),
             await db.Machines.AsNoTracking().NotCacheable().OrderBy(m => m.Name).Select(m => new AccessMachine(m.Id, m.ClusterId, m.Name, m.Disabled)).ToListAsync());
         access.Audit(actor, "access.inspect"); await db.SaveChangesAsync(); return result;
     });
@@ -65,28 +59,8 @@ public sealed class DmsManagementService(TemplateDbContext db, AccessService acc
         var cluster = await db.Clusters.NotCacheable().SingleOrDefaultAsync(c => c.Id == id) ?? throw new DmsException(404, "Cluster not found.");
         if (await db.JoinKeys.NotCacheable().AnyAsync(k => k.ClusterId == id) || await db.Machines.NotCacheable().AnyAsync(m => m.ClusterId == id) || await db.Lockboxes.NotCacheable().AnyAsync(l => l.ClusterId == id) || await db.WorkflowRuns.NotCacheable().AnyAsync(r => r.ClusterId == id))
             throw new DmsException(409, "Only an empty cluster with no operation or enrollment history can be deleted.");
-        db.ClusterGrants.RemoveRange(await db.ClusterGrants.NotCacheable().Where(g => g.ClusterId == id).ToListAsync());
         db.Clusters.Remove(cluster); access.Audit(actor, "access.cluster.drop", id); await db.SaveChangesAsync();
         return new ClusterSummary(cluster.Id, cluster.Name);
-    });
-
-    public Task<RiskGrant> GrantAsync(string actor, RiskGrant input) => gate.RunAsync(async () =>
-    {
-        if (!Enum.IsDefined(input.Risk) || !await db.Clusters.NotCacheable().AnyAsync(c => c.Id == input.ClusterId) || !await db.Users.NotCacheable().AnyAsync(u => u.Id == input.UserId))
-            throw new DmsException(400, "Select an existing cluster, user and risk level.");
-        var grant = await db.ClusterGrants.NotCacheable().SingleOrDefaultAsync(g => g.ClusterId == input.ClusterId && g.UserId == input.UserId && g.Risk == input.Risk);
-        if (grant == null) { grant = new ClusterGrant { ClusterId = input.ClusterId, UserId = input.UserId, Risk = input.Risk }; db.ClusterGrants.Add(grant); }
-        grant.CanRequest = input.CanRequest; grant.AutoApprove = input.AutoApprove; grant.CanApprove = input.CanApprove;
-        access.Audit(actor, "access.grant", input.ClusterId, $"User={input.UserId}; Risk={input.Risk}; Request={input.CanRequest}; Auto={input.AutoApprove}; Approve={input.CanApprove}");
-        await db.SaveChangesAsync(); return input;
-    });
-
-    public Task<SelfApprovalInput> SelfApprovalAsync(string actor, SelfApprovalInput input) => gate.RunAsync(async () =>
-    {
-        var user = await db.Users.NotCacheable().SingleOrDefaultAsync(u => u.Id == input.UserId) ?? throw new DmsException(404, "User not found.");
-        user.CanApproveOwnRequests = input.Enabled;
-        access.Audit(actor, "access.self-approval", detail: $"User={input.UserId}; Enabled={input.Enabled}");
-        await db.SaveChangesAsync(); return input;
     });
 
     public Task<AgentKeyResult> AgentKeyAsync(string actor, Guid id) => gate.RunAsync(async () =>

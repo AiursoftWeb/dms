@@ -21,13 +21,13 @@ public class WorkflowAuditIntegrationTests : TestBase
     {
         return await DatabaseAsync(async db =>
         {
-            var user = await db.Users.SingleAsync(u => u.UserName == "admin");
+            var user = new User { UserName = "requester" + Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
             var reviewer = new User { Id = Guid.NewGuid().ToString(), UserName = "audit-reviewer", DisplayName = "Audit reviewer" };
             var cluster = new Cluster { Name = "Audit integration" }; var key = DmsKeyAuthenticationHandler.CreateKey(true);
             var machine = new Machine { ClusterId = cluster.Id, Name = "Audit Agent", KeyHash = DmsKeyAuthenticationHandler.Hash(key) };
             db.Users.Add(reviewer); db.Clusters.Add(cluster); db.Machines.Add(machine);
-            db.ClusterGrants.AddRange(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = RiskLevel.Safe, CanRequest = true, AutoApprove = automatic },
-                new ClusterGrant { ClusterId = cluster.Id, UserId = reviewer.Id, Risk = RiskLevel.Safe, CanApprove = true });
+            DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true, automatic: automatic, approve: false);
+            DmsTestPermissions.Risk(db, reviewer.Id, RiskLevel.Safe, request: false, automatic: false, approve: true);
             await db.SaveChangesAsync(); return (user.Id, reviewer.Id, cluster.Id, machine.Id, key);
         });
     }

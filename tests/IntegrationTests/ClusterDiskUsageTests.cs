@@ -1,3 +1,4 @@
+using Aiursoft.DMS.Authorization;
 using System.Text.Json;
 using Aiursoft.DMS.Agent;
 using Aiursoft.DMS.Contracts;
@@ -22,7 +23,7 @@ public class ClusterDiskUsageTests : TestBase
     {
         return await DatabaseAsync(async db =>
         {
-            var user = await db.Users.SingleAsync(u => u.UserName == "admin");
+            var user = new User { UserName = "requester" + Guid.NewGuid().ToString("N"), Email = "requester@example.test", DisplayName = "Requester" }; db.Users.Add(user);
             var approver = new User { Id = Guid.NewGuid().ToString(), UserName = "disk-reviewer", DisplayName = "Disk reviewer" };
             var cluster = new Cluster { Name = "Disk usage" };
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
@@ -30,8 +31,8 @@ public class ClusterDiskUsageTests : TestBase
             var personal = DmsKeyAuthenticationHandler.CreateKey(false);
             db.Users.Add(approver); db.Clusters.Add(cluster); db.Machines.AddRange(machines);
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Disk usage", KeyHash = DmsKeyAuthenticationHandler.Hash(personal), ExpiresAt = DateTime.UtcNow.AddHours(1) });
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = user.Id, Risk = RiskLevel.Safe, CanRequest = true });
-            db.ClusterGrants.Add(new ClusterGrant { ClusterId = cluster.Id, UserId = approver.Id, Risk = RiskLevel.Safe, CanApprove = true });
+            DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true, automatic: false, approve: false);
+            DmsTestPermissions.Risk(db, approver.Id, RiskLevel.Safe, request: false, automatic: false, approve: true);
             await db.SaveChangesAsync();
             return (cluster.Id, user.Id, approver.Id, machines.Select(m => m.Id).ToArray(), keys, personal);
         });
@@ -167,11 +168,10 @@ public class ClusterDiskUsageTests : TestBase
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope(); var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        var grant = await db.ClusterGrants.SingleAsync(g => g.ClusterId == setup.Cluster && g.UserId == setup.User);
-        grant.CanRequest = false; await db.SaveChangesAsync();
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Safe), false); await db.SaveChangesAsync();
         Assert.AreEqual(403, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
             ClusterWorkflows.DiskUsage.Request(setup.Cluster, new EmptyInput(), "No Safe grant", allMachines: true)))).StatusCode);
-        grant.CanRequest = true; await db.SaveChangesAsync();
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Safe)); await db.SaveChangesAsync();
         Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
             ClusterWorkflows.DiskUsage.Request(setup.Cluster, new EmptyInput(), "No targets")))).StatusCode);
         Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,

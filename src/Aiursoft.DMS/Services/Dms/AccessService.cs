@@ -1,23 +1,25 @@
-using Aiursoft.DMS.Contracts;
+using System.Security.Claims;
+using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Entities;
-using EFCoreSecondLevelCacheInterceptor;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class AccessService(TemplateDbContext db)
+public sealed class AccessService(TemplateDbContext db, UserManager<User> users, IUserClaimsPrincipalFactory<User> principalFactory)
 {
-    public Task<ClusterGrant?> GrantAsync(string user, Guid cluster, RiskLevel risk) =>
-        db.ClusterGrants.AsNoTracking().NotCacheable().SingleOrDefaultAsync(g => g.UserId == user && g.ClusterId == cluster && g.Risk == risk);
-
-    public async Task RequireViewAsync(string user, Guid cluster)
+    // Resolve Identity claims for every decision, including enrollment delegated by a join-key issuer.
+    public async Task<ClaimsPrincipal> PrincipalAsync(string user)
     {
-        if (!await db.ClusterGrants.AsNoTracking().NotCacheable().AnyAsync(g => g.UserId == user && g.ClusterId == cluster && (g.CanRequest || g.CanApprove)))
-            throw new DmsException(403, "Access to this cluster is denied.");
+        var actor = await users.FindByIdAsync(user);
+        if (actor == null || await users.IsLockedOutAsync(actor)) throw new DmsException(403, "User is unavailable.");
+        return await principalFactory.CreateAsync(actor);
     }
 
-    public Task<List<Guid>> VisibleClustersAsync(string user) => db.ClusterGrants.AsNoTracking().NotCacheable()
-        .Where(g => g.UserId == user && (g.CanRequest || g.CanApprove)).Select(g => g.ClusterId).Distinct().ToListAsync();
+    public async Task RequireViewAsync(string user)
+    {
+        if (!(await PrincipalAsync(user)).HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations))
+            throw new DmsException(403, "Read DMS operations permission is required.");
+    }
 
     public void Audit(string actor, string action, Guid? id = null, string detail = "") =>
         db.AuditEvents.Add(new AuditEvent { ActorId = actor, Action = action, ResourceId = id, Detail = detail });

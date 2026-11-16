@@ -11,7 +11,7 @@ public sealed class WorkflowCatalog(MachineWorkflowRegistry machines, ClusterWor
         var definitions = machines.Definitions.Concat(clusters.Definitions).ToList();
         if (definitions.Select(d => d.Name).Distinct(StringComparer.Ordinal).Count() != definitions.Count)
             throw new InvalidOperationException("Workflow names must be unique across execution locations.");
-        return definitions.Where(d => d.PublicRisk != null).OrderBy(d => d.Name, StringComparer.Ordinal).ToList();
+        return definitions.Where(d => d.PublicEntry).OrderBy(d => d.Name, StringComparer.Ordinal).ToList();
     }
 
     public WorkflowDefinition? Find(string name)

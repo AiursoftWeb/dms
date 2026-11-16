@@ -144,24 +144,25 @@ public sealed class RestartServiceWorkflow(string service) : MachineWorkflow
 // Only compiled workflows construct processes; this class is not an external dispatch target.
 public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arguments, bool captureOutput = false) : MachineWorkflow
 {
-    public override string Name => WorkflowNames.Process;
-    public override string Input => JsonSerializer.Serialize(new { Executable = executable, Arguments = arguments, CaptureOutput = captureOutput });
+    private readonly ProcessInput _input = new(executable, arguments, captureOutput);
+    public override string Name => MachineWorkflows.Process.Name;
+    public override string Input => MachineWorkflows.Process.Serialize(_input);
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
         using var process = new Process();
-        process.StartInfo = new ProcessStartInfo(executable)
+        process.StartInfo = new ProcessStartInfo(_input.Executable)
         {
             RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false
         };
-        foreach (var argument in arguments) process.StartInfo.ArgumentList.Add(argument);
+        foreach (var argument in _input.Arguments) process.StartInfo.ArgumentList.Add(argument);
         process.Start();
         using var registration = token.Register(static state => Kill((Process)state!), process);
-        var output = captureOutput ? new StringBuilder() : null;
-        var errorOutput = captureOutput ? new StringBuilder() : null;
+        var output = _input.CaptureOutput ? new StringBuilder() : null;
+        var errorOutput = _input.CaptureOutput ? new StringBuilder() : null;
         await Task.WhenAll(Drain(process.StandardOutput, "stdout", process, context, output), Drain(process.StandardError, "stderr", process, context, errorOutput), process.WaitForExitAsync(CancellationToken.None));
         token.ThrowIfCancellationRequested();
         if (process.ExitCode != 0) throw new InvalidOperationException($"Process exited with code {process.ExitCode}.");
-        if (!captureOutput) return JsonSerializer.Serialize(new { process.ExitCode });
+        if (!_input.CaptureOutput) return JsonSerializer.Serialize(new { process.ExitCode });
         var result = JsonSerializer.Serialize(new ProcessResult(process.ExitCode, output!.ToString(), errorOutput!.ToString()));
         if (result.Length > 24000) throw new InvalidOperationException("Query result exceeds the serialized output limit.");
         return result;

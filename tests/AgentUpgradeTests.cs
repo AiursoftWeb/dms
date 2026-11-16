@@ -92,7 +92,7 @@ public class AgentUpgradeTests
         var input = new AgentUpgradeInput([release, release with { Architecture = "linux-arm64" }]);
         var registry = new MachineWorkflowRegistry();
         var workflow = registry.Create(WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade.Serialize(input), new AgentEnvironment(Guid.NewGuid(), "old", 0, 0));
-        Assert.AreEqual(RiskLevel.High, registry.FindDefinition(workflow.Name)!.PublicRisk);
+        Assert.AreEqual(RiskLevel.High, registry.FindDefinition(workflow.Name)!.Risk);
         var events = new List<WorkflowEvent>();
         var context = new MachineWorkflowContext(Guid.NewGuid(), null, item => { events.Add(item); return Task.CompletedTask; });
         await Assert.ThrowsAsync<InvalidOperationException>(() => context.RunAsync(workflow, CancellationToken.None));

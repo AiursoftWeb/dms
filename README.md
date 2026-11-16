@@ -21,7 +21,7 @@ On an empty database, the default local account is `admin@default.com` with pass
 - A web console for machine inventory, approvals and workflow history.
 - A CLI and reusable SDK for requesting operations and inspecting their results.
 - Linux Agents that connect outward to the Controller over WebSocket. Managed machines need access to the Controller, without requiring internet access or an SSH service.
-- Cluster permissions with independent request, automatic approval and approval rights for five risk levels.
+- Role permissions with independent request, automatic approval and approval rights for five risk levels.
 - Persistent workflow state, parent/child callstacks and ClickHouse trace archives.
 - Shared Aiursoft accounts, OIDC, roles, themes and localization.
 
@@ -59,7 +59,7 @@ dms access whoami
 dms cluster list
 ```
 
-The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require their Cluster's risk permissions and Lockbox approval. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
+The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and inventory-directory queries do not create Lockboxes. Server operations still require global role risk permissions and Lockbox approval. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
 
 ### SDK
 
@@ -73,7 +73,7 @@ The SDK connects to your own DMS server; install and configure that server separ
 
 ## Try
 
-Try a running DMS [here](https://dms.aiursoft.com). Sign in with an authorized company account. Cluster permissions determine which machines, requests and workflows you can access.
+Try a running DMS [here](https://dms.aiursoft.com). Sign in with an authorized company account. Role permissions determine which risk levels you can request and approve across all machines.
 
 ## Install with Docker
 
@@ -96,7 +96,7 @@ Requirements about how to run
 3. Execute `dotnet run --project src/Aiursoft.DMS/Aiursoft.DMS.csproj -- --urls http://localhost:5000` to run the app.
 4. Use your browser to view [http://localhost:5000](http://localhost:5000).
 
-The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to create clusters, configure their permissions and issue cluster join keys; **Cluster access** provides the same management operations in the web UI. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for registration and the first operation.
+The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to manage inventory and issue join keys; **DMS access** provides inventory and Agent identity management in the web UI. Configure workflow risk permissions on the existing **Roles** page. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for registration and the first operation.
 
 ## Run in Microsoft Visual Studio
 
@@ -161,7 +161,7 @@ dms access whoami
 dms cluster list
 ```
 
-These identity and management queries create no Lockbox. Server operations submit a Lockbox and require the selected Cluster's request permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
+These identity and management queries create no Lockbox. Server operations submit a Lockbox and require the global request Permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
 
 ### Join and manage machines
 
@@ -337,7 +337,7 @@ See [configuration and persistence](https://github.com/aiursoftweb/dms/blob/mast
 - [Issue tracker](https://github.com/AiursoftWeb/dms/issues)
 - [CLI, authentication, Cluster management and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md)
 - [Configuration, persistence, recovery and cancellation](https://github.com/aiursoftweb/dms/blob/master/docs/configuration.md)
-- [Available workflows and Cluster permissions](https://github.com/aiursoftweb/dms/blob/master/docs/workflow-discovery.md)
+- [Available workflows and role permissions](https://github.com/aiursoftweb/dms/blob/master/docs/workflow-discovery.md)
 - [Workflow authoring](https://github.com/aiursoftweb/dms/blob/master/docs/authoring-workflows.md)
 
 ## How to contribute

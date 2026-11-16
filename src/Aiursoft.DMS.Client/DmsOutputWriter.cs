@@ -47,6 +47,10 @@ public static class DmsOutputWriter
                     new JProperty("ClusterId", details["ClusterId"]?.DeepClone()),
                     new JProperty("CanApproveOwnRequests", details["CanApproveOwnRequests"]?.DeepClone()),
                     item.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())))));
+            if (data is JObject identity && identity["RiskPermissions"] is JArray risks)
+                data = new JArray(risks.OfType<JObject>().Select(item => new JObject(
+                    identity.Properties().Where(p => p.Name != "RiskPermissions").Select(p => new JProperty(p.Name, p.Value.DeepClone())),
+                    item.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())))));
             WriteCsv(output, data);
         }
         else if (callstack && data is JArray nodes)
@@ -66,7 +70,7 @@ public static class DmsOutputWriter
             foreach (var p in properties.Where(p => p.Name == "Result" || p.Value is JObject or JArray))
             {
                 output.WriteLine(); output.WriteLine(p.Name); output.WriteLine(new string('-', p.Name.Length));
-                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "Grants");
+                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "RiskPermissions");
             }
         }
         else if (value is JArray array)

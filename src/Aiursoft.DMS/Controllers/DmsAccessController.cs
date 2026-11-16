@@ -19,11 +19,11 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Dms
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     [Authorize(Policy = "CanManageDmsAccess")]
-    [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "DMS", CascadedLinksIcon = "shield", LinkText = "Cluster access", LinkOrder = 1)]
+    [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "DMS", CascadedLinksIcon = "shield", LinkText = "DMS access", LinkOrder = 1)]
     public async Task<IActionResult> Index() => this.StackView(new DmsViewModel
     {
-        Clusters = await db.Clusters.ToListAsync(), Grants = await db.ClusterGrants.ToListAsync(),
-        Users = await db.Users.OrderBy(u => u.UserName).ToListAsync(), Machines = await db.Machines.ToListAsync(),
+        Clusters = await db.Clusters.ToListAsync(),
+        Machines = await db.Machines.ToListAsync(),
         NewKey = TempData["DmsNewKey"] as string, Notice = TempData["DmsNotice"] as string
     });
 
@@ -36,14 +36,6 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Dms
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> CreateCluster(string name) => ManageAsync(async () =>
         await management.CreateAsync(Actor, new CreateClusterInput(Guid.NewGuid(), name)));
-
-    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> Grant(Guid clusterId, string userId, RiskLevel risk, bool canRequest, bool autoApprove, bool canApprove) =>
-        ManageAsync(async () => await management.GrantAsync(Actor, new RiskGrant(clusterId, userId, risk, canRequest, autoApprove, canApprove)));
-
-    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
-    public Task<IActionResult> SelfApproval(string userId, bool enabled) => ManageAsync(async () =>
-        await management.SelfApprovalAsync(Actor, new SelfApprovalInput(userId, enabled)));
 
     [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = "CanManageDmsAccess")]
     public Task<IActionResult> AgentKey(Guid machineId) => ManageAsync(async () =>

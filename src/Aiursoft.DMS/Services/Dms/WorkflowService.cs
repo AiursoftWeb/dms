@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,16 +10,18 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user, Guid cluster) => gate.RunAsync(async () =>
     {
-        await access.RequireViewAsync(user, cluster);
+        await access.RequireViewAsync(user);
+        if (!await db.Clusters.AnyAsync(c => c.Id == cluster)) throw new DmsException(404, "Cluster not found.");
+        var principal = await access.PrincipalAsync(user);
         var definitions = new List<WorkflowDefinitionSummary>();
         foreach (var definition in catalog.PublicDefinitions())
         {
-            var risk = definition.PublicRisk!.Value;
-            var grant = await access.GrantAsync(user, cluster, risk);
+            var risk = definition.Risk;
+            var grant = DmsPermissions.ForRisk(principal, risk);
             definitions.Add(new WorkflowDefinitionSummary(definition.Name, definition.Version, definition.Location,
-                risk, definition.RequiresTargets, grant?.CanRequest == true, grant?.AutoApprove == true, grant?.CanApprove == true));
+                risk, definition.RequiresTargets, grant.CanRequest, grant.AutoApprove, grant.CanApprove));
         }
-        var selfApproval = await db.Users.Where(u => u.Id == user).Select(u => u.CanApproveOwnRequests).SingleAsync();
+        var selfApproval = DmsPermissions.CanApproveOwn(principal);
         access.Audit(user, "workflow.definitions", cluster);
         await db.SaveChangesAsync();
         return new WorkflowCatalogResult(cluster, selfApproval, definitions);
@@ -40,7 +43,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
-            await access.RequireViewAsync(user, prior.ClusterId);
+            await access.PrincipalAsync(user);
+            // Returning the caller's own submission receipt does not require global log-reading permission.
             // A retry keeps the original inferred scope, even if inventory changes.
             var frozen = JsonSerializer.Deserialize<OperationRequest>(prior.Parameters)!;
             if (request.ClusterId == Guid.Empty) request.ClusterId = frozen.ClusterId;
@@ -51,18 +55,18 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.RequestId == Guid.Empty || request.Reason.Length is < 1 or > 2000)
             throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
         var risk = definition != null
-            ? definition.PublicRisk ?? throw new DmsException(400, "This workflow is not available as an external operation.")
+            ? definition.PublicEntry ? definition.Risk : throw new DmsException(400, "This workflow is not available as an external operation.")
             : request.Workflow is WorkflowNames.AddMachine or WorkflowNames.Kill ? RiskLevel.Medium
             : throw new DmsException(400, "This workflow is not available as an external operation.");
         if (request.ClusterId == Guid.Empty)
         {
-            var visible = await access.VisibleClustersAsync(user);
-            if (visible.Count != 1) throw new DmsException(400, "Specify --cluster-id: exactly one accessible cluster is required to omit it.");
+            var visible = await db.Clusters.Select(c => c.Id).ToListAsync();
+            if (visible.Count != 1) throw new DmsException(400, "Specify --cluster-id: exactly one cluster is required to omit it.");
             request.ClusterId = visible[0];
         }
         if (!await db.Clusters.AnyAsync(c => c.Id == request.ClusterId)) throw new DmsException(404, "Cluster not found.");
-        var grant = await access.GrantAsync(user, request.ClusterId, risk);
-        if (grant?.CanRequest != true) throw new DmsException(403, "You cannot request this risk level in this cluster.");
+        var grant = DmsPermissions.ForRisk(await access.PrincipalAsync(user), risk);
+        if (!grant.CanRequest) throw new DmsException(403, "You cannot request this risk level.");
         var targets = new List<Guid>();
         if (definition?.RequiresTargets == true)
         {
@@ -100,7 +104,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             ClusterId = lockbox.ClusterId, Definition = WorkflowNames.Lockbox, State = RunState.WaitingApproval
         });
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
-        if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the cluster risk policy.");
+        if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the requester's role permissions.");
         await db.SaveChangesAsync();
         return lockbox;
     }
@@ -109,10 +113,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     {
         if (reason == null || reason.Length > 2000) throw new DmsException(400, "Decision reason is too long.");
         var item = await db.Lockboxes.SingleOrDefaultAsync(l => l.Id == id) ?? throw new DmsException(404, "Lockbox not found.");
-        var grant = await access.GrantAsync(user, item.ClusterId, item.Risk);
-        if (grant?.CanApprove != true) throw new DmsException(403, "You cannot approve this risk level in this cluster.");
-        var actor = await db.Users.SingleAsync(u => u.Id == user);
-        if (item.RequesterId == user && !actor.CanApproveOwnRequests) throw new DmsException(403, "Self approval is not allowed.");
+        var principal = await access.PrincipalAsync(user);
+        if (!DmsPermissions.CanDecide(principal, item.Risk, item.RequesterId == user))
+            throw new DmsException(403, "Approval permission for this risk level is required; your own requests also require self-approval permission.");
         if (item.Decision != DecisionState.Pending) throw new DmsException(409, "This request has already been decided.");
         if (approve) await ApproveAsync(item, user, reason);
         else
@@ -130,7 +133,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     {
         var definition = catalog.Find(item.Definition);
         if ((definition == null && item.Definition is not (WorkflowNames.AddMachine or WorkflowNames.Kill))
-            || (definition != null && (definition.Version != item.Version || definition.PublicRisk != item.Risk)))
+            || (definition != null && (definition.Version != item.Version || !definition.PublicEntry || definition.Risk != item.Risk)))
             throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
         if (item.Definition == WorkflowNames.AgentUpgrade)
             releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input));
@@ -145,7 +148,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     public Task<LockboxRequest> GetLockboxAsync(string user, Guid id) => gate.RunAsync(async () =>
     {
         var item = await db.Lockboxes.AsNoTracking().SingleOrDefaultAsync(l => l.Id == id) ?? throw new DmsException(404, "Lockbox not found.");
-        await access.RequireViewAsync(user, item.ClusterId);
+        await access.RequireViewAsync(user);
         access.Audit(user, "lockbox.get", id); await db.SaveChangesAsync(); return item;
     });
 
@@ -153,7 +156,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id)
             ?? throw new DmsException(404, "Workflow not found.");
-        await access.RequireViewAsync(user, run.ClusterId);
+        await access.RequireViewAsync(user);
         access.Audit(user, "operation.get", id);
         await db.SaveChangesAsync();
         return new WorkflowDetails(run.Id, run.RootId, run.ParentId, run.LockboxId, run.ClusterId,
@@ -163,7 +166,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     public Task<List<WorkflowRun>> CallstackAsync(string user, Guid id) => gate.RunAsync(async () =>
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
-        await access.RequireViewAsync(user, run.ClusterId);
+        await access.RequireViewAsync(user);
         var all = await db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == run.RootId).OrderBy(r => r.CreatedAt).ToListAsync();
         var selected = new HashSet<Guid> { id };
         while (true)

@@ -45,20 +45,14 @@ public class DmsManagementTests : TestBase
     }
 
     [TestMethod]
-    public async Task WebAndApiShareClusterValidationAndRiskGrantChanges()
+    public async Task WebAndApiShareClusterValidation()
     {
         var setup = await ArrangeAsync();
         await LoginAsAdmin();
         var name = "Web-" + Guid.NewGuid();
         Assert.AreEqual(HttpStatusCode.Found, (await PostForm("/DmsAccess/CreateCluster", new Dictionary<string, string> { ["name"] = name }, "/DmsAccess")).StatusCode);
         Assert.AreEqual(HttpStatusCode.Conflict, (await PostForm("/DmsAccess/CreateCluster", new Dictionary<string, string> { ["name"] = name }, "/DmsAccess")).StatusCode);
-        var cluster = (await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Single(c => c.Name == name);
-        Assert.AreEqual(HttpStatusCode.Found, (await PostForm("/DmsAccess/Grant", new Dictionary<string, string>
-        {
-            ["clusterId"] = cluster.Id.ToString(), ["userId"] = setup.Employee, ["risk"] = "Low", ["canApprove"] = "true"
-        }, "/DmsAccess")).StatusCode);
-        var grant = (await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get")).Grants.Single(g => g.UserId == setup.Employee && g.ClusterId == cluster.Id);
-        Assert.AreEqual(RiskLevel.Low, grant.Risk); Assert.IsTrue(grant.CanApprove); Assert.IsFalse(grant.CanRequest); Assert.IsFalse(grant.AutoApprove);
+        Assert.IsTrue((await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Any(c => c.Name == name));
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.ManagerKey);
         Assert.AreEqual(HttpStatusCode.Conflict, (await Http.PostAsJsonAsync("/api/v1/dms/clusters", new CreateClusterInput(Guid.NewGuid(), name))).StatusCode);
     }
@@ -78,12 +72,11 @@ public class DmsManagementTests : TestBase
         var retry = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--id", id.ToString(), "--name", name);
         Assert.AreEqual(id, retry.Id);
         Assert.IsTrue((await CliAsync<List<ClusterSummary>>(setup.ManagerKey, "cluster", "list")).Any(c => c.Id == id));
-        Assert.HasCount(0, await CliAsync<List<ClusterSummary>>(setup.EmployeeKey, "cluster", "list"));
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.EmployeeKey);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync("/api/v1/dms/clusters")).StatusCode);
         var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get");
         Assert.AreEqual(name, snapshot.Clusters.Single(c => c.Id == id).Name);
-        var manager = snapshot.Users.Single(u => u.Id == setup.Manager);
-        Assert.AreEqual(identity.UserName, manager.UserName); Assert.AreEqual("Manager", manager.DisplayName);
-        Assert.IsFalse(snapshot.Grants.Any(g => g.ClusterId == id)); Assert.IsFalse(snapshot.Machines.Any(m => m.ClusterId == id));
+        Assert.IsFalse(snapshot.Machines.Any(m => m.ClusterId == id));
         foreach (var format in new[] { "table", "csv" })
         {
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["cluster", "list", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.ManagerKey, "--output-format", format]);
@@ -116,8 +109,6 @@ public class DmsManagementTests : TestBase
             new HttpRequestMessage(HttpMethod.Post, "/api/v1/dms/clusters") { Content = JsonContent.Create(new CreateClusterInput(Guid.NewGuid(), "Forbidden")) },
             new HttpRequestMessage(HttpMethod.Put, $"/api/v1/dms/clusters/{Guid.NewGuid()}") { Content = JsonContent.Create(new ClusterNameInput("Forbidden")) },
             new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/dms/clusters/{Guid.NewGuid()}"),
-            new HttpRequestMessage(HttpMethod.Put, "/api/v1/dms/access/grants") { Content = JsonContent.Create(new RiskGrant(Guid.NewGuid(), setup.Employee, RiskLevel.Safe, true, true, true)) },
-            new HttpRequestMessage(HttpMethod.Put, "/api/v1/dms/access/self-approval") { Content = JsonContent.Create(new SelfApprovalInput(setup.Employee, true)) },
             new HttpRequestMessage(HttpMethod.Post, $"/api/v1/dms/access/machines/{Guid.NewGuid()}/key")
         })
         {
@@ -130,17 +121,10 @@ public class DmsManagementTests : TestBase
     }
 
     [TestMethod]
-    public async Task GrantsAndSelfApprovalAreIndependentAndKeyRotationDoesNotExposeStoredSecrets()
+    public async Task KeyRotationDoesNotExposeStoredSecrets()
     {
         var setup = await ArrangeAsync();
         var cluster = await CliAsync<ClusterSummary>(setup.ManagerKey, "cluster", "create", "--name", "Operations");
-        await CliAsync<RiskGrant>(setup.ManagerKey, "access", "set-grant", "--cluster-id", cluster.Id.ToString(), "--user-id", setup.Employee, "--risk", "Medium", "--can-request", "--can-approve");
-        var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get"); var grant = snapshot.Grants.Single(g => g.ClusterId == cluster.Id && g.UserId == setup.Employee && g.Risk == RiskLevel.Medium);
-        Assert.IsTrue(grant.CanRequest); Assert.IsTrue(grant.CanApprove); Assert.IsFalse(grant.AutoApprove);
-        Assert.IsFalse(snapshot.Users.Single(u => u.Id == setup.Employee).CanApproveOwnRequests);
-        Assert.HasCount(1, await CliAsync<List<ClusterSummary>>(setup.EmployeeKey, "cluster", "list"));
-        await CliAsync<SelfApprovalInput>(setup.ManagerKey, "access", "set-self-approval", "--user-id", setup.Employee, "--enabled");
-        Assert.IsTrue((await CliAsync<CurrentUser>(setup.EmployeeKey, "access", "whoami")).CanApproveOwnRequests);
         Guid machine;
         using (var scope = Server!.Services.CreateScope())
         {
@@ -177,7 +161,6 @@ public class DmsManagementTests : TestBase
         Assert.AreEqual(HttpStatusCode.Conflict, (await Http.PostAsJsonAsync("/api/v1/dms/clusters", new CreateClusterInput(cluster.Id, "Different"))).StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.PostAsJsonAsync("/api/v1/dms/clusters", new CreateClusterInput(Guid.Empty, "Empty ID"))).StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.PostAsJsonAsync("/api/v1/dms/clusters", new CreateClusterInput(Guid.NewGuid(), "  "))).StatusCode);
-        Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.PutAsJsonAsync("/api/v1/dms/access/grants", new RiskGrant(cluster.Id, setup.Employee, (RiskLevel)999, true, true, true))).StatusCode);
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();

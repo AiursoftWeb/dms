@@ -42,7 +42,7 @@ Preserve each Agent's private `DMS_STATE_PATH` directory independently of the Co
 
 Configure local accounts or OIDC through the existing Template settings. When deploying with OIDC, set `AppSettings__AuthProvider=OIDC` explicitly and provide the identity provider settings; Local remains the source default.
 
-Cluster membership controls which machines, Lockboxes and workflows a user can inspect. Each cluster grants request, automatic approval and approval capabilities independently at each of the five risk levels. A higher risk permission does not implicitly grant a lower risk permission. Self approval is a separate user setting.
+Workflow authorization uses the existing role Permission claims globally within one DMS instance. Five risk levels each have independent request, automatic approval and approval permissions; self approval is a separate Permission. No risk implies another. Read DMS operations permits inspection across all machines. Cluster fields temporarily remain inventory filters, with no authorization effect. See [role permissions](permissions.md) for configuration and upgrade requirements.
 
 Personal API keys identify CLI users. Machine API keys identify Agents. Keep both types private and revoke them through their management pages when no longer needed.
 

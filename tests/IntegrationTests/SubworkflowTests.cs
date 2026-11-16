@@ -28,7 +28,7 @@ public class SubworkflowTests : TestBase
     private async Task<(WorkflowRun Parent, Machine[] Machines, string[] Keys)> ArrangeAsync(
         Func<WorkflowExecutionContext, CancellationToken, Task<List<Guid>>> execute, RunState initial = RunState.Queued)
     {
-        var definition = new ClusterWorkflowDefinition<EmptyInput, List<Guid>>("test.cluster." + Guid.NewGuid().ToString("N"));
+        var definition = new ClusterWorkflowDefinition<EmptyInput, List<Guid>>("test.cluster." + Guid.NewGuid().ToString("N"), RiskLevel.Safe);
         Server!.Services.GetRequiredService<ClusterWorkflowRegistry>().Register(definition, () => new ExampleWorkflow(execute));
         return await DatabaseAsync(async db =>
         {
@@ -78,7 +78,7 @@ public class SubworkflowTests : TestBase
     [TestMethod]
     public async Task ClusterAwaitsTwoRealAgentsAndNestedClusterWithIndependentIds()
     {
-        var nestedDefinition = new ClusterWorkflowDefinition<EmptyInput, List<Guid>>("test.nested");
+        var nestedDefinition = new ClusterWorkflowDefinition<EmptyInput, List<Guid>>("test.nested", RiskLevel.Safe);
         Server!.Services.GetRequiredService<ClusterWorkflowRegistry>().Register(nestedDefinition, () => new ExampleWorkflow(async (context, token) =>
         {
             var results = new List<Guid>();
@@ -204,7 +204,7 @@ public class SubworkflowTests : TestBase
         {
             var late = await added.Task.WaitAsync(token);
             await Assert.ThrowsAsync<InvalidOperationException>(() => context.CallMachineAsync(MachineWorkflows.AgentStatus, late, new EmptyInput(), token));
-            var forbidden = new MachineWorkflowDefinition<EmptyInput, ProcessResult>(WorkflowNames.Process);
+            var forbidden = new MachineWorkflowDefinition<EmptyInput, ProcessResult>(WorkflowNames.Process, RiskLevel.VeryHigh);
             var approved = await context.GetApprovedMachinesAsync(token);
             await Assert.ThrowsAsync<InvalidDataException>(() => context.CallMachineAsync(forbidden, approved[0], new EmptyInput(), token));
             return (await context.GetApprovedMachinesAsync(token)).ToList();

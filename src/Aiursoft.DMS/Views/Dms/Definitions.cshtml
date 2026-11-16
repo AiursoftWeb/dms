@@ -3,7 +3,7 @@
 <h1>@Localizer["Standard workflows"]</h1>
 @if (Model.Clusters.Count == 0)
 {
-    <p>@Localizer["You do not have access to any clusters."]</p>
+    <p>@Localizer["No clusters have been created."]</p>
 }
 else
 {
@@ -57,7 +57,7 @@ else
         </div></div>
         <details class="mt-3">
             <summary>@Localizer["About these permissions"]</summary>
-            <p>@Localizer["Permissions apply to the selected cluster and each workflow's risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission."]</p>
+            <p>@Localizer["Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission."]</p>
             <p>@Localizer["This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed."]</p>
         </details>
     }

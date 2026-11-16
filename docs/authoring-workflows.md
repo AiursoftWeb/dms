@@ -20,12 +20,12 @@ public sealed record UnitInput(long Units, bool Fail = false)
 public sealed record UnitResult(long Units);
 
 public static readonly MachineWorkflowDefinition<UnitInput, UnitResult> Unit = new(
-    "example.unit", Version: "unit-1", ValidateInput: input => input.Validate());
+    "example.unit", RiskLevel.VeryHigh, Version: "unit-1", ValidateInput: input => input.Validate());
 ```
 
-`MachineWorkflowDefinition<TInput, TResult>` declares execution on an Agent. `ClusterWorkflowDefinition<TInput, TResult>` declares execution on the Controller. The definition owns its name, version, input/output types, input validation and optional public risk. Constructors require missing mandatory JSON arguments to fail; unknown input fields and incorrect JSON types fail as well. Write explicit business validation for allowed values, including null values where relevant. Validation must be deterministic and have no side effects; it also runs for typed subcalls.
+`MachineWorkflowDefinition<TInput, TResult>` declares execution on an Agent. `ClusterWorkflowDefinition<TInput, TResult>` declares execution on the Controller. The definition owns its name, version, input/output types, input validation, mandatory risk and a separate public-entry flag. Constructors require missing mandatory JSON arguments to fail; unknown input fields and incorrect JSON types fail as well. Write explicit business validation for allowed values, including null values where relevant. Validation must be deterministic and have no side effects; it also runs for typed subcalls.
 
-Omitting `PublicRisk` makes a definition internal: a registered parent can call it, but even a user with all risk grants cannot submit it directly. Set an explicit risk, such as `PublicRisk: RiskLevel.Low`, to allow public Lockbox submissions after registering its implementation. Registering a class alone does not grant external access. A CLI entry is a separate optional choice.
+Every definition must specify `RiskLevel.Safe`, `Low`, `Medium`, `High` or `VeryHigh`. `PublicEntry` defaults to `false`: a registered parent can call the definition, but even a user with all risk permissions cannot submit it directly. Set `PublicEntry: true` to allow public Lockbox submissions after registering its implementation. Registering a class alone does not grant external access. A CLI entry is a separate optional choice.
 
 A Machine definition always requires a frozen machine selection. A Cluster definition with `SelectMachines: true` accepts the same selection; its body can enumerate `GetApprovedMachinesAsync`. A Cluster definition without this flag rejects machine selection. It can still perform Controller-side work such as an inventory query.
 
@@ -145,6 +145,6 @@ The [cluster disk usage operation](disk-usage.md) is a product example of the sa
 
 ## Discover registered public workflows
 
-Public definitions registered by the factories automatically appear in the [standard workflow catalog](workflow-discovery.md). No separate catalog entry is required. Internal definitions (`PublicRisk = null`) remain available only to compiled subworkflow calls.
+Public definitions registered by the factories automatically appear in the [standard workflow catalog](workflow-discovery.md). No separate catalog entry is required. Internal definitions (`PublicEntry = false`) remain available only to compiled subworkflow calls.
 
 Structured approval and state history is [captured automatically](workflow-audit.md) at the shared save boundary. Standard workflow authors do not register an audit writer or add delivery calls.

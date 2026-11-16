@@ -76,40 +76,31 @@ export DMS_API_KEY
 dms access whoami
 ```
 
-`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, platform permissions and self-approval setting. Machine keys authenticate Agents and cannot be used as personal login keys.
+`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, five-risk permission matrix, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
 
-The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Existing command names, output formats and approval requirements are unchanged.
+The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox workflow apply equally to both forms.
 
 ### Manage clusters and permissions
 
-Users with **Manage DMS access** can create clusters and configure access through the CLI or **Cluster access** web page. Use `access whoami` or the administrator-only `access get` snapshot to find user IDs:
+Users with **Manage DMS access** can manage inventory and Agent identities through the CLI or **DMS access** web page. Configure workflow permissions in **Administration → Directory → Roles → Edit**. See [role permissions](permissions.md) for the five-risk matrix and upgrade requirements. Permissions apply to every machine in the instance; Cluster fields are inventory filters only.
 
 ```sh
-dotnet ./bin/client/dms.dll cluster create --name aiursoft-prod
-dotnet ./bin/client/dms.dll cluster list
-dotnet ./bin/client/dms.dll access get
-dotnet ./bin/client/dms.dll access set-grant \
-  --cluster-id <cluster-id> --user-id <user-id> --risk Medium \
-  --can-request --can-approve
+dms access whoami
+dms access whoami --output-format json
+dms access whoami --output-format csv
+dms cluster create --name aiursoft-prod
+dms cluster list
+dms access get
 ```
 
-`set-grant` replaces all three flags for exactly one user, cluster and risk. Omitted flags are false; the example permits requesting and approving Medium operations, with automatic approval disabled. Repeat for each required risk level. Creating a cluster grants no operation permissions automatically. Self approval is configured separately:
-
-```sh
-dotnet ./bin/client/dms.dll access set-self-approval \
-  --user-id <user-id> --enabled false
-```
-
-`cluster list` shows administrators all clusters and other users only their authorized clusters. These configuration and identity commands are audited Controller management operations and create no Lockbox. Server operations such as `cluster get-machines` and `cluster add-machine` continue through Lockbox.
-
-`cluster create --id <creation-id> --name <name>` can safely retry a creation with the same ID and name. A reused ID with another name or a duplicate cluster name is rejected. Administrators can rename or remove a cluster:
+`access set-grant` and `access set-self-approval` have been removed. `access get` lists inventory and Agent identity metadata, without a second permissions configuration surface. Creating inventory or issuing a key never grants workflow execution privileges.
 
 ```sh
 dotnet ./bin/client/dms.dll cluster rename --cluster-id <cluster-id> --name <new-name>
 dotnet ./bin/client/dms.dll cluster drop --cluster-id <cluster-id>
 ```
 
-Deletion requires no machines, operation history or enrollment keys (including revoked keys). Its access grants are removed atomically and the audit record is retained.
+Deletion requires no machines, operation history or enrollment keys (including revoked keys). The audit record is retained.
 
 ## Manage Docker containers
 
@@ -165,16 +156,15 @@ does not determine selection. With multiple machines, use explicit
 `--machine-id` values or intentionally request `--all-machines`. The Controller
 resolves these defaults under its existing submission gate and stores the
 resolved IDs before approval. Reusing the same `--request-id` preserves the
-original resolved targets even if inventory or accessible clusters change.
+original resolved targets even if inventory changes.
 An ambiguous or empty selection fails before creating a Lockbox.
 
 This is the standard **High-risk** `machine.box.puller.force-update` workflow,
-version 2. The caller needs this cluster's High `CanRequest` grant. Only its
-High `AutoApprove` grant enables automatic approval; otherwise a user with High
-`CanApprove` must approve. Under the company role policy this is normally
-leadership or root. Self approval separately requires `CanApproveOwnRequests`;
-leadership cannot approve its own requests, while an explicitly authorized root
-user can. This feature does not change any grants.
+version 2. The caller needs `CanRequestHighRiskWorkflow`. Automatic approval also
+requires `CanAutoApproveHighRiskWorkflow`; otherwise a reviewer needs
+`CanApproveHighRiskWorkflow`. Approving your own request additionally requires
+`CanApproveOwnWorkflow`. These are global role permissions; a role's name alone
+does not authorize any action.
 
 The Lockbox stores the actual cluster/machines, selected Puller and
 `ImageScope: SingleImage` or `AllConfiguredImages` in canonical typed input.
@@ -313,7 +303,7 @@ This development mode requires a .NET 10 runtime. Preserve the installation iden
 
 ## Discover standard workflows
 
-Use `dms operation list-definitions --cluster-id <cluster-id>` to see the Controller's registered public standard workflows and your permissions in that cluster. The command supports `--output-format table|json|csv` and creates no Lockbox. The same catalog is available under **Standard workflows** in the web UI. See [workflow discovery](workflow-discovery.md) for permission and output details.
+Use `dms operation list-definitions --cluster-id <cluster-id>` to see the Controller's registered public standard workflows and your permissions across the instance. The command supports `--output-format table|json|csv` and creates no Lockbox. The same catalog is available under **Standard workflows** in the web UI. See [workflow discovery](workflow-discovery.md) for permission and output details.
 
 ## Request and inspect operations
 
