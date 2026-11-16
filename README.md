@@ -32,13 +32,10 @@ dotnet tool install --global Aiursoft.DMS.Client
 dms --help
 ```
 
-Sign in to your Controller and create a personal key under **API Keys**. In Bash, configure access and check your identity:
+Run the interactive login, follow its link to create a personal API key, then check your identity:
 
 ```sh
-export DMS_SERVER=https://dms.aiursoft.com/
-read -rsp 'DMS personal API key: ' DMS_API_KEY
-echo
-export DMS_API_KEY
+dms login
 dms access whoami
 dms cluster list
 ```

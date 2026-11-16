@@ -49,24 +49,34 @@ These source publishes are framework-dependent applications. Install the .NET 10
 
 ## Configure access
 
-Sign in through the Controller's configured authentication provider and create a personal key under **API Keys**. Configure the CLI with your Controller URL and key:
+Run the interactive login once:
 
 ```sh
-export DMS_SERVER=https://dms.example.com
-export DMS_API_KEY='<personal-key>'
+dms login
+```
+
+Enter your Controller endpoint (press Enter for `https://dms.aiursoft.com/`). Open the displayed **API Keys** link, sign in with your company account, create a personal key, then paste it into the hidden prompt. The CLI verifies the key with `access whoami` before saving it to `~/.DMS/auth.json`. A failed or cancelled login leaves the previous configuration unchanged. On Linux and macOS, the file is readable and writable only by its owner. It contains your personal key; keep it private.
+
+Subsequent terminal sessions use the saved login automatically:
+
+```sh
 dms access whoami
 dms cluster list
 ```
 
-`--server` and `--api-key` can also be supplied to individual commands. `whoami` shows the current user's ID, platform permissions and self-approval setting. Machine keys authenticate Agents.
+Run `dms login` again to change the saved Controller or key. `dms login --server https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
 
-To enter a personal key without placing it in Bash command history:
+For scripts, command options override environment variables, which override saved authentication:
 
 ```sh
+export DMS_SERVER=https://dms.example.com/
 read -rsp 'DMS personal API key: ' DMS_API_KEY
 echo
 export DMS_API_KEY
+dms access whoami
 ```
+
+`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, platform permissions and self-approval setting. Machine keys authenticate Agents and cannot be used as personal login keys.
 
 The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Existing command names, output formats and approval requirements are unchanged.
 
