@@ -125,6 +125,7 @@ public class CliLoginTests : TestBase
         Assert.AreEqual(0, (await RunAsync(["access", "whoami"])).Code);
     }
 
+    [TestCleanup]
     public override async Task CleanServer()
     {
         try { await base.CleanServer(); }
