@@ -51,6 +51,15 @@ dotnet tool uninstall --global Aiursoft.DMS.Client
 
 Run `dms --help` to explore commands.
 
+The machine Agent is also available as a .NET tool starting with `Aiursoft.DMS.Agent` 1.1.1:
+
+```bash
+dotnet tool install --global Aiursoft.DMS.Agent
+dms-agent --help
+```
+
+For managed servers, use the [one-time Agent installer](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md#install-and-join-an-agent). It supplies the .NET runtime from the Controller and registers the systemd service. The tool is useful for foreground development with an existing .NET installation; see the same guide for `join` and `run`.
+
 Run the interactive login, follow its link to create a personal API key, then check your identity:
 
 ```sh

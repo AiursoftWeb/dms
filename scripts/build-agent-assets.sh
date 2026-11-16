@@ -11,10 +11,11 @@ version=$(dotnet msbuild "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
 metadata=()
 for runtime in linux-x64 linux-arm64; do
-    # Ship the security-serviced runtime even when the build SDK bundles an older patch.
+    # Native server bundles include the serviced runtime and are separate from NuGet tool packaging.
     dotnet publish "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" \
         --configuration Release --runtime "$runtime" --self-contained true \
         -p:UseAppHost=true -p:RuntimeFrameworkVersion=10.0.15 \
+        -p:PackAsTool=false -p:GeneratePackageOnBuild=false \
         --output "$temporary/$runtime" "${source_args[@]}"
     tar -czf "$output/$runtime.tar.gz" -C "$temporary/$runtime" .
     archive_hash=$(sha256sum "$output/$runtime.tar.gz" | cut -d ' ' -f 1)
