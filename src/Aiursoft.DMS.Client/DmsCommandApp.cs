@@ -16,7 +16,7 @@ public static class DmsCommandApp
             StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             new ActionCommand("add", WorkflowNames.AddMachine),
             new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand()]),
-            new Group("box", [new Group("puller", [PullerCommand()])]),
+            new Group("box", [BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()), new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)]),
@@ -27,6 +27,14 @@ public static class DmsCommandApp
     private static ActionCommand StandardCommand<TInput, TResult>(string name, WorkflowDefinition<TInput, TResult> definition,
         Func<ParseResult, TInput> input, params Option[] options) =>
         new(name, definition.Name, definition, context => definition.Serialize(input(context)), options);
+
+    private static ActionCommand BoxDeployCommand()
+    {
+        var stage = new Option<int>("--stage") { DefaultValueFactory = _ => 4, Description = "Starting stage, 0 to 4 (default 4). All later stages also run." };
+        var filter = new Option<string?>("--filter") { Description = "Literal stage-4 stack-name substring; omit for all stacks. Earlier stages and shared preparation are not filtered." };
+        return StandardCommand("deploy", MachineWorkflows.BoxDeploy,
+            context => new BoxDeployInput(context.GetValue(stage), context.GetValue(filter)), stage, filter);
+    }
 
     private static ActionCommand PullerCommand()
     {
