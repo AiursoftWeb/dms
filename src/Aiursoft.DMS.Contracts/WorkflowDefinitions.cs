@@ -33,6 +33,8 @@ public abstract record WorkflowDefinition(string Name, RiskLevel Risk, string Ve
     public abstract bool RequiresTargets { get; }
     public abstract void Validate(string input);
     public abstract string Normalize(string input);
+    public virtual IEnumerable<ArtifactReference> Artifacts(string input) => [];
+    public virtual bool RetainInputArtifactsForAudit => false;
 }
 
 public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLevel Risk, string Version,
@@ -53,6 +55,8 @@ public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLeve
     }
     public override void Validate(string input) => ReadInput(input);
     public override string Normalize(string input) => Serialize(ReadInput(input));
+    public override IEnumerable<ArtifactReference> Artifacts(string input) => ReadInput(input) is IArtifactOperationInput value ? [value.Artifact] : [];
+    public override bool RetainInputArtifactsForAudit => typeof(IAuditTextInput).IsAssignableFrom(typeof(TInput));
     public TResult ReadResult(string result) => JsonSerializer.Deserialize<TResult>(result, WorkflowJson.Options)
         ?? throw new InvalidDataException("Workflow returned a null result.");
     public OperationRequest Request(TInput input, string reason, IEnumerable<Guid>? machines = null,

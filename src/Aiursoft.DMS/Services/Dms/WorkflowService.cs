@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user) => gate.RunAsync(async () =>
     {
@@ -82,6 +82,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.Workflow == WorkflowNames.Kill && !await db.WorkflowRuns.AnyAsync(r => r.Id == request.TargetWorkflowId))
             throw new DmsException(404, "Target workflow not found.");
         if (request.Workflow == WorkflowNames.AgentUpgrade) releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(request.Input));
+        await RequireArtifactsAsync(definition, request.Input, user);
         var lockbox = new LockboxRequest
         {
             ClientRequestId = request.RequestId, RequesterId = user,
@@ -129,12 +130,25 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
         if (item.Definition == WorkflowNames.AgentUpgrade)
             releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input));
+        await RequireArtifactsAsync(definition, JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input, item.RequesterId);
         item.Decision = DecisionState.Approved; item.ApproverId = user; item.Automatic = user == null;
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
         var root = db.WorkflowRuns.Local.FirstOrDefault(r => r.Id == item.WorkflowId)
             ?? await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
         await new LockboxWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, root, item, catalog.Find(item.Definition)));
         access.Audit(user ?? "system", "lockbox.approve", item.Id, reason);
+    }
+
+    private async Task RequireArtifactsAsync(WorkflowDefinition? definition, string input, string owner)
+    {
+        foreach (var reference in definition?.Artifacts(input) ?? [])
+        {
+            var stored = artifacts.Get(reference.Id);
+            if (stored.OwnerId != owner) throw new DmsException(403, "Workflow input artifacts must belong to the requester.");
+            if (!DmsArtifactAccess.Matches(stored.Reference, reference))
+                throw new DmsException(409, "Input artifact differs from its immutable uploaded metadata.");
+            if (definition?.RetainInputArtifactsForAudit == true) await artifacts.RetainAuditInputAsync(reference.Id, owner);
+        }
     }
 
     public Task<LockboxRequest> GetLockboxAsync(string user, Guid id) => gate.RunAsync(async () =>

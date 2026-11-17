@@ -132,11 +132,40 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         }
     }
 
+    private async Task<OperationResult> RebootAsync(Guid taskId, MachineWorkflowContext context, RebootInput input, CancellationToken token)
+    {
+        lock (_startGate)
+        {
+            if (_maintenance != null) throw new InvalidOperationException("An Agent lifecycle operation is already running.");
+            _maintenance = taskId;
+        }
+        try
+        {
+            using var drain = CancellationTokenSource.CreateLinkedTokenSource(token); drain.CancelAfter(TimeSpan.FromMinutes(1));
+            await context.TraceAsync("Pausing new work and waiting for other machine tasks before reboot.");
+            while (true)
+            {
+                var others = journal.Snapshot().Where(t => t.Id != taskId).ToArray();
+                if (others.Any(t => t.State is RunState.NeedsVerification or RunState.CancelRequested)) throw new InvalidOperationException("Reconcile uncertain tasks before rebooting.");
+                if (others.All(t => t.State != RunState.Running)) break;
+                await Task.Delay(250, drain.Token);
+            }
+            return await new AgentReboot(installedState!, journal).PrepareAsync(taskId, context, input, token);
+        }
+        catch
+        {
+            lock (_startGate) { if (_maintenance == taskId) _maintenance = null; }
+            throw;
+        }
+    }
+
     private async Task ExecuteAsync(JournalTask task)
     {
         var environment = new AgentEnvironment(journal.InstallationId, typeof(AgentClient).Assembly.GetName().Version!.ToString(),
             journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count),
-            installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token));
+            installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token),
+            Artifacts: new AgentArtifactTransport(controller, key, task.Id),
+            Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token));
         var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try

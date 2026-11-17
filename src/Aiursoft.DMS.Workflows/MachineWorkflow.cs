@@ -32,6 +32,8 @@ public sealed class MachineWorkflowContext
     private readonly MachineWorkflowRegistry _workflows;
     private readonly Guid? _parentId;
     private readonly Func<WorkflowEvent, Task> _report;
+    private bool _warning;
+    private bool _needsVerification;
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _cancellations;
 
     public MachineWorkflowContext(Guid id, Guid? parentId, Func<WorkflowEvent, Task> report,
@@ -47,6 +49,7 @@ public sealed class MachineWorkflowContext
 
     public Guid Id => _id;
     public Guid? ParentId => _parentId;
+    public bool HasWarnings => _warning;
 
     public async Task CancelAsync(Guid target)
     {
@@ -62,6 +65,12 @@ public sealed class MachineWorkflowContext
         WorkflowId = _id, ParentId = _parentId, IsTrace = true, Message = message, Source = source
     });
 
+    public async Task WarningAsync(string message)
+    {
+        _warning = true;
+        await TraceAsync(message, "warning");
+    }
+
     public async Task<string> RunAsync(MachineWorkflow workflow, CancellationToken token)
     {
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -73,7 +82,9 @@ public sealed class MachineWorkflowContext
             await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, Input = workflow.Input, State = RunState.Running });
             token.ThrowIfCancellationRequested();
             var result = await workflow.ExecuteAsync(this, token);
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.Succeeded, Result = result });
+            if (_needsVerification) throw new WorkflowNeedsVerificationException(_id);
+            token.ThrowIfCancellationRequested();
+            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = _warning ? RunState.Warning : RunState.Succeeded, Result = result });
             return result;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
@@ -103,7 +114,7 @@ public sealed class MachineWorkflowContext
         var id = Guid.NewGuid();
         try { return await new MachineWorkflowContext(id, _id, _report, _cancellations, _environment, _workflows).RunAsync(workflow, token); }
         catch (OperationCanceledException) { throw; }
-        catch (WorkflowNeedsVerificationException) { throw; }
+        catch (WorkflowNeedsVerificationException) { _needsVerification = true; throw; }
         catch (Exception exception) { throw new ChildWorkflowException(id, workflow.Name, null, RunState.Failed, exception.Message); }
     }
 

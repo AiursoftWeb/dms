@@ -31,7 +31,7 @@ public abstract class TestBase
         _storagePath = Directory.CreateTempSubdirectory("AiursoftTests-").FullName;
         try
         {
-            Server = await AppAsync<Startup>([$"Storage:Path={_storagePath}"], port: reservation.Port);
+            Server = await AppAsync<Startup>([$"Storage:Path={_storagePath}", $"Dms:StatePath={_storagePath}/dms-state"], port: reservation.Port);
             reservation.ConfigureServer(Server);
             await Server.UpdateDbAsync<TemplateDbContext>();
             await Server.SeedAsync();

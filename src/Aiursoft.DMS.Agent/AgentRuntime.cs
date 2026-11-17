@@ -35,6 +35,7 @@ public static class AgentRuntime
         }
         config.Save(state);
         await new AgentUpgrade(state, journal).ConfirmAsync();
+        await new AgentReboot(state, journal).ConfirmAsync();
         await RunAsync(new Uri(config.Controller), config.AgentKey, journal, state);
     }
     public static async Task RunEnvironmentAsync()

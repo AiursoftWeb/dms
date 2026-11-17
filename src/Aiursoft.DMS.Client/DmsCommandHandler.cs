@@ -39,7 +39,7 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
                 await ExecuteAsync(context, credentials);
                 return 0;
             }
-            catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException or HttpRequestException or OperationCanceledException)
+            catch (Exception exception) when (exception is AiurUnexpectedServerResponseException or AiurHttpResponseException or ArgumentException or HttpRequestException or OperationCanceledException or IOException or System.Text.Json.JsonException)
             {
                 var message = exception switch
                 {
@@ -47,6 +47,8 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
                     AiurHttpResponseException { StatusCode: System.Net.HttpStatusCode.Unauthorized } => "Authentication failed. Check your personal API Key and its expiry.",
                     AiurHttpResponseException http => $"Controller returned HTTP {(int)http.StatusCode} ({http.StatusCode}).",
                     ArgumentException argument => argument.Message,
+                    IOException => "Local file or artifact transfer failed. Inspect the path, available space and artifact metadata.",
+                    System.Text.Json.JsonException => "The input or Controller response is not valid JSON.",
                     _ => "Cannot reach the Controller. Check the endpoint and network connection."
                 };
                 if (!string.IsNullOrEmpty(key)) message = message.Replace(key, "[redacted]", StringComparison.Ordinal);

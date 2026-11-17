@@ -15,6 +15,7 @@ ASP.NET Core environment overrides use double underscores, such as `Dms__StatePa
 | `Storage:Path` | `/tmp/data` | Shared Template file storage. |
 | `AppSettings:AuthProvider` | `Local` | Local accounts; set `OIDC` and configure `AppSettings:OIDC` to use an identity provider. |
 | `Dms:StatePath` | `dms-state` | Persistent Controller workflow state and detailed trace backlog. |
+| `Dms:Artifacts:MaximumTotalBytes` | `10737418240` | Total reserved artifact capacity in bytes, including temporary uploads and retained script/SQL approval sources. One GiB to one TiB. |
 | `Dms:Clickhouse:Enabled` | `false` | Enable archival and querying of detailed workflow traces. |
 | `Dms:Clickhouse:ConnectionString` | Local ClickHouse HTTP endpoint | Connection to the trace archive; configure the actual host, database and credentials before enabling it. |
 
@@ -37,6 +38,8 @@ The Docker image stores its first-start configuration in `/data/appsettings.json
 Detailed workflow traces are first written to the Controller's disk queue, then archived to the ClickHouse table `DmsWorkflowTrace`. They are not stored in the relational business database. Prepare ClickHouse before using DMS for ongoing operations. With archival disabled or unavailable, traces remain in the disk backlog; unavailable storage applies backpressure rather than silently dropping entries.
 
 Preserve each Agent's private `DMS_STATE_PATH` directory independently of the Controller volume. It contains its installation identity and task journal. See [Agent setup](./cli-and-agent.md#run-an-agent).
+
+File artifacts use the private `artifacts` subdirectory of `Dms:StatePath`. Temporary transfers expire after 24 hours; submitted script/SQL input is retained for audit. Binary bytes are not stored in the relational database or ClickHouse. See [file transfer and database setup](operations.md).
 
 ## Access and authentication
 
