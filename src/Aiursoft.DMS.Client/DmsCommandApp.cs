@@ -17,7 +17,7 @@ public static class DmsCommandApp
             StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             new ActionCommand("add", WorkflowNames.AddMachine),
             new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand(), new Group("system", [StandardCommand("df", MachineWorkflows.DockerDiskUsage, _ => new EmptyInput())])]),
-            new Group("filesystem", [DirectoryUsageCommand()]),
+            new Group("filesystem", [DirectoryUsageCommand(), RemovePathCommand()]),
             new Group("box", [StandardCommand("inspect", MachineWorkflows.BoxInspect, _ => new EmptyInput()), BoxConfigureGitCommand(), BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
@@ -44,6 +44,14 @@ public static class DmsCommandApp
         var depth = new Option<int>("--depth") { DefaultValueFactory = _ => 1, Description = "Directory depth, 0 to 3 (default 1). Scan is limited to one filesystem and 60 seconds." };
         return StandardCommand("du", MachineWorkflows.DirectoryUsage,
             context => new DirectoryUsageInput(context.GetValue(path)!, context.GetValue(depth)), path, depth);
+    }
+
+    private static ActionCommand RemovePathCommand()
+    {
+        var path = new Option<string>("--path") { Required = true, Description = "One exact absolute path to delete. No wildcard expansion; deletion is permanent." };
+        var recursive = new Option<bool>("--recursive") { Description = "Also remove directory contents without crossing to a different filesystem device. Symlink parents are rejected." };
+        return StandardCommand("rm", MachineWorkflows.RemovePath,
+            context => new RemovePathInput(context.GetValue(path)!, context.GetValue(recursive)), path, recursive);
     }
 
     private static ActionCommand BoxConfigureGitCommand()

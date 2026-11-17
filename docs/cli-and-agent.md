@@ -141,6 +141,36 @@ its trace before drawing conclusions. Docker's report includes images,
 containers, local volumes and build cache with estimated reclaimable space.
 Neither command removes data or automatically starts cleanup.
 
+## Remove an approved path
+
+```sh
+dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-file --reason "Remove the reviewed file"
+dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-directory --recursive --reason "Remove the reviewed directory tree"
+```
+
+`filesystem rm` is a standard **High** risk workflow. Request permission is
+`CanRequestHighRiskWorkflow`, automatic approval additionally requires
+`CanAutoApproveHighRiskWorkflow`, and reviewers need `CanApproveHighRiskWorkflow`.
+Self-review additionally needs `CanApproveOwnWorkflow`. The request records the
+machine, exact path and recursive flag. Submission returns only `WorkflowId`;
+inspect callstack and trace for execution and removed entries.
+
+One normalized absolute path is required. There is no shell, wildcard expansion,
+force option or implicit recursion. Root and trailing slashes are rejected.
+Symlink parents are rejected at preflight; a symlink at the target is removed
+without following it. Recursive removal uses GNU rm's one-filesystem and
+preserve-root protections: different-device mounts are not traversed, and an
+operand on a different device from its parent is refused. Same-device bind mounts
+are not isolated by these flags. Approval fixes the path, not its future contents;
+ensure nobody replaces parent directories or writes new data there during removal.
+
+Deletion is permanent and creates no backup. Missing paths or unapproved directory
+recursion fail before starting rm. A nonzero rm exit or cancellation after dispatch
+is **NeedsVerification** because deletion may be partial. Inspect the path before
+submitting another request; the workflow does not automatically retry.
+
+Update the Controller, CLI (1.2.3) and target Agent (1.3.3) before using removal.
+
 ## Configure the machine's Box Git identity
 
 ```sh

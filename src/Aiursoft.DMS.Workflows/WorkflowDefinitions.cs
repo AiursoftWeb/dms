@@ -20,6 +20,7 @@ public sealed class MachineWorkflowRegistry
         Register(MachineWorkflows.BoxInspect, (_, _) => new BoxInspectWorkflow());
         Register(MachineWorkflows.BoxConfigureGit, (input, _) => new BoxConfigureGitWorkflow(input));
         Register(MachineWorkflows.DirectoryUsage, (input, _) => new DirectoryUsageWorkflow(input));
+        Register(MachineWorkflows.RemovePath, (input, _) => new RemovePathWorkflow(input));
         Register(MachineWorkflows.DockerDiskUsage, (_, _) => new DockerDiskUsageWorkflow());
         Register(MachineWorkflows.BoxDeploy, (input, _) => new BoxDeployWorkflow(input));
         Register(MachineWorkflows.Performance, (_, _) => new PerformanceInfoWorkflow());

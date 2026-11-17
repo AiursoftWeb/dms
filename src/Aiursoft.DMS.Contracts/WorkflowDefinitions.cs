@@ -93,6 +93,7 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxInspectionResult> BoxInspect = new("machine.box.inspect", RiskLevel.Safe, "1", PublicEntry: true);
     public static readonly MachineWorkflowDefinition<BoxGitInput, BoxInspectionResult> BoxConfigureGit = new("machine.box.configure-git", RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<DirectoryUsageInput, ProcessResult> DirectoryUsage = new("machine.filesystem.du", RiskLevel.Low, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<RemovePathInput, ProcessResult> RemovePath = new("machine.filesystem.rm", RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DockerDiskUsage = new("machine.docker.system.df", RiskLevel.Low, "1", PublicEntry: true);
     public static readonly MachineWorkflowDefinition<BoxDeployInput, BoxDeployResult> BoxDeploy = new("machine.box.deploy", RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe, PublicEntry: true);
