@@ -151,6 +151,41 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    [DataRow("table", false)]
+    [DataRow("json", false)]
+    [DataRow("csv", false)]
+    [DataRow("table", true)]
+    [DataRow("json", true)]
+    [DataRow("csv", true)]
+    public async Task BoxInspectCliOnlySubmitsASafeWorkflowAndLeavesInspectionDetailsForTrace(string format, bool automatic)
+    {
+        var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.Safe));
+        if (automatic) await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Safe), true);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "inspect", "--machine-id", setup.First.ToString(),
+            "--reason", "Inspect Box before deployment", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
+        Assert.AreEqual(MachineWorkflows.BoxInspect.Name, box.Definition);
+        Assert.AreEqual(RiskLevel.Safe, box.Risk);
+        Assert.AreEqual(automatic ? DecisionState.Approved : DecisionState.Pending, box.Decision);
+        if (!automatic) Assert.IsNull(box.OperationId);
+        StringAssert.Contains(cli.StdOut, box.WorkflowId.ToString());
+        Assert.DoesNotContain(box.Id.ToString(), cli.StdOut);
+        if (format == "json") Assert.HasCount(1, (JObject)JObject.Parse(cli.StdOut)["Data"]!);
+        if (format == "csv") Assert.AreEqual("WorkflowId", cli.StdOut.Split('\n')[0].Trim());
+        Assert.DoesNotContain("Branch", cli.StdOut);
+        Assert.DoesNotContain("Origin", cli.StdOut);
+        Assert.DoesNotContain("Result", cli.StdOut);
+        Assert.AreEqual("{}", System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
+        var metadata = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", box.WorkflowId.ToString(),
+            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+        Assert.AreEqual(0, metadata.ProgramReturn, metadata.StdErr);
+        Assert.AreEqual(box.Id.ToString(), JObject.Parse(metadata.StdOut)["Data"]!["LockboxId"]!.ToString());
+    }
+
+    [TestMethod]
     public async Task BoxDeployCliDefaultsAreFrozenAndInvalidParametersNeverCreateRequests()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));

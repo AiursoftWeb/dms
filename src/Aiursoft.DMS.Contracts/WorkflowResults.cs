@@ -8,3 +8,6 @@ public sealed record MachineSummary(Guid Id, string Name, string AgentVersion, D
 public sealed record DiskUsageResult(Guid WorkflowId, long TotalBytes, long UsedBytes, long AvailableBytes, int Filesystems);
 public sealed record MachineDiskUsage(Guid MachineId, DiskUsageResult Usage);
 public sealed record ClusterDiskUsageResult(long TotalBytes, long UsedBytes, long AvailableBytes, int MachineCount, List<MachineDiskUsage> Machines);
+
+// Inspection details belong in the trace archive, not the workflow result or submission receipt.
+public sealed record BoxInspectionResult;

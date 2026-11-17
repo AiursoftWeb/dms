@@ -709,7 +709,7 @@ await db.SaveChangesAsync();
             Assert.AreEqual("aiursoft/dms:latest", frozen.Image);
             Assert.AreEqual(puller, frozen.Puller);
             CollectionAssert.AreEqual(new[] { setup.Machine }, JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
-            StringAssert.Contains(cli.StdOut, box.Id.ToString());
+            StringAssert.Contains(cli.StdOut, box.WorkflowId.ToString());
         }
     }
 
