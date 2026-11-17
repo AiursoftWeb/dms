@@ -91,6 +91,8 @@ public class ViewModelArgsInjector(
         _ = localizer["Machines"];
         _ = localizer["Operations"];
         _ = localizer["Workflow history"];
+    
+        _ = localizer["DMS access"];
     }
 
     public void InjectSimple(

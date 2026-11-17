@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>添加新用户</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>允许在任何机器上批准或拒绝高风险工作流请求。</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>允许在任意机器上批准或拒绝低风险工作流请求。</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>允许在任何机器上批准或拒绝中风险工作流请求。</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>允许在任何机器上批准或拒绝安全工作流请求。</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>允许在任意计算机上批准或拒绝极高风险工作流请求。</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>允许为任何用户分配或移除角色。</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>允许在同时拥有相应风险级别的审批权限时，批准或拒绝自己的请求。</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>允许修改角色名称及其分配的权限。</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>允许修改用户详细信息（如邮箱和角色），并可重置用户密码。</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>允许在任何机器上请求高风险工作流。</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>允许在任意机器上请求低风险工作流。</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>允许在任何机器上请求中风险工作流。</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>允许在任意机器上请求安全工作流。</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>允许在任何机器上请求极高风险工作流。</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>允许永久删除角色。</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>允许查看和修改全局应用设置。</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>允许查看机器、工作流历史记录、Lockboxes、跟踪记录和调查记录。</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>允许查看系统级信息和设置。</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>允许查看角色列表及其分配的权限。</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>审批高风险工作流</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>审批低风险工作流</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>审批中风险工作流</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>审批自己的工作流请求</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>审批安全工作流</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>审批极高风险工作流</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>为用户分配角色</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>自动批准高风险工作流</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>自动批准低风险工作流</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>自动审批中风险工作流</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>自动批准安全工作流</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>自动批准极高风险工作流</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>自动批准已请求的高风险工作流。还需要请求权限。</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>自动批准已申请的低风险工作流。同时还需要申请权限。</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>自动批准已请求的中风险工作流。还需要请求权限。</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>自动批准已请求的安全工作流。同时还需具备请求权限。</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>自动批准已请求的特高风险工作流。还需要请求权限。</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>创建集群，配置集群授权并管理 Agent 身份。</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>管理全局设置</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>管理清单、注册密钥和 Agent 身份。工作流权限通过角色配置。</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>读取 DMS 操作</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>读取权限</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>重启此应用</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>申请高风险工作流</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>申请低风险工作流</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>申请中风险工作流</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>申请安全工作流</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>请求极高风险工作流</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>查看后台任务</value>
