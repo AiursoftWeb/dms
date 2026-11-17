@@ -275,6 +275,7 @@ public class BoxDeployTests
         File.WriteAllText(key, "never-archive-this-private-key");
         File.WriteAllText(hosts, "verified-public-host-keys");
         File.SetUnixFileMode(key, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        File.SetUnixFileMode(hosts, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
         var input = new BoxGitInput(key, hosts);
         var configuration = new BoxConfigureGitWorkflow(input, box.GitConfiguration);
         var events = box.Events;
@@ -313,6 +314,7 @@ public class BoxDeployTests
         File.WriteAllText(key, "private-key");
         File.WriteAllText(hosts, "public-host-key");
         File.SetUnixFileMode(key, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        File.SetUnixFileMode(hosts, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
         if (problem == "missing") File.Delete(key);
         if (problem == "linked") { File.Move(key, key + "-target"); File.CreateSymbolicLink(key, key + "-target"); }
         if (problem == "public-key-file") File.SetUnixFileMode(key, UnixFileMode.UserRead | UnixFileMode.OtherRead);
