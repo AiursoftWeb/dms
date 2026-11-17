@@ -120,8 +120,11 @@ public sealed class OperationWorkflow<TInput>(MachineWorkflowDefinition<TInput, 
             ExportPathInput or ContainerExportInput => 900, _ => 180
         };
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token); deadline.CancelAfter(TimeSpan.FromSeconds(seconds));
+        var elapsed = Stopwatch.StartNew();
+        await context.TraceAsync($"Starting operation {Name}; execution_limit_seconds={seconds}.");
         var result = await body(context, value, environment, deadline.Token);
         if (!result.Complete && !context.HasWarnings) await context.WarningAsync(result.Summary);
+        await context.TraceAsync($"Operation completed: {result.Summary} Complete={result.Complete && !context.HasWarnings}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
         return context.HasWarnings ? result with { Complete = false } : result;
     }
 }
@@ -147,6 +150,7 @@ public static class OperationOutput
         await context.TraceAsync($"Executing fixed operation with {tool}; timeout {seconds}s.");
         // Resolve absence before the effect boundary. A missing tool did not perform a mutation.
         var host = Host(environment);
+        var elapsed = Stopwatch.StartNew();
         var started = false;
         try
         {
@@ -157,8 +161,18 @@ public static class OperationOutput
                 await TraceTextAsync(context, result.Output);
                 await TraceTextAsync(context, result.Error, "stderr");
             }
+            await context.TraceAsync($"Fixed operation finished: tool={tool}; exit_code={result.ExitCode}; elapsed_ms={elapsed.ElapsedMilliseconds}; stdout_characters={result.Output.Length}; stderr_characters={result.Error.Length}; raw_output_traced={traceOutput}.");
+            if (!(allowedExitCodes ?? [0]).Contains(result.ExitCode) && traceOutput)
+                await context.TraceAsync("The fixed operation did not confirm success. Already emitted stdout/stderr is retained in this workflow trace; stdout may contain partial results.", "error");
             if (!(allowedExitCodes ?? [0]).Contains(result.ExitCode)) throw new IOException($"{tool} exited with code {result.ExitCode}.");
             return result;
+        }
+        catch (OperationCanceledException) when (!change)
+        {
+            await context.TraceAsync(token.IsCancellationRequested
+                ? $"Fixed operation stopped: tool={tool}; cancellation requested by the caller or workflow deadline; elapsed_ms={elapsed.ElapsedMilliseconds}. Buffered native output may be unavailable."
+                : $"Fixed operation stopped: tool={tool}; its {seconds}-second native process limit was reached; elapsed_ms={elapsed.ElapsedMilliseconds}. Buffered native output may be unavailable; narrow the operation scope before retrying.", "error");
+            throw;
         }
         catch (Exception exception) when (change && started && exception is not (NotSupportedException or WorkflowNeedsVerificationException))
         {

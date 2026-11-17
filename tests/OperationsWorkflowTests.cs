@@ -23,6 +23,64 @@ public class OperationsWorkflowTests
     private static string Trace(IEnumerable<WorkflowEvent> events) => string.Join("", events.Where(e => e.IsTrace).Select(e => e.Message));
 
     [TestMethod]
+    public async Task FailedInodeQueryRetainsReadableRowsAndExplainsMountFailures()
+    {
+        const string output = "Filesystem Inodes IUsed IFree IUse% Mounted on\n/dev/root 100 47 53 47% /\n";
+        const string error = "df: /root/.gvfs: Transport endpoint is not connected\n";
+        var host = new OperationHost(native: (_, _) => Task.FromResult(new NativeResult(1, output, error)));
+        var events = new ConcurrentQueue<WorkflowEvent>(); var agent = EnvironmentFor(host);
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, e => { events.Enqueue(e); return Task.CompletedTask; }, agent);
+        var registry = new MachineWorkflowRegistry();
+        await Assert.ThrowsAsync<IOException>(() => context.RunAsync(registry.Create(OperationsWorkflows.LayoutInodes.Name, "{}", agent), CancellationToken.None));
+        var trace = Trace(events);
+        StringAssert.Contains(trace, output); StringAssert.Contains(trace, error);
+        StringAssert.Contains(trace, "exit_code=1; elapsed_ms=");
+        StringAssert.Contains(trace, "df reports overall failure when any inspected mount cannot be read");
+        StringAssert.Contains(trace, "partial evidence");
+        Assert.AreEqual(RunState.Failed, events.Last(e => !e.IsTrace).State);
+    }
+
+    [TestMethod]
+    public async Task NativeTimeoutExplainsTheLimitWithoutClaimingBufferedOutputWasRetained()
+    {
+        var events = new ConcurrentQueue<WorkflowEvent>(); var agent = EnvironmentFor();
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, e => { events.Enqueue(e); return Task.CompletedTask; }, agent);
+        var workflow = new OperationWorkflow<EmptyInput>(OperationsWorkflows.LayoutInodes, new EmptyInput(), async (c, _, environment, token) =>
+        {
+            await OperationOutput.CommandAsync(c, environment, "sleep", ["5"], token, seconds: 1);
+            return new OperationResult("Unexpected completion.");
+        }, agent);
+        await Assert.ThrowsAsync<OperationCanceledException>(() => context.RunAsync(workflow, CancellationToken.None));
+        var trace = Trace(events);
+        StringAssert.Contains(trace, "its 1-second native process limit was reached");
+        StringAssert.Contains(trace, "Buffered native output may be unavailable");
+        Assert.AreEqual(RunState.Failed, events.Last(e => !e.IsTrace).State);
+    }
+
+    [TestMethod]
+    public async Task CompletionSummaryDoesNotExposeHiddenOutputArgumentsInputOrEnvironment()
+    {
+        const string secret = "diagnostics-must-not-expose-this";
+        var host = new OperationHost(native: (_, _) => Task.FromResult(new NativeResult(0, secret, secret)));
+        var events = new ConcurrentQueue<WorkflowEvent>(); var agent = EnvironmentFor(host);
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, e => { events.Enqueue(e); return Task.CompletedTask; }, agent);
+        var workflow = new OperationWorkflow<EmptyInput>(OperationsWorkflows.LayoutInodes, new EmptyInput(), async (c, _, environment, token) =>
+        {
+            await OperationOutput.CommandAsync(c, environment, "fixture", [secret], token, stdin: secret,
+                variables: new Dictionary<string, string> { ["PASSWORD"] = secret }, traceOutput: false);
+            return new OperationResult("A safe summary of the collected evidence.");
+        }, agent);
+        await context.RunAsync(workflow, CancellationToken.None);
+        var trace = Trace(events);
+        StringAssert.Contains(trace, "Starting operation " + OperationsWorkflows.LayoutInodes.Name);
+        StringAssert.Contains(trace, "Operation completed: A safe summary of the collected evidence.");
+        StringAssert.Contains(trace, "exit_code=0; elapsed_ms=");
+        StringAssert.Contains(trace, "raw_output_traced=False");
+        Assert.DoesNotContain(secret, trace);
+        Assert.AreEqual(RunState.Succeeded, events.Last(e => !e.IsTrace).State);
+    }
+
+    [TestMethod]
     public async Task FilesystemCommandsOperateOnLiteralPathsAndDoNotExpandShellText()
     {
         var directory = Directory.CreateTempSubdirectory("dms-ops-files-").FullName;
