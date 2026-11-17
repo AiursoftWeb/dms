@@ -16,8 +16,9 @@ public static class DmsCommandApp
             StandardCommand("list", ClusterWorkflows.GetMachines, _ => new EmptyInput()),
             StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             new ActionCommand("add", WorkflowNames.AddMachine),
-            new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand()]),
-            new Group("box", [StandardCommand("inspect", MachineWorkflows.BoxInspect, _ => new EmptyInput()), BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
+            new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand(), new Group("system", [StandardCommand("df", MachineWorkflows.DockerDiskUsage, _ => new EmptyInput())])]),
+            new Group("filesystem", [DirectoryUsageCommand()]),
+            new Group("box", [StandardCommand("inspect", MachineWorkflows.BoxInspect, _ => new EmptyInput()), BoxConfigureGitCommand(), BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()), new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)]),
@@ -35,6 +36,22 @@ public static class DmsCommandApp
         var filter = new Option<string?>("--filter") { Description = "Literal stage-4 stack-name substring; omit for all stacks. Earlier stages and shared preparation are not filtered." };
         return StandardCommand("deploy", MachineWorkflows.BoxDeploy,
             context => new BoxDeployInput(context.GetValue(stage), context.GetValue(filter)), stage, filter);
+    }
+
+    private static ActionCommand DirectoryUsageCommand()
+    {
+        var path = new Option<string>("--path") { Required = true, Description = "Absolute directory path on the machine; contents are not read." };
+        var depth = new Option<int>("--depth") { DefaultValueFactory = _ => 1, Description = "Directory depth, 0 to 3 (default 1). Scan is limited to one filesystem and 60 seconds." };
+        return StandardCommand("du", MachineWorkflows.DirectoryUsage,
+            context => new DirectoryUsageInput(context.GetValue(path)!, context.GetValue(depth)), path, depth);
+    }
+
+    private static ActionCommand BoxConfigureGitCommand()
+    {
+        var identity = new Option<string>("--identity-file") { Required = true, Description = "Existing machine-local, private, read-only Box deployment key file." };
+        var hosts = new Option<string>("--known-hosts-file") { Required = true, Description = "Existing machine-local file containing verified GitLab host keys." };
+        return StandardCommand("configure-git", MachineWorkflows.BoxConfigureGit,
+            context => new BoxGitInput(context.GetValue(identity)!, context.GetValue(hosts)!), identity, hosts);
     }
 
     private static ActionCommand PullerCommand()

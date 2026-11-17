@@ -117,6 +117,63 @@ Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an option
 
 `exec` waits for completion and streams output. It does not detach or automatically retry. A disconnect, cancellation or failed Docker execution is marked **NeedsVerification** because the Docker client cannot prove whether the container command stopped; inspect the trace and application state before retrying. Killing a DMS workflow is not the same as killing the container. A successful exec confirms the command's exit, not the completion of any background work it started.
 
+## Inspect disk pressure
+
+```sh
+dms machine layout df --machine-id "$MACHINE_ID" --reason "Check local filesystem capacity"
+dms machine filesystem du --machine-id "$MACHINE_ID" --path /swarm-vol --depth 1 --reason "Locate large directories"
+dms machine docker system df --machine-id "$MACHINE_ID" --reason "Inspect Docker storage"
+```
+
+These are standard workflows; submissions return only `WorkflowId`. Use
+`operation get-callstack` to find their Process children and `operation get-trace`
+for output. `layout df` is Safe and excludes overlay, tmpfs, devtmpfs, squashfs
+and efivarfs mounts. It streams local filesystem rows to trace instead of storing
+the report in the workflow result. Directory usage and Docker disk usage are Low;
+they require `CanRequestLowRiskWorkflow`, automatic approval additionally requires
+`CanAutoApproveLowRiskWorkflow`, and a reviewer needs `CanApproveLowRiskWorkflow`.
+
+`filesystem du` reports allocated bytes, accepts an absolute `--path` and a
+`--depth` from 0 to 3 (default 1). It stays on the operand's filesystem, does not
+follow symbolic links or read file contents, runs with low CPU/IO priority, and
+stops after 60 seconds. A failed, timed-out or cancelled scan is partial; inspect
+its trace before drawing conclusions. Docker's report includes images,
+containers, local volumes and build cache with estimated reclaimable space.
+Neither command removes data or automatically starts cleanup.
+
+## Configure the machine's Box Git identity
+
+```sh
+dms machine box configure-git --machine-id "$MACHINE_ID" \
+  --identity-file /home/anduin/.ssh/id_ed25519 \
+  --known-hosts-file /home/anduin/.ssh/known_hosts \
+  --reason "Use this machine's existing read-only Box deployment identity"
+```
+
+This High standard workflow records references to two existing machine-local
+files in `/etc/aiursoft-dms-agent/box-git.json` (0600). The directory is private
+when created. Key contents are never uploaded, copied, returned or traced.
+Use the Box's read-only deployment key and a file containing independently
+verified GitLab host keys. A concrete normalized absolute path containing only
+ASCII letters, digits, slash, dot, underscore or hyphen is required. Missing,
+linked or insecurely permissioned files are rejected. The identity file must not
+be readable or writable by group/others; the trust file must not be writable by
+group/others. No key or trust entry is generated or accepted automatically.
+
+Subsequent `box deploy` workflows use this explicit identity in the Agent's root
+context, with strict host checking, noninteractive authentication and SSH agent
+identities disabled. Missing/mismatched host trust or rejected credentials fail
+the Git pull before deployment starts. The Git origin is retained. Machines
+without this optional configuration continue to use their existing Git setup.
+Configuration does not pull or deploy, and does not prove GitLab access; verify
+the deployment's trace. High requests/automatic approval/review use
+`CanRequestHighRiskWorkflow` / `CanAutoApproveHighRiskWorkflow` /
+`CanApproveHighRiskWorkflow`; self-review additionally requires
+`CanApproveOwnWorkflow`.
+
+Update the Controller, CLI (1.2.2) and target Agent (1.3.2) before using these
+new commands. Unmodified older Agents cannot execute the new definitions.
+
 ## Inspect a Box
 
 ```sh

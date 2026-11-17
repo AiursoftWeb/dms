@@ -111,6 +111,17 @@ public class DockerWorkflowTests
         await Assert.ThrowsAsync<ChildWorkflowException>(() => docker.RunAsync(new DockerPsWorkflow(new DockerPsInput(), docker.Executable)));
     }
 
+    [TestMethod]
+    public async Task DiskUsageIsReadOnlyAndStreamsReportsLargerThanTheQueryResultLimit()
+    {
+        using var docker = new Docker();
+        var result = await docker.RunAsync(new DockerDiskUsageWorkflow(docker.Executable));
+        CollectionAssert.AreEqual(new[] { "--host", "unix:///var/run/docker.sock", "system", "df", "--verbose" }, docker.Arguments());
+        Assert.AreEqual(0, MachineWorkflows.DockerDiskUsage.ReadResult(result).ExitCode);
+        Assert.IsGreaterThan(8192, docker.Events.Where(e => e.Source == "stdout").Sum(e => e.Message.Length));
+        Assert.AreEqual("", MachineWorkflows.DockerDiskUsage.ReadResult(result).Output);
+    }
+
     private sealed class Docker : IDisposable
     {
         private readonly string _directory = Directory.CreateTempSubdirectory("dms-docker-").FullName;
@@ -138,7 +149,7 @@ public class DockerWorkflowTests
                 if operation == 'logs':
                     print('log line')
                     print('error line', file=sys.stderr)
-                if operation == 'exec': print('x' * 9000)
+                if operation in ('exec', 'system'): print('x' * 9000)
                 if operation == 'kill': print(sys.argv[4])
                 """);
             File.SetUnixFileMode(Executable, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);

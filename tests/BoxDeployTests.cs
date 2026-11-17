@@ -265,6 +265,66 @@ public class BoxDeployTests
         Assert.IsFalse(box.Events.Any(e => e.Definition == WorkflowNames.Process));
     }
 
+    [TestMethod]
+    public async Task ConfiguredMachineIdentityIsReferencedPrivatelyAndUsedByGitWithoutChangingOrigin()
+    {
+        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException();
+        using var box = new Box();
+        var key = Path.Combine(box.Directory, "box-key");
+        var hosts = Path.Combine(box.Directory, "known_hosts");
+        File.WriteAllText(key, "never-archive-this-private-key");
+        File.WriteAllText(hosts, "verified-public-host-keys");
+        File.SetUnixFileMode(key, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        File.SetUnixFileMode(hosts, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+        var input = new BoxGitInput(key, hosts);
+        var configuration = new BoxConfigureGitWorkflow(input, box.GitConfiguration);
+        var events = box.Events;
+        await new MachineWorkflowContext(Guid.NewGuid(), null, e => { events.Enqueue(e); return Task.CompletedTask; })
+            .RunAsync(configuration, CancellationToken.None);
+        Assert.AreEqual(input, BoxGitConfiguration.Read(box.GitConfiguration));
+        Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(box.GitConfiguration));
+        Assert.AreEqual(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute,
+            File.GetUnixFileMode(Path.GetDirectoryName(box.GitConfiguration)!));
+        Assert.DoesNotContain("never-archive-this-private-key", File.ReadAllText(box.GitConfiguration));
+        box.Git(box.Repository, "remote", "set-url", "origin", "ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforglobal.git");
+        box.Advance();
+        var result = MachineWorkflows.BoxDeploy.ReadResult(await box.RunAsync(new BoxDeployInput(4, "dms")));
+        Assert.AreEqual(box.Revision(box.Source), result.Commit);
+        var command = File.ReadAllText(Path.Combine(box.Directory, "ssh-command"));
+        StringAssert.Contains(command, "StrictHostKeyChecking=yes");
+        StringAssert.Contains(command, "IdentitiesOnly=yes");
+        StringAssert.Contains(command, "IdentityAgent=none");
+        StringAssert.Contains(command, key);
+        StringAssert.Contains(command, hosts);
+        Assert.AreEqual("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforglobal.git", box.Git(box.Repository, "config", "--get", "remote.origin.url").Trim());
+        Assert.DoesNotContain("never-archive-this-private-key", JsonSerializer.Serialize(box.Events.ToArray()));
+    }
+
+    [TestMethod]
+    [DataRow("missing")]
+    [DataRow("linked")]
+    [DataRow("public-key-file")]
+    [DataRow("writable-trust")]
+    public async Task InvalidMachineCredentialsNeverCreateConfigurationOrPull(string problem)
+    {
+        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException();
+        using var box = new Box();
+        var key = Path.Combine(box.Directory, "box-key");
+        var hosts = Path.Combine(box.Directory, "known_hosts");
+        File.WriteAllText(key, "private-key");
+        File.WriteAllText(hosts, "public-host-key");
+        File.SetUnixFileMode(key, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        File.SetUnixFileMode(hosts, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+        if (problem == "missing") File.Delete(key);
+        if (problem == "linked") { File.Move(key, key + "-target"); File.CreateSymbolicLink(key, key + "-target"); }
+        if (problem == "public-key-file") File.SetUnixFileMode(key, UnixFileMode.UserRead | UnixFileMode.OtherRead);
+        if (problem == "writable-trust") File.SetUnixFileMode(hosts, UnixFileMode.UserRead | UnixFileMode.OtherWrite);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new MachineWorkflowContext(Guid.NewGuid(), null, _ => Task.CompletedTask)
+            .RunAsync(new BoxConfigureGitWorkflow(new BoxGitInput(key, hosts), box.GitConfiguration), CancellationToken.None));
+        Assert.IsFalse(File.Exists(box.GitConfiguration));
+        Assert.IsFalse(File.Exists(Path.Combine(box.Directory, "pulled")));
+    }
+
     private sealed class Box : IDisposable
     {
         public string Directory { get; } = System.IO.Directory.CreateTempSubdirectory("dms-box-deploy-").FullName;
@@ -272,6 +332,7 @@ public class BoxDeployTests
         public string Repository => Path.Combine(Root, "Box with spaces");
         public string Source => Path.Combine(Directory, "source");
         public string Executable => Path.Combine(Directory, "git");
+        public string GitConfiguration => Path.Combine(Directory, "config", "box-git.json");
         public Guid Id { get; } = Guid.NewGuid();
         public ConcurrentQueue<WorkflowEvent> Events { get; } = new();
         public string PathOf(string name) => Path.Combine(Repository, name);
@@ -297,6 +358,7 @@ public class BoxDeployTests
                 args = sys.argv[1:]
                 if 'pull' in args:
                     (directory / 'pulled').write_text('once')
+                    (directory / 'ssh-command').write_text(os.environ.get('GIT_SSH_COMMAND', ''))
                     args[args.index('origin')] = str(directory / 'upstream.git')
                 os.execv('/usr/bin/git', ['/usr/bin/git', *args])
                 """);
@@ -338,7 +400,7 @@ public class BoxDeployTests
 
         public Task<string> RunAsync(BoxDeployInput input, CancellationToken token = default) =>
             new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })
-                .RunAsync(new BoxDeployWorkflow(input, Root, Executable), token);
+                .RunAsync(new BoxDeployWorkflow(input, Root, Executable, GitConfiguration), token);
 
         public void Dispose() => System.IO.Directory.Delete(Directory, true);
     }

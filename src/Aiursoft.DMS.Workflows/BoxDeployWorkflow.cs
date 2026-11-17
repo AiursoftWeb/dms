@@ -5,7 +5,7 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
-public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root = "/swarm-vol", string git = "/usr/bin/git")
+public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root = "/swarm-vol", string git = "/usr/bin/git", string gitConfigurationPath = BoxGitConfiguration.FilePath)
     : MachineWorkflow<BoxDeployInput, BoxDeployResult>(MachineWorkflows.BoxDeploy, input)
 {
     // Keep credentials out of the query output. Only the five official Box origins are accepted.
@@ -55,8 +55,16 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         await context.TraceAsync($"Selected Box {repository}. Starting stage {value.Stage} and all later stages; stage-4 filter: {value.Filter ?? "all stacks"}. Earlier stages and shared preparation are not filtered. Approval covers master at execution time.");
         var previous = await RevisionAsync(context, ["/bin/bash", "-c", Preflight, "dms-box-preflight", repository, git, OfficialOriginPattern], token);
         await context.TraceAsync($"Updating Box master with fast-forward only; previous commit {previous}. Private environment files are retained.");
-        await context.CallAsync(new ProcessWorkflow("/usr/bin/env", ["GIT_TERMINAL_PROMPT=0", git,
-            "-c", "safe.directory=" + repository, "-C", repository, "pull", "--ff-only", "--no-rebase", "origin", "master"]), token);
+        var identity = BoxGitConfiguration.Read(gitConfigurationPath);
+        List<string> arguments = ["GIT_TERMINAL_PROMPT=0"];
+        if (identity != null)
+        {
+            arguments.Add("GIT_SSH_COMMAND=" + BoxGitConfiguration.SshCommand(identity));
+            arguments.Add("GIT_SSH_VARIANT=ssh");
+            await context.TraceAsync("Git pull uses the configured machine Box deployment identity with strict host verification.");
+        }
+        arguments.AddRange([git, "-c", "safe.directory=" + repository, "-C", repository, "pull", "--ff-only", "--no-rebase", "origin", "master"]);
+        await context.CallAsync(new ProcessWorkflow("/usr/bin/env", arguments), token);
         var commit = await RevisionAsync(context, [git, "-c", "safe.directory=" + repository, "-C", repository, "rev-parse", "--verify", "HEAD"], token);
         // A tracked script may have changed during the approved pull. It must still be a regular local file.
         if (!File.Exists(Path.Combine(repository, "deploy.sh")) || IsLink(Path.Combine(repository, "deploy.sh")))
@@ -65,9 +73,9 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         token.ThrowIfCancellationRequested();
         try
         {
-            string[] arguments = ["-c", Deploy, "dms-box-deploy", repository, "--stage", value.Stage.ToString(CultureInfo.InvariantCulture)];
-            if (value.Filter != null) arguments = [.. arguments, "--filter", value.Filter];
-            await context.CallAsync(new ProcessWorkflow("/bin/bash", arguments), token);
+            string[] deploymentArguments = ["-c", Deploy, "dms-box-deploy", repository, "--stage", value.Stage.ToString(CultureInfo.InvariantCulture)];
+            if (value.Filter != null) deploymentArguments = [.. deploymentArguments, "--filter", value.Filter];
+            await context.CallAsync(new ProcessWorkflow("/bin/bash", deploymentArguments), token);
         }
         catch (OperationCanceledException)
         {

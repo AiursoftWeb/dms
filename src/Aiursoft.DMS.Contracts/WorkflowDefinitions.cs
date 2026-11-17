@@ -91,6 +91,9 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", RiskLevel.Safe, Version: "1");
     public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, RiskLevel.High, "2", input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxInspectionResult> BoxInspect = new("machine.box.inspect", RiskLevel.Safe, "1", PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<BoxGitInput, BoxInspectionResult> BoxConfigureGit = new("machine.box.configure-git", RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<DirectoryUsageInput, ProcessResult> DirectoryUsage = new("machine.filesystem.du", RiskLevel.Low, "1", input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DockerDiskUsage = new("machine.docker.system.df", RiskLevel.Low, "1", PublicEntry: true);
     public static readonly MachineWorkflowDefinition<BoxDeployInput, BoxDeployResult> BoxDeploy = new("machine.box.deploy", RiskLevel.High, "1", input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, RiskLevel.Safe, PublicEntry: true);
     public static readonly MachineWorkflowDefinition<ServiceInput, ProcessResult> Restart = new(WorkflowNames.Restart, RiskLevel.Medium, ValidateInput: input => input.Validate(), PublicEntry: true);

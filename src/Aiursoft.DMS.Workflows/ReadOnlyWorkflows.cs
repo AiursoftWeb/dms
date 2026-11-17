@@ -48,5 +48,6 @@ public sealed class DiskFreeWorkflow : MachineWorkflow
     public override string Name => WorkflowNames.DiskFree;
     public override Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token) =>
         context.CallAsync(new ProcessWorkflow("/usr/bin/df",
-            ["--block-size=1", "--output=source,fstype,size,used,avail,pcent,target", "--local"], captureOutput: true), token);
+            ["--block-size=1", "--output=source,fstype,size,used,avail,pcent,target", "--local",
+                "--exclude-type=overlay", "--exclude-type=tmpfs", "--exclude-type=devtmpfs", "--exclude-type=squashfs", "--exclude-type=efivarfs"]), token);
 }
