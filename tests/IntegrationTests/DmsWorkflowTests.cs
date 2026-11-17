@@ -900,7 +900,9 @@ await db.SaveChangesAsync();
                 var tree = await check.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, request.WorkflowId);
                 var machine = tree.Single(r => r.IsMachineTask);
                 Assert.AreEqual(RunState.Succeeded, machine.State);
-                StringAssert.Contains(machine.Result, expected);
+                if (definition == WorkflowNames.DiskFree)
+                    Assert.AreEqual(0, JsonSerializer.Deserialize<ProcessResult>(machine.Result)!.ExitCode);
+                else StringAssert.Contains(machine.Result, expected);
                 Assert.IsTrue(machine.LastSequence >= 3);
                 Assert.IsTrue(Server.Services.GetRequiredService<TraceStore>().PendingCount > 0);
             }

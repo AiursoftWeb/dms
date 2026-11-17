@@ -186,6 +186,37 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    [DataRow("du", RiskLevel.Low)]
+    [DataRow("docker", RiskLevel.Low)]
+    [DataRow("git", RiskLevel.High)]
+    public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(risk));
+        string[] command = operation switch
+        {
+            "du" => ["machine", "filesystem", "du", "--path", "/swarm-vol", "--depth", "2"],
+            "docker" => ["machine", "docker", "system", "df"],
+            _ => ["machine", "box", "configure-git", "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
+        };
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--machine-id", setup.First.ToString(),
+            "--reason", "Approved machine maintenance scope", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
+        Assert.AreEqual(risk, box.Risk);
+        Assert.AreEqual(DecisionState.Pending, box.Decision);
+        Assert.IsNull(box.OperationId);
+        Assert.HasCount(1, (JObject)JObject.Parse(cli.StdOut)["Data"]!);
+        Assert.AreEqual(box.WorkflowId.ToString(), JObject.Parse(cli.StdOut)["Data"]!["WorkflowId"]!.ToString());
+        var request = System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
+        CollectionAssert.AreEqual(new[] { setup.First }, request.MachineIds);
+        if (operation == "du") Assert.AreEqual(new DirectoryUsageInput("/swarm-vol", 2), MachineWorkflows.DirectoryUsage.ReadInput(request.Input));
+        if (operation == "docker") Assert.AreEqual("{}", request.Input);
+        if (operation == "git") Assert.AreEqual(new BoxGitInput("/home/anduin/.ssh/id_ed25519", "/home/anduin/.ssh/known_hosts"), MachineWorkflows.BoxConfigureGit.ReadInput(request.Input));
+    }
+
+    [TestMethod]
     public async Task BoxDeployCliDefaultsAreFrozenAndInvalidParametersNeverCreateRequests()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));
