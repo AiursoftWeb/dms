@@ -189,6 +189,7 @@ public class DmsRolePermissionTests : TestBase
     [DataRow("du", RiskLevel.Low)]
     [DataRow("docker", RiskLevel.Low)]
     [DataRow("git", RiskLevel.High)]
+    [DataRow("rm", RiskLevel.High)]
     public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(risk));
@@ -196,6 +197,7 @@ public class DmsRolePermissionTests : TestBase
         {
             "du" => ["machine", "filesystem", "du", "--path", "/swarm-vol", "--depth", "2"],
             "docker" => ["machine", "docker", "system", "df"],
+            "rm" => ["machine", "filesystem", "rm", "--path", "/tmp/reviewed cleanup", "--recursive"],
             _ => ["machine", "box", "configure-git", "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
         };
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--machine-id", setup.First.ToString(),
@@ -213,6 +215,7 @@ public class DmsRolePermissionTests : TestBase
         CollectionAssert.AreEqual(new[] { setup.First }, request.MachineIds);
         if (operation == "du") Assert.AreEqual(new DirectoryUsageInput("/swarm-vol", 2), MachineWorkflows.DirectoryUsage.ReadInput(request.Input));
         if (operation == "docker") Assert.AreEqual("{}", request.Input);
+        if (operation == "rm") Assert.AreEqual(new RemovePathInput("/tmp/reviewed cleanup", true), MachineWorkflows.RemovePath.ReadInput(request.Input));
         if (operation == "git") Assert.AreEqual(new BoxGitInput("/home/anduin/.ssh/id_ed25519", "/home/anduin/.ssh/known_hosts"), MachineWorkflows.BoxConfigureGit.ReadInput(request.Input));
     }
 

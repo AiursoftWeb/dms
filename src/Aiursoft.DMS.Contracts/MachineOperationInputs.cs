@@ -1,5 +1,15 @@
 namespace Aiursoft.DMS.Contracts;
 
+public sealed record RemovePathInput(string Path, bool Recursive = false)
+{
+    public void Validate()
+    {
+        DirectoryUsageInput.ValidatePath(Path);
+        if (Path == "/" || Path.EndsWith('/'))
+            throw new ArgumentException("Removal requires a non-root path without a trailing slash. Wildcards are treated literally.");
+    }
+}
+
 public sealed record DirectoryUsageInput(string Path, int Depth = 1)
 {
     public void Validate()
