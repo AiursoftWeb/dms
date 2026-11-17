@@ -112,6 +112,67 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(2)]
+    [DataRow(3)]
+    [DataRow(4)]
+    public async Task OrdinaryRoleCanRequestEveryBoxStageAtHighRiskButNeedsAnotherReviewer(int stage)
+    {
+        var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.High));
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy", "--machine-id", setup.First.ToString(),
+            "--stage", stage.ToString(), "--filter", "dms", "--reason", "Deploy reviewed Box configuration", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.RequesterId == setup.User);
+        Assert.AreEqual(MachineWorkflows.BoxDeploy.Name, box.Definition);
+        Assert.AreEqual(RiskLevel.High, box.Risk);
+        Assert.AreEqual(DecisionState.Pending, box.Decision);
+        Assert.IsFalse(box.Automatic); Assert.IsNull(box.OperationId);
+        var request = System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
+        Assert.AreEqual(new BoxDeployInput(stage, "dms"), MachineWorkflows.BoxDeploy.ReadInput(request.Input));
+        CollectionAssert.AreEqual(new[] { setup.First }, System.Text.Json.JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var definition = (await workflows.ListDefinitionsAsync(setup.User)).Definitions.Single(d => d.Name == MachineWorkflows.BoxDeploy.Name);
+        Assert.IsTrue(definition.CanRequest); Assert.IsFalse(definition.AutoApprove || definition.CanApprove);
+        Assert.AreEqual(403, (await Assert.ThrowsAsync<DmsException>(() => workflows.DecideAsync(setup.User, box.Id, true, "Self"))).StatusCode);
+        var reviewer = new User { UserName = "boxreviewer" + Guid.NewGuid().ToString("N"), DisplayName = "Box reviewer" };
+        db.Users.Add(reviewer);
+        DmsTestPermissions.Risk(db, reviewer.Id, RiskLevel.Medium, approve: true);
+        await db.SaveChangesAsync();
+        Assert.AreEqual(403, (await Assert.ThrowsAsync<DmsException>(() => workflows.DecideAsync(reviewer.Id, box.Id, true, "Wrong risk"))).StatusCode);
+        DmsTestPermissions.Risk(db, reviewer.Id, RiskLevel.High, approve: true);
+        await db.SaveChangesAsync();
+        var approved = await workflows.DecideAsync(reviewer.Id, box.Id, true, "Reviewed stage and filter scope");
+        Assert.AreEqual(DecisionState.Approved, approved.Decision);
+        Assert.AreEqual(reviewer.Id, approved.ApproverId);
+        Assert.IsNotNull(approved.OperationId);
+    }
+
+    [TestMethod]
+    public async Task BoxDeployCliDefaultsAreFrozenAndInvalidParametersNeverCreateRequests()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));
+        foreach (var extra in new[] { new[] { "--stage", "5" }, new[] { "--filter", "dms;id" } })
+        {
+            var invalid = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy", "--machine-id", setup.First.ToString(),
+                "--reason", "Invalid deployment", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, .. extra]);
+            Assert.AreNotEqual(0, invalid.ProgramReturn);
+        }
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy", "--machine-id", setup.First.ToString(),
+            "--reason", "Deploy all stage-4 stacks", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
+        var request = System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
+        Assert.AreEqual(new BoxDeployInput(), MachineWorkflows.BoxDeploy.ReadInput(request.Input));
+        Assert.AreEqual(DecisionState.Pending, box.Decision);
+    }
+
+    [TestMethod]
     public async Task ManualApprovalRequiresRiskPermissionAndOwnPermissionIndependently()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe), AppPermissionNames.CanApproveOwnWorkflow);

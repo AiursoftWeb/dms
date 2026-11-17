@@ -117,6 +117,52 @@ Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an option
 
 `exec` waits for completion and streams output. It does not detach or automatically retry. A disconnect, cancellation or failed Docker execution is marked **NeedsVerification** because the Docker client cannot prove whether the container command stopped; inspect the trace and application state before retrying. Killing a DMS workflow is not the same as killing the container. A successful exec confirms the command's exit, not the completion of any background work it started.
 
+## Deploy a Box
+
+```bash
+dms machine box deploy --machine-id "$MACHINE_ID" \
+  --stage 4 --filter dms --reason "Deploy merged DMS configuration"
+```
+
+This is the standard **High-risk** `machine.box.deploy` workflow. A colleague
+with `CanRequestHighRiskWorkflow` can apply; without automatic approval the
+request waits for someone with `CanApproveHighRiskWorkflow`. Automatic approval
+and self-approval use the existing independent permissions. The command does
+not grant permissions or require a particular role name.
+
+`--stage` defaults to `4` and accepts `0` through `4`. It is a **starting**
+stage: all later stages run too. `--filter` is an optional literal substring
+of stage-4 stack names; omitting it selects all stage-4 stacks. Earlier stages
+and shared preparation are not filtered. Stages 0–3 can change host packages,
+Docker, networking and shared infrastructure. Stage 4 also performs the Box's
+shared preparation. `--reason` is required; machine selection, output formats
+and `--request-id` follow the normal submission rules.
+
+The Agent looks for exactly one regular Box Git checkout directly under
+`/swarm-vol`, with `box` in its directory name, a `.git` directory and a regular
+`deploy.sh`. Missing or ambiguous checkouts fail before updating anything. The
+checkout must use an official Aiursoft GitLab Box origin and its `master`
+branch, with no tracked local changes. The workflow uses the machine's existing
+Git authentication to run `git pull --ff-only` and executes that checkout's
+`deploy.sh` with separate arguments. It preserves private `.env.prod` files,
+never resets local changes, and accepts no user-supplied path, repository URL
+or shell command. The approval covers the latest master at execution time;
+the result and trace record the previous and deployed commit IDs.
+
+A machine lock prevents concurrent DMS Box deployments. Git validation, update,
+commit inspection and deployment are Process subworkflows with independent
+IDs and streamed logs. A nonzero script exit is Failed and can leave partial
+changes. Cancellation during deployment is NeedsVerification because submitted
+Docker or host changes can continue. Interrupted work is never automatically
+replayed. Inspect the trace and current service state before submitting another
+request.
+
+Success confirms that the deployment script exited zero; the result explicitly
+reports `HealthVerified: false`. Check the selected Swarm services and application
+health separately. Updating the Controller itself can temporarily interrupt the
+CLI/API connection; inspect the original Workflow ID after reconnecting. Update
+the Controller, CLI (1.2.0) and Agent (1.3.0) before using this new definition.
+
 ## Force a Box Puller mirror update
 
 With `DMS_SERVER` and `DMS_API_KEY` configured, an enrolled Box can request:
