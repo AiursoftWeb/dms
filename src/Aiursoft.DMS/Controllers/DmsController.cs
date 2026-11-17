@@ -15,7 +15,8 @@ namespace Aiursoft.DMS.Controllers;
 
 [Authorize(Policy = AppPermissionNames.CanReadDmsOperations)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces, WorkflowInvestigation investigation) : Controller
+public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces, WorkflowInvestigation investigation,
+    DmsArtifactAccess artifacts, DmsArtifactStore artifactStore) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -82,9 +83,39 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             var item = await workflows.GetLockboxAsync(Actor, id);
             return this.StackView(new DmsViewModel
             {
-                Lockbox = item, Notice = TempData["DmsNotice"] as string,
+                Lockbox = item, Notice = TempData["DmsNotice"] as string, InputArtifacts = artifacts.Inputs(item),
                 CanDecide = DmsPermissions.CanDecide(await access.PrincipalAsync(Actor), item.Risk, item.RequesterId == Actor)
             });
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
+    }
+
+    public async Task<IActionResult> Artifact(Guid id)
+    {
+        try
+        {
+            var artifact = await artifacts.RequireHumanAsync(Actor, id);
+            var model = new DmsViewModel { PageTitle = "Artifact", Artifact = artifact };
+            if (artifact.Reference.Kind == "file" && artifact.Reference.Length <= 262144)
+            {
+                using var stream = artifactStore.Open(id);
+                using var reader = new StreamReader(stream, new System.Text.UTF8Encoding(false, true));
+                try { var text = await reader.ReadToEndAsync(); if (!text.Contains('\0')) model.ArtifactText = text; }
+                catch (System.Text.DecoderFallbackException) { }
+            }
+            access.Audit(Actor, "artifact.preview", id, System.Text.Json.JsonSerializer.Serialize(artifact.Reference)); await db.SaveChangesAsync();
+            return this.StackView(model);
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
+    }
+
+    public async Task<IActionResult> DownloadArtifact(Guid id)
+    {
+        try
+        {
+            var artifact = await artifacts.RequireHumanAsync(Actor, id);
+            access.Audit(Actor, "artifact.download", id, System.Text.Json.JsonSerializer.Serialize(artifact.Reference)); await db.SaveChangesAsync();
+            return File(artifactStore.Open(id), "application/octet-stream", artifact.Reference.Name, enableRangeProcessing: true);
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }

@@ -7,22 +7,30 @@ using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
-public static class DmsCommandApp
+public static partial class DmsCommandApp
 {
     public static NestedCommandApp Create() => new NestedCommandApp()
         .WithFeature(new LoginCommand())
+        .WithFeature(new Group("artifact", [new ArtifactCommand("upload"), new ArtifactCommand("get"), new ArtifactCommand("download")]))
         .WithFeature(new Group("access", [new ManagementCommand("whoami", "identity"), new ManagementCommand("get", "access"), new ManagementCommand("issue-agent-key", "key"), new ManagementCommand("create-join-key", "join-create"), new ManagementCommand("list-join-keys", "join-list"), new ManagementCommand("revoke-join-key", "join-revoke"), new ManagementCommand("list-enrollments", "enrollments")]))
         .WithFeature(new Group("machine", [
             StandardCommand("list", ClusterWorkflows.GetMachines, _ => new EmptyInput()),
             StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             new ActionCommand("add", WorkflowNames.AddMachine),
-            new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand(), new Group("system", [StandardCommand("df", MachineWorkflows.DockerDiskUsage, _ => new EmptyInput())])]),
-            new Group("filesystem", [DirectoryUsageCommand(), RemovePathCommand()]),
+            new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand(), NewDockerInspectCommand(), NewDockerStatsSampleCommand(), NewDockerEventsCommand(), NewDockerDiagnoseStartupCommand(), NewDockerStopCommand(), NewDockerStartCommand(), NewDockerRestartCommand(), new Group("filesystem", [NewDockerFilesystemExportCommand(), NewDockerFilesystemCpToCommand(), NewDockerFilesystemCpFromCommand()]), new Group("system", [StandardCommand("df", MachineWorkflows.DockerDiskUsage, _ => new EmptyInput())])]),
+            new Group("filesystem", [DirectoryUsageCommand(), RemovePathCommand(), NewFilesystemLsCommand(), NewFilesystemStatCommand(), NewFilesystemCatCommand(), NewFilesystemTailCommand(), NewFilesystemFindCommand(), NewFilesystemMkdirCommand(), NewFilesystemCpCommand(), NewFilesystemMvCommand(), NewFilesystemExportCommand(), NewFilesystemImportCommand()]),
             new Group("box", [StandardCommand("inspect", MachineWorkflows.BoxInspect, _ => new EmptyInput()), BoxConfigureGitCommand(), BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
-            new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
-            new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
+            new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput()), NewPerformanceProcessesCommand(), NewPerformanceCpuSampleCommand(), NewPerformanceMemoryBreakdownCommand(), NewPerformanceIoSampleCommand(), NewPerformanceDstatSampleCommand(), NewPerformancePressureCommand(), NewPerformanceOomHistoryCommand()]),
+            new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus), NewSystemctlListCommand(), NewSystemctlStartCommand(), NewSystemctlStopCommand()]),
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()), new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)]),
-            new Group("layout", [StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()), StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput())])]))
+            new Group("layout", [StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()), StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput()), NewLayoutFdiskQueryCommand(), NewLayoutMountsCommand(), NewLayoutInodesCommand(), NewLayoutOpenDeletedCommand(), NewLayoutSmartCommand(), NewLayoutSmartTestCommand(), NewLayoutBcacheInfoCommand(), NewLayoutBcacheAuditCommand()]),
+            new Group("nvidia", [NewNvidiaSmiCommand(), NewNvidiaProcessesCommand(), NewNvidiaSampleCommand(), NewNvidiaErrorsCommand(), NewNvidiaTopologyCommand(), NewNvidiaDriverInfoCommand()]),
+            new Group("swarm", [new Group("service", [NewSwarmServiceListCommand(), NewSwarmServiceInspectCommand(), NewSwarmServicePsCommand(), NewSwarmServiceLogsCommand(), NewSwarmServiceUpdateStatusCommand(), NewSwarmServiceStopCommand(), NewSwarmServiceStartCommand(), NewSwarmServiceUpdateCommand(), NewSwarmServiceRollbackCommand()])]),
+            new Group("system", [NewSystemInfoCommand(), NewSystemUptimeCommand(), NewSystemJournalCommand(), NewSystemTimersCommand(), NewSystemRebootCommand(), NewSystemExecuteScriptCommand()]),
+            new Group("apt", [NewAptInspectCommand(), NewAptInstallCommand(), NewAptUpgradeCommand()]),
+            new Group("database", [NewDatabaseDiscoverCommand(), NewDatabaseListDatabasesCommand(), NewDatabaseListTablesCommand(), NewDatabaseDescribeTableCommand(), NewDatabaseQueryTableCommand(), NewDatabaseQuerySqlCommand(), NewDatabaseExecuteSqlCommand(), NewDatabaseDiagnosticsCommand()]),
+            new Group("networking", [NewNetworkingInterfacesCommand(), NewNetworkingRoutesCommand(), NewNetworkingSocketsCommand(), NewNetworkingDnsQueryCommand(), NewNetworkingProbeCommand(), NewNetworkingTrafficSampleCommand(), NewNetworkingFirewallInfoCommand(), NewNetworkingTlsCheckCommand()]),
+            new Group("security", [NewSecuritySecureBootCommand(), NewSecurityDiskEncryptionCommand(), NewSecuritySshAuditCommand(), NewSecurityFail2banStatusCommand(), NewSecurityCleanTrafficStatusCommand(), NewSecurityAuthEventsCommand(), NewSecurityAccountsAuditCommand(), NewSecurityBaselineAuditCommand()])]))
         .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
         .WithFeature(new Group("operation", [new ActionCommand("list-definitions", "definitions"), new ActionCommand("query-audit", "audit"), new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
 
@@ -120,7 +128,8 @@ public static class DmsCommandApp
         protected override CommandHandlerBuilder[] GetSubCommandHandlers() => children;
     }
 
-    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null, Argument? argument = null) : DmsCommandHandler
+    private sealed class ActionCommand(string name, string action, WorkflowDefinition? definition = null, Func<ParseResult, string>? input = null, Option[]? options = null, Argument? argument = null,
+        Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null) : DmsCommandHandler
     {
         public override Command BuildAsCommand()
         {
@@ -188,12 +197,14 @@ public static class DmsCommandApp
             if (IsSubmission)
             {
                 var requestId = context.GetValue(_request);
+                if (requestId == Guid.Empty) requestId = Guid.NewGuid();
                 response = await client.SubmitAsync(new OperationRequest
                 {
-                    RequestId = requestId == Guid.Empty ? Guid.NewGuid() : requestId,
+                    RequestId = requestId,
                     Workflow = action, MachineIds = (context.GetValue(_machines) ?? []).ToList(),
                     AllMachines = context.GetValue(_all), Reason = context.GetValue(_reason) ?? string.Empty,
-                    Input = action == WorkflowNames.AgentUpgrade ? MachineWorkflows.AgentUpgrade.Serialize(new AgentUpgradeInput((await client.AgentReleasesAsync()).Data)) : input?.Invoke(context) ?? "{}",
+                    Input = action == WorkflowNames.AgentUpgrade ? MachineWorkflows.AgentUpgrade.Serialize(new AgentUpgradeInput((await client.AgentReleasesAsync()).Data))
+                        : preparedInput != null ? await preparedInput(client, context, requestId) : input?.Invoke(context) ?? "{}",
                     MachineName = context.GetValue(_machineName) ?? string.Empty,
                     TargetWorkflowId = action == WorkflowNames.Kill ? id : null
                 });

@@ -4,6 +4,8 @@
 
 The Controller provides the web UI and HTTP API. The CLI submits requests and inspects results; an Agent runs approved machine workflows on its own Linux host. The SDK is available in [Aiursoft.DMS.SDK](../src/Aiursoft.DMS.SDK).
 
+The [on-demand operations catalog](operations.md) documents the 86 filesystem, storage, performance, GPU, container, service, system, database, network and security workflows, including file artifacts and approval risks.
+
 ## Install the CLI
 
 Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), then install the global tool from NuGet:

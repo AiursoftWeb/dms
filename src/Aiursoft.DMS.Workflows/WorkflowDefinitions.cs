@@ -1,16 +1,21 @@
+using Aiursoft.DMS.Workflows.Operations;
 using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
 public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents,
-    Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null);
+    Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null,
+    IAgentArtifactTransport? Artifacts = null,
+    Func<MachineWorkflowContext, RebootInput, CancellationToken, Task<OperationResult>>? Reboot = null,
+    OperationHost? Operations = null);
 
-public sealed class MachineWorkflowRegistry
+public sealed partial class MachineWorkflowRegistry
 {
     private readonly Dictionary<string, (WorkflowDefinition Definition, Func<string, AgentEnvironment, MachineWorkflow> Factory)> _definitions = new(StringComparer.Ordinal);
 
     public MachineWorkflowRegistry()
     {
+        RegisterOperations();
         Register(MachineWorkflows.DockerPs, (input, _) => new DockerPsWorkflow(input));
         Register(MachineWorkflows.DockerLogs, (input, _) => new DockerLogsWorkflow(input));
         Register(MachineWorkflows.DockerExec, (input, _) => new DockerExecWorkflow(input));

@@ -13,6 +13,12 @@
 <dt class="col-sm-3">@Localizer["Created"]</dt><dd class="col-sm-9">@item.CreatedAt</dd>
 <dt class="col-sm-3">@Localizer["Approved target machines"]</dt><dd class="col-sm-9"><pre>@item.TargetMachines</pre></dd>
 <dt class="col-sm-3">@Localizer["Parameters"]</dt><dd class="col-sm-9"><pre>@item.Parameters</pre></dd>
+@if (Model.InputArtifacts.Count != 0)
+{
+    <dt class="col-sm-3">@Localizer["Frozen input files"]</dt><dd class="col-sm-9">
+    @foreach (var artifact in Model.InputArtifacts) { <p><a asp-action="Artifact" asp-route-id="@artifact.Id">@artifact.Name</a> (@artifact.Length bytes)<br /><small>SHA256: @artifact.Sha256</small></p> }
+    </dd>
+}
 <dt class="col-sm-3">@Localizer["Decision"]</dt><dd class="col-sm-9">@item.Decision — @(item.Automatic ? Localizer["Automatic approval"] : item.ApproverId) @item.DecidedAt<br />@item.DecisionReason</dd>
 </dl>
 <a asp-action="Operation" asp-route-id="@item.WorkflowId">@Localizer["Lockbox callstack"]</a>
