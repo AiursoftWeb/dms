@@ -117,6 +117,39 @@ Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an option
 
 `exec` waits for completion and streams output. It does not detach or automatically retry. A disconnect, cancellation or failed Docker execution is marked **NeedsVerification** because the Docker client cannot prove whether the container command stopped; inspect the trace and application state before retrying. Killing a DMS workflow is not the same as killing the container. A successful exec confirms the command's exit, not the completion of any background work it started.
 
+## Inspect a Box
+
+```sh
+dms machine box inspect --machine-id "$MACHINE_ID" --reason "Check Box before deployment"
+```
+
+This is the standard **Safe** `machine.box.inspect` workflow. It creates a
+Lockbox, uses the existing Safe request/automatic-approval/reviewer permissions,
+and executes only after approval. All workflow-submitting CLI commands return
+only `WorkflowId` (also with JSON or CSV output), including requests still waiting
+for approval. To find the Lockbox ID or current state, inspect that root workflow:
+
+```sh
+dms operation get-workflow --id "$WORKFLOW_ID"
+dms operation get-callstack --id "$WORKFLOW_ID"
+dms operation get-trace --id "$PROCESS_WORKFLOW_ID"
+```
+
+Use the callstack to find the inspection's Process child ID. Its trace contains
+the selected repository, branch, commit, tracked/staged-change flags, whether
+`.env.prod` is tracked, and sanitized origin metadata. Raw origin configuration,
+usernames, passwords, URL queries and fragments are never printed. Unknown hosts
+and repository paths are redacted; `official` reports whether an individual origin
+matches the deploy allowlist. Multiple origins still prevent deployment even if
+each individual address is official.
+
+Inspection only reads the unique regular Box checkout directly under `/swarm-vol`.
+It does not pull, deploy, create a deployment lock, read environment-file contents
+or private keys, or establish an SSH connection. This is a point-in-time snapshot;
+deployment performs its own fresh preflight. Inspection details live in trace,
+not in the submission receipt or workflow result. Update Controller and Agents
+before using the new definition.
+
 ## Deploy a Box
 
 ```bash
@@ -142,7 +175,11 @@ The Agent looks for exactly one regular Box Git checkout directly under
 `/swarm-vol`, with `box` in its directory name, a `.git` directory and a regular
 `deploy.sh`. Missing or ambiguous checkouts fail before updating anything. The
 checkout must use exactly one official Aiursoft GitLab Box origin and its `master`
-branch, with no tracked local changes. The workflow uses the machine's existing
+branch, with no tracked local changes. Supported origins are HTTPS on
+`gitlab.aiursoft.com`, the existing `git@gitlab.aiursoft.com:aiursoft/...` form,
+and GitLab's published `ssh://git@ssh.aiursoft.com:2202/aiursoft/...` endpoint,
+limited to the five official Box repositories. Embedded credentials, other
+hosts/ports/namespaces and multiple origins remain rejected. The workflow uses the machine's existing
 Git authentication to run `git pull --ff-only` and executes that checkout's
 `deploy.sh` with separate arguments. It preserves private `.env.prod` files,
 refuses a Git-tracked `.env.prod`, never resets local changes, and accepts no user-supplied path, repository URL

@@ -3,6 +3,7 @@ using Aiursoft.CommandFramework;
 using Aiursoft.CommandFramework.Framework;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
+using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
@@ -16,7 +17,7 @@ public static class DmsCommandApp
             StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             new ActionCommand("add", WorkflowNames.AddMachine),
             new Group("docker", [DockerPsCommand(), DockerLogsCommand(), DockerExecCommand(), DockerKillCommand()]),
-            new Group("box", [BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
+            new Group("box", [StandardCommand("inspect", MachineWorkflows.BoxInspect, _ => new EmptyInput()), BoxDeployCommand(), new Group("puller", [PullerCommand()])]),
             new Group("performance", [StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput())]),
             new Group("systemctl", [ServiceCommand("restart", MachineWorkflows.Restart), ServiceCommand("status", MachineWorkflows.ServiceStatus)]),
             new Group("agent", [StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()), new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)]),
@@ -171,6 +172,8 @@ public static class DmsCommandApp
                     MachineName = context.GetValue(_machineName) ?? string.Empty,
                     TargetWorkflowId = action == WorkflowNames.Kill ? id : null
                 });
+                // Every submission returns the root workflow ID; inspect its metadata/trace separately.
+                response.Data = new { WorkflowId = Guid.Parse(JObject.FromObject(response.Data!)["WorkflowId"]!.Value<string>()!) };
             }
             else response = action switch
             {

@@ -171,6 +171,100 @@ public class BoxDeployTests
         Assert.HasCount(1, File.ReadAllLines(box.PathOf("deployment-count")));
     }
 
+    [TestMethod]
+    [DataRow("https://gitlab.aiursoft.com/aiursoft/boxforglobal.git")]
+    [DataRow("git@gitlab.aiursoft.com:aiursoft/boxforproart.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforglobal.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforchina.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforhl.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforarchive.git")]
+    public async Task OfficialHttpsScpAndPublishedSshOriginsAreInspectedAndDeployable(string origin)
+    {
+        using var box = new Box();
+        box.Git(box.Repository, "remote", "set-url", "origin", origin);
+        var head = box.Revision(box.Repository);
+        Assert.AreEqual("{}", await box.InspectAsync());
+        var trace = string.Join("\n", box.Events.Where(e => e.IsTrace).Select(e => e.Message));
+        StringAssert.Contains(trace, "official=true");
+        StringAssert.Contains(trace, "Branch: master");
+        StringAssert.Contains(trace, "Commit: " + head);
+        StringAssert.Contains(trace, "TrackedChanges: false");
+        StringAssert.Contains(trace, "StagedChanges: false");
+        StringAssert.Contains(trace, "PrivateEnvironmentTracked: false");
+        if (origin.StartsWith("ssh://", StringComparison.Ordinal)) StringAssert.Contains(trace, "host=ssh.aiursoft.com port=2202");
+        Assert.IsFalse(File.Exists(box.PathOf("deployment-arguments")));
+        Assert.IsFalse(File.Exists(Path.Combine(box.Root, ".dms-box-deploy.lock")));
+        Assert.IsFalse(File.Exists(Path.Combine(box.Directory, "pulled")));
+        Assert.AreEqual(head, box.Revision(box.Repository));
+        Assert.IsTrue(box.Events.Where(e => !e.IsTrace && e.State == RunState.Succeeded).All(e => !e.Result.Contains("Origin", StringComparison.Ordinal)));
+        var result = MachineWorkflows.BoxDeploy.ReadResult(await box.RunAsync(new BoxDeployInput()));
+        Assert.AreEqual(0, result.ExitCode);
+    }
+
+    [TestMethod]
+    [DataRow("https://private-value:secret-value@gitlab.aiursoft.com/aiursoft/boxforglobal.git?token=query-secret#fragment-secret")]
+    [DataRow("ssh://private-value:secret-value@ssh.aiursoft.com:2202/aiursoft/boxforglobal.git")]
+    [DataRow("https://gitlab.aiursoft.com.evil.test/private-value/secret-value")]
+    [DataRow("https://private-value:secret-value@evil.test/aiursoft/boxforglobal.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:22/aiursoft/boxforglobal.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/other/boxforglobal.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/not-a-box.git")]
+    [DataRow("https://gitlab.aiursoft.com/aiursoft/boxforglobal.git\nhttps://private-value:secret-value@evil.test/secret-value")]
+    public async Task InspectionRedactsCredentialsAndUnknownOriginsNeverDeploy(string origin)
+    {
+        using var box = new Box();
+        box.Git(box.Repository, "remote", "set-url", "origin", origin);
+        Assert.AreEqual("{}", await box.InspectAsync());
+        var events = JsonSerializer.Serialize(box.Events.ToArray());
+        foreach (var secret in new[] { "private-value", "secret-value", "query-secret", "fragment-secret", "evil.test" })
+            Assert.DoesNotContain(secret, events);
+        Assert.IsTrue(box.Events.Any(e => e.IsTrace && e.Message.Contains("official=false", StringComparison.Ordinal)));
+        await Assert.ThrowsAsync<ChildWorkflowException>(() => box.RunAsync(new BoxDeployInput()));
+        Assert.IsFalse(File.Exists(Path.Combine(box.Directory, "pulled")));
+        Assert.IsFalse(File.Exists(box.PathOf("deployment-arguments")));
+    }
+
+    [TestMethod]
+    public async Task InspectionReportsMissingAndMultipleOriginsAndDirtyDetachedStateWithoutUpdating()
+    {
+        using var box = new Box();
+        var head = box.Revision(box.Repository);
+        box.Git(box.Repository, "remote", "remove", "origin");
+        await box.InspectAsync();
+        Assert.IsTrue(box.Events.Any(e => e.IsTrace && e.Message.Contains("OriginCount: 0", StringComparison.Ordinal)));
+        box.Events.Clear();
+        box.Git(box.Repository, "remote", "add", "origin", "https://gitlab.aiursoft.com/aiursoft/boxforglobal.git");
+        box.Git(box.Repository, "config", "--add", "remote.origin.url", "ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforglobal.git");
+        box.Git(box.Repository, "checkout", "--detach");
+        File.AppendAllText(box.PathOf("deploy.sh"), "\n# staged");
+        box.Git(box.Repository, "add", "deploy.sh");
+        File.AppendAllText(box.PathOf("deploy.sh"), "\n# unstaged");
+        await box.InspectAsync();
+        var trace = string.Join("\n", box.Events.Where(e => e.IsTrace).Select(e => e.Message));
+        StringAssert.Contains(trace, "OriginCount: 2");
+        StringAssert.Contains(trace, "Branch: [detached or unrecognized]");
+        StringAssert.Contains(trace, "TrackedChanges: true");
+        StringAssert.Contains(trace, "StagedChanges: true");
+        Assert.AreEqual(head, box.Revision(box.Repository));
+        Assert.IsFalse(File.Exists(Path.Combine(box.Directory, "pulled")));
+        Assert.IsFalse(File.Exists(box.PathOf("deployment-arguments")));
+        await Assert.ThrowsAsync<ChildWorkflowException>(() => box.RunAsync(new BoxDeployInput()));
+    }
+
+    [TestMethod]
+    public async Task InspectionUsesSafeStandardDefinitionAndCannotAcceptAnArbitraryPathOrCommand()
+    {
+        Assert.AreEqual(RiskLevel.Safe, MachineWorkflows.BoxInspect.Risk);
+        Assert.IsTrue(MachineWorkflows.BoxInspect.PublicEntry);
+        Assert.IsTrue(new MachineWorkflowRegistry().Contains(MachineWorkflows.BoxInspect.Name));
+        Assert.Throws<JsonException>(() => MachineWorkflows.BoxInspect.ReadInput("{\"Path\":\"/etc\"}"));
+        Assert.Throws<JsonException>(() => MachineWorkflows.BoxInspect.ReadInput("{\"Command\":\"id\"}"));
+        using var box = new Box();
+        Directory.Move(box.Repository, Path.Combine(box.Root, "unrelated"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => box.InspectAsync());
+        Assert.IsFalse(box.Events.Any(e => e.Definition == WorkflowNames.Process));
+    }
+
     private sealed class Box : IDisposable
     {
         public string Directory { get; } = System.IO.Directory.CreateTempSubdirectory("dms-box-deploy-").FullName;
@@ -238,6 +332,9 @@ public class BoxDeployTests
             process.WaitForExit(); Assert.AreEqual(0, process.ExitCode, error);
             return output;
         }
+
+        public Task<string> InspectAsync() => new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })
+            .RunAsync(new BoxInspectWorkflow(Root, Executable), CancellationToken.None);
 
         public Task<string> RunAsync(BoxDeployInput input, CancellationToken token = default) =>
             new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })

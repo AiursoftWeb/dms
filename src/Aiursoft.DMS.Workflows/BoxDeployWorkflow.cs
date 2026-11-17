@@ -9,6 +9,9 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
     : MachineWorkflow<BoxDeployInput, BoxDeployResult>(MachineWorkflows.BoxDeploy, input)
 {
     // Keep credentials out of the query output. Only the five official Box origins are accepted.
+    // GitLab advertises this SSH endpoint; retain the existing HTTPS and SCP forms.
+    internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive)(\.git)?$";
+
     private const string Preflight = """
         set -euo pipefail
         repository=$1
@@ -18,8 +21,8 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
             echo 'The Box must be the root of its Git working tree.' >&2; exit 1;
         }
         origin=$(box_git config --get-all remote.origin.url)
-        if [[ ! "${origin,,}" =~ ^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/)(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive)(\.git)?$ ]]; then
-            echo 'The repository origin must be an official Aiursoft Box repository.' >&2; exit 1;
+        if [[ ! "${origin,,}" =~ $3 ]]; then
+            echo 'The repository origin must be an official Aiursoft Box repository. Run box inspect and read its trace for sanitized details.' >&2; exit 1;
         fi
         [ "$(box_git symbolic-ref --short HEAD)" = master ] || {
             echo 'The Box must be on its master branch.' >&2; exit 1;
@@ -48,18 +51,9 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         var directory = Path.GetFullPath(root);
         if (!Directory.Exists(directory)) throw new InvalidOperationException("The Box search root does not exist.");
         await using var deploymentLock = AcquireLock(directory);
-        // Search direct children only: never walk Docker volumes or choose an arbitrary first match.
-        var candidates = Directory.EnumerateDirectories(directory)
-            .Where(path => Path.GetFileName(path).Contains("box", StringComparison.OrdinalIgnoreCase)
-                && !IsLink(path) && Directory.Exists(Path.Combine(path, ".git"))
-                && !IsLink(Path.Combine(path, ".git")) && File.Exists(Path.Combine(path, "deploy.sh"))
-                && !IsLink(Path.Combine(path, "deploy.sh")))
-            .Order(StringComparer.Ordinal).ToArray();
-        if (candidates.Length != 1)
-            throw new InvalidOperationException($"Expected exactly one Box Git repository with deploy.sh directly under {directory}; found {candidates.Length}. No update or deployment was started.");
-        var repository = candidates[0];
+        var repository = FindRepository(directory);
         await context.TraceAsync($"Selected Box {repository}. Starting stage {value.Stage} and all later stages; stage-4 filter: {value.Filter ?? "all stacks"}. Earlier stages and shared preparation are not filtered. Approval covers master at execution time.");
-        var previous = await RevisionAsync(context, ["/bin/bash", "-c", Preflight, "dms-box-preflight", repository, git], token);
+        var previous = await RevisionAsync(context, ["/bin/bash", "-c", Preflight, "dms-box-preflight", repository, git, OfficialOriginPattern], token);
         await context.TraceAsync($"Updating Box master with fast-forward only; previous commit {previous}. Private environment files are retained.");
         await context.CallAsync(new ProcessWorkflow("/usr/bin/env", ["GIT_TERMINAL_PROMPT=0", git,
             "-c", "safe.directory=" + repository, "-C", repository, "pull", "--ff-only", "--no-rebase", "origin", "master"]), token);
@@ -87,6 +81,23 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         }
         await context.TraceAsync("Box deployment script completed. Swarm rollout and application health must be checked separately.");
         return new BoxDeployResult(repository, previous, commit, value.Stage, value.Filter, 0);
+    }
+
+    internal static string FindRepository(string root)
+    {
+        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException("Box operations require Linux.");
+        var directory = Path.GetFullPath(root);
+        if (!Directory.Exists(directory)) throw new InvalidOperationException("The Box search root does not exist.");
+        // Search direct children only: never walk Docker volumes or choose an arbitrary first match.
+        var candidates = Directory.EnumerateDirectories(directory)
+            .Where(path => Path.GetFileName(path).Contains("box", StringComparison.OrdinalIgnoreCase)
+                && !IsLink(path) && Directory.Exists(Path.Combine(path, ".git"))
+                && !IsLink(Path.Combine(path, ".git")) && File.Exists(Path.Combine(path, "deploy.sh"))
+                && !IsLink(Path.Combine(path, "deploy.sh")))
+            .Order(StringComparer.Ordinal).ToArray();
+        if (candidates.Length != 1)
+            throw new InvalidOperationException($"Expected exactly one Box Git repository with deploy.sh directly under {directory}; found {candidates.Length}. No update or deployment was started.");
+        return candidates[0];
     }
 
     private static FileStream AcquireLock(string directory)
