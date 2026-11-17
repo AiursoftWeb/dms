@@ -1,11 +1,13 @@
 using Aiursoft.DMS.Authorization;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.WebSockets;
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
+using Aiursoft.DMS.Workflows;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
@@ -13,6 +15,147 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class DmsWorkflowTests : TestBase
 {
+    private sealed class UnavailableWorkflow(string name) : MachineWorkflow
+    {
+        public override string Name => name;
+        public override Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token) =>
+            throw new AssertFailedException("An unsupported workflow must never execute.");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task UnsupportedOffersFailVisiblyAndTheSameAgentConnectionContinues(bool mismatchedVersion)
+    {
+        var setup = await ArrangeAsync(true);
+        var key = DmsKeyAuthenticationHandler.CreateKey(true);
+        var definition = new MachineWorkflowDefinition<EmptyInput, EmptyInput>("test.unavailable", RiskLevel.Low, "next", PublicEntry: true);
+        Server!.Services.GetRequiredService<MachineWorkflowRegistry>().Register(definition, (_, _) => new UnavailableWorkflow(definition.Name));
+        var registry = new MachineWorkflowRegistry();
+        if (mismatchedVersion)
+            registry.Register(definition with { Version = "previous" }, (_, _) => new UnavailableWorkflow(definition.Name));
+        using (var scope = Server.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(key);
+            await db.SaveChangesAsync();
+        }
+        var path = Path.Combine(Path.GetTempPath(), "dms-unsupported-agent-" + Guid.NewGuid());
+        using var stopping = new CancellationTokenSource(TimeSpan.FromSeconds(25));
+        var token = stopping.Token;
+        try
+        {
+            using var journal = new Agent.TaskJournal(path);
+            var agent = new Agent.AgentClient(Http.BaseAddress!, key, journal, registry).RunAsync(stopping.Token);
+            try
+            {
+                var sessions = Server.Services.GetRequiredService<AgentSessions>();
+                while (sessions.Get(setup.Machine)?.Ready != true) await Task.Delay(50, stopping.Token);
+                var connection = sessions.Get(setup.Machine);
+                LockboxRequest rejected;
+                using (var scope = Server.Services.CreateScope())
+                    rejected = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
+                        definition.Request(new EmptyInput(), "Report an unsupported offer", [setup.Machine]));
+                var failed = await WaitForMachineAsync(rejected.WorkflowId, RunState.Failed);
+                Assert.IsNull(failed.StartedAt);
+                Assert.IsNotNull(failed.FinishedAt);
+                StringAssert.Contains(failed.Result, "UnsupportedWorkflow");
+                StringAssert.Contains(failed.Result, "next");
+                StringAssert.Contains(failed.Result, mismatchedVersion ? "previous" : "not installed");
+                Assert.IsNull(journal.Start(failed.Id));
+                while (true)
+                {
+                    using var scope = Server.Services.CreateScope();
+                    var tree = await scope.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, rejected.WorkflowId);
+                    if (tree.All(r => r.State == RunState.Failed)) break;
+                    await Task.Delay(50, stopping.Token);
+                }
+
+                LockboxRequest supported;
+                using (var scope = Server.Services.CreateScope())
+                    supported = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
+                        MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Continue after rejection", [setup.Machine]));
+                var succeeded = await WaitForMachineAsync(supported.WorkflowId, RunState.Succeeded);
+                StringAssert.Contains(succeeded.Result, journal.InstallationId.ToString());
+                Assert.AreSame(connection, sessions.Get(setup.Machine));
+            }
+            finally
+            {
+                await stopping.CancelAsync();
+                try { await agent; } catch (OperationCanceledException) { }
+            }
+        }
+        finally { Directory.Delete(path, true); }
+
+        async Task<WorkflowRun> WaitForMachineAsync(Guid root, RunState state)
+        {
+            while (true)
+            {
+                using var scope = Server.Services.CreateScope();
+                var run = await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().WorkflowRuns.AsNoTracking()
+                    .SingleOrDefaultAsync(r => r.RootId == root && r.IsMachineTask, token);
+                if (run?.State == state) return run;
+                await Task.Delay(50, token);
+            }
+        }
+    }
+
+    [TestMethod]
+    [DataRow(RunState.Offered, false, RunState.Cancelled)]
+    [DataRow(RunState.CancelRequested, false, RunState.Cancelled)]
+    [DataRow(RunState.Running, true, RunState.CancelRequested)]
+    [DataRow(RunState.NeedsVerification, true, RunState.CancelRequested)]
+    [DataRow(RunState.Offered, true, RunState.CancelRequested)]
+    public async Task ApprovedCancellationCompletesUnstartedOffersWithoutGrantingLateStart(RunState initial, bool started, RunState expected)
+    {
+        var setup = await ArrangeAsync(true);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        Guid operation;
+        using (var scope = Server!.Services.CreateScope())
+            operation = (await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Machine))).OperationId!.Value;
+        WorkflowRun? machine = null;
+        while (machine == null)
+        {
+            using var scope = Server.Services.CreateScope();
+            machine = await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().WorkflowRuns.AsNoTracking()
+                .SingleOrDefaultAsync(r => r.ParentId == operation && r.IsMachineTask, timeout.Token);
+            if (machine == null) await Task.Delay(50, timeout.Token);
+        }
+        var startedAt = started ? DateTime.UtcNow.AddMinutes(-1) : (DateTime?)null;
+        LockboxRequest cancellation;
+        using (var scope = Server.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var task = await db.WorkflowRuns.SingleAsync(r => r.Id == machine.Id, timeout.Token);
+            task.State = initial; task.StartedAt = startedAt;
+            await db.SaveChangesAsync(timeout.Token);
+            cancellation = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
+                new OperationRequest { Workflow = WorkflowNames.Kill, TargetWorkflowId = machine.Id, Reason = "Cancel the original approved task" });
+        }
+        while (true)
+        {
+            using var scope = Server.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var kill = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == cancellation.OperationId, timeout.Token);
+            if (kill.State is RunState.Running or RunState.Succeeded) break;
+            await Task.Delay(50, timeout.Token);
+        }
+        using var check = Server.Services.CreateScope();
+        var database = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var cancelled = await database.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == machine.Id, timeout.Token);
+        Assert.AreEqual(expected, cancelled.State);
+        Assert.AreEqual(startedAt, cancelled.StartedAt);
+        Assert.AreEqual(expected == RunState.Cancelled, cancelled.FinishedAt != null);
+        var node = await database.Machines.AsNoTracking().SingleAsync(m => m.Id == setup.Machine, timeout.Token);
+        using var session = new AgentSession(new ClientWebSocket(), node.KeyHash) { Ready = true };
+        var reply = await check.ServiceProvider.GetRequiredService<AgentEvents>().HandleAsync(setup.Machine, session,
+            new AgentMessage { Kind = "status", TaskId = machine.Id, State = RunState.Accepted });
+        Assert.AreEqual("cancel", reply?.Kind);
+        var unchanged = await database.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == machine.Id, timeout.Token);
+        Assert.AreEqual(expected, unchanged.State);
+        Assert.AreEqual(startedAt, unchanged.StartedAt);
+    }
+
     [TestMethod]
     public async Task CliReportsAuthenticationAndBusinessFailuresWithoutStackTracesOrStandardOutput()
     {

@@ -54,14 +54,37 @@ public sealed class TaskJournal : IDisposable
     {
         lock (_gate)
         {
-            if (_tasks.TryGetValue(message.TaskId, out var prior))
-            {
-                if (prior.Definition != message.Definition || prior.Input != message.Input || prior.Version != message.Version) throw new InvalidDataException("Task ID changed parameters.");
-                return;
-            }
+            if (FindExistingTask(message) != null) return;
             var task = new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
             Save(task); _tasks.Add(task.Id, task);
         }
+    }
+
+    public bool RejectBeforeStart(AgentMessage message, string reason)
+    {
+        lock (_gate)
+        {
+            var task = FindExistingTask(message);
+            if (task != null && task.State != RunState.Accepted) return false;
+            task ??= new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
+            task.State = RunState.Failed;
+            Append(task, new WorkflowEvent
+            {
+                WorkflowId = task.Id, Definition = task.Definition, Version = task.Version,
+                State = RunState.Failed,
+                Result = JsonSerializer.Serialize(new { ErrorCode = "UnsupportedWorkflow", Error = reason })
+            });
+            _tasks.TryAdd(task.Id, task);
+            return true;
+        }
+    }
+
+    private JournalTask? FindExistingTask(AgentMessage message)
+    {
+        if (!_tasks.TryGetValue(message.TaskId, out var task)) return null;
+        if (task.Definition != message.Definition || task.Input != message.Input || task.Version != message.Version)
+            throw new InvalidDataException("Task ID changed parameters.");
+        return task;
     }
 
     public JournalTask? Start(Guid id)

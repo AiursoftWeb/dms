@@ -93,6 +93,67 @@ public class AgentJournalTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void UnsupportedOfferFailureSurvivesRestartAndIsNotReplayed(bool accepted)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "dms-rejected-offer-" + Guid.NewGuid());
+        var offer = new AgentMessage { TaskId = Guid.NewGuid(), Definition = "machine.future", Version = "next" };
+        try
+        {
+            using (var journal = new TaskJournal(path))
+            {
+                if (accepted) journal.Accept(offer);
+                Assert.IsTrue(journal.RejectBeforeStart(offer, "Upgrade the Agent."));
+                Assert.IsFalse(journal.RejectBeforeStart(offer, "Duplicate offer."));
+                Assert.IsNull(journal.Start(offer.TaskId));
+                var task = journal.Snapshot().Single();
+                Assert.AreEqual(RunState.Failed, task.State);
+                Assert.HasCount(1, task.Pending);
+                Assert.AreEqual("next", task.Pending.Single().Version);
+                StringAssert.Contains(task.Pending.Single().Result, "UnsupportedWorkflow");
+                Func<AgentMessage, string, bool> reject = journal.RejectBeforeStart;
+                Assert.Throws<InvalidDataException>(() => reject(
+                    new AgentMessage { TaskId = offer.TaskId, Definition = offer.Definition, Version = "changed" }, "Changed offer."));
+            }
+            using (var recovered = new TaskJournal(path))
+            {
+                Assert.AreEqual(RunState.Failed, recovered.Snapshot().Single().State);
+                Assert.HasCount(1, recovered.Snapshot().Single().Pending);
+                recovered.Acknowledge(offer.TaskId, 1);
+            }
+            using var acknowledged = new TaskJournal(path);
+            Assert.IsFalse(acknowledged.RejectBeforeStart(offer, "Do not recreate an acknowledged failure."));
+            Assert.IsEmpty(acknowledged.Snapshot().Single().Pending);
+            Assert.IsNull(acknowledged.Start(offer.TaskId));
+        }
+        finally { Directory.Delete(path, true); }
+    }
+
+    [TestMethod]
+    [DataRow(RunState.Running)]
+    [DataRow(RunState.NeedsVerification)]
+    [DataRow(RunState.Succeeded)]
+    [DataRow(RunState.Cancelled)]
+    public async Task OfferRejectionDoesNotReplaceAnExistingExecutionOutcome(RunState state)
+    {
+        var path = Path.Combine(Path.GetTempPath(), "dms-rejected-existing-" + Guid.NewGuid());
+        var offer = new AgentMessage { TaskId = Guid.NewGuid(), Definition = WorkflowNames.AgentStatus };
+        try
+        {
+            using var journal = new TaskJournal(path);
+            journal.Accept(offer);
+            Assert.IsNotNull(journal.Start(offer.TaskId));
+            await journal.ReportAsync(offer.TaskId, new WorkflowEvent { WorkflowId = offer.TaskId, State = state });
+            Assert.IsFalse(journal.RejectBeforeStart(offer, "Definition is no longer installed."));
+            Assert.AreEqual(state, journal.Snapshot().Single().State);
+            Assert.HasCount(1, journal.Snapshot().Single().Pending);
+            Assert.IsNull(journal.Start(offer.TaskId));
+        }
+        finally { Directory.Delete(path, true); }
+    }
+
+    [TestMethod]
     public void AcceptedCancellationPreventsStart()
     {
         var path = Path.Combine(Path.GetTempPath(), "dms-journal-" + Guid.NewGuid());

@@ -25,7 +25,7 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
         if (task == null) throw new DmsException(403, "Task does not belong to this Agent.");
         if (message.Kind == "status")
         {
-            if (task.State == RunState.CancelRequested) return new AgentMessage { Kind = "cancel", TaskId = task.Id };
+            if (task.State is RunState.CancelRequested or RunState.Cancelled) return new AgentMessage { Kind = "cancel", TaskId = task.Id };
             if (message.State == RunState.Accepted && !task.State.Terminal())
             {
                 task.State = RunState.Running; task.StartedAt ??= DateTime.UtcNow;
@@ -61,7 +61,8 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
             {
                 // A cancellation request remains visible until the process reports termination.
                 if (run.State != RunState.CancelRequested || item.State != RunState.Running) run.State = item.State;
-                run.StartedAt ??= item.Time;
+                // A rejected offer or a cancellation before start never received execution permission.
+                if (!run.IsMachineTask || item.State == RunState.Running) run.StartedAt ??= item.Time;
                 if (item.State.Terminal()) run.FinishedAt = item.Time;
                 run.Result = item.Result;
             }

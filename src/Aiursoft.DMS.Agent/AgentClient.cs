@@ -78,7 +78,12 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             {
                 case "offer":
                     if (_workflows.FindDefinition(message.Definition)?.Version != message.Version || !_workflows.Contains(message.Definition))
-                        throw new InvalidDataException("Unsupported workflow version or definition.");
+                    {
+                        journal.RejectBeforeStart(message,
+                            $"Agent {typeof(AgentClient).Assembly.GetName().Version} cannot run workflow '{message.Definition}' version '{message.Version}'. " +
+                            $"Supported version: {_workflows.FindDefinition(message.Definition)?.Version ?? "not installed"}. Upgrade the Agent before submitting this workflow again.");
+                        break;
+                    }
                     journal.Accept(message);
                     break;
                 case "start":

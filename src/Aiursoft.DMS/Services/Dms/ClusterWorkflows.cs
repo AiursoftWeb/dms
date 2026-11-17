@@ -105,7 +105,10 @@ public sealed class CancelWorkflow : ClusterWorkflow
         }
         foreach (var run in tree.Where(r => selected.Contains(r.Id) && !r.State.Terminal()))
         {
-            if (run.State is RunState.Queued or RunState.WaitingApproval)
+            // Start permission is persisted before sending it. An unstarted offer can be
+            // cancelled here even if the Agent never recognized or journaled that offer.
+            if (run.State is RunState.Queued or RunState.WaitingApproval
+                || (run.IsMachineTask && run.StartedAt == null && run.State is RunState.Offered or RunState.CancelRequested))
             {
                 run.State = RunState.Cancelled; run.FinishedAt = DateTime.UtcNow;
                 if (run.Definition == WorkflowNames.Lockbox)
