@@ -17,13 +17,16 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         [ "$(box_git rev-parse --show-toplevel)" = "$repository" ] || {
             echo 'The Box must be the root of its Git working tree.' >&2; exit 1;
         }
-        origin=$(box_git config --get remote.origin.url)
+        origin=$(box_git config --get-all remote.origin.url)
         if [[ ! "${origin,,}" =~ ^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/)(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive)(\.git)?$ ]]; then
             echo 'The repository origin must be an official Aiursoft Box repository.' >&2; exit 1;
         fi
         [ "$(box_git symbolic-ref --short HEAD)" = master ] || {
             echo 'The Box must be on its master branch.' >&2; exit 1;
         }
+        if box_git ls-files --error-unmatch .env.prod >/dev/null 2>&1; then
+            echo 'Private .env.prod must not be tracked by Git.' >&2; exit 1;
+        fi
         box_git diff --quiet --ignore-submodules -- || { echo 'The Box has local tracked changes.' >&2; exit 1; }
         box_git diff --cached --quiet --ignore-submodules -- || { echo 'The Box has staged changes.' >&2; exit 1; }
         box_git rev-parse --verify HEAD

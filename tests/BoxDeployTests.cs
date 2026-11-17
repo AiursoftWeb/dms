@@ -92,6 +92,8 @@ public class BoxDeployTests
 
     [TestMethod]
     [DataRow("origin")]
+    [DataRow("multiple-origins")]
+    [DataRow("tracked-private-env")]
     [DataRow("branch")]
     [DataRow("dirty")]
     [DataRow("staged")]
@@ -100,6 +102,16 @@ public class BoxDeployTests
     {
         using var box = new Box();
         if (problem == "origin") box.Git(box.Repository, "remote", "set-url", "origin", "https://private-value:secret@example.test/Box.git");
+        if (problem == "multiple-origins")
+        {
+            box.Git(box.Repository, "remote", "set-url", "origin", "https://private-value:secret@example.test/Box.git");
+            box.Git(box.Repository, "config", "--add", "remote.origin.url", "https://gitlab.aiursoft.com/aiursoft/boxforglobal.git");
+        }
+        if (problem == "tracked-private-env")
+        {
+            box.Git(box.Repository, "add", "--force", ".env.prod");
+            box.Git(box.Repository, "commit", "-m", "Track synthetic environment");
+        }
         if (problem == "branch") box.Git(box.Repository, "checkout", "-b", "work");
         if (problem == "detached") box.Git(box.Repository, "checkout", "--detach");
         if (problem is "dirty" or "staged")

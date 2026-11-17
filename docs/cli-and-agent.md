@@ -141,11 +141,11 @@ and `--request-id` follow the normal submission rules.
 The Agent looks for exactly one regular Box Git checkout directly under
 `/swarm-vol`, with `box` in its directory name, a `.git` directory and a regular
 `deploy.sh`. Missing or ambiguous checkouts fail before updating anything. The
-checkout must use an official Aiursoft GitLab Box origin and its `master`
+checkout must use exactly one official Aiursoft GitLab Box origin and its `master`
 branch, with no tracked local changes. The workflow uses the machine's existing
 Git authentication to run `git pull --ff-only` and executes that checkout's
 `deploy.sh` with separate arguments. It preserves private `.env.prod` files,
-never resets local changes, and accepts no user-supplied path, repository URL
+refuses a Git-tracked `.env.prod`, never resets local changes, and accepts no user-supplied path, repository URL
 or shell command. The approval covers the latest master at execution time;
 the result and trace record the previous and deployed commit IDs.
 
