@@ -39,6 +39,9 @@
   <data name="Anonymous" xml:space="preserve">
     <value>匿名</value>
   </data>
+  <data name="Artifact" xml:space="preserve">
+    <value>制品</value>
+  </data>
   <data name="Background Jobs" xml:space="preserve">
     <value>后台任务</value>
   </data>

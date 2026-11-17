@@ -93,6 +93,8 @@ public class ViewModelArgsInjector(
         _ = localizer["Workflow history"];
     
         _ = localizer["DMS access"];
+    
+        _ = localizer["Artifact"];
     }
 
     public void InjectSimple(
