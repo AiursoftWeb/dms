@@ -31,7 +31,7 @@ public abstract partial class TemplateDbContext
             foreach (var entry in runs)
             {
                 var run = entry.Entity;
-                var box = Lockboxes.Local.FirstOrDefault(b => b.Id == run.LockboxId)
+                var box = run.LockboxId == null ? null : Lockboxes.Local.FirstOrDefault(b => b.Id == run.LockboxId)
                     ?? await Lockboxes.FindAsync([run.LockboxId], cancellationToken).ConfigureAwait(false);
                 var created = entry.State == EntityState.Added;
                 var occurred = created ? run.CreatedAt : run.State.Terminal() ? run.FinishedAt ?? recorded
@@ -52,12 +52,15 @@ public abstract partial class TemplateDbContext
                 var submitted = kind == WorkflowAuditKind.LockboxSubmitted;
                 var workflow = run?.Id ?? (submitted ? null : box?.WorkflowId);
                 var item = new WorkflowAuditEntry(kind, occurred, recorded, workflow, run?.RootId ?? workflow,
-                    run?.ParentId, run?.LockboxId ?? box!.Id,
+                    run?.ParentId, run?.LockboxId ?? box?.Id,
                     run == null ? null : run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run?.MachineId, machine?.InstallationId, run?.Definition ?? box!.Definition, run?.Version ?? box!.Version,
                     box?.RequesterId, submitted ? null : box?.ApproverId, submitted ? null : box?.Automatic,
                     box?.Risk, box?.Definition, box?.Version, submitted ? DecisionState.Pending : box?.Decision,
-                    submitted ? null : box?.DecidedAt, previous, state);
+                    submitted ? null : box?.DecidedAt, previous, state,
+                    run?.Origin ?? WorkflowOrigin.Manual,
+                    run?.ParentId != null ? WorkflowTrigger.Subworkflow : run?.Trigger ?? WorkflowTrigger.ManualRequest,
+                    run?.ScheduleId, run?.ScheduleExpression, run?.ScheduledAt);
                 captured.Add(new WorkflowAuditOutbox { Metadata = JsonSerializer.Serialize(item) });
             }
         }

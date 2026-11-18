@@ -7,12 +7,13 @@ public sealed partial class TraceDatabase
     private const string AuditSchema = """
         (EventId String, ControllerSequence Int64, Kind String,
          OccurredAt DateTime64(7, 'UTC'), RecordedAt DateTime64(7, 'UTC'),
-         WorkflowId Nullable(String), RootWorkflowId Nullable(String), ParentWorkflowId Nullable(String), LockboxId String,
+         WorkflowId Nullable(String), RootWorkflowId Nullable(String), ParentWorkflowId Nullable(String), LockboxId Nullable(String),
          Location Nullable(String), MachineId Nullable(String), InstallationId Nullable(String), Definition String, Version String,
          RequesterId Nullable(String), ApproverId Nullable(String), AutomaticApproval Nullable(Bool), RequestedRisk Nullable(String),
          RequestedDefinition Nullable(String), RequestedVersion Nullable(String),
-         Decision Nullable(String), DecidedAt Nullable(DateTime64(7, 'UTC')), PreviousState Nullable(String), State Nullable(String))
-        ENGINE = ReplacingMergeTree ORDER BY (LockboxId, EventId)
+         Decision Nullable(String), DecidedAt Nullable(DateTime64(7, 'UTC')), PreviousState Nullable(String), State Nullable(String),
+         Origin String DEFAULT 'Manual', Trigger String DEFAULT 'ManualRequest', ScheduleId Nullable(String), ScheduleExpression Nullable(String), ScheduledAt Nullable(DateTime64(7, 'UTC')))
+        ENGINE = ReplacingMergeTree ORDER BY (ifNull(LockboxId, ''), EventId)
         """;
 
     // One Controller owns this database. Its old process must be stopped before upgrading.
@@ -43,7 +44,7 @@ public sealed partial class TraceDatabase
                 throw new InvalidDataException("Unexpected legacy staging table. Preserve both audit tables for investigation.");
             await ExecuteAsync("CREATE TABLE IF NOT EXISTS DmsWorkflowAuditMigration " + AuditSchema);
             await ExecuteAsync("TRUNCATE TABLE DmsWorkflowAuditMigration");
-            await ExecuteAsync($"INSERT INTO DmsWorkflowAuditMigration ({AuditColumns}) SELECT {AuditColumns} FROM DmsWorkflowAudit FINAL");
+            await ExecuteAsync($"INSERT INTO DmsWorkflowAuditMigration ({AuditColumns}, Trigger) SELECT {AuditColumns}, if(isNull(ParentWorkflowId), 'ManualRequest', 'Subworkflow') FROM DmsWorkflowAudit FINAL");
             var original = await FingerprintAsync("DmsWorkflowAudit");
             var copied = await FingerprintAsync("DmsWorkflowAuditMigration");
             if (original != copied || original.Count != original.Events)
@@ -64,7 +65,7 @@ public sealed partial class TraceDatabase
                 return await command.ExecuteScalarAsync(token);
             }
             async Task<bool> NeedsMigrationAsync(string table) => Convert.ToUInt64(await ScalarAsync(
-                $"SELECT count() FROM system.columns WHERE database = currentDatabase() AND table = '{table}' AND (name = 'ClusterId' OR (name IN ('WorkflowId', 'RootWorkflowId', 'Location') AND type != 'Nullable(String)'))")) != 0;
+                $"SELECT count() FROM system.columns WHERE database = currentDatabase() AND table = '{table}' AND (name = 'ClusterId' OR (name IN ('WorkflowId', 'RootWorkflowId', 'Location', 'LockboxId') AND type != 'Nullable(String)'))")) != 0;
             async Task<(ulong Count, ulong Events, ulong Fingerprint)> FingerprintAsync(string table)
             {
                 await using var command = connection.CreateCommand();

@@ -55,7 +55,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
         var risk = definition != null
             ? definition.PublicEntry ? definition.Risk : throw new DmsException(400, "This workflow is not available as an external operation.")
-            : request.Workflow is WorkflowNames.AddMachine or WorkflowNames.Kill ? RiskLevel.Medium
+            : request.Workflow == WorkflowNames.AddMachine ? WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.AddMachine))
+            : request.Workflow == WorkflowNames.Kill ? WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.Kill))
             : throw new DmsException(400, "This workflow is not available as an external operation.");
         var grant = DmsPermissions.ForRisk(await access.PrincipalAsync(user), risk);
         if (!grant.CanRequest) throw new DmsException(403, "You cannot request this risk level.");
@@ -189,7 +190,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         access.Audit(user, "operation.get", id);
         await db.SaveChangesAsync();
         return new WorkflowDetails(run.Id, run.RootId, run.ParentId, run.LockboxId,
-            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, run.Result);
+            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, run.Result,
+            run.Origin, run.ParentId == null ? run.Trigger : WorkflowTrigger.Subworkflow,
+            run.ScheduleId, run.ScheduleExpression, run.ScheduledAt);
     });
 
     public Task<List<WorkflowRun>> CallstackAsync(string user, Guid id) => gate.RunAsync(async () =>

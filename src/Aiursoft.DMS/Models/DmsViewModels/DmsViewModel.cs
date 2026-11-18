@@ -27,6 +27,7 @@ public class DmsViewModel : UiStackLayoutViewModel
     public string? NewKey { get; set; }
     public int Page { get; set; }
     public bool HasNextPage { get; set; }
+    public WorkflowOrigin? Origin { get; set; }
     public bool ClusterWorkflowsOnly { get; set; }
     public Guid? MachineId { get; set; }
     public string? Definition { get; set; }

@@ -12,6 +12,7 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         var until = query.Until?.ToUniversalTime() ?? DateTimeOffset.UtcNow;
         var from = query.From?.ToUniversalTime() ?? until.AddDays(-1);
         if (from < DateTimeOffset.UnixEpoch || until.Year > 2261 || from >= until || until - from > TimeSpan.FromDays(31) || query.Page is < 0 or > 10000 ||
+            (query.Origin != null && !Enum.IsDefined(query.Origin.Value)) ||
             (query.Kind != null && !Enum.IsDefined(query.Kind.Value)) || (query.State != null && !Enum.IsDefined(query.State.Value)) ||
             new[] { query.RequesterId, query.ApproverId, query.Definition, query.RequestedDefinition }.Any(s => s?.Length > 200))
             throw new DmsException(400, "Choose a valid time range of at most 31 days, page, and investigation filters.");

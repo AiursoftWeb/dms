@@ -32,11 +32,11 @@ public static class DmsOutputWriter
                     e["RecordedAt"]!.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                     ((WorkflowAuditKind)e["Kind"]!.Value<int>()).ToString(),
                     Cell(e["Kind"]!.Value<int>() <= (int)WorkflowAuditKind.LockboxDenied ? e["RequestedDefinition"] ?? e["Definition"] : e["Definition"]),
-                    HumanScalar("State", e["State"], true), Cell(e["LockboxId"]), Cell(e["WorkflowId"])
+                    HumanScalar("State", e["State"], true), HumanScalar("Origin", e["Origin"], true), Cell(e["LockboxId"]), Cell(e["WorkflowId"])
                 }).ToList();
                 if (rows.Count == 0) output.WriteLine("(empty)");
-                else WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "State", "LockboxId", "WorkflowId"], rows, width, color,
-                    [19, 20, Math.Max(12, width - 140), 17, 39, 36]);
+                else WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "State", "Origin", "LockboxId", "WorkflowId"], rows, width, color,
+                    [19, 20, Math.Max(12, width - 152), 17, 9, 39, 36]);
             }
             return;
         }
@@ -101,9 +101,11 @@ public static class DmsOutputWriter
     private static string HumanScalar(string name, JToken? value, bool workflowMetadata = false)
     {
         if (value == null || value.Type == JTokenType.Null) return "-";
-        if (workflowMetadata && value.Type == JTokenType.Integer && name is "State" or "Decision" or "Risk" or "Location")
+        if (workflowMetadata && value.Type == JTokenType.Integer && name is "State" or "Decision" or "Risk" or "Location" or "Origin" or "Trigger")
         {
             var number = value.Value<int>();
+            if (name == "Origin" && Enum.IsDefined((WorkflowOrigin)number)) return ((WorkflowOrigin)number).ToString();
+            if (name == "Trigger" && Enum.IsDefined((WorkflowTrigger)number)) return ((WorkflowTrigger)number).ToString();
             if (name == "State" && Enum.IsDefined((RunState)number)) return ((RunState)number).ToString();
             if (name == "Decision" && Enum.IsDefined((DecisionState)number)) return ((DecisionState)number).ToString();
             if (name == "Risk" && Enum.IsDefined((RiskLevel)number)) return ((RiskLevel)number).ToString();

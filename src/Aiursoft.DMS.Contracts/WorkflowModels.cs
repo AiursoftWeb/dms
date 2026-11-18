@@ -19,7 +19,9 @@ public static class WorkflowNames
     public const string DiskFree = "machine.layout.df";
     public const string Process = "internal.process";
     public const string ListMachines = "cluster.get-machines";
+    [WorkflowRisk(RiskLevel.Medium)]
     public const string AddMachine = "cluster.add-machine";
+    [WorkflowRisk(RiskLevel.Medium)]
     public const string Kill = "operation.kill-workflow";
     public const string Version = "2";
 
@@ -57,6 +59,7 @@ public sealed class WorkflowEvent
 
 public sealed class AgentMessage
 {
+    public ScheduledInvocation? Schedule { get; set; }
     public Guid InstallationId { get; set; }
     public string Kind { get; set; } = string.Empty;
     public Guid TaskId { get; set; }

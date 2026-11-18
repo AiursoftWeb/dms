@@ -448,6 +448,7 @@ public static partial class DmsCommandApp
         private readonly Option<string?> _requestedDefinition = new("--requested-definition");
         private readonly Option<WorkflowAuditKind?> _kind = new("--kind");
         private readonly Option<RunState?> _state = new("--state");
+        private readonly Option<WorkflowOrigin?> _origin = new("--origin") { Description = "Filter Manual or Automatic workflow origin." };
         private readonly Option<bool?> _automatic = new("--automatic-approval");
 
         private readonly Option<int> _page = new("--page")
@@ -494,7 +495,7 @@ public static partial class DmsCommandApp
                 foreach (var option in new Option[]
                          {
                              _from, _until, _machineFilter, _workflowFilter, _rootFilter, _lockboxFilter,
-                             _requester, _approver, _definitionFilter, _requestedDefinition, _kind, _state, _automatic,
+                             _requester, _approver, _definitionFilter, _requestedDefinition, _kind, _state, _automatic, _origin,
                              _page
                          }) yield return option;
             }
@@ -560,7 +561,7 @@ public static partial class DmsCommandApp
                         Definition = context.GetValue(_definitionFilter),
                         RequestedDefinition = context.GetValue(_requestedDefinition),
                         Kind = context.GetValue(_kind), State = context.GetValue(_state),
-                        AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
+                        Origin = context.GetValue(_origin), AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
                     }),
                     "definitions" => await client.ListDefinitionsAsync(),
                     "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page),
