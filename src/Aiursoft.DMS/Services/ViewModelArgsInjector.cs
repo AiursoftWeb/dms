@@ -95,6 +95,9 @@ public class ViewModelArgsInjector(
         _ = localizer["DMS access"];
     
         _ = localizer["Artifact"];
+    
+        _ = localizer["My Lockboxes"];
+        _ = localizer["SSH public keys"];
     }
 
     public void InjectSimple(

@@ -138,6 +138,9 @@
   <data name="Manage" xml:space="preserve">
     <value>管理</value>
   </data>
+  <data name="My Lockboxes" xml:space="preserve">
+    <value>我的保险箱</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>未找到</value>
   </data>
@@ -167,6 +170,9 @@
   </data>
   <data name="Roles" xml:space="preserve">
     <value>角色</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公钥</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>设置</value>

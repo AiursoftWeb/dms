@@ -138,6 +138,9 @@
   <data name="Manage" xml:space="preserve">
     <value>Manage</value>
   </data>
+  <data name="My Lockboxes" xml:space="preserve">
+    <value>My Lockboxes</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>Not Found</value>
   </data>
@@ -167,6 +170,9 @@
   </data>
   <data name="Roles" xml:space="preserve">
     <value>Roles</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH public keys</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Settings</value>
