@@ -43,7 +43,7 @@ public class ScheduledWorkflowIntegrationTests : TestBase
         });
         var path = Directory.CreateTempSubdirectory("dms-cron-disconnect-").FullName;
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(35));
-        using var journal = new TaskJournal(path);
+        var journal = new TaskJournal(path);
         var registry = new MachineWorkflowRegistry(); registry.RegisterAttributed(typeof(OfflineProbeWorkflow));
         var agent = new AgentClient(Http.BaseAddress!, setup.Key, journal, registry);
         var execution = agent.RunAsync(stop.Token);
@@ -133,8 +133,15 @@ public class ScheduledWorkflowIntegrationTests : TestBase
             Assert.IsTrue(audit.All(e => e.Origin == WorkflowOrigin.Automatic && e.LockboxId == null && e.RequesterId == null && e.ApproverId == null && e.AutomaticApproval == null));
             Assert.IsFalse(audit.Any(e => e.Kind is WorkflowAuditKind.LockboxSubmitted or WorkflowAuditKind.LockboxApproved));
             await LoginAsAdmin();
+            var administrator = await DatabaseAsync(db => db.Users.Where(u => u.Email == "admin@default.com").Select(u => u.Id).SingleAsync());
             foreach (var root in roots)
             {
+                using var inspection = Server!.Services.CreateScope();
+                var details = await inspection.ServiceProvider.GetRequiredService<WorkflowService>().GetWorkflowAsync(administrator, root);
+                Assert.AreEqual(WorkflowOrigin.Automatic, details.Origin); Assert.IsNull(details.LockboxId);
+                Assert.AreEqual(WorkflowTrigger.AgentStartup, details.Trigger);
+                Assert.AreEqual("machine.agent.scheduled-status", details.ScheduleId);
+                Assert.AreEqual("*/5 * * * *", details.ScheduleExpression); Assert.IsNotNull(details.ScheduledAt);
                 using var response = await Http.GetAsync("/Dms/Operation?id=" + root);
                 response.EnsureSuccessStatusCode();
                 StringAssert.Contains(await response.Content.ReadAsStringAsync(), "Automatic");

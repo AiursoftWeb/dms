@@ -52,7 +52,7 @@ public abstract partial class TemplateDbContext
                 var submitted = kind == WorkflowAuditKind.LockboxSubmitted;
                 var workflow = run?.Id ?? (submitted ? null : box?.WorkflowId);
                 var item = new WorkflowAuditEntry(kind, occurred, recorded, workflow, run?.RootId ?? workflow,
-                    run?.ParentId, (LockboxId?)(run?.LockboxId ?? box?.Id),
+                    run?.ParentId, run?.LockboxId ?? box?.Id,
                     run == null ? null : run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run?.MachineId, machine?.InstallationId, run?.Definition ?? box!.Definition, run?.Version ?? box!.Version,
                     box?.RequesterId, submitted ? null : box?.ApproverId, submitted ? null : box?.Automatic,

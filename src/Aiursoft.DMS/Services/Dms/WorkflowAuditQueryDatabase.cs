@@ -48,7 +48,7 @@ public sealed partial class TraceDatabase
         DateTime Time(int i) => DateTime.SpecifyKind(row.GetDateTime(i), DateTimeKind.Utc);
         return new WorkflowAuditRow(Guid.Parse(row.GetString(0)), row.GetInt64(1), new WorkflowAuditEntry(
             Enum.Parse<WorkflowAuditKind>(row.GetString(2)), Time(3), Time(4),
-            Id(5), Id(6), Id(7), (LockboxId?)Id(8),
+            Id(5), Id(6), Id(7), Id(8),
             Value<WorkflowLocation>(9), Id(10), Id(11), row.GetString(12), row.GetString(13),
             Text(14), Text(15), row.IsDBNull(16) ? null : row.GetBoolean(16), Value<RiskLevel>(17), Text(18), Text(19),
             Value<DecisionState>(20), row.IsDBNull(21) ? null : Time(21), Value<RunState>(22), Value<RunState>(23), Enum.Parse<WorkflowOrigin>(row.GetString(24)), Enum.Parse<WorkflowTrigger>(row.GetString(25)),
