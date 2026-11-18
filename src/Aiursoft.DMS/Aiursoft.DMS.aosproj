@@ -1,7 +1,7 @@
 <Project Sdk="Aiursoft.Apkg.Sdk">
   <PropertyGroup>
     <PackageName>aiursoft-dms</PackageName>
-    <PackageVersion>1.4.0</PackageVersion>
+    <PackageVersion>1.5.0</PackageVersion>
     <PackageAuthors>Anduin Xue &lt;anduin@aiursoft.com&gt;</PackageAuthors>
     <PackageDescription>Aiursoft DMS Web Application</PackageDescription>
     <TargetDistro>anduinos</TargetDistro>
@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Dependency Include="openssh-client" />
     <Dependency Include="dotnet-runtime-10.0" />
     <Dependency Include="aspnetcore-runtime-10.0" />
   </ItemGroup>

@@ -65,6 +65,7 @@ public class Startup : IWebStartup
         services.AddSingleton<Services.Dms.TraceStore>();
         services.AddSingleton<Services.Dms.DmsArtifactStore>();
         services.AddScoped<Services.Dms.DmsArtifactAccess>();
+        services.AddScoped<Services.Dms.PersonalSshKeys>();
         services.AddScoped<Services.Dms.AccessService>();
         services.AddScoped<Services.Dms.DmsManagementService>();
         services.AddScoped<Services.Dms.EnrollmentService>();

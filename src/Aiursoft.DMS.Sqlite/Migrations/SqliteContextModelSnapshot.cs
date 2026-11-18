@@ -308,6 +308,51 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.ToTable("PersonalApiKeys");
                 });
 
+            modelBuilder.Entity("Aiursoft.DMS.Entities.PersonalSshKey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Fingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PublicKey")
+                        .IsRequired()
+                        .HasMaxLength(8192)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("Slot")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("PersonalSshKeys");
+                });
+
             modelBuilder.Entity("Aiursoft.DMS.Entities.User", b =>
                 {
                     b.Property<string>("Id")
@@ -651,6 +696,15 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .IsRequired();
 
                     b.Navigation("Issuer");
+                });
+
+            modelBuilder.Entity("Aiursoft.DMS.Entities.PersonalSshKey", b =>
+                {
+                    b.HasOne("Aiursoft.DMS.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

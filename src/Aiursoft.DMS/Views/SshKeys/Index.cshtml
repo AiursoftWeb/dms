@@ -1,0 +1,47 @@
+@using Aiursoft.DMS.Services.Dms
+@model Aiursoft.DMS.Models.DmsViewModels.SshKeysViewModel
+@{
+    var verified = Model.Keys.Where(k => k.VerifiedAt.HasValue).ToList();
+    var challenge = Model.Keys.SingleOrDefault(k => k.Slot == 0);
+}
+<h1>@Localizer["SSH public keys"]</h1>
+@if (Model.Notice != null)
+{
+    <div class="alert alert-warning"><div class="alert-message">@Localizer[Model.Notice]</div></div>
+}
+<div class="card"><div class="card-body">
+    <h2>@Localizer["Verified keys"] (@verified.Count / 3)</h2>
+    @foreach (var key in verified)
+    {
+        <form asp-action="Revoke" method="post" class="mb-3">
+            <input type="hidden" name="id" value="@key.Id" />
+            <strong>@key.Name</strong> <code>@key.Fingerprint</code>
+            <button class="btn btn-outline-danger" type="submit">@Localizer["Revoke"]</button>
+        </form>
+    }
+</div></div>
+@if (challenge != null && PersonalSshKeys.ExpiresAt(challenge) > DateTime.UtcNow)
+{
+    <form asp-action="Verify" method="post" class="card"><div class="card-body">
+        <h2>@Localizer["Verify key ownership"]</h2>
+        <p>@challenge.Name <code>@challenge.Fingerprint</code></p>
+        <p>@Localizer["Run this on your computer, replacing KEY_PATH with the path to your key. Paste the resulting SSH signature below."]</p>
+        <pre>printf '%s' '@PersonalSshKeys.Challenge(challenge.Id)' | ssh-keygen -Y sign -n @PersonalSshKeys.SignatureNamespace -f KEY_PATH</pre>
+        <p>@Localizer["Challenge expires at"] @PersonalSshKeys.ExpiresAt(challenge).ToString("u")</p>
+        <input type="hidden" name="id" value="@challenge.Id" />
+        <label for="signature" class="form-label">@Localizer["SSH signature"]</label>
+        <textarea id="signature" name="signature" class="form-control mb-2" maxlength="16384" rows="4" required></textarea>
+        <button class="btn btn-primary">@Localizer["Verify"]</button>
+    </div></form>
+}
+@if (verified.Count < 3)
+{
+    <form asp-action="Register" method="post" class="card"><div class="card-body">
+        <h2>@Localizer["Register a public key"]</h2>
+        <label for="name" class="form-label">@Localizer["Name"]</label>
+        <input id="name" name="name" class="form-control mb-2" maxlength="100" required />
+        <label for="publicKey" class="form-label">@Localizer["OpenSSH public key"]</label>
+        <textarea id="publicKey" name="publicKey" class="form-control mb-2" maxlength="8192" rows="2" required></textarea>
+        <button class="btn btn-primary">@Localizer["Create signing challenge"]</button>
+    </div></form>
+}
