@@ -606,6 +606,90 @@ await db.SaveChangesAsync();
     }
 
     [TestMethod]
+    public async Task OnlyRequesterCanWithdrawEvenAfterRequestAndReadPermissionsAreRemoved()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var box = await service.SubmitAsync(setup.User, Request(setup.Machine));
+        DmsTestPermissions.Risk(db, setup.User, box.Risk);
+        DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanReadDmsOperations, false);
+        var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+        await db.SaveChangesAsync();
+        foreach (var id in new[] { box.Id, Guid.NewGuid() })
+            Assert.AreEqual(404, (await Assert.ThrowsAsync<DmsException>(() => service.WithdrawAsync(setup.Approver, id))).StatusCode);
+
+        for (var i = 0; i < 2; i++)
+        {
+            var result = await Client.DmsCommandApp.Create().TestRunAsync(["lockbox", "withdraw", "--id", new LockboxId(box.Id).ToString(),
+                "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+            Assert.AreEqual(0, result.ProgramReturn);
+        }
+        db.ChangeTracker.Clear();
+        var receipt = await db.Lockboxes.SingleAsync(l => l.Id == box.Id);
+        Assert.AreEqual(DecisionState.Withdrawn, receipt.Decision);
+        Assert.IsNull(receipt.ApproverId); Assert.IsNull(receipt.WorkflowId);
+        Assert.IsFalse(await db.WorkflowRuns.AnyAsync(r => r.LockboxId == box.Id));
+        Assert.AreEqual(1, await db.AuditEvents.CountAsync(a => a.ResourceId == box.Id && a.Action == "lockbox.withdraw" && a.ActorId == setup.User));
+        var fact = (await db.WorkflowAuditOutbox.ToListAsync()).Select(e => e.Read()).Single(e => e.LockboxId == box.Id && e.Kind == WorkflowAuditKind.LockboxWithdrawn);
+        Assert.AreEqual(setup.User, fact.RequesterId); Assert.IsNull(fact.AutomaticApproval); Assert.IsNull(fact.WorkflowId);
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, box.Id, true, "Late approval"))).StatusCode);
+    }
+
+    [TestMethod]
+    public async Task AutoApprovedRequestImmediatelyReturnsExistingRootOnWithdrawalConflict()
+    {
+        var setup = await ArrangeAsync(true);
+        using var scope = Server!.Services.CreateScope();
+        var workflow = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var box = await workflow.SubmitAsync(setup.User, Request(setup.Machine));
+        var error = await Assert.ThrowsAsync<DmsException>(() => workflow.WithdrawAsync(setup.User, box.Id));
+        Assert.AreEqual(409, error.StatusCode);
+        StringAssert.Contains(error.Message, box.WorkflowId!.Value.ToString());
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        Assert.AreEqual(DecisionState.Approved, (await db.Lockboxes.AsNoTracking().SingleAsync(l => l.Id == box.Id)).Decision);
+        Assert.IsFalse(await db.Lockboxes.AnyAsync(l => l.Definition == WorkflowNames.Kill && l.RequesterId == setup.User));
+    }
+
+    [TestMethod]
+    public async Task ConcurrentApproveDenyAndWithdrawHaveOneTerminalDecision()
+    {
+        var setup = await ArrangeAsync();
+        using var initial = Server!.Services.CreateScope();
+        var box = await initial.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Machine));
+        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        async Task<bool> Attempt(DecisionState decision)
+        {
+            await start.Task;
+            using var scope = Server.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            try
+            {
+                if (decision == DecisionState.Withdrawn) await service.WithdrawAsync(setup.User, box.Id);
+                else await service.DecideAsync(setup.Approver, box.Id, decision == DecisionState.Approved, "Review");
+                return true;
+            }
+            catch (DmsException e) when (e.StatusCode == 409) { return false; }
+        }
+        var decisions = new[] { DecisionState.Approved, DecisionState.Denied, DecisionState.Withdrawn };
+        var attempts = decisions.Select(Attempt).ToArray();
+        start.SetResult();
+        var results = await Task.WhenAll(attempts);
+        Assert.AreEqual(1, results.Count(success => success));
+        var expected = decisions[Array.IndexOf(results, true)];
+        var db = initial.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var saved = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.Id == box.Id);
+        Assert.AreEqual(expected, saved.Decision);
+        Assert.AreEqual(expected == DecisionState.Approved, saved.WorkflowId.HasValue);
+        Assert.AreEqual(expected == DecisionState.Approved ? 1 : 0, await db.WorkflowRuns.CountAsync(r => r.LockboxId == box.Id && r.ParentId == null));
+        Assert.AreEqual(saved.WorkflowId.HasValue, await db.WorkflowLaunches.AnyAsync(l => l.RootId == saved.WorkflowId));
+        var facts = (await db.WorkflowAuditOutbox.ToListAsync()).Select(e => e.Read());
+        Assert.AreEqual(1, facts.Count(f => f.LockboxId == box.Id && f.Kind is WorkflowAuditKind.LockboxApproved or WorkflowAuditKind.LockboxDenied or WorkflowAuditKind.LockboxWithdrawn));
+    }
+
+    [TestMethod]
     public async Task ConcurrentApprovalsCreateOnlyOneOperation()
     {
         var setup = await ArrangeAsync();
@@ -645,7 +729,7 @@ await db.SaveChangesAsync();
         db.Machines.Add(late); await db.SaveChangesAsync();
         await service.DecideAsync(setup.Approver, item.Id, true, "Ten machines approved");
         var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
-        await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, item, Server!.Services.GetRequiredService<WorkflowCatalog>().Find(item.Definition)));
+        await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, await db.WorkflowLaunches.SingleAsync(l => l.RootId == operation.RootId), Server!.Services.GetRequiredService<WorkflowCatalog>().Find(item.Definition)));
         var dispatched = db.WorkflowRuns.Local.Where(r => r.ParentId == operation.Id).ToList();
         Assert.HasCount(10, dispatched);
         Assert.IsFalse(dispatched.Any(r => r.MachineId == late.Id));
@@ -860,7 +944,7 @@ await db.SaveChangesAsync();
         await service.DecideAsync(setup.Approver, item.Id, true, "Read only approval");
         var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
         Assert.AreEqual(WorkflowNames.Batch, operation.Definition);
-        await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, item, Server!.Services.GetRequiredService<WorkflowCatalog>().Find(item.Definition)));
+        await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, await db.WorkflowLaunches.SingleAsync(l => l.RootId == operation.RootId), Server!.Services.GetRequiredService<WorkflowCatalog>().Find(item.Definition)));
         var child = db.WorkflowRuns.Local.Single(r => r.ParentId == operation.Id);
         Assert.AreEqual(setup.Machine, child.MachineId); Assert.AreEqual(definition, child.Definition);
     }

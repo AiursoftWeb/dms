@@ -30,7 +30,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(() => SubmitCoreAsync(user, request));
 
     // Enrollment uses the same approval path while holding ControllerGate and a database transaction.
-    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request)
+    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request, Guid? enrollmentId = null)
     {
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
@@ -43,6 +43,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
+            if (enrollmentId.HasValue) throw new DmsException(409, "Enrollment ID already belongs to another request.");
             await access.PrincipalAsync(user);
             // Returning the caller's own submission receipt does not require global log-reading permission.
             // A retry keeps the original inferred scope, even if inventory changes.
@@ -92,7 +93,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         };
         db.Lockboxes.Add(lockbox);
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
-        if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the requester's role permissions.");
+        if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the requester's role permissions.", enrollmentId);
         await SaveDecisionAsync();
         return lockbox;
     }
@@ -115,7 +116,29 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         return item;
     });
 
-    private async Task ApproveAsync(LockboxRequest item, string? user, string reason)
+    public Task<LockboxRequest> WithdrawAsync(string user, Guid id) => gate.RunAsync(async () =>
+    {
+        await access.PrincipalAsync(user);
+        async Task<LockboxRequest> OwnedAsync() => await db.Lockboxes.SingleOrDefaultAsync(l => l.Id == id && l.RequesterId == user)
+            ?? throw new DmsException(404, "Lockbox not found.");
+
+        var item = await OwnedAsync();
+        if (item.Decision == DecisionState.Pending)
+        {
+            item.Decision = DecisionState.Withdrawn;
+            item.DecidedAt = DateTime.UtcNow;
+            item.DecisionReason = "Withdrawn by the requester.";
+            access.Audit(user, "lockbox.withdraw", id);
+            try { await SaveDecisionAsync(); }
+            catch (DmsException exception) when (exception.StatusCode == 409) { item = await OwnedAsync(); }
+        }
+        if (item.Decision == DecisionState.Withdrawn) return item;
+        throw new DmsException(409, item.WorkflowId is { } workflow
+            ? $"Already approved. To stop the workflow, request dms operation kill-workflow --id {workflow}."
+            : $"Cannot withdraw a {item.Decision} Lockbox.");
+    });
+
+    private async Task ApproveAsync(LockboxRequest item, string? user, string reason, Guid? enrollmentId = null)
     {
         var definition = catalog.Find(item.Definition);
         if ((definition == null && item.Definition is not (WorkflowNames.AddMachine or WorkflowNames.Kill))
@@ -134,6 +157,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         };
         root.RootId = root.Id;
         db.WorkflowRuns.Add(root);
+        if (item.Definition == WorkflowNames.AddMachine && enrollmentId == null)
+            enrollmentId = await db.AgentEnrollments.Where(e => e.LockboxId == item.Id).Select(e => (Guid?)e.Id).SingleOrDefaultAsync();
+        db.WorkflowLaunches.Add(WorkflowLaunch.FromApproval(item, root.Id, enrollmentId));
         item.WorkflowId = root.Id;
         access.Audit(user ?? "system", "lockbox.approve", item.Id, reason);
     }

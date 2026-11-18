@@ -68,7 +68,7 @@ public static class AgentCommandApp
                 {
                     var status = (await new EnrollmentClient(http, controller, config.ReceiptKey).StatusAsync()).Data!;
                     if (status.State == "Joined") { config = config with { MachineId = status.MachineId, ReceiptKey = "" }; config.Save(state); }
-                    else if (status.State is "Denied" or "Unavailable" or "Failed") config = null;
+                    else if (status.State is "Denied" or "Withdrawn" or "Unavailable" or "Failed") config = null;
                 }
                 catch (AiurUnexpectedServerResponseException exception) when (exception.Response.Code == Code.NotFound) { }
                 catch (AiurHttpResponseException exception) when (exception.StatusCode == System.Net.HttpStatusCode.Unauthorized) { }

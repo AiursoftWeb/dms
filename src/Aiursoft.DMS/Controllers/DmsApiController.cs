@@ -106,6 +106,10 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         return (await workflows.DecideAsync(Actor, id, input.Approve, input.Reason)).Details();
     });
 
+    [HttpPost("lockboxes/{id:guid}/withdraw")]
+    [HttpPost("lockboxes/lb/{id:guid}/withdraw")]
+    public Task<IActionResult> Withdraw(Guid id) => Handle(async () => (await workflows.WithdrawAsync(Actor, id)).Details());
+
     [HttpGet("operations/{id:guid}")]
     public Task<IActionResult> Workflow(Guid id) => Handle(async () => await workflows.GetWorkflowAsync(Actor, id));
 

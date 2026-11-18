@@ -40,6 +40,7 @@ public class SubworkflowTests : TestBase
             var root = new WorkflowRun { Id = box.WorkflowId!.Value, RootId = box.WorkflowId.Value, LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.Running };
             var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, Definition = definition.Name, Input = definition.Serialize(new EmptyInput()), State = initial };
             box.WorkflowId = parent.Id;
+            db.WorkflowLaunches.Add(WorkflowLaunch.FromApproval(box, root.Id));
             db.Machines.AddRange(machines); db.Lockboxes.Add(box); db.WorkflowRuns.AddRange(root, parent);
             await db.SaveChangesAsync();
             return (parent, machines, keys);
@@ -260,7 +261,7 @@ public class SubworkflowTests : TestBase
             var box = new LockboxRequest { Decision = DecisionState.Approved,
                 Parameters = JsonSerializer.Serialize(new OperationRequest { TargetWorkflowId = setup.Parent.Id }) };
             var cancellation = new WorkflowRun { LockboxId = box.Id, Definition = WorkflowNames.Kill };
-            await new CancelWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, cancellation, box));
+            await new CancelWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, cancellation, WorkflowLaunch.FromApproval(box, cancellation.Id)));
             await db.SaveChangesAsync(); return true;
         });
         var run = await WaitAsync(setup.Parent.Id, r => r.State == RunState.Cancelled);

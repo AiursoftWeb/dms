@@ -1,0 +1,14 @@
+@using Aiursoft.DMS.Contracts
+@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
+<h1>@Localizer["My Lockboxes"]</h1>
+@if (Model.Notice != null) { <div class="alert alert-warning"><div class="alert-message">@Model.Notice</div></div> }
+<div class="card"><div class="card-body table-responsive">
+<table class="table"><thead><tr><th>@Localizer["Request"]</th><th>@Localizer["Workflow"]</th><th>@Localizer["Reason"]</th><th>@Localizer["Decision"]</th><th>@Localizer["Created"]</th><th></th></tr></thead><tbody>
+@foreach (var item in Model.Lockboxes)
+{
+    <tr><td>@(new LockboxId(item.Id))</td><td>@item.Definition</td><td>@item.Reason</td><td>@item.Decision</td><td>@item.CreatedAt</td>
+    <td>@if (item.Decision == DecisionState.Pending) { <partial name="_WithdrawLockbox" model="item" /> }</td></tr>
+}
+</tbody></table></div></div>
+@if (Model.Page > 0) { <a class="btn btn-secondary" asp-route-page="@(Model.Page - 1)">@Localizer["Previous"]</a> }
+@if (Model.HasNextPage) { <a class="btn btn-secondary" asp-route-page="@(Model.Page + 1)">@Localizer["Next"]</a> }

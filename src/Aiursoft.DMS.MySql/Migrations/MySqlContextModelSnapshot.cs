@@ -458,6 +458,56 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.ToTable("WorkflowAuditOutbox");
                 });
 
+            modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowLaunch", b =>
+                {
+                    b.Property<Guid>("RootId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("ApproverId")
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
+                    b.Property<bool>("Automatic")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTime?>("DecidedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Definition")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<Guid?>("EnrollmentId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("Parameters")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RequesterId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
+                    b.Property<int>("Risk")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TargetMachines")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.HasKey("RootId");
+
+                    b.ToTable("WorkflowLaunches");
+                });
+
             modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowRun", b =>
                 {
                     b.Property<Guid>("Id")

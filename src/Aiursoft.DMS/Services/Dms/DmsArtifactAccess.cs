@@ -12,10 +12,13 @@ public sealed class DmsArtifactAccess(DmsArtifactStore store, AccessService acce
     public static bool Matches(ArtifactReference left, ArtifactReference right) =>
         left.Id == right.Id && left.Length == right.Length && left.Kind == right.Kind && left.Name == right.Name
         && left.Sha256.Equals(right.Sha256, StringComparison.OrdinalIgnoreCase);
-    public IReadOnlyList<ArtifactReference> Inputs(LockboxRequest box)
+    public IReadOnlyList<ArtifactReference> Inputs(LockboxRequest box) =>
+        Inputs(box.Definition, box.Version, JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
+
+    public IReadOnlyList<ArtifactReference> Inputs(string name, string version, string input)
     {
-        var operation = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
-        return catalog.Find(operation.Workflow)?.Artifacts(operation.Input).ToArray() ?? [];
+        var definition = catalog.Find(name);
+        return definition?.Version == version ? definition.Artifacts(input).ToArray() : [];
     }
 
     public async Task<StoredDmsArtifact> RequireHumanAsync(string actor, Guid id)

@@ -39,8 +39,12 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
         var queued = await db.WorkflowRuns.Where(r => r.MachineId == null && r.State == RunState.Queued).ToListAsync(token);
         foreach (var run in queued)
         {
-            var lockbox = await db.Lockboxes.SingleAsync(l => l.Id == run.LockboxId, token);
-            if (lockbox.Decision != DecisionState.Approved) throw new InvalidOperationException("Unapproved workflow cannot execute.");
+            var launch = await db.WorkflowLaunches.FindAsync([run.RootId], token);
+            if (launch == null)
+            {
+                Fail(run, "Workflow launch snapshot is missing.");
+                continue;
+            }
             if (workflows.Contains(run.Definition))
             {
                 run.State = RunState.Running; run.StartedAt = DateTime.UtcNow;
@@ -56,7 +60,7 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                 _ => throw new InvalidOperationException("Unknown cluster workflow.")
             };
             run.StartedAt = DateTime.UtcNow;
-            try { await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, lockbox, catalog.Find(lockbox.Definition))); }
+            try { await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, launch, catalog.Find(launch.Definition))); }
             catch (InvalidOperationException exception) { run.State = RunState.Failed; run.Result = JsonSerializer.Serialize(new { Error = exception.Message }); }
             if (run.State.Terminal()) run.FinishedAt = DateTime.UtcNow;
             await db.SaveChangesAsync(token);
@@ -78,8 +82,12 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             if (!cancel)
             {
                 if (task.Origin == WorkflowOrigin.Automatic) continue; // Agent-local schedules are never offered by the Controller.
-                var lockbox = await db.Lockboxes.SingleAsync(l => l.Id == task.LockboxId, token);
-                if (lockbox.Decision != DecisionState.Approved) continue;
+                var launch = await db.WorkflowLaunches.FindAsync([task.RootId], token);
+                if (launch == null || !launch.ReadTargets().Contains(machine.Id))
+                {
+                    Fail(task, "Machine is outside the workflow launch snapshot.");
+                    continue;
+                }
             }
             if (!cancel) task.State = RunState.Offered;
             await db.SaveChangesAsync(token); // Persist the offer before sending; reconnect repeats the same ID.
@@ -111,8 +119,13 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             }
             if (run.Definition == WorkflowNames.Kill && run.State == RunState.Running)
             {
-                var item = await db.Lockboxes.SingleAsync(l => l.Id == run.LockboxId, token);
-                var request = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!;
+                var launch = await db.WorkflowLaunches.FindAsync([run.RootId], token);
+                if (launch == null)
+                {
+                    Fail(run, "Workflow launch snapshot is missing.");
+                    continue;
+                }
+                var request = launch.ReadParameters();
                 var target = await db.WorkflowRuns.SingleAsync(r => r.Id == request.TargetWorkflowId, token);
                 if (target.State.Terminal()) { run.State = RunState.Succeeded; run.FinishedAt = DateTime.UtcNow; }
             }
@@ -129,6 +142,13 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
     {
         await base.StopAsync(cancellationToken);
         await runtime.StopAsync(cancellationToken);
+    }
+
+    private static void Fail(WorkflowRun run, string reason)
+    {
+        run.State = RunState.Failed;
+        run.Result = JsonSerializer.Serialize(new { Error = reason });
+        run.FinishedAt = DateTime.UtcNow;
     }
 
     private static RunState Aggregate(List<WorkflowRun> children)

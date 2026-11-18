@@ -451,6 +451,56 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.ToTable("WorkflowAuditOutbox");
                 });
 
+            modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowLaunch", b =>
+                {
+                    b.Property<Guid>("RootId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ApproverId")
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Automatic")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("DecidedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Definition")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("EnrollmentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Parameters")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RequesterId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Risk")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TargetMachines")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("RootId");
+
+                    b.ToTable("WorkflowLaunches");
+                });
+
             modelBuilder.Entity("Aiursoft.DMS.Entities.WorkflowRun", b =>
                 {
                     b.Property<Guid>("Id")

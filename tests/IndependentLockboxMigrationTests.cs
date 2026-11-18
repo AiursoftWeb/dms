@@ -42,6 +42,13 @@ public class IndependentLockboxMigrationTests
             var box = await db.Lockboxes.SingleAsync(b => b.Id == original.Box);
             Assert.AreEqual(original.Legacy, box.LegacyApprovalWorkflowId);
             Assert.AreEqual(original.Execution, box.WorkflowId); Assert.AreEqual(original.Decision, box.Decision);
+            var launch = await db.WorkflowLaunches.FindAsync(original.Legacy);
+            if (original.Execution != null)
+            {
+                Assert.IsNotNull(launch); Assert.AreEqual(box.TargetMachines, launch.TargetMachines);
+                Assert.AreEqual(box.Parameters, launch.Parameters); Assert.AreEqual(box.RequesterId, launch.RequesterId);
+            }
+            else Assert.IsNull(launch);
             var runs = await db.WorkflowRuns.Where(r => r.LockboxId == original.Box).ToListAsync();
             Assert.HasCount(original.Execution == null ? 1 : 2, runs);
             Assert.IsTrue(runs.All(r => r.RootId == original.Legacy && r.LastSequence == 7 && r.Result == "Historical output"));

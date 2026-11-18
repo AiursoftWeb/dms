@@ -55,6 +55,13 @@ var key = DmsKeyAuthenticationHandler.CreateKey(true);
             var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
             var box = await service.SubmitAsync(setup.User, MachineWorkflows.DiskFree.Request(new EmptyInput(), "never-archive-reason", [setup.Machine]));
             if (!automatic) await service.DecideAsync(setup.Reviewer, box.Id, true, "never-archive-decision");
+            // Remove the review row from this isolated fixture. Dispatch, child events and audit must survive.
+            await DatabaseAsync(async db =>
+            {
+                db.Lockboxes.Remove(await db.Lockboxes.SingleAsync(l => l.Id == box.Id));
+                await db.SaveChangesAsync();
+                return true;
+            });
             while (await DatabaseAsync(db => db.WorkflowRuns.Where(r => r.Id == box.WorkflowId).Select(r => r.State).SingleAsync()) != RunState.Succeeded)
                 await Task.Delay(50, stop.Token);
             var events = await HistoryAsync(box.Id);

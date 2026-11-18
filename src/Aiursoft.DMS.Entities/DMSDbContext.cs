@@ -17,6 +17,7 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
     public DbSet<JoinKey> JoinKeys => Set<JoinKey>();
     public DbSet<AgentEnrollment> AgentEnrollments => Set<AgentEnrollment>();
     public DbSet<LockboxRequest> Lockboxes => Set<LockboxRequest>();
+    public DbSet<WorkflowLaunch> WorkflowLaunches => Set<WorkflowLaunch>();
     public DbSet<WorkflowRun> WorkflowRuns => Set<WorkflowRun>();
     public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
     public DbSet<WorkflowAuditOutbox> WorkflowAuditOutbox => Set<WorkflowAuditOutbox>();

@@ -31,7 +31,8 @@ public static class DmsOutputWriter
                 {
                     e["RecordedAt"]!.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                     ((WorkflowAuditKind)e["Kind"]!.Value<int>()).ToString(),
-                    Cell(e["Kind"]!.Value<int>() <= (int)WorkflowAuditKind.LockboxDenied ? e["RequestedDefinition"] ?? e["Definition"] : e["Definition"]),
+                    Cell((WorkflowAuditKind)e["Kind"]!.Value<int>() is WorkflowAuditKind.WorkflowCreated or WorkflowAuditKind.WorkflowStateChanged
+                        ? e["Definition"] : e["RequestedDefinition"] ?? e["Definition"]),
                     HumanScalar("State", e["State"], true), HumanScalar("Origin", e["Origin"], true), Cell(e["LockboxId"]), Cell(e["WorkflowId"])
                 }).ToList();
                 if (rows.Count == 0) output.WriteLine("(empty)");

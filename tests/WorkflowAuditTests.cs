@@ -56,11 +56,50 @@ public class WorkflowAuditTests
     }
 
     [TestMethod]
+    [DataRow(DecisionState.Approved)]
+    [DataRow(DecisionState.Denied)]
+    [DataRow(DecisionState.Withdrawn)]
+    public async Task StaleDecisionsRollBackTheirRootSnapshotAndAudit(DecisionState winner)
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var first = Open(connection);
+        await first.Database.EnsureCreatedAsync();
+        var box = new LockboxRequest { RequesterId = "engineer", ClientRequestId = Guid.NewGuid() };
+        first.Lockboxes.Add(box);
+        await first.SaveChangesAsync();
+
+        await using var stale = Open(connection);
+        var sameBox = await stale.Lockboxes.SingleAsync();
+        void Stage(SqliteContext db, LockboxRequest request, DecisionState decision)
+        {
+            request.Decision = decision;
+            request.DecidedAt = DateTime.UtcNow;
+            if (decision != DecisionState.Approved) return;
+            var run = new WorkflowRun { LockboxId = request.Id, State = RunState.Queued };
+            request.WorkflowId = run.RootId = run.Id;
+            db.WorkflowRuns.Add(run);
+            db.WorkflowLaunches.Add(WorkflowLaunch.FromApproval(request, run.Id));
+        }
+        Stage(first, box, winner);
+        Stage(stale, sameBox, winner == DecisionState.Approved ? DecisionState.Withdrawn : DecisionState.Approved);
+        await first.SaveChangesAsync();
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() => stale.SaveChangesAsync());
+        await using var read = Open(connection);
+        Assert.AreEqual(winner, (await read.Lockboxes.SingleAsync()).Decision);
+        var approved = winner == DecisionState.Approved;
+        Assert.AreEqual(approved ? 1 : 0, await read.WorkflowRuns.CountAsync());
+        Assert.AreEqual(approved ? 1 : 0, await read.WorkflowLaunches.CountAsync());
+        Assert.AreEqual(approved ? 3 : 2, await read.WorkflowAuditOutbox.CountAsync());
+    }
+
+    [TestMethod]
     public async Task AutomaticApprovalAndMachineCreationCaptureOnlySafeMetadata()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
         await using var db = Open(connection); await db.Database.EnsureCreatedAsync();
         var (box, root) = Request(db, DecisionState.Approved); box.DecidedAt = DateTime.UtcNow; root.State = RunState.Running;
+        db.WorkflowLaunches.Add(WorkflowLaunch.FromApproval(box, root.Id));
         var machine = new Machine { InstallationId = Guid.NewGuid(), KeyHash = "never-archive-key" };
         var child = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id,
             MachineId = machine.Id, Definition = "internal.process", Version = "process-1", State = RunState.Queued,
