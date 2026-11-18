@@ -48,15 +48,8 @@ public static partial class SystemOperations
             "--since=" + start.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture),
             "--until=" + end.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)];
     }
-    public static async Task<OperationResult> SystemJournalAsync(MachineWorkflowContext context, JournalInput input, AgentEnvironment agent, CancellationToken token)
-    {
-        input.Validate(); var args = JournalArguments(input.Since, input.Until, input.Limit);
-        if (input.Service != null) args.Add("--unit=" + input.Service);
-        if (input.Boot != null) args.Add("--boot=" + input.Boot);
-        if (input.Level != null) args.Add("--priority=" + input.Level);
-        await OperationOutput.CommandAsync(context, agent, "journalctl", args, token);
-        return new OperationResult("Bounded journal window collected; secrets contained in application log messages remain subject to its approval.");
-    }
+    public static Task<OperationResult> SystemJournalAsync(MachineWorkflowContext context, JournalInput input, AgentEnvironment agent, CancellationToken token) =>
+        JournalDiagnostics.ReadAsync(context, input, agent, token);
     public static async Task<OperationResult> SystemTimersAsync(MachineWorkflowContext context, EmptyInput input, AgentEnvironment agent, CancellationToken token)
     {
         await OperationOutput.CommandAsync(context, agent, "systemctl", ["list-timers", "--all", "--no-pager", "--plain"], token);

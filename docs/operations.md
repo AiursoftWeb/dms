@@ -79,6 +79,53 @@ Process ownership/cgroup observations, CPU and I/O deltas, memory components, fi
 | `performance pressure` | Safe | — |
 | `performance oom-history` | Medium | `--since`; `--until`; `--limit=200` |
 
+### Incident history and blocked I/O (9)
+
+Client 1.5.0, Agent 1.6.0 and Contracts/SDK 10.5.0 add the following standard workflows. Update the Controller and target Agents before submitting them. Every operation uses the existing Role risk permissions and Lockbox; no collector, tool, package or additional permission is installed automatically.
+
+| Command | Risk | Options |
+| --- | --- | --- |
+| `performance history-sources` | Low | `--since`; `--until`; `--limit=200` |
+| `performance history cpu` | Low | `--since`; `--until`; `--interval-seconds=60`; `--limit=200`; `--after`; `--cpu` |
+| `performance history load` | Low | same time/interval/limit/after options |
+| `performance history memory` | Low | same time/interval/limit/after options |
+| `performance history disk` | Low | same time/interval/limit/after options; `--device` |
+| `performance history network` | Low | same time/interval/limit/after options; `--interface` |
+| `performance pcp-history` | Medium | `--archive-id` required; repeated `--metric` required; `--instance`; time/interval/limit/after options |
+| `performance blocked-processes` | Medium | `--pid`; `--container`; `--limit=50` |
+| `system kernel-events` | Medium | `--since`; `--until`; `--category`; `--boot`; `--before-cursor`; `--limit=200` |
+
+History defaults to the hour ending at execution time. Use explicit UTC offsets and a fixed `--until` for reproducible incident queries; windows cannot exceed seven days. Queries have a 60-second reader budget, archive/output limits and at most 1,000 returned rows. `history-sources` reports existing sysstat archives and PCP archive IDs, tool versions and archive metadata. PCP metric discovery lists at most 100 names per archive. A missing optional tool or an unreadable archive produces partial evidence with a warning. Installing tools or enabling retention requires a separate approved operation.
+
+```sh
+dms machine performance history-sources --machine-id "$MACHINE_ID" --reason "Find retained incident history"
+dms machine performance history disk --machine-id "$MACHINE_ID" --since 2026-11-17T14:00:00Z --until 2026-11-17T17:00:00Z --device sdc --reason "Inspect the disk queue during the incident"
+dms machine performance history cpu --machine-id "$MACHINE_ID" --since 2026-11-17T14:00:00Z --until 2026-11-17T17:00:00Z --reason "Distinguish CPU execution from I/O wait"
+dms machine performance pcp-history --machine-id "$MACHINE_ID" --archive-id "$ARCHIVE_ID" --metric kernel.all.load --instance '1 minute' --since 2026-11-17T14:00:00Z --until 2026-11-17T17:00:00Z --reason "Replay retained numeric load samples"
+dms machine performance blocked-processes --machine-id "$MACHINE_ID" --limit 50 --reason "Identify threads currently waiting in D state"
+dms machine system kernel-events --machine-id "$MACHINE_ID" --since 2026-11-17T14:00:00Z --until 2026-11-17T17:00:00Z --category io-error hung-task --reason "Search retained disk and blocked-task events"
+```
+
+Sysstat results retain native field names, explicit units and original sample intervals. `--interval-seconds` selects the first original sample per resource in each interval bucket anchored at the requested start; it does not average, interpolate or turn ten-minute observations into one-second measurements. Archive dates come from their headers, not `saDD` filenames. Restarts and missing coverage remain visible. CPU iowait is separate from CPU execution. Disk latency is milliseconds; throughput is KiB/s; memory is KiB. Interfaces and stacked block devices must not be summed as independent traffic/storage. Results are ordered by timestamp and resource. When truncated, repeat the identical explicit window and filters with `--after` set to `NextCursor`; a timestamp alone cannot safely page multiple resources.
+
+PCP replay accepts discovered local archive IDs and literal numeric metric names/instances. It returns raw stored values, including raw counter semantics, and never evaluates derived expressions or connects to a remote PMCD. Missing values remain null. Native interval metadata may be unavailable for PCP values; archive labels and returned timestamps are evidence of coverage, not a guarantee of continuous recording. A metric that was never collected cannot be reconstructed.
+
+`blocked-processes` reports current D-state threads, PID/TID, comm, UID, wait symbol and cgroup/container association. Hidden symbols and threads that exit during observation are reported as unknown/partial. It does not read command lines or environment, enable tracing or stop any process. A wait symbol alone does not prove a failed physical disk.
+
+`io-sample` additionally reports actual elapsed time, read/write bytes/s and IOPS, read/write/combined await, average queue depth, busy percent and current inflight I/O. Original byte-delta fields remain available. New/reset devices and new/unreadable/reset process counters have unknown rates; a device that disappears is listed separately. Await is null when no operations completed. Device busy is not a multi-queue saturation verdict.
+
+`system journal` also accepts `--kernel` and `--before-cursor`. Kernel events select fixed categories (`oom`, `hung-task`, `io-error`, `filesystem`, `reset`) inside journalctl before its result limit. Results are newest first, preserve multiline records, and expose `HasMore`, `NextCursor`, requested/observed bounds and native diagnostics. For another page, repeat the same filters/window with `--before-cursor` set to `NextCursor`; equal timestamps do not lose records. Kernel transport does not implicitly restrict the query to the current boot. A no-match result cannot prove absence of an incident when retention is incomplete.
+
+Read operation results and child trace using the normal IDs:
+
+```sh
+dms operation get-workflow --id "$WORKFLOW_ID"
+dms operation get-callstack --id "$WORKFLOW_ID"
+dms operation get-trace --id "$CHILD_WORKFLOW_ID" --output-format json
+```
+
+Valid partial results are Warning with `Complete=false`; invalid input, corrupt/unsupported response formats and execution errors are not successful empty measurements. Large history reports can also be returned as a normal authorized JSON artifact when Agent artifact transport is available. These commands use retained data and finite observations; they do not add continuous process/network collection or recover missing historical client attribution.
+
 ### NVIDIA (6)
 
 Driver-reported snapshots, compute/graphics processes, finite samples, ECC/Xid evidence, topology and CUDA compatibility. N/A stays unavailable; shared-memory GPUs need not expose all discrete-GPU fields.
@@ -136,7 +183,7 @@ System/clock/boot observations, systemd state/journal/timers, package inspection
 | `systemctl list` | Low | `--failed-only`; `--limit=200` |
 | `systemctl start` | Medium | `--service` required |
 | `systemctl stop` | High | `--service` required |
-| `system journal` | Medium | `--service`; `--boot`; `--level`; `--since`; `--until`; `--limit=200` |
+| `system journal` | Medium | `--service`; `--boot`; `--level`; `--since`; `--until`; `--limit=200`; `--kernel`; `--before-cursor` |
 | `system timers` | Medium | — |
 | `apt inspect` | Low | — |
 | `apt install` | High | `--package` required |

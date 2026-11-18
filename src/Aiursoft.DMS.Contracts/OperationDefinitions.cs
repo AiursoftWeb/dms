@@ -3,6 +3,15 @@ namespace Aiursoft.DMS.Contracts;
 // Compiled business operations. Each public definition is a separate Lockbox capability.
 public static class OperationsWorkflows
 {
+    public static readonly MachineWorkflowDefinition<HistoryInput, OperationResult> PerformanceHistorySources = new("machine.performance.history-sources", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<HistoryInput, OperationResult> PerformanceHistoryCpu = new("machine.performance.history.cpu", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<HistoryInput, OperationResult> PerformanceHistoryLoad = new("machine.performance.history.load", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<HistoryInput, OperationResult> PerformanceHistoryMemory = new("machine.performance.history.memory", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<HistoryInput, OperationResult> PerformanceHistoryDisk = new("machine.performance.history.disk", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<HistoryInput, OperationResult> PerformanceHistoryNetwork = new("machine.performance.history.network", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<PcpHistoryInput, OperationResult> PerformancePcpHistory = new("machine.performance.pcp-history", RiskLevel.Medium, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<BlockedProcessesInput, OperationResult> PerformanceBlockedProcesses = new("machine.performance.blocked-processes", RiskLevel.Medium, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+    public static readonly MachineWorkflowDefinition<KernelEventsInput, OperationResult> SystemKernelEvents = new("machine.system.kernel-events", RiskLevel.Medium, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<ListPathInput, OperationResult> FilesystemLs = new("machine.filesystem.ls", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<PathInput, OperationResult> FilesystemStat = new("machine.filesystem.stat", RiskLevel.Low, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
     public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemCat = new("machine.filesystem.cat", RiskLevel.High, "1", ValidateInput: input => input.Validate(), PublicEntry: true);
