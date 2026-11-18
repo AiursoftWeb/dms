@@ -54,11 +54,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         }
         if (request.RequestId == Guid.Empty || request.Reason.Length is < 1 or > 2000)
             throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
-        var risk = definition != null
-            ? definition.PublicEntry ? definition.Risk : throw new DmsException(400, "This workflow is not available as an external operation.")
-            : request.Workflow == WorkflowNames.AddMachine ? WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.AddMachine))
-            : request.Workflow == WorkflowNames.Kill ? WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.Kill))
-            : throw new DmsException(400, "This workflow is not available as an external operation.");
+        var risk = RequestRisk(definition, request.Workflow)
+            ?? throw new DmsException(400, "This workflow is not available as an external operation.");
         var grant = DmsPermissions.ForRisk(await access.PrincipalAsync(user), risk);
         if (!grant.CanRequest) throw new DmsException(403, "You cannot request this risk level.");
         var targets = new List<Guid>();
@@ -138,22 +135,31 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             : $"Cannot withdraw a {item.Decision} Lockbox.");
     });
 
+    private static RiskLevel? RequestRisk(WorkflowDefinition? definition, string name) => definition != null
+        ? definition.PublicEntry ? definition.Risk : null
+        : name switch
+        {
+            WorkflowNames.AddMachine => WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.AddMachine)),
+            WorkflowNames.Kill => WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.Kill)),
+            _ => null
+        };
+
     private async Task ApproveAsync(LockboxRequest item, string? user, string reason, Guid? enrollmentId = null)
     {
         var definition = catalog.Find(item.Definition);
-        if ((definition == null && item.Definition is not (WorkflowNames.AddMachine or WorkflowNames.Kill))
-            || (definition != null && (definition.Version != item.Version || !definition.PublicEntry || definition.Risk != item.Risk)))
+        if (RequestRisk(definition, item.Definition) != item.Risk || (definition?.Version ?? WorkflowNames.Version) != item.Version)
             throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
+        var input = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input;
         if (item.Definition == WorkflowNames.AgentUpgrade)
-            releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input));
-        await RequireArtifactsAsync(definition, JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input, item.RequesterId);
+            releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(input));
+        await RequireArtifactsAsync(definition, input, item.RequesterId);
         item.Decision = DecisionState.Approved; item.ApproverId = user; item.Automatic = user == null;
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
         var root = new WorkflowRun
         {
             LockboxId = item.Id, State = RunState.Queued,
             Definition = definition?.Location == WorkflowLocation.Machine ? WorkflowNames.Batch : item.Definition,
-            Input = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input, Version = item.Version
+            Input = input, Version = item.Version
         };
         root.RootId = root.Id;
         db.WorkflowRuns.Add(root);

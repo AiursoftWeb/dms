@@ -52,16 +52,19 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                 runtime.Start(run.Id);
                 continue;
             }
-            ClusterWorkflow workflow = run.Definition switch
-            {
-                WorkflowNames.Batch => new MachineBatchWorkflow(),
-                WorkflowNames.AddMachine => new AddMachineWorkflow(),
-                WorkflowNames.Kill => new CancelWorkflow(),
-                _ => throw new InvalidOperationException("Unknown cluster workflow.")
-            };
             run.StartedAt = DateTime.UtcNow;
-            try { await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, launch, catalog.Find(launch.Definition))); }
-            catch (InvalidOperationException exception) { run.State = RunState.Failed; run.Result = JsonSerializer.Serialize(new { Error = exception.Message }); }
+            try
+            {
+                ClusterWorkflow workflow = run.Definition switch
+                {
+                    WorkflowNames.Batch => new MachineBatchWorkflow(),
+                    WorkflowNames.AddMachine when launch.Version == WorkflowNames.Version => new AddMachineWorkflow(),
+                    WorkflowNames.Kill when launch.Version == WorkflowNames.Version => new CancelWorkflow(),
+                    _ => throw new InvalidOperationException("The approved cluster workflow version is no longer available.")
+                };
+                await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, launch, catalog.Find(launch.Definition)));
+            }
+            catch (InvalidOperationException exception) { Fail(run, exception.Message); }
             if (run.State.Terminal()) run.FinishedAt = DateTime.UtcNow;
             await db.SaveChangesAsync(token);
         }

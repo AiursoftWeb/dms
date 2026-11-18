@@ -639,6 +639,28 @@ await db.SaveChangesAsync();
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task ChangedRegistrationContractCannotBeApproved(bool changedVersion)
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var box = await service.SubmitAsync(setup.User, new OperationRequest
+        {
+            Workflow = WorkflowNames.AddMachine, Reason = "Enroll", MachineName = "candidate"
+        });
+        if (changedVersion) box.Version = "retired";
+        else box.Risk = RiskLevel.Safe;
+        await db.SaveChangesAsync();
+        var error = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, box.Id, true, "Review"));
+        Assert.AreEqual(409, error.StatusCode);
+        Assert.AreEqual(DecisionState.Pending, box.Decision);
+        Assert.IsFalse(await db.WorkflowRuns.AnyAsync(r => r.LockboxId == box.Id));
+    }
+
+    [TestMethod]
     public async Task AutoApprovedRequestImmediatelyReturnsExistingRootOnWithdrawalConflict()
     {
         var setup = await ArrangeAsync(true);
