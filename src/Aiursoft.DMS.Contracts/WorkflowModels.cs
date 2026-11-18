@@ -1,6 +1,7 @@
 namespace Aiursoft.DMS.Contracts;
 
 public enum RiskLevel { Safe, Low, Medium, High, VeryHigh }
+// WaitingApproval and Denied retain their historical numeric values; new approvals use DecisionState only.
 public enum RunState { WaitingApproval, Queued, Offered, Accepted, Running, Succeeded, Warning, Failed, Denied, CancelRequested, Cancelled, NeedsVerification }
 public enum DecisionState { Pending, Approved, Denied }
 

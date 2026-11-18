@@ -56,6 +56,96 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task WebLockboxLinksAndDecisionFormRoundTripTheSlashPrefix()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
+        using var scope = Server!.Services.CreateScope();
+        var box = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
+            MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Web approval fixture", [setup.First]));
+        await LoginAsAdmin();
+        var listing = await Http.GetStringAsync("/Dms/Lockboxes");
+        var link = System.Text.RegularExpressions.Regex.Matches(listing, "href=\"([^\"]+)\"")
+            .Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).First(url => url.Contains(box.Id.ToString(), StringComparison.OrdinalIgnoreCase));
+        var detail = await Http.GetAsync(link); Assert.AreEqual(HttpStatusCode.OK, detail.StatusCode);
+        var html = await detail.Content.ReadAsStringAsync();
+        StringAssert.Contains(html, new LockboxId(box.Id).ToString());
+        Assert.DoesNotContain("/Dms/Operation/", html);
+        var response = await PostForm("/Dms/Decide", new Dictionary<string, string>
+        {
+            ["id"] = new LockboxId(box.Id).ToString(), ["approve"] = "false", ["reason"] = "Review without an execution"
+        }, tokenUrl: link);
+        Assert.AreEqual(HttpStatusCode.Found, response.StatusCode);
+        Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync(response.Headers.Location)).StatusCode);
+        using var verify = Server.Services.CreateScope();
+        var db = verify.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var denied = await db.Lockboxes.SingleAsync(b => b.Id == box.Id);
+        Assert.AreEqual(DecisionState.Denied, denied.Decision); Assert.IsNull(denied.WorkflowId);
+        Assert.AreEqual(0, await db.WorkflowRuns.CountAsync(r => r.LockboxId == box.Id));
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task PrefixedLockboxCanBeListedInspectedAndDecidedWithoutAnApprovalWorkflow(bool approve)
+    {
+        var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.Safe),
+            DmsPermissions.Approve(RiskLevel.Safe), AppPermissionNames.CanApproveOwnWorkflow);
+        async Task<JToken> Cli(params string[] command)
+        {
+            var result = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--server", Http.BaseAddress!.ToString(),
+                "--api-key", setup.Key, "--output-format", "json"]);
+            Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+            return JObject.Parse(result.StdOut)["Data"]!;
+        }
+        var receipt = await Cli("machine", "agent", "status", "--machine-id", setup.First.ToString(), "--reason", "Independent approval fixture");
+        Assert.HasCount(2, (JObject)receipt);
+        var id = receipt["LockboxId"]!.Value<string>()!;
+        StringAssert.StartsWith(id, "lb/"); Assert.AreEqual(JTokenType.Null, receipt["WorkflowId"]!.Type);
+        var parsed = LockboxId.Parse(id);
+        var detail = await Cli("lockbox", "get", "--id", id);
+        Assert.AreEqual(id, detail["LockboxId"]!.Value<string>());
+        var page = await Cli("lockbox", "list", "--decision", "Pending");
+        Assert.IsTrue(page["Entries"]!.Any(b => b["LockboxId"]!.Value<string>() == id));
+        foreach (var format in new[] { "table", "csv" })
+        {
+            var list = await Client.DmsCommandApp.Create().TestRunAsync(["lockbox", "list", "--decision", "Pending",
+                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+            Assert.AreEqual(0, list.ProgramReturn, list.StdErr); StringAssert.Contains(list.StdOut, id);
+            if (format == "table") StringAssert.Contains(list.StdOut, "Pending");
+            else { StringAssert.Contains(list.StdOut.Split('\n')[0], "LockboxId"); Assert.DoesNotContain("EventId", list.StdOut.Split('\n')[0]); }
+        }
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        Assert.AreEqual(0, await db.WorkflowRuns.CountAsync(r => r.LockboxId == parsed.Value));
+        var decision = await Cli("lockbox", approve ? "approve" : "deny", "--id", id, "--reason", "Reviewed fixture");
+        Assert.AreEqual((int)(approve ? DecisionState.Approved : DecisionState.Denied), decision["Decision"]!.Value<int>());
+        if (approve)
+        {
+            var workflow = Guid.Parse(decision["WorkflowId"]!.Value<string>()!);
+            var root = await db.WorkflowRuns.SingleAsync(r => r.Id == workflow);
+            Assert.AreEqual(root.Id, root.RootId); Assert.IsNull(root.ParentId);
+            Assert.AreEqual(WorkflowNames.Batch, root.Definition);
+            Assert.IsFalse(await db.WorkflowRuns.AnyAsync(r => r.LockboxId == parsed.Value && r.Definition == WorkflowNames.Lockbox));
+            var metadata = await Cli("operation", "get-workflow", "--id", workflow.ToString());
+            Assert.AreEqual(id, metadata["LockboxId"]!.Value<string>());
+        }
+        else
+        {
+            Assert.AreEqual(JTokenType.Null, decision["WorkflowId"]!.Type);
+            Assert.AreEqual(0, await db.WorkflowRuns.CountAsync(r => r.LockboxId == parsed.Value));
+        }
+        var audit = (await db.WorkflowAuditOutbox.ToListAsync()).Select(row => row.Read()).Where(e => e.LockboxId == parsed).ToList();
+        var submission = audit.Single(e => e.Kind == WorkflowAuditKind.LockboxSubmitted);
+        Assert.IsNull(submission.WorkflowId); Assert.IsNull(submission.RootWorkflowId); Assert.IsNull(submission.Location);
+        Assert.AreEqual(DecisionState.Pending, submission.Decision);
+        Assert.HasCount(1, audit.Where(e => e.Kind == (approve ? WorkflowAuditKind.LockboxApproved : WorkflowAuditKind.LockboxDenied)));
+        var repeated = await Client.DmsCommandApp.Create().TestRunAsync(["lockbox", "approve", "--id", id,
+            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+        Assert.AreNotEqual(0, repeated.ProgramReturn);
+        Assert.AreEqual(approve ? 1 : 0, await db.WorkflowRuns.CountAsync(r => r.LockboxId == parsed.Value && r.ParentId == null));
+    }
+
+    [TestMethod]
     public async Task UnassignedPermissionsDenyRequestsAndWhoamiNeedsNoReadPermission()
     {
         var setup = await ArrangeAsync();
@@ -129,7 +219,7 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(MachineWorkflows.BoxDeploy.Name, box.Definition);
         Assert.AreEqual(RiskLevel.High, box.Risk);
         Assert.AreEqual(DecisionState.Pending, box.Decision);
-        Assert.IsFalse(box.Automatic); Assert.IsNull(box.OperationId);
+        Assert.IsFalse(box.Automatic); Assert.IsNull(box.WorkflowId);
         var request = System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
         Assert.AreEqual(new BoxDeployInput(stage, "dms"), MachineWorkflows.BoxDeploy.ReadInput(request.Input));
         CollectionAssert.AreEqual(new[] { setup.First }, System.Text.Json.JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
@@ -147,7 +237,7 @@ public class DmsRolePermissionTests : TestBase
         var approved = await workflows.DecideAsync(reviewer.Id, box.Id, true, "Reviewed stage and filter scope");
         Assert.AreEqual(DecisionState.Approved, approved.Decision);
         Assert.AreEqual(reviewer.Id, approved.ApproverId);
-        Assert.IsNotNull(approved.OperationId);
+        Assert.IsNotNull(approved.WorkflowId);
     }
 
     [TestMethod]
@@ -170,19 +260,20 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(MachineWorkflows.BoxInspect.Name, box.Definition);
         Assert.AreEqual(RiskLevel.Safe, box.Risk);
         Assert.AreEqual(automatic ? DecisionState.Approved : DecisionState.Pending, box.Decision);
-        if (!automatic) Assert.IsNull(box.OperationId);
-        StringAssert.Contains(cli.StdOut, box.WorkflowId.ToString());
-        Assert.DoesNotContain(box.Id.ToString(), cli.StdOut);
-        if (format == "json") Assert.HasCount(1, (JObject)JObject.Parse(cli.StdOut)["Data"]!);
-        if (format == "csv") Assert.AreEqual("WorkflowId", cli.StdOut.Split('\n')[0].Trim());
+        if (!automatic) Assert.IsNull(box.WorkflowId);
+        StringAssert.Contains(cli.StdOut, new LockboxId(box.Id).ToString());
+        Assert.AreEqual(automatic, await db.WorkflowRuns.AnyAsync(r => r.LockboxId == box.Id));
+        if (format == "json") Assert.HasCount(2, (JObject)JObject.Parse(cli.StdOut)["Data"]!);
+        if (format == "csv") Assert.AreEqual("LockboxId,WorkflowId", cli.StdOut.Split('\n')[0].Trim());
         Assert.DoesNotContain("Branch", cli.StdOut);
         Assert.DoesNotContain("Origin", cli.StdOut);
         Assert.DoesNotContain("Result", cli.StdOut);
         Assert.AreEqual("{}", System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
-        var metadata = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", box.WorkflowId.ToString(),
+        if (!automatic) return;
+        var metadata = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", box.WorkflowId!.Value.ToString(),
             "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, metadata.ProgramReturn, metadata.StdErr);
-        Assert.AreEqual(box.Id.ToString(), JObject.Parse(metadata.StdOut)["Data"]!["LockboxId"]!.ToString());
+        Assert.AreEqual(new LockboxId(box.Id).ToString(), JObject.Parse(metadata.StdOut)["Data"]!["LockboxId"]!.ToString());
     }
 
     [TestMethod]
@@ -208,9 +299,10 @@ public class DmsRolePermissionTests : TestBase
         var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
         Assert.AreEqual(risk, box.Risk);
         Assert.AreEqual(DecisionState.Pending, box.Decision);
-        Assert.IsNull(box.OperationId);
-        Assert.HasCount(1, (JObject)JObject.Parse(cli.StdOut)["Data"]!);
-        Assert.AreEqual(box.WorkflowId.ToString(), JObject.Parse(cli.StdOut)["Data"]!["WorkflowId"]!.ToString());
+        Assert.IsNull(box.WorkflowId);
+        Assert.HasCount(2, (JObject)JObject.Parse(cli.StdOut)["Data"]!);
+        Assert.AreEqual(JTokenType.Null, JObject.Parse(cli.StdOut)["Data"]!["WorkflowId"]!.Type);
+        Assert.AreEqual(new LockboxId(box.Id).ToString(), JObject.Parse(cli.StdOut)["Data"]!["LockboxId"]!.ToString());
         var request = System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
         CollectionAssert.AreEqual(new[] { setup.First }, request.MachineIds);
         if (operation == "du") Assert.AreEqual(new DirectoryUsageInput("/swarm-vol", 2), MachineWorkflows.DirectoryUsage.ReadInput(request.Input));

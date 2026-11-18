@@ -36,6 +36,7 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
         builder.Entity<AgentEnrollment>().HasOne(x => x.JoinKey).WithMany().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<AgentEnrollment>().HasOne(x => x.Lockbox).WithMany().OnDelete(DeleteBehavior.Restrict);
         builder.Entity<AgentEnrollment>().HasOne(x => x.Machine).WithMany().OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<LockboxRequest>().Property(x => x.Decision).IsConcurrencyToken();
         builder.Entity<LockboxRequest>().HasIndex(x => new { x.RequesterId, x.ClientRequestId }).IsUnique();
         builder.Entity<WorkflowRun>().HasIndex(x => x.RootId);
         builder.Entity<WorkflowRun>().HasIndex(x => x.CreatedAt);

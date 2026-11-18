@@ -94,7 +94,7 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
         var state = item.MachineId != null ? "Joined" : item.Lockbox.Decision == DecisionState.Denied ? "Denied"
             : item.JoinKey.Revoked || item.JoinKey.ExpiresAt <= DateTime.UtcNow ? "Unavailable"
             : item.Lockbox.Decision == DecisionState.Pending ? "PendingApproval" : "Registering";
-        if (item.MachineId == null && item.Lockbox.OperationId is { } operation)
+        if (item.MachineId == null && item.Lockbox.WorkflowId is { } operation)
         {
             var run = await db.WorkflowRuns.AsNoTracking().NotCacheable().SingleAsync(r => r.Id == operation);
             if (run.State is RunState.Failed or RunState.Cancelled or RunState.NeedsVerification) state = "Failed";

@@ -18,7 +18,7 @@ public sealed partial class TraceDatabase
                 Definition, Version, RequesterId, ApproverId, AutomaticApproval, RequestedRisk, RequestedDefinition, RequestedVersion, Decision, DecidedAt, PreviousState, State)
             VALUES (
                 {event:String}, {sequence:Int64}, {kind:String}, {occurred:DateTime64(7)}, {recorded:DateTime64(7)},
-                {workflow:String}, {root:String}, {parent:Nullable(String)}, {lockbox:String}, {location:String},
+                {workflow:Nullable(String)}, {root:Nullable(String)}, {parent:Nullable(String)}, {lockbox:String}, {location:Nullable(String)},
                 {machine:Nullable(String)}, {installation:Nullable(String)}, {definition:String}, {version:String},
                 {requester:Nullable(String)}, {approver:Nullable(String)}, {automatic:Nullable(Bool)}, {risk:Nullable(String)},
                 {requestedDefinition:Nullable(String)}, {requestedVersion:Nullable(String)},
@@ -26,9 +26,9 @@ public sealed partial class TraceDatabase
             """;
         command.AddParameter("event", row.EventId.ToString()); command.AddParameter("sequence", row.Id);
         command.AddParameter("kind", item.Kind.ToString()); command.AddParameter("occurred", item.OccurredAt); command.AddParameter("recorded", item.RecordedAt);
-        command.AddParameter("workflow", item.WorkflowId.ToString()); command.AddParameter("root", item.RootWorkflowId.ToString());
-        command.AddParameter("parent", item.ParentWorkflowId?.ToString()); command.AddParameter("lockbox", item.LockboxId.ToString());
-        command.AddParameter("location", item.Location.ToString());
+        command.AddParameter("workflow", item.WorkflowId?.ToString()); command.AddParameter("root", item.RootWorkflowId?.ToString());
+        command.AddParameter("parent", item.ParentWorkflowId?.ToString()); command.AddParameter("lockbox", item.LockboxId.Value.ToString());
+        command.AddParameter("location", item.Location?.ToString());
         command.AddParameter("machine", item.MachineId?.ToString()); command.AddParameter("installation", item.InstallationId?.ToString());
         command.AddParameter("definition", item.Definition); command.AddParameter("version", item.Version);
         command.AddParameter("requester", item.RequesterId); command.AddParameter("approver", item.ApproverId);

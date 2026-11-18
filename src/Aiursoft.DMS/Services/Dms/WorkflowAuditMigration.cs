@@ -7,12 +7,12 @@ public sealed partial class TraceDatabase
     private const string AuditSchema = """
         (EventId String, ControllerSequence Int64, Kind String,
          OccurredAt DateTime64(7, 'UTC'), RecordedAt DateTime64(7, 'UTC'),
-         WorkflowId String, RootWorkflowId String, ParentWorkflowId Nullable(String), LockboxId String,
-         Location String, MachineId Nullable(String), InstallationId Nullable(String), Definition String, Version String,
+         WorkflowId Nullable(String), RootWorkflowId Nullable(String), ParentWorkflowId Nullable(String), LockboxId String,
+         Location Nullable(String), MachineId Nullable(String), InstallationId Nullable(String), Definition String, Version String,
          RequesterId Nullable(String), ApproverId Nullable(String), AutomaticApproval Nullable(Bool), RequestedRisk Nullable(String),
          RequestedDefinition Nullable(String), RequestedVersion Nullable(String),
          Decision Nullable(String), DecidedAt Nullable(DateTime64(7, 'UTC')), PreviousState Nullable(String), State Nullable(String))
-        ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)
+        ENGINE = ReplacingMergeTree ORDER BY (LockboxId, EventId)
         """;
 
     // One Controller owns this database. Its old process must be stopped before upgrading.
@@ -24,13 +24,13 @@ public sealed partial class TraceDatabase
         {
             var connection = await GetConnection();
             await ExecuteAsync("CREATE TABLE IF NOT EXISTS DmsWorkflowAudit " + AuditSchema);
-            var oldSchema = await HasLegacyColumnAsync("DmsWorkflowAudit");
+            var oldSchema = await NeedsMigrationAsync("DmsWorkflowAudit");
             var stagingExists = Convert.ToUInt64(await ScalarAsync("EXISTS TABLE DmsWorkflowAuditMigration")) != 0;
             if (!oldSchema)
             {
                 if (stagingExists)
                 {
-                    if (!await HasLegacyColumnAsync("DmsWorkflowAuditMigration"))
+                    if (!await NeedsMigrationAsync("DmsWorkflowAuditMigration"))
                         throw new InvalidDataException("Unexpected audit migration table. Preserve it for investigation.");
                     await ExecuteAsync("DROP TABLE DmsWorkflowAuditMigration SYNC");
                 }
@@ -39,7 +39,7 @@ public sealed partial class TraceDatabase
             var engine = Convert.ToString(await ScalarAsync("SELECT engine FROM system.databases WHERE name = currentDatabase()"));
             if (engine is not ("Atomic" or "Shared"))
                 throw new InvalidDataException("Audit migration requires an Atomic or Shared ClickHouse database.");
-            if (stagingExists && await HasLegacyColumnAsync("DmsWorkflowAuditMigration"))
+            if (stagingExists && await NeedsMigrationAsync("DmsWorkflowAuditMigration"))
                 throw new InvalidDataException("Unexpected legacy staging table. Preserve both audit tables for investigation.");
             await ExecuteAsync("CREATE TABLE IF NOT EXISTS DmsWorkflowAuditMigration " + AuditSchema);
             await ExecuteAsync("TRUNCATE TABLE DmsWorkflowAuditMigration");
@@ -63,12 +63,12 @@ public sealed partial class TraceDatabase
                 command.CommandText = sql;
                 return await command.ExecuteScalarAsync(token);
             }
-            async Task<bool> HasLegacyColumnAsync(string table) => Convert.ToUInt64(await ScalarAsync(
-                $"SELECT count() FROM system.columns WHERE database = currentDatabase() AND table = '{table}' AND name = 'ClusterId'")) != 0;
+            async Task<bool> NeedsMigrationAsync(string table) => Convert.ToUInt64(await ScalarAsync(
+                $"SELECT count() FROM system.columns WHERE database = currentDatabase() AND table = '{table}' AND (name = 'ClusterId' OR (name IN ('WorkflowId', 'RootWorkflowId', 'Location') AND type != 'Nullable(String)'))")) != 0;
             async Task<(ulong Count, ulong Events, ulong Fingerprint)> FingerprintAsync(string table)
             {
                 await using var command = connection.CreateCommand();
-                command.CommandText = $"SELECT count(), uniqExact(EventId), groupBitXor(cityHash64(tuple({AuditColumns}))) FROM {table} FINAL";
+                command.CommandText = $"SELECT count(), uniqExact(EventId), groupBitXor(cityHash64(toJSONString(tuple({AuditColumns})))) FROM {table} FINAL";
                 await using var reader = await command.ExecuteReaderAsync(token);
                 await reader.ReadAsync(token);
                 return (Convert.ToUInt64(reader.GetValue(0)), Convert.ToUInt64(reader.GetValue(1)), Convert.ToUInt64(reader.GetValue(2)));

@@ -1,9 +1,9 @@
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Aiursoft.CommandFramework;
 using Aiursoft.CommandFramework.Framework;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
-using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
@@ -31,7 +31,7 @@ public static partial class DmsCommandApp
             new Group("database", [NewDatabaseDiscoverCommand(), NewDatabaseListDatabasesCommand(), NewDatabaseListTablesCommand(), NewDatabaseDescribeTableCommand(), NewDatabaseQueryTableCommand(), NewDatabaseQuerySqlCommand(), NewDatabaseExecuteSqlCommand(), NewDatabaseDiagnosticsCommand()]),
             new Group("networking", [NewNetworkingInterfacesCommand(), NewNetworkingRoutesCommand(), NewNetworkingSocketsCommand(), NewNetworkingDnsQueryCommand(), NewNetworkingProbeCommand(), NewNetworkingTrafficSampleCommand(), NewNetworkingFirewallInfoCommand(), NewNetworkingTlsCheckCommand()]),
             new Group("security", [NewSecuritySecureBootCommand(), NewSecurityDiskEncryptionCommand(), NewSecuritySshAuditCommand(), NewSecurityFail2banStatusCommand(), NewSecurityCleanTrafficStatusCommand(), NewSecurityAuthEventsCommand(), NewSecurityAccountsAuditCommand(), NewSecurityBaselineAuditCommand()])]))
-        .WithFeature(new Group("lockbox", [new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
+        .WithFeature(new Group("lockbox", [new ActionCommand("list", "lockboxes"), new ActionCommand("get", "get"), new ActionCommand("approve", "approve"), new ActionCommand("deny", "deny")]))
         .WithFeature(new Group("operation", [new ActionCommand("list-definitions", "definitions"), new ActionCommand("query-audit", "audit"), new ActionCommand("get-workflow", "workflow"), new ActionCommand("get-callstack", "callstack"), new ActionCommand("get-trace", "trace"), new ActionCommand("kill-workflow", WorkflowNames.Kill)]));
 
     private static ActionCommand StandardCommand<TInput, TResult>(string name, WorkflowDefinition<TInput, TResult> definition,
@@ -152,7 +152,9 @@ public static partial class DmsCommandApp
         private readonly Option<Guid?> _machineFilter = new("--machine-id");
         private readonly Option<Guid?> _workflowFilter = new("--workflow-id");
         private readonly Option<Guid?> _rootFilter = new("--root-workflow-id");
-        private readonly Option<Guid?> _lockboxFilter = new("--lockbox-id");
+        private readonly Option<LockboxId?> _lockboxFilter = new("--lockbox-id") { CustomParser = ParseLockboxId };
+        private readonly Option<LockboxId> _lockboxId = new("--id") { Description = "Lockbox ID, lb/<UUID>.", CustomParser = result => ParseLockboxId(result) ?? default };
+        private readonly Option<DecisionState?> _decision = new("--decision");
         private readonly Option<string?> _requester = new("--requester-id");
         private readonly Option<string?> _approver = new("--approver-id");
         private readonly Option<string?> _definitionFilter = new("--definition");
@@ -161,6 +163,14 @@ public static partial class DmsCommandApp
         private readonly Option<RunState?> _state = new("--state");
         private readonly Option<bool?> _automatic = new("--automatic-approval");
         private readonly Option<int> _page = new("--page") { Description = "Zero-based archive page, 50 events per page." };
+
+        private static LockboxId? ParseLockboxId(ArgumentResult result)
+        {
+            if (result.Tokens.Count == 0) return null;
+            if (LockboxId.TryParse(result.Tokens[0].Value, out var id)) return id;
+            result.AddError("Expected a Lockbox ID in the form lb/<UUID>.");
+            return null;
+        }
 
         protected override IEnumerable<Option> GetActionOptions()
         {
@@ -177,6 +187,12 @@ public static partial class DmsCommandApp
             {
                 foreach (var option in new Option[] { _from, _until, _machineFilter, _workflowFilter, _rootFilter, _lockboxFilter,
                     _requester, _approver, _definitionFilter, _requestedDefinition, _kind, _state, _automatic, _page }) yield return option;
+            }
+            else if (action == "lockboxes") { yield return _page; yield return _decision; }
+            else if (action is "get" or "approve" or "deny")
+            {
+                _lockboxId.Required = true; yield return _lockboxId;
+                if (action is "approve" or "deny") yield return _reason;
             }
             else if (action != "definitions")
             {
@@ -208,8 +224,7 @@ public static partial class DmsCommandApp
                     MachineName = context.GetValue(_machineName) ?? string.Empty,
                     TargetWorkflowId = action == WorkflowNames.Kill ? id : null
                 });
-                // Every submission returns the root workflow ID; inspect its metadata/trace separately.
-                response.Data = new { WorkflowId = Guid.Parse(JObject.FromObject(response.Data!)["WorkflowId"]!.Value<string>()!) };
+                // The Controller returns only the Lockbox ID and its optional execution root.
             }
             else response = action switch
             {
@@ -223,8 +238,9 @@ public static partial class DmsCommandApp
                     Kind = context.GetValue(_kind), State = context.GetValue(_state), AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
                 }),
                 "definitions" => await client.ListDefinitionsAsync(),
-                "get" => await client.GetLockboxAsync(id),
-                "approve" or "deny" => await client.DecideAsync(id, action == "approve", context.GetValue(_reason) ?? string.Empty),
+                "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page), context.GetValue(_decision)),
+                "get" => await client.GetLockboxAsync(context.GetValue(_lockboxId)),
+                "approve" or "deny" => await client.DecideAsync(context.GetValue(_lockboxId), action == "approve", context.GetValue(_reason) ?? string.Empty),
                 "workflow" => await client.GetWorkflowAsync(id),
                 "callstack" => await client.CallstackAsync(id),
                 "trace" => await client.TraceAsync(id, context.GetValue(_skip)),

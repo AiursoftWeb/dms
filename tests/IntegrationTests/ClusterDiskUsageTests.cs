@@ -83,7 +83,7 @@ public class ClusterDiskUsageTests : TestBase
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "disk-usage", "--all-machines", "--reason", "Real disk query", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(l => l.RequesterId == setup.User));
-        Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
+        Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
         Assert.AreEqual(RiskLevel.Safe, box.Risk); Assert.AreEqual(ClusterWorkflows.DiskUsage.Version, box.Version);
         await DatabaseAsync(async db => { db.Machines.Add(new Machine { Name = "Late disk machine", KeyHash = "late" }); await db.SaveChangesAsync(); return true; });
         using (var scope = Server!.Services.CreateScope())
@@ -94,7 +94,7 @@ public class ClusterDiskUsageTests : TestBase
         var agents = setup.Keys.Select((key, i) => new AgentClient(Http.BaseAddress!, key, journals[i]).RunAsync(stop.Token)).ToArray();
         try
         {
-            var parent = await WaitAsync(box.OperationId!.Value, r => r.State.Terminal());
+            var parent = await WaitAsync(box.WorkflowId!.Value, r => r.State.Terminal());
             Assert.AreEqual(RunState.Succeeded, parent.State, parent.Result);
             var result = ClusterWorkflows.DiskUsage.ReadResult(parent.Result);
             Assert.AreEqual(2, result.MachineCount); Assert.HasCount(2, result.Machines);
@@ -104,7 +104,7 @@ public class ClusterDiskUsageTests : TestBase
             Assert.AreEqual(result.Machines.Sum(m => m.Usage.AvailableBytes), result.AvailableBytes);
             CollectionAssert.AreEquivalent(setup.Machines, result.Machines.Select(m => m.MachineId).ToArray());
             var tree = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == box.WorkflowId).ToListAsync());
-            Assert.HasCount(6, tree); Assert.AreEqual(tree.Count, tree.Select(r => r.Id).Distinct().Count());
+            Assert.HasCount(5, tree); Assert.AreEqual(tree.Count, tree.Select(r => r.Id).Distinct().Count());
             Assert.IsTrue(tree.All(r => r.Id != Guid.Empty && r.RootId == box.WorkflowId));
             foreach (var machine in result.Machines)
             {
@@ -138,11 +138,11 @@ public class ClusterDiskUsageTests : TestBase
     public async Task AnIncompleteMachineDoesNotPublishSuccessfulPartialTotals(RunState state)
     {
         var setup = await ArrangeAsync(); var box = await SubmitAsync(setup.User, setup.Approver);
-        var first = await ChildAsync(box.OperationId!.Value, 1);
+        var first = await ChildAsync(box.WorkflowId!.Value, 1);
         await CompleteAsync(first, RunState.Succeeded, new DiskUsageResult(first.Id, 100, 20, 70, 1));
-        var second = await ChildAsync(box.OperationId.Value, 2);
+        var second = await ChildAsync(box.WorkflowId.Value, 2);
         await CompleteAsync(second, state, new { Error = "Injected incomplete machine outcome" });
-        var parent = await WaitAsync(box.OperationId.Value, r => r.State == state);
+        var parent = await WaitAsync(box.WorkflowId.Value, r => r.State == state);
         Assert.DoesNotContain("TotalBytes", parent.Result);
         Assert.AreEqual(RunState.Succeeded, (await WaitAsync(first.Id, _ => true)).State);
         Assert.AreEqual(state, (await WaitAsync(second.Id, _ => true)).State);
@@ -154,11 +154,11 @@ public class ClusterDiskUsageTests : TestBase
     public async Task ClusterSumCannotWrapLargeByteCountsIntoSuccess()
     {
         var setup = await ArrangeAsync(); var box = await SubmitAsync(setup.User, setup.Approver);
-        var first = await ChildAsync(box.OperationId!.Value, 1);
+        var first = await ChildAsync(box.WorkflowId!.Value, 1);
         await CompleteAsync(first, RunState.Succeeded, new DiskUsageResult(first.Id, long.MaxValue, 0, 0, 1));
-        var second = await ChildAsync(box.OperationId.Value, 2);
+        var second = await ChildAsync(box.WorkflowId.Value, 2);
         await CompleteAsync(second, RunState.Succeeded, new DiskUsageResult(second.Id, 1, 0, 0, 1));
-        var parent = await WaitAsync(box.OperationId.Value, r => r.State.Terminal());
+        var parent = await WaitAsync(box.WorkflowId.Value, r => r.State.Terminal());
         Assert.AreEqual(RunState.Failed, parent.State); Assert.DoesNotContain("TotalBytes", parent.Result);
     }
 

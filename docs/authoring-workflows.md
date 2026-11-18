@@ -1,6 +1,6 @@
 # Adding a standard workflow
 
-Define typed input and output, declare a shared definition, implement the business class and register its execution factory. A public CLI command is optional. Approval, machine selection, dispatch, instance IDs, call trees, trace transport, cancellation and recovery belong to the framework.
+Define typed input and output, declare a shared definition, implement the business class and register its execution factory. A public CLI command is optional. Approval, machine selection, dispatch, instance IDs, call trees, trace transport, cancellation and recovery belong to the framework. Lockbox is an independent approval entity; submitting creates no Workflow until approval. A standard author writes only the business function, including ordinary awaited subworkflow calls, and never implements approval inside that function.
 
 The runnable examples live in [WorkflowAuthoringExamples.cs](../tests/WorkflowAuthoringExamples.cs). [WorkflowAuthoringTests.cs](../tests/IntegrationTests/WorkflowAuthoringTests.cs) submits the example through the public API and typed SDK, obtains approval, runs two actual WebSocket Agents and checks results and the complete tree. The examples are compiled test code; the product does not expose them.
 
