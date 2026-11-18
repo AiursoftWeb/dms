@@ -120,19 +120,25 @@ public static partial class PerformanceOperations
 
     public static async Task<OperationResult> IoSampleAsync(MachineWorkflowContext context, SampleInput input, AgentEnvironment agent, CancellationToken token)
     {
-        input.Validate(); var host = OperationOutput.Host(agent); var disks = await ReadDisksAsync(host, token);
+        input.Validate(); var host = OperationOutput.Host(agent); var clock = System.Diagnostics.Stopwatch.StartNew();
+        var disks = await ProcessDiagnostics.ReadDiskCountersAsync(host, token); var preceding = clock.Elapsed.TotalSeconds;
         var processes = (await ReadProcessesAsync(host, token)).ToDictionary(p => (p.Pid, p.StartTicks));
         return await SampleAsync(context, input, async sampling =>
         {
-            var nextDisks = await ReadDisksAsync(host, sampling); var nextProcesses = await ReadProcessesAsync(host, sampling);
-            var devices = nextDisks.Select(d => new { Device = d.Key, ReadBytes = Math.Max(0, d.Value[0] - disks.GetValueOrDefault(d.Key, d.Value)[0]), WriteBytes = Math.Max(0, d.Value[1] - disks.GetValueOrDefault(d.Key, d.Value)[1]), BusyMilliseconds = Math.Max(0, d.Value[2] - disks.GetValueOrDefault(d.Key, d.Value)[2]) }).ToArray();
-            var top = nextProcesses.Select(p => new { p.Pid, p.Name, p.ContainerId, ReadBytes = IoDelta(p.ReadBytes, processes.GetValueOrDefault((p.Pid, p.StartTicks), p).ReadBytes), WriteBytes = IoDelta(p.WriteBytes, processes.GetValueOrDefault((p.Pid, p.StartTicks), p).WriteBytes) })
+            var nextDisks = await ProcessDiagnostics.ReadDiskCountersAsync(host, sampling); var now = clock.Elapsed.TotalSeconds; var elapsed = now - preceding;
+            var nextProcesses = await ReadProcessesAsync(host, sampling);
+            var devices = nextDisks.Select(d => ProcessDiagnostics.DiskDelta(d.Key, disks.GetValueOrDefault(d.Key), d.Value, elapsed)).ToArray();
+            var disappeared = disks.Keys.Except(nextDisks.Keys, StringComparer.Ordinal).ToArray();
+            var top = nextProcesses.Select(p => new { p.Pid, p.Name, p.ContainerId,
+                ReadBytes = processes.TryGetValue((p.Pid, p.StartTicks), out var previous) ? IoDelta(p.ReadBytes, previous.ReadBytes) : null,
+                WriteBytes = processes.TryGetValue((p.Pid, p.StartTicks), out var old) ? IoDelta(p.WriteBytes, old.WriteBytes) : null })
                 .OrderByDescending(p => p.ReadBytes + p.WriteBytes).Take(input.Limit).ToArray();
-            disks = nextDisks; processes = nextProcesses.ToDictionary(p => (p.Pid, p.StartTicks));
-            return new { Devices = devices, Processes = top, ProcessIoVisibility = "Per-process counters may be unavailable without permission." };
+            disks = nextDisks; processes = nextProcesses.ToDictionary(p => (p.Pid, p.StartTicks)); preceding = now;
+            return new { Devices = devices, Processes = top, DisappearedDevices = disappeared, ActualIntervalSeconds = elapsed,
+                ProcessIoVisibility = "New, unreadable or reset per-process counters are unknown, not zero. Device busy percent is not a multi-queue saturation verdict." };
         }, token);
     }
-    private static long? IoDelta(long? current, long? previous) => current.HasValue && previous.HasValue ? Math.Max(0, current.Value - previous.Value) : null;
+    private static long? IoDelta(long? current, long? previous) => current.HasValue && previous.HasValue && current.Value >= previous.Value ? current.Value - previous.Value : null;
     public static async Task<OperationResult> DstatSampleAsync(MachineWorkflowContext context, SampleInput input, AgentEnvironment agent, CancellationToken token)
     {
         input.Validate(); var host = OperationOutput.Host(agent); var cpu = (await ReadCpuAsync(host, token))["cpu"];

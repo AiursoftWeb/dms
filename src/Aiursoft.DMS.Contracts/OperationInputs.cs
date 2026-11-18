@@ -171,10 +171,14 @@ public sealed record ServiceListInput(bool FailedOnly = false, int Limit = 200) 
     public void Validate() => OperationValidation.Limit(Limit);
 }
 public sealed record JournalInput(string? Service = null, string? Boot = null, string? Level = null,
-    DateTimeOffset? Since = null, DateTimeOffset? Until = null, int Limit = 200) : IOperationInput
+    DateTimeOffset? Since = null, DateTimeOffset? Until = null, int Limit = 200, bool Kernel = false, string? BeforeCursor = null) : IOperationInput
 {
     public void Validate()
     {
+        var end = Until ?? DateTimeOffset.UtcNow;
+        OperationValidation.Window(Since ?? end.AddHours(-24), end);
+        if (Kernel && Service != null) throw new ArgumentException("Kernel journal cannot select a service.");
+        if (BeforeCursor != null && (BeforeCursor.Length > 1024 || BeforeCursor.Any(char.IsControl) || BeforeCursor.StartsWith('-'))) throw new ArgumentException("Invalid journal cursor.");
         if (Service != null) new ServiceInput(Service).Validate();
         if (Boot != null && Boot != "0" && Boot != "-1" && (Boot.Length != 32 || !Boot.All(char.IsAsciiHexDigit))) throw new ArgumentException("Boot must be 0, -1 or a boot ID.");
         if (Level != null && Level is not ("emerg" or "alert" or "crit" or "err" or "warning" or "notice" or "info" or "debug")) throw new ArgumentException("Invalid journal priority.");

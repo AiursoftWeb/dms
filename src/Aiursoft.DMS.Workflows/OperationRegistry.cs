@@ -7,6 +7,15 @@ public sealed partial class MachineWorkflowRegistry
 {
     private void RegisterOperations()
     {
+        Register(OperationsWorkflows.PerformanceHistorySources, (input, agent) => new OperationWorkflow<HistoryInput>(OperationsWorkflows.PerformanceHistorySources, input, HistoryOperations.HistorySourcesAsync, agent));
+        Register(OperationsWorkflows.PerformanceHistoryCpu, (input, agent) => new OperationWorkflow<HistoryInput>(OperationsWorkflows.PerformanceHistoryCpu, input, HistoryOperations.CpuHistoryAsync, agent));
+        Register(OperationsWorkflows.PerformanceHistoryLoad, (input, agent) => new OperationWorkflow<HistoryInput>(OperationsWorkflows.PerformanceHistoryLoad, input, HistoryOperations.LoadHistoryAsync, agent));
+        Register(OperationsWorkflows.PerformanceHistoryMemory, (input, agent) => new OperationWorkflow<HistoryInput>(OperationsWorkflows.PerformanceHistoryMemory, input, HistoryOperations.MemoryHistoryAsync, agent));
+        Register(OperationsWorkflows.PerformanceHistoryDisk, (input, agent) => new OperationWorkflow<HistoryInput>(OperationsWorkflows.PerformanceHistoryDisk, input, HistoryOperations.DiskHistoryAsync, agent));
+        Register(OperationsWorkflows.PerformanceHistoryNetwork, (input, agent) => new OperationWorkflow<HistoryInput>(OperationsWorkflows.PerformanceHistoryNetwork, input, HistoryOperations.NetworkHistoryAsync, agent));
+        Register(OperationsWorkflows.PerformancePcpHistory, (input, agent) => new OperationWorkflow<PcpHistoryInput>(OperationsWorkflows.PerformancePcpHistory, input, HistoryOperations.PcpHistoryAsync, agent));
+        Register(OperationsWorkflows.PerformanceBlockedProcesses, (input, agent) => new OperationWorkflow<BlockedProcessesInput>(OperationsWorkflows.PerformanceBlockedProcesses, input, ProcessDiagnostics.BlockedProcessesAsync, agent));
+        Register(OperationsWorkflows.SystemKernelEvents, (input, agent) => new OperationWorkflow<KernelEventsInput>(OperationsWorkflows.SystemKernelEvents, input, JournalDiagnostics.KernelEventsAsync, agent));
         Register(OperationsWorkflows.FilesystemLs, (input, agent) => new OperationWorkflow<ListPathInput>(OperationsWorkflows.FilesystemLs, input, FilesystemOperations.LsAsync, agent));
         Register(OperationsWorkflows.FilesystemStat, (input, agent) => new OperationWorkflow<PathInput>(OperationsWorkflows.FilesystemStat, input, FilesystemOperations.StatAsync, agent));
         Register(OperationsWorkflows.FilesystemCat, (input, agent) => new OperationWorkflow<TextFileInput>(OperationsWorkflows.FilesystemCat, input, FilesystemOperations.CatAsync, agent));

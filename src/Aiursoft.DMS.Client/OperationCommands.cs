@@ -394,14 +394,16 @@ public static partial class DmsCommandApp
     }
     private static ActionCommand NewSystemJournalCommand()
     {
-        var service = new Option<string?>("--service") { DefaultValueFactory = _ => null };
-        var boot = new Option<string?>("--boot") { DefaultValueFactory = _ => null };
-        var level = new Option<string?>("--level") { DefaultValueFactory = _ => null };
-        var since = new Option<DateTimeOffset?>("--since") { DefaultValueFactory = _ => null };
-        var until = new Option<DateTimeOffset?>("--until") { DefaultValueFactory = _ => null };
+        var service = new Option<string?>("--service");
+        var boot = new Option<string?>("--boot");
+        var level = new Option<string?>("--level");
+        var since = new Option<DateTimeOffset?>("--since");
+        var until = new Option<DateTimeOffset?>("--until");
         var limit = new Option<int>("--limit") { DefaultValueFactory = _ => 200 };
+        var kernel = new Option<bool>("--kernel");
+        var cursor = new Option<string?>("--before-cursor") { Description = "Continue before the last returned cursor; results are newest first." };
         return StandardCommand("journal", OperationsWorkflows.SystemJournal,
-            p => new JournalInput(p.GetValue(service), p.GetValue(boot), p.GetValue(level), p.GetValue(since), p.GetValue(until), p.GetValue(limit)), service, boot, level, since, until, limit);
+            p => new JournalInput(p.GetValue(service), p.GetValue(boot), p.GetValue(level), p.GetValue(since), p.GetValue(until), p.GetValue(limit), p.GetValue(kernel), p.GetValue(cursor)), service, boot, level, since, until, limit, kernel, cursor);
     }
     private static ActionCommand NewSystemTimersCommand()
     {

@@ -12,6 +12,15 @@ public class OperationsApprovalTests : TestBase
 {
     private static IEnumerable<(WorkflowDefinition Definition, object Input, RiskLevel Risk, string Command)> Cases(ArtifactReference artifact)
     {
+        yield return (OperationsWorkflows.PerformanceHistorySources, new HistoryInput(), RiskLevel.Low, "machine performance history-sources");
+        yield return (OperationsWorkflows.PerformanceHistoryCpu, new HistoryInput(), RiskLevel.Low, "machine performance history cpu");
+        yield return (OperationsWorkflows.PerformanceHistoryLoad, new HistoryInput(), RiskLevel.Low, "machine performance history load");
+        yield return (OperationsWorkflows.PerformanceHistoryMemory, new HistoryInput(), RiskLevel.Low, "machine performance history memory");
+        yield return (OperationsWorkflows.PerformanceHistoryDisk, new HistoryInput(), RiskLevel.Low, "machine performance history disk");
+        yield return (OperationsWorkflows.PerformanceHistoryNetwork, new HistoryInput(), RiskLevel.Low, "machine performance history network");
+        yield return (OperationsWorkflows.PerformancePcpHistory, new PcpHistoryInput(new string('a', 24), ["kernel.all.load"]), RiskLevel.Medium, "machine performance pcp-history");
+        yield return (OperationsWorkflows.PerformanceBlockedProcesses, new BlockedProcessesInput(), RiskLevel.Medium, "machine performance blocked-processes");
+        yield return (OperationsWorkflows.SystemKernelEvents, new KernelEventsInput(), RiskLevel.Medium, "machine system kernel-events");
         yield return (OperationsWorkflows.FilesystemLs, new ListPathInput("/tmp/dms-test"), RiskLevel.Low, "machine filesystem ls");
         yield return (OperationsWorkflows.FilesystemStat, new PathInput("/tmp/dms-test"), RiskLevel.Low, "machine filesystem stat");
         yield return (OperationsWorkflows.FilesystemCat, new TextFileInput("/tmp/dms-test/file"), RiskLevel.High, "machine filesystem cat");
@@ -101,7 +110,7 @@ public class OperationsApprovalTests : TestBase
     }
 
     [TestMethod]
-    public async Task All86OperationsFreezeTheirBusinessInputAndRiskWithoutStartingBeforeApproval()
+    public async Task AllOperationsFreezeTheirBusinessInputAndRiskWithoutStartingBeforeApproval()
     {
         using var scope = Server!.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var user = new User { UserName = "ops-" + Guid.NewGuid().ToString("N"), DisplayName = "Operations requester" }; db.Users.Add(user);
@@ -112,8 +121,8 @@ public class OperationsApprovalTests : TestBase
         var store = Server.Services.GetRequiredService<DmsArtifactStore>();
         await store.BeginUploadAsync(artifact, user.Id, null, CancellationToken.None);
         await store.AppendUploadAsync(artifact.Id, 0, new MemoryStream(bytes), CancellationToken.None); await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
-        var cases = Cases(artifact).ToArray(); Assert.HasCount(86, cases);
-        Assert.AreEqual(86, cases.Select(c => c.Definition.Name).Distinct().Count());
+        var cases = Cases(artifact).ToArray(); Assert.HasCount(95, cases);
+        Assert.AreEqual(95, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>(); List<Guid> boxes = [];
         foreach (var item in cases)
         {
@@ -131,6 +140,6 @@ public class OperationsApprovalTests : TestBase
             StringAssert.Contains(help.StdOut, "--reason", item.Command); StringAssert.Contains(help.StdOut, "--machine-id", item.Command);
         }
         var runs = await db.WorkflowRuns.Where(r => boxes.Contains(r.LockboxId)).ToListAsync();
-        Assert.HasCount(86, runs); Assert.IsTrue(runs.All(r => r.Definition == WorkflowNames.Lockbox && r.State == RunState.WaitingApproval));
+        Assert.HasCount(95, runs); Assert.IsTrue(runs.All(r => r.Definition == WorkflowNames.Lockbox && r.State == RunState.WaitingApproval));
     }
 }
