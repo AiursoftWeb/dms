@@ -13,6 +13,7 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
 
     public DbSet<Machine> Machines => Set<Machine>();
     public DbSet<PersonalApiKey> PersonalApiKeys => Set<PersonalApiKey>();
+    public DbSet<PersonalSshKey> PersonalSshKeys => Set<PersonalSshKey>();
     public DbSet<JoinKey> JoinKeys => Set<JoinKey>();
     public DbSet<AgentEnrollment> AgentEnrollments => Set<AgentEnrollment>();
     public DbSet<LockboxRequest> Lockboxes => Set<LockboxRequest>();
@@ -25,6 +26,8 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
         base.OnModelCreating(builder);
         builder.Entity<WorkflowAuditOutbox>().HasIndex(x => x.EventId).IsUnique();
         builder.Entity<PersonalApiKey>().HasIndex(x => x.KeyHash).IsUnique();
+        builder.Entity<PersonalSshKey>().HasOne<User>().WithMany().HasForeignKey(x => x.UserId);
+        builder.Entity<PersonalSshKey>().HasIndex(x => new { x.UserId, x.Slot }).IsUnique();
         builder.Entity<Machine>().HasIndex(x => x.KeyHash).IsUnique();
         builder.Entity<Machine>().HasIndex(x => x.InstallationId).IsUnique();
         builder.Entity<JoinKey>().HasIndex(x => x.KeyHash).IsUnique();

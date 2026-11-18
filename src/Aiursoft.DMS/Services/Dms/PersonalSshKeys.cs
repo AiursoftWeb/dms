@@ -1,0 +1,131 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
+using Aiursoft.DMS.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace Aiursoft.DMS.Services.Dms;
+
+public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, AccessService access)
+{
+    public const string SignatureNamespace = "aiursoft-dms-key-registration";
+    public static string Challenge(Guid id) => $"{SignatureNamespace}/{id:D}";
+    public static DateTime ExpiresAt(PersonalSshKey key) => key.CreatedAt.AddMinutes(10);
+
+    public Task<List<PersonalSshKey>> ListAsync(string user) => db.PersonalSshKeys.AsNoTracking()
+        .Where(k => k.UserId == user && k.Slot != null).OrderBy(k => k.Slot).ToListAsync();
+
+    public Task<PersonalSshKey> BeginAsync(string user, string name, string publicKey) => gate.RunAsync(async () =>
+    {
+        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 100)
+            throw new DmsException(400, "Enter a key name of up to 100 characters.");
+        var (canonical, fingerprint) = Parse(publicKey);
+        var keys = await db.PersonalSshKeys.Where(k => k.UserId == user && k.Slot != null).ToListAsync();
+        if (keys.Count(k => k.VerifiedAt != null) >= 3)
+            throw new DmsException(409, "Revoke a key before adding another.");
+        if (keys.Any(k => k.VerifiedAt != null && k.PublicKey == canonical))
+            throw new DmsException(409, "This key is already registered.");
+        var pending = keys.SingleOrDefault(k => k.Slot == 0);
+        if (pending != null)
+        {
+            db.Remove(pending);
+            await db.SaveChangesAsync();
+        }
+        var key = new PersonalSshKey { UserId = user, Name = name.Trim(), PublicKey = canonical, Fingerprint = fingerprint, Slot = 0 };
+        db.Add(key);
+        await db.SaveChangesAsync();
+        return key;
+    });
+
+    private static (string Key, string Fingerprint) Parse(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input) || input.Length > 8192 || input.Trim().Any(c => c is '\r' or '\n' or '\0'))
+            throw new DmsException(400, "Enter one OpenSSH public key.");
+        var parts = input.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 2 || parts[0] is not ("ssh-ed25519" or "ssh-rsa" or "ecdsa-sha2-nistp256" or
+            "ecdsa-sha2-nistp384" or "ecdsa-sha2-nistp521" or "sk-ssh-ed25519@openssh.com" or "sk-ecdsa-sha2-nistp256@openssh.com"))
+            throw new DmsException(400, "Unsupported OpenSSH public key type.");
+        byte[] blob;
+        try { blob = Convert.FromBase64String(parts[1]); }
+        catch (FormatException) { throw new DmsException(400, "Invalid public key encoding."); }
+        var type = Encoding.ASCII.GetBytes(parts[0]);
+        if (blob.Length <= 4 + type.Length || System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(blob) != type.Length ||
+            !blob.AsSpan(4, type.Length).SequenceEqual(type))
+            throw new DmsException(400, "Invalid public key data.");
+        return ($"{parts[0]} {Convert.ToBase64String(blob)}", "SHA256:" + Convert.ToBase64String(SHA256.HashData(blob)).TrimEnd('='));
+    }
+
+    public async Task VerifyAsync(string user, Guid id, string signature, CancellationToken token)
+    {
+        if (string.IsNullOrWhiteSpace(signature) || signature.Length > 16384)
+            throw new DmsException(400, "Enter an SSH signature.");
+        var candidate = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.Id == id && k.UserId == user && k.Slot == 0, token);
+        if (candidate == null || ExpiresAt(candidate) <= DateTime.UtcNow)
+            throw new DmsException(409, "Request a new signing challenge.");
+        if (!await VerifySignatureAsync(candidate, signature, token))
+            throw new DmsException(400, "The signature could not be verified for this challenge and key.");
+        await gate.RunAsync(async () =>
+        {
+            var key = await db.PersonalSshKeys.SingleOrDefaultAsync(k => k.Id == id && k.UserId == user && k.Slot == 0, token);
+            if (key == null || ExpiresAt(key) <= DateTime.UtcNow)
+                throw new DmsException(409, "Request a new signing challenge.");
+            var occupied = await db.PersonalSshKeys.Where(k => k.UserId == user && k.Slot > 0).Select(k => k.Slot).ToListAsync(token);
+            var slot = Enumerable.Range(1, 3).FirstOrDefault(s => !occupied.Contains(s));
+            if (slot == 0) throw new DmsException(409, "Revoke a key before adding another.");
+            key.Slot = slot;
+            key.VerifiedAt = DateTime.UtcNow;
+            access.Audit(user, "ssh-key.verify", id, key.Fingerprint);
+            return await db.SaveChangesAsync(token);
+        });
+    }
+
+    private static async Task<bool> VerifySignatureAsync(PersonalSshKey key, string signature, CancellationToken token)
+    {
+        var dir = Directory.CreateTempSubdirectory("dms-verify-");
+        try
+        {
+            var signers = Path.Combine(dir.FullName, "signers");
+            var proof = Path.Combine(dir.FullName, "signature");
+            await File.WriteAllTextAsync(signers, $"employee {key.PublicKey}\n", token);
+            await File.WriteAllTextAsync(proof, signature.Trim() + "\n", token);
+            var start = new ProcessStartInfo("/usr/bin/ssh-keygen")
+            {
+                UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
+                ArgumentList = { "-Y", "verify", "-f", signers, "-I", "employee", "-n", SignatureNamespace, "-s", proof }
+            };
+            using var process = Process.Start(start) ?? throw new InvalidOperationException("Cannot start ssh-keygen.");
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+            timeout.CancelAfter(TimeSpan.FromSeconds(5));
+            try
+            {
+                var stdout = process.StandardOutput.ReadToEndAsync(timeout.Token);
+                var stderr = process.StandardError.ReadToEndAsync(timeout.Token);
+                await process.StandardInput.WriteAsync(Challenge(key.Id));
+                process.StandardInput.Close();
+                await process.WaitForExitAsync(timeout.Token);
+                await Task.WhenAll(stdout, stderr);
+                return process.ExitCode == 0;
+            }
+            finally { if (!process.HasExited) process.Kill(); }
+        }
+        finally { dir.Delete(true); }
+    }
+
+    public Task<int> RevokeAsync(string user, Guid id) => gate.RunAsync(async () =>
+    {
+        var key = await db.PersonalSshKeys.SingleOrDefaultAsync(k => k.UserId == user && k.Id == id && k.Slot > 0);
+        if (key == null) throw new DmsException(404, "Verified key not found.");
+        key.Slot = null;
+        key.RevokedAt = DateTime.UtcNow;
+        access.Audit(user, "ssh-key.revoke", id, key.Fingerprint);
+        return await db.SaveChangesAsync();
+    });
+
+    public async Task<PersonalSshKey> RequireVerifiedAsync(string user, Guid id, string fingerprint, CancellationToken token)
+    {
+        var key = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.UserId == user && k.Id == id && k.Slot > 0, token);
+        if (key == null || !string.Equals(key.Fingerprint, fingerprint, StringComparison.Ordinal))
+            throw new DmsException(409, "The selected key is unavailable. Submit a new request.");
+        return key;
+    }
+}

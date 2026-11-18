@@ -46,6 +46,7 @@ RUN bash scripts/build-agent-assets.sh /app/agent-assets "$NUGET_SOURCE"
 # Prepare Runtime Environment
 FROM hub.aiursoft.com/aiursoft/internalimages/dotnetonlyruntime
 ARG PROJ_NAME
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-client && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build-env /app .
 
