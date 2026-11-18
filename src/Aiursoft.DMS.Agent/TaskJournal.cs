@@ -5,6 +5,7 @@ namespace Aiursoft.DMS.Agent;
 
 public sealed class JournalTask
 {
+    public ScheduledInvocation? Schedule { get; set; }
     public Guid Id { get; set; }
     public string Definition { get; set; } = string.Empty;
     public string Input { get; set; } = "{}";
@@ -45,9 +46,23 @@ public sealed class TaskJournal : IDisposable
         }
     }
 
-    public IReadOnlyList<JournalTask> Snapshot()
+    public IReadOnlyList<JournalTask> Snapshot(bool activeOnly = false)
     {
-        lock (_gate) return _tasks.Values.Select(t => JsonSerializer.Deserialize<JournalTask>(JsonSerializer.Serialize(t))!).ToList();
+        lock (_gate) return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(t => JsonSerializer.Deserialize<JournalTask>(JsonSerializer.Serialize(t))!).ToList();
+    }
+
+    public JournalTask? AcceptScheduled(string definition, string version, ScheduledInvocation occurrence)
+    {
+        lock (_gate)
+        {
+            var previous = _tasks.Values.Where(t => t.Schedule?.ScheduleId == occurrence.ScheduleId).ToArray();
+            if (previous.Any(t => !t.State.Terminal())) return null;
+            // A startup run consumes its minute too. Repeated ticks/restarts never replay that occurrence.
+            if (previous.Any(t => t.Schedule!.ScheduledAt >= occurrence.ScheduledAt)) return null;
+            var task = new JournalTask { Id = Guid.NewGuid(), Definition = definition, Version = version, Schedule = occurrence };
+            Save(task); _tasks.Add(task.Id, task);
+            return task;
+        }
     }
 
     public void Accept(AgentMessage message)

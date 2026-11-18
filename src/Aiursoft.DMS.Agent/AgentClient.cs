@@ -11,8 +11,69 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
     private Guid? _maintenance;
     private readonly ConcurrentDictionary<Guid, MachineWorkflowContext> _running = new();
     private readonly MachineWorkflowRegistry _workflows = workflows ?? new MachineWorkflowRegistry();
+    private CancellationToken _stopping;
+    private readonly HashSet<Task> _executions = [];
+    private DateTime? _lastScheduleMinute;
 
     public async Task RunAsync(CancellationToken stopping)
+    {
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(stopping);
+        _stopping = lifetime.Token;
+        var schedules = ScheduleLoopAsync(lifetime.Token);
+        try { await ConnectAsync(lifetime.Token); }
+        finally
+        {
+            await lifetime.CancelAsync();
+            try { await schedules; } catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
+            Task[] executions;
+            lock (_startGate) executions = _executions.ToArray();
+            await Task.WhenAll(executions);
+        }
+    }
+
+    private async Task ScheduleLoopAsync(CancellationToken token)
+    {
+        var startup = true;
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        do
+        {
+            try { TickSchedules(DateTime.UtcNow, startup); }
+            catch (Exception exception) { Console.Error.WriteLine($"Workflow scheduling failed: {exception.GetType().Name}. Durable tasks remain available for investigation."); }
+            startup = false;
+        } while (await timer.WaitForNextTickAsync(token));
+    }
+
+    public void TickSchedules(DateTime now, bool startup = false)
+    {
+        if (now.Kind != DateTimeKind.Utc) throw new ArgumentException("Schedule time must be UTC.", nameof(now));
+        var minute = new DateTime(now.Ticks - now.Ticks % TimeSpan.TicksPerMinute, DateTimeKind.Utc);
+        lock (_startGate)
+        {
+            if (_maintenance != null || _stopping.IsCancellationRequested) return;
+            foreach (var accepted in journal.Snapshot(activeOnly: true).Where(t => t.Schedule != null && t.State == RunState.Accepted))
+                if (journal.Start(accepted.Id) is { } recovered) Launch(recovered);
+            if (!startup && _lastScheduleMinute == minute) return;
+            _lastScheduleMinute = minute;
+            foreach (var schedule in _workflows.Schedules)
+            {
+                var onStartup = startup && schedule.RunOnStartup;
+                if (!onStartup && !schedule.Matches(minute)) continue;
+                var task = journal.AcceptScheduled(schedule.Definition.Name, schedule.Definition.Version,
+                    new ScheduledInvocation(schedule.Id, schedule.Expression, minute,
+                        onStartup ? WorkflowTrigger.AgentStartup : WorkflowTrigger.Cron));
+                if (task != null && journal.Start(task.Id) is { } started) Launch(started);
+            }
+        }
+    }
+
+    // Called under _startGate. Keep live executions until graceful shutdown has drained them.
+    private void Launch(JournalTask task)
+    {
+        _executions.RemoveWhere(t => t.IsCompleted);
+        _executions.Add(ExecuteAsync(task));
+    }
+
+    private async Task ConnectAsync(CancellationToken stopping)
     {
         var delay = 1;
         while (!stopping.IsCancellationRequested)
@@ -59,8 +120,11 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString() }, token);
             Guid? maintenance;
             lock (_startGate) maintenance = _maintenance;
-            foreach (var task in journal.Snapshot().Where(t => !t.State.Terminal() || t.Pending.Count > 0))
+            foreach (var task in journal.Snapshot(activeOnly: true))
             {
+                if (task.Schedule != null)
+                    await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "scheduled", TaskId = task.Id,
+                        Definition = task.Definition, Version = task.Version, Schedule = task.Schedule }, token);
                 if (task.State != RunState.Accepted || maintenance == null || maintenance == task.Id)
                     await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "status", TaskId = task.Id, State = task.State }, token);
                 foreach (var item in task.Pending.Take(64))
@@ -91,7 +155,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
                     {
                         if (_maintenance != null && _maintenance != message.TaskId) break;
                         var task = journal.Start(message.TaskId);
-                        if (task != null) _ = ExecuteAsync(task);
+                        if (task != null) Launch(task);
                     }
                     break;
                 case "cancel":
@@ -172,7 +236,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         {
             var workflow = _workflows.Create(task.Definition, task.Input,
                 environment);
-            await context.RunAsync(workflow, CancellationToken.None);
+            await context.RunAsync(workflow, _stopping);
         }
         catch (Exception exception)
         {

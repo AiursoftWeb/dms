@@ -15,6 +15,7 @@ public sealed record WorkflowAuditQuery
     public WorkflowAuditKind? Kind { get; init; }
     public RunState? State { get; init; }
     public bool? AutomaticApproval { get; init; }
+    public WorkflowOrigin? Origin { get; init; }
     public int Page { get; init; }
 }
 

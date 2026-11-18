@@ -433,11 +433,14 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.Property<long>("LastSequence")
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid>("LockboxId")
+                    b.Property<Guid?>("LockboxId")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("MachineId")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Origin")
+                        .HasColumnType("INTEGER");
 
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("TEXT");
@@ -449,10 +452,24 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.Property<Guid>("RootId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("ScheduleExpression")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ScheduleId")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Trigger")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Version")

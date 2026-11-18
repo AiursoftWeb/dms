@@ -440,11 +440,14 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.Property<long>("LastSequence")
                         .HasColumnType("bigint");
 
-                    b.Property<Guid>("LockboxId")
+                    b.Property<Guid?>("LockboxId")
                         .HasColumnType("char(36)");
 
                     b.Property<Guid?>("MachineId")
                         .HasColumnType("char(36)");
+
+                    b.Property<int>("Origin")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("char(36)");
@@ -456,10 +459,24 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.Property<Guid>("RootId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("ScheduleExpression")
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("ScheduleId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("State")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Trigger")
                         .HasColumnType("int");
 
                     b.Property<string>("Version")

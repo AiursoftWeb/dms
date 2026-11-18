@@ -17,6 +17,7 @@ public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run
     public void CallMachine(string name, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
     {
         RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId,
+                Origin = run.Origin, Trigger = WorkflowTrigger.Subworkflow,
         MachineId = machine, Definition = name, Input = Parameters.Input,
         Version = lockbox.Version, IsMachineTask = true, State = RunState.Queued
     });

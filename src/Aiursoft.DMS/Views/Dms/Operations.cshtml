@@ -1,5 +1,6 @@
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.DMS.Contracts
 <h1>@Localizer["Workflow history"]</h1>
 <form method="get" class="mb-3">
     <input name="machineId" type="hidden" value="@Model.MachineId" />
@@ -9,13 +10,17 @@
         <input id="clusterWorkflowsOnly" name="clusterWorkflowsOnly" type="checkbox" value="true" checked="@Model.ClusterWorkflowsOnly" class="form-check-input" />
         <label for="clusterWorkflowsOnly" class="form-check-label">@Localizer["Cluster workflows only"]</label>
     </div>
+    <label for="origin" class="form-label">@Localizer["Origin"]</label>
+    <select id="origin" name="origin" class="form-select mb-2"><option value="">@Localizer["All origins"]</option>
+        @foreach (var origin in Enum.GetValues<WorkflowOrigin>()) { <option value="@origin" selected="@(Model.Origin == origin)">@Localizer[origin.ToString()]</option> }
+    </select>
     <button class="btn btn-primary">@Localizer["Filter"]</button>
 </form>
-<div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["State"]</th><th>@Localizer["Machine"]</th><th>@Localizer["Created"]</th></tr></thead><tbody>
+<div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["State"]</th><th>@Localizer["Origin"]</th><th>@Localizer["Machine"]</th><th>@Localizer["Created"]</th></tr></thead><tbody>
 @foreach (var run in Model.Runs)
 {
-    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td><td>@run.MachineId</td><td>@run.CreatedAt</td></tr>
+    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td><td>@Localizer[run.Origin.ToString()]</td><td>@run.MachineId</td><td>@run.CreatedAt</td></tr>
 }
 </tbody></table></div></div>
-@if (Model.Page > 0) { <a class="btn btn-secondary" asp-route-page="@(Model.Page - 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly">@Localizer["Previous"]</a> }
-@if (Model.HasNextPage) { <a class="btn btn-secondary" asp-route-page="@(Model.Page + 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly">@Localizer["Next"]</a> }
+@if (Model.Page > 0) { <a class="btn btn-secondary" asp-route-page="@(Model.Page - 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly" asp-route-origin="@Model.Origin">@Localizer["Previous"]</a> }
+@if (Model.HasNextPage) { <a class="btn btn-secondary" asp-route-page="@(Model.Page + 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly" asp-route-origin="@Model.Origin">@Localizer["Next"]</a> }

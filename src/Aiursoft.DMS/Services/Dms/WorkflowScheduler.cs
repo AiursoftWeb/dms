@@ -74,9 +74,13 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             var session = sessions.Get(machine.Id);
             if (session?.Ready != true) continue;
             if (machine.Disabled || session.KeyHash != machine.KeyHash) { session.Abort(); continue; }
-            var lockbox = await db.Lockboxes.SingleAsync(l => l.Id == task.LockboxId, token);
-            if (lockbox.Decision != DecisionState.Approved) continue;
             var cancel = task.State == RunState.CancelRequested;
+            if (!cancel)
+            {
+                if (task.Origin == WorkflowOrigin.Automatic) continue; // Agent-local schedules are never offered by the Controller.
+                var lockbox = await db.Lockboxes.SingleAsync(l => l.Id == task.LockboxId, token);
+                if (lockbox.Decision != DecisionState.Approved) continue;
+            }
             if (!cancel) task.State = RunState.Offered;
             await db.SaveChangesAsync(token); // Persist the offer before sending; reconnect repeats the same ID.
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);

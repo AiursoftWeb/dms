@@ -1,7 +1,15 @@
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using Aiursoft.DMS.Models.DmsViewModels
 <h1>@Model.Run!.Definition</h1><p>@Model.Run.Id <span class="badge bg-@DmsViewModel.Color(Model.Run.State)">@Model.Run.State</span></p>
-<a asp-action="Lockbox" asp-route-id="@(new Aiursoft.DMS.Contracts.LockboxId(Model.Run.LockboxId))">@Localizer["Approval context"]</a>
+<p>@Localizer["Origin"]: @Localizer[Model.Run.Origin.ToString()] · @Localizer["Trigger"]: @Model.Run.Trigger</p>
+@if (Model.Run.LockboxId is { } lockboxId)
+{
+    <a asp-action="Lockbox" asp-route-id="@(new Aiursoft.DMS.Contracts.LockboxId(lockboxId))">@Localizer["Approval context"]</a>
+}
+@if (Model.Run.ScheduleId != null)
+{
+    <p>@Localizer["System schedule"]: @Model.Run.ScheduleId · @Model.Run.ScheduleExpression · @Model.Run.ScheduledAt</p>
+}
 <div class="card mt-3"><div class="card-body table-responsive"><h2>@Localizer["Callstack"]</h2><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["Parent"]</th><th>@Localizer["State"]</th></tr></thead><tbody>
 @foreach (var run in Model.Runs)
 {

@@ -176,6 +176,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
             var child = new WorkflowRun
             {
                 RootId = parent.RootId, ParentId = parent.Id, LockboxId = parent.LockboxId,
+                Origin = parent.Origin, Trigger = WorkflowTrigger.Subworkflow,
                 MachineId = machine, Definition = definition, Input = input, Version = (machine == null ? workflows.FindDefinition(definition) : machines.FindDefinition(definition))!.Version,
                 IsMachineTask = machine != null, State = RunState.Queued
             };

@@ -62,6 +62,7 @@ var key = DmsKeyAuthenticationHandler.CreateKey(true);
             Assert.HasCount(1, events.Where(e => e.Kind == WorkflowAuditKind.LockboxApproved));
             var created = events.Where(e => e.Kind == WorkflowAuditKind.WorkflowCreated).ToList(); Assert.HasCount(3, created);
             Assert.IsTrue(events.All(e => e.RequesterId == setup.User && e.LockboxId == box.Id));
+            Assert.IsTrue(events.All(e => e.Origin == WorkflowOrigin.Manual && e.ScheduleId == null), "Automatic approval is still a human-origin request.");
             var approval = events.Single(e => e.Kind == WorkflowAuditKind.LockboxApproved);
             Assert.AreEqual(automatic, approval.AutomaticApproval); Assert.AreEqual(automatic ? null : setup.Reviewer, approval.ApproverId);
             var process = created.Single(e => e.Definition == WorkflowNames.Process);

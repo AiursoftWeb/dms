@@ -252,7 +252,7 @@ public class OperationsApprovalTests : TestBase
             StringAssert.Contains(help.StdOut, "--machine-id", item.Command);
         }
 
-        var runs = await db.WorkflowRuns.Where(r => boxes.Contains(r.LockboxId)).ToListAsync();
+        var runs = await db.WorkflowRuns.Where(r => r.LockboxId != null && boxes.Contains(r.LockboxId.Value)).ToListAsync();
         Assert.HasCount(0, runs);
     }
 }

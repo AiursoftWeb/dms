@@ -235,7 +235,7 @@ public class DmsWorkflowTests : TestBase
             var details = body.GetValue("Data", StringComparison.OrdinalIgnoreCase)!.ToObject<WorkflowDetails>()!;
             Assert.AreEqual(run.Id, details.WorkflowId); Assert.AreEqual(root.Id, details.RootWorkflowId);
             Assert.AreEqual(run.ParentId, details.ParentWorkflowId);
-            Assert.AreEqual(new LockboxId(run.LockboxId), details.LockboxId);
+            Assert.AreEqual((LockboxId?)run.LockboxId, details.LockboxId);
             Assert.AreEqual(run.MachineId, details.MachineId); Assert.AreEqual(run.Definition, details.Definition);
             Assert.AreEqual(run.State, details.State); Assert.AreEqual(run.Result, details.Result);
             Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);

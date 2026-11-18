@@ -57,6 +57,8 @@ public class WorkflowInvestigationTests : TestBase
     [DataRow("Page=-1")]
     [DataRow("Page=10001")]
     [DataRow("State=999")]
+    [DataRow("Origin=999")]
+    [DataRow("Origin=not-an-origin")]
     [DataRow("Kind=999")]
     [DataRow("State=not-a-state")]
     [DataRow("MachineId=not-a-guid")]

@@ -50,7 +50,12 @@ public class WorkflowRun
     public Guid Id { get; set; } = Guid.NewGuid();
     public Guid RootId { get; set; }
     public Guid? ParentId { get; set; }
-    public Guid LockboxId { get; set; }
+    public Guid? LockboxId { get; set; }
+    public WorkflowOrigin Origin { get; set; }
+    public WorkflowTrigger Trigger { get; set; }
+    [MaxLength(100)] public string? ScheduleId { get; set; }
+    [MaxLength(200)] public string? ScheduleExpression { get; set; }
+    public DateTime? ScheduledAt { get; set; }
     public Guid? MachineId { get; set; }
     [MaxLength(100)] public string Definition { get; set; } = string.Empty;
     public RunState State { get; set; }

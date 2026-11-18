@@ -35,6 +35,8 @@ public sealed partial class MachineWorkflowRegistry
         Register(MachineWorkflows.DiskFree, (_, _) => new DiskFreeWorkflow());
         Register(MachineWorkflows.AgentUpgrade, (input, agent) => new AgentUpgradeWorkflow(input, agent));
         Register(MachineWorkflows.AgentStatus, (_, agent) => new AgentStatusWorkflow(agent.InstallationId, agent.Version, agent.ActiveTasks, agent.PendingEvents));
+        RegisterAttributed(typeof(MachineWorkflow).Assembly.GetTypes().Where(t =>
+            t.IsDefined(typeof(RunCronAttribute), false) || t.IsDefined(typeof(WorkflowRiskAttribute), false)).ToArray());
     }
 
     public void Register<TInput, TResult>(MachineWorkflowDefinition<TInput, TResult> definition,

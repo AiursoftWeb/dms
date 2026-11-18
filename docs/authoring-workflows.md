@@ -19,13 +19,18 @@ public sealed record UnitInput(long Units, bool Fail = false)
 }
 public sealed record UnitResult(long Units);
 
-public static readonly MachineWorkflowDefinition<UnitInput, UnitResult> Unit = new(
-    "example.unit", RiskLevel.VeryHigh, Version: "unit-1", ValidateInput: input => input.Validate());
+public static class AuthoringExamples
+{
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<UnitInput, UnitResult> Unit = new(
+        "example.unit", WorkflowMetadata.Risk(typeof(AuthoringExamples), nameof(Unit)),
+        Version: "unit-1", ValidateInput: input => input.Validate());
+}
 ```
 
 `MachineWorkflowDefinition<TInput, TResult>` declares execution on an Agent. `ClusterWorkflowDefinition<TInput, TResult>` declares execution on the Controller. The definition owns its name, version, input/output types, input validation, mandatory risk and a separate public-entry flag. Constructors require missing mandatory JSON arguments to fail; unknown input fields and incorrect JSON types fail as well. Write explicit business validation for allowed values, including null values where relevant. Validation must be deterministic and have no side effects; it also runs for typed subcalls.
 
-Every definition must specify `RiskLevel.Safe`, `Low`, `Medium`, `High` or `VeryHigh`. `PublicEntry` defaults to `false`: a registered parent can call the definition, but even a user with all risk permissions cannot submit it directly. Set `PublicEntry: true` to allow public Lockbox submissions after registering its implementation. Registering a class alone does not grant external access. A CLI entry is a separate optional choice.
+Declare exactly one `[WorkflowRisk]` on the shared definition field, using `RiskLevel.Safe`, `Low`, `Medium`, `High` or `VeryHigh`. Read that attribute with `WorkflowMetadata.Risk`; do not repeat a risk literal in the constructor or implementation. Shared fields let Controller approval, discovery, CLI and Agent read the same value without moving machine execution code into Contracts. Missing or invalid risk declarations fail registration. Existing Machine and Cluster risks retain their values. `PublicEntry` defaults to `false`: a registered parent can call the definition, but even a user with all risk permissions cannot submit it directly. Set `PublicEntry: true` to allow public Lockbox submissions after registering its implementation. Registering a class alone does not grant external access. A CLI entry is a separate optional choice.
 
 A Machine definition always requires a frozen machine selection. A Cluster definition with `SelectMachines: true` accepts the same selection; its body can enumerate `GetApprovedMachinesAsync`. A Cluster definition without this flag rejects machine selection. It can still perform Controller-side work such as an inventory query.
 
@@ -153,3 +158,38 @@ In a Machine workflow, write diagnostic context with `await context.TraceAsync(m
 The [operations catalog](operations.md) uses the same typed definitions and registry. `OperationWorkflow<TInput>` adapts a compiled business function returning `OperationResult`; `OperationOutput.ReportAsync` writes bounded trace and marks incomplete observations as warnings. A normal class deriving from `MachineWorkflow<TInput, TResult>` remains equally supported. Diagnostic compositions call typed children, for example `context.CallAsync(OperationsWorkflows.DockerInspect, input, token)`.
 
 For artifact inputs, implement `IArtifactOperationInput` so submission/approval validates the requester's immutable manifest. Bounded script/SQL source additionally implements `IAuditTextInput`, which retains its bytes for approval audit. The generic definition discovers these interfaces; new authors do not add workflow-name cases to the Controller. The Agent environment supplies task-bound artifact transport. Binary payloads belong there, while ordinary text/results use trace. A lifecycle operation that crosses a process/kernel restart requires a durable confirmation protocol, as the installed-Agent reboot workflow does.
+
+## Add a built-in machine schedule
+
+For a parameterless, repeatable local inspection or reconciliation, put a concrete class in `Aiursoft.DMS.Workflows` and declare its risk and UTC schedule:
+
+```csharp
+[WorkflowRisk(RiskLevel.Safe)]
+[RunCron("*/5 * * * *", RunOnStartup = true)]
+public sealed class ScheduledAgentStatusWorkflow : MachineWorkflow
+{
+    public override string Name => "machine.agent.scheduled-status";
+    public override string Version => "1";
+
+    public override async Task<string> ExecuteAsync(
+        MachineWorkflowContext context, CancellationToken token)
+    {
+        await context.TraceAsync("Automatic Agent status inspection started.");
+        var result = await context.CallAsync(MachineWorkflows.AgentStatus, new EmptyInput(), token);
+        await context.TraceAsync("Automatic Agent status inspection completed; no machine configuration was changed.");
+        return JsonSerializer.Serialize(result);
+    }
+}
+```
+
+This is the shipped read-only example in `ScheduledWorkflows.cs`. The registry scans only the compiled Workflows assembly, registers its factory and reads its attributes. No BackgroundService, CLI command, approval code or separate cron registration is needed. Normal typed subcalls and `try/catch (ChildWorkflowException)` work exactly as in manually requested work. Add meaningful trace even for a successful no-op. An uncaught failure remains a failed run and does not stop other schedules.
+
+Cronos parses **five fields in UTC**; seconds and a machine-local time zone are not supported. `RunOnStartup` defaults to false. A scheduled class must have a public parameterless constructor and no business input (`Input == "{}"`). Invalid cron, missing risk, duplicate names and unsupported classes fail startup. Constructors must have no side effects. Dynamic plugin loading, user-submitted cron and scheduled Controller workflows are outside this stage.
+
+Reviewed built-in schedules become active when the new Agent is deployed. Each run is authorized by that release and creates **no Lockbox**. Its origin is `Automatic`; its trigger is `Cron` or `AgentStartup`. Children inherit the origin and plan metadata and use `Subworkflow` as their trigger. A person's automatically approved request remains `Manual`. Human public entry still requires the usual risk permissions and Lockbox. The shipped example has no public entry.
+
+Every execution has a normal Workflow ID. A disconnected Agent continues scheduling and persists the root, child events and trace locally. Reconnection replays them under the same IDs into Controller history and ClickHouse. Install the matching Controller before upgrading Agents; the Controller rejects undeclared or mismatched schedules and retains unacknowledged Agent events for diagnosis. Keep old definitions available until their offline backlog has been archived when changing a released schedule's name, expression or version.
+
+Only one invocation of a plan runs on a machine at a time. The journal persists its UTC minute; repeated ticks, a restart in that minute or a backward clock adjustment cannot rerun it. Missed minutes are not replayed. `RunOnStartup` consumes the startup minute as well. Accepted but unstarted work resumes; started work with an unknown outcome becomes `NeedsVerification` and blocks further invocations of that plan until reconciled. Do not use this facility for non-repeatable destructive jobs. An Agent that is stopped runs no checks; there is no independent system timer.
+
+Cancellation affects that invocation and its children, not the installed schedule. Agent upgrade drains active work; shutdown propagates cancellation through the same runtime. Continue to investigate with `get-workflow`, `get-callstack`, `get-trace`, and `operation audit --origin Automatic`. Web history and investigation provide the same origin filter. `ScheduledWorkflowTests` and `ScheduledWorkflowIntegrationTests` cover declarations, offline execution, recovery, caught child failure and two real WebSocket Agents.

@@ -17,7 +17,7 @@ public static class WorkflowTreeRenderer
         return enabled ? $"\u001b[{code}m{text}\u001b[0m" : text;
     }
 
-    private sealed record Node(Guid Id, Guid? ParentId, string Definition, RunState State);
+    private sealed record Node(Guid Id, Guid? ParentId, string Definition, RunState State, WorkflowOrigin Origin = WorkflowOrigin.Manual);
 
     public static IEnumerable<string> Render(JArray data, bool color)
     {
@@ -36,7 +36,7 @@ public static class WorkflowTreeRenderer
             {
                 if (!visited.Add(item.Node.Id)) continue;
                 var node = item.Node;
-                var text = $"{node.Id}  {node.Definition}  [{node.State}]";
+                var text = $"{node.Id}  {node.Definition}  [{node.State}]" + (node.Origin == WorkflowOrigin.Automatic ? " [Automatic]" : "");
                 yield return item.Prefix + item.Connector + Colorize(text, node.State, color);
                 var prefix = item.Prefix + (item.Connector.Length == 0 ? string.Empty : item.Last ? "    " : "│   ");
                 var descendants = children[node.Id].ToList();
