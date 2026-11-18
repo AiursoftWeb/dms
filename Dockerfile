@@ -37,7 +37,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
         RID="linux-$TARGETARCH"; \
     fi && \
     echo "Building for arch: $TARGETARCH, using .NET RID: $RID" && \
-    dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj --configuration Release --no-self-contained -p:UseAppHost=false --runtime $RID --output /app --source "$NUGET_SOURCE"
+    dotnet publish ${CSPROJ_PATH}${PROJ_NAME}.csproj -p:SkipFrontendBuild=true --configuration Release --no-self-contained -p:UseAppHost=false --runtime $RID --output /app --source "$NUGET_SOURCE"
 
 RUN cp -r ${CSPROJ_PATH}/wwwroot/* /app/wwwroot
 RUN bash scripts/build-agent-assets.sh /app/agent-assets "$NUGET_SOURCE"
