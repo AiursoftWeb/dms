@@ -567,6 +567,11 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SecurityFail2banStatus =
         new("machine.security.fail2ban-status", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityFail2banStatus)), "1", PublicEntry: true);
 
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SshDisable =
+        new("machine.ssh.disable", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SshDisable)), "1", PublicEntry: true)
+        { SingleMachineOnly = true };
+
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SecurityCleanTrafficStatus =
         new("machine.security.clean-traffic-status", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityCleanTrafficStatus)), "1", PublicEntry: true);

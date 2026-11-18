@@ -250,6 +250,20 @@ deployment performs its own fresh preflight. Inspection details live in trace,
 not in the submission receipt or workflow result. Update Controller and Agents
 before using the new definition.
 
+## Disable SSH on one machine
+
+```sh
+dms machine ssh disable --machine-id "$MACHINE_ID" --reason "Close remote SSH access"
+```
+
+This is a medium-risk Lockbox request. The target Agent masks and stops the
+system OpenSSH service and socket. When a DMS SSH lease exists, the workflow
+terminates its sessions and removes the lease's temporary account, home, sudo
+grant and tracked firewall rules. The Agent verifies closure before it
+reports success. Use the operation callstack to find the machine workflow
+and read its trace if cleanup needs verification. A new approved disable
+can finish cleanup after the underlying problem has been resolved.
+
 ## Deploy a Box
 
 ```bash

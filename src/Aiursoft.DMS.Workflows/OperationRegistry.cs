@@ -459,6 +459,8 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 SecurityOperations.SshAuditAsync,
                 agent));
+        Register(OperationsWorkflows.SshDisable,
+            (input, agent) => new DisableSshWorkflow(input, agent));
         Register(OperationsWorkflows.SecurityFail2banStatus,
             (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.SecurityFail2banStatus,
                 input,
