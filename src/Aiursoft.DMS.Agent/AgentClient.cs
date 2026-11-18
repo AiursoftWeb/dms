@@ -60,7 +60,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
                 if (!onStartup && !schedule.Matches(minute)) continue;
                 var task = journal.AcceptScheduled(schedule.Definition.Name, schedule.Definition.Version,
                     new ScheduledInvocation(schedule.Id, schedule.Expression, minute,
-                        onStartup ? WorkflowTrigger.AgentStartup : WorkflowTrigger.Cron));
+                        onStartup ? WorkflowTrigger.AgentStartup : WorkflowTrigger.Cron), schedule.ReconcileAfterInterruption);
                 if (task != null && journal.Start(task.Id) is { } started) Launch(started);
             }
         }
@@ -229,7 +229,8 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count),
             installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token),
             Artifacts: new AgentArtifactTransport(controller, key, task.Id),
-            Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token));
+            Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token),
+            AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token));
         var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try

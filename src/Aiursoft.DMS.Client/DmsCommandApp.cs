@@ -193,6 +193,7 @@ public static partial class DmsCommandApp
             ]),
             new Group("ssh",
             [
+                NewSshOpenCommand(),
                 StandardCommand("disable", OperationsWorkflows.SshDisable, _ => new EmptyInput())
             ]),
             new Group("security",

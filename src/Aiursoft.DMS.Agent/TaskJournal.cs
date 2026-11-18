@@ -51,12 +51,12 @@ public sealed class TaskJournal : IDisposable
         lock (_gate) return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(t => JsonSerializer.Deserialize<JournalTask>(JsonSerializer.Serialize(t))!).ToList();
     }
 
-    public JournalTask? AcceptScheduled(string definition, string version, ScheduledInvocation occurrence)
+    public JournalTask? AcceptScheduled(string definition, string version, ScheduledInvocation occurrence, bool reconcileAfterInterruption = false)
     {
         lock (_gate)
         {
             var previous = _tasks.Values.Where(t => t.Schedule?.ScheduleId == occurrence.ScheduleId).ToArray();
-            if (previous.Any(t => !t.State.Terminal())) return null;
+            if (previous.Any(t => !t.State.Terminal() && !(reconcileAfterInterruption && t.State == RunState.NeedsVerification))) return null;
             // A startup run consumes its minute too. Repeated ticks/restarts never replay that occurrence.
             if (previous.Any(t => t.Schedule!.ScheduledAt >= occurrence.ScheduledAt)) return null;
             var task = new JournalTask { Id = Guid.NewGuid(), Definition = definition, Version = version, Schedule = occurrence };

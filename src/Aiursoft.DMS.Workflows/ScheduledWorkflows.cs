@@ -5,7 +5,7 @@ using Cronos;
 
 namespace Aiursoft.DMS.Workflows;
 
-public sealed record WorkflowSchedule(WorkflowDefinition Definition, string Expression, bool RunOnStartup)
+public sealed record WorkflowSchedule(WorkflowDefinition Definition, string Expression, bool RunOnStartup, bool ReconcileAfterInterruption)
 {
     public CronExpression Cron { get; } = CronExpression.Parse(Expression, CronFormat.Standard);
     public string Id => Definition.Name;
@@ -34,7 +34,7 @@ public sealed partial class MachineWorkflowRegistry
             var attribute = type.GetCustomAttribute<RunCronAttribute>();
             if (attribute?.Expression.Length > 200)
                 throw new InvalidOperationException("Schedule expressions cannot exceed 200 characters.");
-            var schedule = attribute == null ? null : new WorkflowSchedule(definition, attribute.Expression, attribute.RunOnStartup);
+            var schedule = attribute == null ? null : new WorkflowSchedule(definition, attribute.Expression, attribute.RunOnStartup, attribute.ReconcileAfterInterruption);
             Register(definition, (_, _) => (MachineWorkflow)Activator.CreateInstance(type)!);
             if (schedule != null) _schedules.Add(definition.Name, schedule);
         }

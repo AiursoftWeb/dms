@@ -461,6 +461,10 @@ public sealed partial class MachineWorkflowRegistry
                 agent));
         Register(OperationsWorkflows.SshDisable,
             (input, agent) => new DisableSshWorkflow(input, agent));
+        Register(OperationsWorkflows.SshOpen,
+            (input, agent) => new OpenTemporarySshWorkflow(input, agent));
+        Register(OperationsWorkflows.SshRecover,
+            (input, agent) => new RecoverSshLeaseWorkflow(input, agent));
         Register(OperationsWorkflows.SecurityFail2banStatus,
             (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.SecurityFail2banStatus,
                 input,

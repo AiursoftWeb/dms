@@ -572,6 +572,20 @@ public static class OperationsWorkflows
         new("machine.ssh.disable", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SshDisable)), "1", PublicEntry: true)
         { SingleMachineOnly = true };
 
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<SshOpenInput, OperationResult> SshOpen =
+        new("machine.ssh.temp-allow-ssh", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SshOpen)), "1",
+            ValidateInput: input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };
+
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<SshRecoveryInput, OperationResult> SshRecover =
+        new("internal.ssh.recover-lease", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SshRecover)), "1",
+            ValidateInput: input =>
+            {
+                if (input.ExpectedLeaseId == Guid.Empty)
+                    throw new ArgumentException("SSH lease recovery requires an expected lease ID.");
+            });
+
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SecurityCleanTrafficStatus =
         new("machine.security.clean-traffic-status", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityCleanTrafficStatus)), "1", PublicEntry: true);

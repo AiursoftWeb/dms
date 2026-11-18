@@ -8,14 +8,17 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
 {
     private static readonly string[] SshUnits = ["ssh.socket", "ssh.service"];
 
-    public override async Task<OperationResult> ExecuteAsync(MachineWorkflowContext context, EmptyInput value, CancellationToken token)
+    public override Task<OperationResult> ExecuteAsync(MachineWorkflowContext context, EmptyInput value, CancellationToken token) =>
+        RevokeAsync(context, environment, null, token);
+
+    internal static async Task<OperationResult> RevokeAsync(MachineWorkflowContext context, AgentEnvironment environment,
+        Guid? expectedLeaseId, CancellationToken token)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         deadline.CancelAfter(TimeSpan.FromMinutes(3));
         token = deadline.Token;
         var host = OperationOutput.Host(environment);
-        if (!OperatingSystem.IsLinux() || (await RunAsync(host, "id", ["-u"], token)).Output.Trim() != "0")
-            throw new NotSupportedException("Disabling SSH requires a Linux Agent running as root.");
+        await RequireRootAsync(host, token);
 
         var store = new SshLeaseStore(host);
         await using var guard = await store.LockAsync(token);
@@ -28,6 +31,12 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
         var state = store.ReadState();
         var lease = state?.Lease;
         lease?.Validate();
+        if (expectedLeaseId != null && (lease?.Id != expectedLeaseId ||
+            !await SshLeaseStore.ShouldRecoverAsync(host, state!, lease, token)))
+        {
+            await context.TraceAsync($"SSH recovery skipped. Lease {expectedLeaseId} is no longer due for recovery.");
+            return new OperationResult("The expected SSH lease no longer requires recovery.");
+        }
         var revocation = new SshRevocation(lease?.Id, Complete: false);
         store.SaveRevocation(context.Id, revocation);
         store.SaveState(new SshLeaseState(lease, Healthy: false));
@@ -36,6 +45,12 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
         try
         {
             await context.TraceAsync($"Disabling SSH. LeaseId={lease?.Id}, workflow_id={context.Id}, previous_baseline_healthy={state?.Healthy}.");
+            if (lease?.BootId != null)
+            {
+                step = "stop the temporary SSH service";
+                await StopLeaseUnitAsync(host, lease, token);
+            }
+            step = "stop SSH service and socket";
             await RunAsync(host, "systemctl", ["mask", "--now", ..SshUnits], token);
             await VerifyUnitsAsync(host, token);
 
@@ -50,6 +65,12 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
                 if (lease.Ipv6Rule) await RemoveFirewallRuleAsync(host, "ip6tables", lease, token);
                 step = "remove lease sudo authorization, account and home";
                 await RemoveAccountAsync(host, lease, accountExists, token);
+                if (lease.BootId != null)
+                {
+                    step = "remove the temporary SSH configuration and public key";
+                    File.Delete(host.FilePath(lease.ConfigPath));
+                    File.Delete(host.FilePath(lease.AuthorizedKeyPath));
+                }
             }
 
             step = "verify SSH listeners and established connections";
@@ -76,19 +97,34 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             : "SSH service and socket are disabled, and lease resources have been removed.",
             new { revocation.LeaseId, Replayed = replayed });
 
-    private static async Task VerifyUnitsAsync(OperationHost host, CancellationToken token)
+    internal static async Task RequireRootAsync(OperationHost host, CancellationToken token)
+    {
+        if (!OperatingSystem.IsLinux() || (await RunAsync(host, "id", ["-u"], token)).Output.Trim() != "0")
+            throw new NotSupportedException("SSH lease management requires a Linux Agent running as root.");
+    }
+
+    internal static async Task StopLeaseUnitAsync(OperationHost host, SshLease lease, CancellationToken token)
+    {
+        var state = await RunAsync(host, "systemctl", ["show", "--property=LoadState,ActiveState", lease.Unit], token, allowNoMatches: true);
+        var properties = state.Output.Split('\n', StringSplitOptions.TrimEntries);
+        if (properties.Contains("LoadState=not-found") && properties.Contains("ActiveState=inactive")) return;
+        await RunAsync(host, "systemctl", ["stop", lease.Unit], token);
+    }
+
+    internal static async Task VerifyUnitsAsync(OperationHost host, CancellationToken token)
     {
         foreach (var unit in SshUnits)
         {
             var state = await RunAsync(host, "systemctl",
                 ["show", "--property=LoadState,ActiveState", unit], token);
             var properties = state.Output.Split('\n', StringSplitOptions.TrimEntries);
-            if (!properties.Contains("LoadState=masked") || !properties.Contains("ActiveState=inactive"))
-                throw new IOException($"{unit} is not masked and inactive. {state.Output.Trim()}");
+            if (!properties.Contains("LoadState=masked") ||
+                (!properties.Contains("ActiveState=inactive") && !properties.Contains("ActiveState=failed")))
+                throw new IOException($"{unit} is not masked and stopped. {state.Output.Trim()}");
         }
     }
 
-    private static async Task VerifyConnectionsAsync(OperationHost host, CancellationToken token)
+    internal static async Task VerifyConnectionsAsync(OperationHost host, CancellationToken token)
     {
         foreach (var args in new[] { new[] { "-Hltnp" }, ["-Htnp", "state", "established"] })
         {
@@ -175,7 +211,7 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             throw new IOException("An account, home or sudo grant belonging to the lease remains.");
     }
 
-    private static async Task<NativeResult> RunAsync(OperationHost host, string tool, string[] args,
+    internal static async Task<NativeResult> RunAsync(OperationHost host, string tool, string[] args,
         CancellationToken token, bool allowNoMatches = false)
     {
         var result = await host.RunAsync(new NativeCommand(tool, args, TimeoutSeconds: 20), token);
