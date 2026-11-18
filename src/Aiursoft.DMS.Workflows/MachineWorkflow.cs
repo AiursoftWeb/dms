@@ -160,6 +160,9 @@ public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arg
     public override string Input => MachineWorkflows.Process.Serialize(_input);
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
+        var tool = Path.GetFileName(_input.Executable);
+        await context.TraceAsync($"Starting compiled process: tool={tool}.");
+        var elapsed = Stopwatch.StartNew();
         using var process = new Process();
         process.StartInfo = new ProcessStartInfo(_input.Executable)
         {
@@ -170,9 +173,16 @@ public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arg
         using var registration = token.Register(static state => Kill((Process)state!), process);
         var output = _input.CaptureOutput ? new StringBuilder() : null;
         var errorOutput = _input.CaptureOutput ? new StringBuilder() : null;
-        await Task.WhenAll(Drain(process.StandardOutput, "stdout", process, context, output), Drain(process.StandardError, "stderr", process, context, errorOutput), process.WaitForExitAsync(CancellationToken.None));
+        var stdout = Drain(process.StandardOutput, "stdout", process, context, output);
+        var stderr = Drain(process.StandardError, "stderr", process, context, errorOutput);
+        await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(CancellationToken.None));
+        await context.TraceAsync($"Process finished: tool={tool}; exit_code={process.ExitCode}; elapsed_ms={elapsed.ElapsedMilliseconds}; stdout_characters={await stdout}; stderr_characters={await stderr}; cancellation_requested={token.IsCancellationRequested}.");
         token.ThrowIfCancellationRequested();
-        if (process.ExitCode != 0) throw new InvalidOperationException($"Process exited with code {process.ExitCode}.");
+        if (process.ExitCode != 0)
+        {
+            await context.TraceAsync("The process did not confirm success. Already emitted stdout/stderr remains in this workflow trace; stdout may contain useful partial results and must not be treated as a complete inventory.", "error");
+            throw new InvalidOperationException($"Process exited with code {process.ExitCode}.");
+        }
         if (!_input.CaptureOutput) return JsonSerializer.Serialize(new { process.ExitCode });
         var result = JsonSerializer.Serialize(new ProcessResult(process.ExitCode, output!.ToString(), errorOutput!.ToString()));
         if (result.Length > 24000) throw new InvalidOperationException("Query result exceeds the serialized output limit.");
@@ -185,20 +195,23 @@ public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arg
         catch (InvalidOperationException) { } // The process may have exited while cancellation was delivered.
     }
 
-    private static async Task Drain(StreamReader reader, string source, Process process, MachineWorkflowContext context, StringBuilder? captured)
+    private static async Task<long> Drain(StreamReader reader, string source, Process process, MachineWorkflowContext context, StringBuilder? captured)
     {
         var buffer = new char[4096];
+        long characters = 0;
         int read;
         try
         {
             while ((read = await reader.ReadAsync(buffer.AsMemory(), CancellationToken.None)) > 0)
             {
                 await context.TraceAsync(new string(buffer, 0, read), source);
+                characters += read;
                 if (captured == null) continue;
                 if (captured.Length + read > 8192) throw new InvalidOperationException("Query output exceeds the 8192 character stream limit.");
                 captured.Append(buffer, 0, read);
             }
         }
         catch { Kill(process); throw; }
+        return characters;
     }
 }

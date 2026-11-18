@@ -17,7 +17,16 @@ public static class LayoutOperations
     }
     public static async Task<OperationResult> InodesAsync(MachineWorkflowContext context, EmptyInput input, AgentEnvironment agent, CancellationToken token)
     {
-        await OperationOutput.CommandAsync(context, agent, "df", ["--inodes", "--local", "--exclude-type=overlay", "--exclude-type=tmpfs", "--exclude-type=devtmpfs"], token);
+        await context.TraceAsync(FilesystemUsageDiagnostics.Scope);
+        try
+        {
+            await OperationOutput.CommandAsync(context, agent, "df", ["--inodes", "--local", "--exclude-type=overlay", "--exclude-type=tmpfs", "--exclude-type=devtmpfs"], token);
+        }
+        catch (IOException)
+        {
+            await context.TraceAsync(FilesystemUsageDiagnostics.Failure, "error");
+            throw;
+        }
         return new OperationResult("Local filesystem inode usage collected.");
     }
     public static async Task<OperationResult> OpenDeletedAsync(MachineWorkflowContext context, EmptyInput input, AgentEnvironment agent, CancellationToken token)

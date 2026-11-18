@@ -46,8 +46,21 @@ public sealed class ListBlockDevicesWorkflow : MachineWorkflow
 public sealed class DiskFreeWorkflow : MachineWorkflow
 {
     public override string Name => WorkflowNames.DiskFree;
-    public override Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token) =>
-        context.CallAsync(new ProcessWorkflow("/usr/bin/df",
-            ["--block-size=1", "--output=source,fstype,size,used,avail,pcent,target", "--local",
-                "--exclude-type=overlay", "--exclude-type=tmpfs", "--exclude-type=devtmpfs", "--exclude-type=squashfs", "--exclude-type=efivarfs"]), token);
+    public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
+    {
+        await context.TraceAsync(FilesystemUsageDiagnostics.Scope);
+        try
+        {
+            var result = await context.CallAsync(new ProcessWorkflow("/usr/bin/df",
+                ["--block-size=1", "--output=source,fstype,size,used,avail,pcent,target", "--local",
+                    "--exclude-type=overlay", "--exclude-type=tmpfs", "--exclude-type=devtmpfs", "--exclude-type=squashfs", "--exclude-type=efivarfs"]), token);
+            await context.TraceAsync("Local filesystem byte usage collected; capacity rows are in the process subworkflow trace.");
+            return result;
+        }
+        catch (ChildWorkflowException exception)
+        {
+            await context.TraceAsync($"{FilesystemUsageDiagnostics.Failure} Native output is in subworkflow {exception.WorkflowId}.", "error");
+            throw;
+        }
+    }
 }
