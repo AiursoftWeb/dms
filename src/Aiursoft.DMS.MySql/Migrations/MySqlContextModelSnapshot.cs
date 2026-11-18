@@ -187,6 +187,7 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("Decision")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("DecisionReason")
@@ -199,7 +200,7 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<Guid?>("OperationId")
+                    b.Property<Guid?>("LegacyApprovalWorkflowId")
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Parameters")
@@ -228,7 +229,7 @@ namespace Aiursoft.DMS.MySql.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<Guid>("WorkflowId")
+                    b.Property<Guid?>("WorkflowId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");

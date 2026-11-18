@@ -80,7 +80,7 @@ dms access whoami
 
 `--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, five-risk permission matrix, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
 
-The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox workflow apply equally to both forms.
+The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox approval flow apply equally to both forms.
 
 ### Manage Agent access and permissions
 
@@ -127,7 +127,7 @@ dms machine filesystem du --machine-id "$MACHINE_ID" --path /swarm-vol --depth 1
 dms machine docker system df --machine-id "$MACHINE_ID" --reason "Inspect Docker storage"
 ```
 
-These are standard workflows; submissions return only `WorkflowId`. Use
+These are standard workflows; submissions return `LockboxId` and nullable `WorkflowId`. Use
 `operation get-callstack` to find their Process children and `operation get-trace`
 for output. `layout df` is Safe and excludes overlay, tmpfs, devtmpfs, squashfs
 and efivarfs mounts. It streams local filesystem rows to trace instead of storing
@@ -154,7 +154,7 @@ dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-direct
 `CanRequestHighRiskWorkflow`, automatic approval additionally requires
 `CanAutoApproveHighRiskWorkflow`, and reviewers need `CanApproveHighRiskWorkflow`.
 Self-review additionally needs `CanApproveOwnWorkflow`. The request records the
-machine, exact path and recursive flag. Submission returns only `WorkflowId`;
+machine, exact path and recursive flag. Submission returns `LockboxId` and nullable `WorkflowId`;
 inspect callstack and trace for execution and removed entries.
 
 One normalized absolute path is required. There is no shell, wildcard expansion,
@@ -215,8 +215,19 @@ dms machine box inspect --machine-id "$MACHINE_ID" --reason "Check Box before de
 This is the standard **Safe** `machine.box.inspect` workflow. It creates a
 Lockbox, uses the existing Safe request/automatic-approval/reviewer permissions,
 and executes only after approval. All workflow-submitting CLI commands return
-only `WorkflowId` (also with JSON or CSV output), including requests still waiting
-for approval. To find the Lockbox ID or current state, inspect that root workflow:
+only `LockboxId` and nullable `WorkflowId` (also with JSON or CSV output). The
+Lockbox ID always has the form `lb/<UUID>`. Pending requests have no Workflow;
+automatic approval returns the newly created execution root ID. For manual
+approval, inspect the Lockbox again after the decision to obtain its Workflow ID:
+
+```sh
+dms lockbox list --decision Pending
+dms lockbox get --id "lb/<UUID>"
+dms lockbox approve --id "lb/<UUID>" --reason "Reviewed scope"
+# Alternatively: dms lockbox deny --id "lb/<UUID>" --reason "Rejected scope"
+```
+
+Then inspect the actual execution tree:
 
 ```sh
 dms operation get-workflow --id "$WORKFLOW_ID"
@@ -394,7 +405,7 @@ The host needs `curl`, systemd and access to the Controller. The installer uses 
 
 The installer keeps versioned Tool installations under `/opt/aiursoft-dms-agent/tools`, the active `/opt/aiursoft-dms-agent/dms-agent` link, the `/usr/local/bin/dms-agent` symlink and `dms-agent.service`. It persists the private installation identity, enrollment receipt and machine credential under `/var/lib/aiursoft-dms-agent` (directory 0700, configuration 0600). It never persists the reusable join key or a human personal key. Keep this state directory when restarting or upgrading the Agent.
 
-The join prints the enrollment, Lockbox, workflow and installation IDs. The service starts immediately and waits for approval without requiring another visit to the machine. An authorized approver can inspect and approve the request:
+The join prints the enrollment, prefixed Lockbox and installation IDs, plus a Workflow ID only once execution has been approved. The service starts immediately and waits for approval without requiring another visit to the machine. An authorized approver can inspect and approve the request:
 
 ```sh
 dotnet ./bin/client/dms.dll access list-enrollments
@@ -504,7 +515,7 @@ dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id>
 dotnet ./bin/client/dms.dll operation get-trace --id <workflow-id>
 ```
 
-Each operational command creates a Lockbox before execution. The Lockbox ID, its own workflow ID and the approved operation's workflow ID are distinct; use the returned ID for the corresponding inspection command. Inspection and `lockbox approve`/`deny` use authenticated management APIs without creating another Lockbox.
+Each operational command creates a Lockbox before execution. A Lockbox is a separate approval record and is never itself a new Workflow. Before approval or after denial its WorkflowId is null. Approval creates exactly one execution root; repeated decisions cannot create another. An execution failure leaves the original Approved decision intact. Inspection and `lockbox approve`/`deny` use authenticated management APIs without creating another Lockbox.
 
 Use `--all-machines` instead of `--machine-id` to freeze all currently active machines into a request. Use `--request-id` when retrying the same submission and `--output-format json` for automation.
 
@@ -540,3 +551,15 @@ For a typed aggregate across a frozen set of machines, see [Cluster disk usage](
 ## Structured investigation history
 
 Approval and workflow state changes are automatically archived to ClickHouse through a transactional pending queue. See [structured workflow audit](workflow-audit.md) for attribution, deduplication and outage behavior. Existing trace commands continue to query trace text; no new investigation command is added in this phase.
+
+## Lockbox API and receipts
+
+`POST /api/v1/dms/lockboxes` returns only these business fields inside the usual AiurProtocol `Data` envelope:
+
+```json
+{ "LockboxId": "lb/726c5996-8309-4df9-9b1b-d4eae4a82f2e", "WorkflowId": null }
+```
+
+`GET /api/v1/dms/lockboxes?page=0&decision=Pending` lists 50 requests per page, with `Entries`, `Page` and `HasNextPage`. `GET /api/v1/dms/lockboxes/lb/<UUID>` returns the request, frozen input/targets, decision context and optional execution ID. `POST /api/v1/dms/lockboxes/lb/<UUID>/decision` accepts `{ "Approve": true, "Reason": "Reviewed scope" }`. These management endpoints need a personal API Key; reads require Read DMS operations, decisions require the corresponding risk approval permission and self-approval permission when applicable. They create no approval workflow and can be used directly by an independent approval app.
+
+Bare historical Lockbox UUIDs remain accepted, but new output consistently uses `lb/`. Workflow IDs remain plain UUIDs. Approved non-execution requests can be represented with a null WorkflowId; this release's submission endpoint still accepts only executable workflow requests. It does not add a mobile app or non-execution request handlers. Update the Controller and CLI together for the new receipt contract; the Agent update includes the nullable enrollment receipt.

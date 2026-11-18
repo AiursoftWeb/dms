@@ -87,7 +87,7 @@ public class AgentUpgradeIntegrationTests : TestBase
             Assert.AreEqual(DecisionState.Approved, approved.Decision);
             var root = await database.WorkflowRuns.SingleAsync(r => r.Id == approved.WorkflowId);
             Assert.AreEqual(root.Id, root.RootId);
-            Assert.AreEqual(WorkflowNames.Lockbox, root.Definition);
+            Assert.AreEqual(WorkflowNames.Batch, root.Definition); Assert.IsNull(root.ParentId);
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             WorkflowRun? machineTask;
             do

@@ -21,8 +21,9 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
     public Task<DmsResponse> SubmitAsync<TInput, TResult>(WorkflowDefinition<TInput, TResult> definition,
         TInput input, string reason, IEnumerable<Guid>? machines = null, bool allMachines = false,
         Guid? requestId = null) => SubmitAsync(definition.Request(input, reason, machines, allMachines, requestId));
-    public Task<DmsResponse> GetLockboxAsync(Guid id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}"), headers: Headers);
-    public Task<DmsResponse> DecideAsync(Guid id, bool approve, string reason) => http.Post<DmsResponse>(Endpoint($"lockboxes/{id}/decision"), new AiurApiPayload(new { Approve = approve, Reason = reason }), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    public Task<DmsResponse> ListLockboxesAsync(int page = 0, DecisionState? decision = null) => http.Get<DmsResponse>(Endpoint("lockboxes", new { page, decision }), headers: Headers);
+    public Task<DmsResponse> GetLockboxAsync(LockboxId id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}"), headers: Headers);
+    public Task<DmsResponse> DecideAsync(LockboxId id, bool approve, string reason) => http.Post<DmsResponse>(Endpoint($"lockboxes/{id}/decision"), new AiurApiPayload(new { Approve = approve, Reason = reason }), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
     public Task<DmsResponse> GetWorkflowAsync(Guid id) => http.Get<DmsResponse>(Endpoint($"operations/{id}"), headers: Headers);
     public Task<DmsResponse> ListDefinitionsAsync() => http.Get<DmsResponse>(Endpoint("workflow-definitions"), headers: Headers);
     public Task<DmsResponse> AuditEventsAsync(WorkflowAuditQuery query) => http.Get<DmsResponse>(Endpoint("audit-events", query), autoRetry: false, headers: Headers);

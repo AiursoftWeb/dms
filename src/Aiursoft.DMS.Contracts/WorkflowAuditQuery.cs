@@ -7,7 +7,7 @@ public sealed record WorkflowAuditQuery
     public Guid? MachineId { get; init; }
     public Guid? WorkflowId { get; init; }
     public Guid? RootWorkflowId { get; init; }
-    public Guid? LockboxId { get; init; }
+    public LockboxId? LockboxId { get; init; }
     public string? RequesterId { get; init; }
     public string? ApproverId { get; init; }
     public string? Definition { get; init; }

@@ -71,7 +71,7 @@ public class WorkflowAuthoringTests : TestBase
         Assert.AreEqual(0, (int)response.Code);
         var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == requestId));
         Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.AreEqual(RiskLevel.Medium, box.Risk);
-        Assert.AreEqual(AuthoringExamples.Total.Version, box.Version); Assert.IsNull(box.OperationId);
+        Assert.AreEqual(AuthoringExamples.Total.Version, box.Version); Assert.IsNull(box.WorkflowId);
         Assert.AreEqual(input, JsonSerializer.Deserialize<RepeatInput>(JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input));
         await DatabaseAsync(async db => { db.Machines.Add(new Machine { Name = "Late", KeyHash = "late" }); await db.SaveChangesAsync(); return true; });
         using (var scope = Server!.Services.CreateScope())
@@ -79,7 +79,7 @@ public class WorkflowAuthoringTests : TestBase
             var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
             var changed = AuthoringExamples.Total.Request(input with { Copies = 4 }, "Typed authoring example", allMachines: true, requestId: requestId);
             Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, changed))).StatusCode);
-            await service.DecideAsync(setup.Approver, box.Id, true, "Only the two original machines");
+            box = await service.DecideAsync(setup.Approver, box.Id, true, "Only the two original machines");
         }
         var paths = setup.Machines.Select(_ => Directory.CreateTempSubdirectory("dms-authoring-").FullName).ToArray();
         var journals = paths.Select(path => new TaskJournal(path)).ToArray();
@@ -91,7 +91,7 @@ public class WorkflowAuthoringTests : TestBase
         }).ToArray();
         try
         {
-            var tree = await WaitForTreeAsync(box.WorkflowId);
+            var tree = await WaitForTreeAsync(box.WorkflowId!.Value);
             var parent = tree.Single(r => r.Definition == AuthoringExamples.Total.Name);
             Assert.AreEqual(RunState.Succeeded, parent.State, parent.Result);
             Assert.AreEqual(AuthoringExamples.Total.Serialize(input), parent.Input);
@@ -99,7 +99,7 @@ public class WorkflowAuthoringTests : TestBase
             Assert.AreEqual(42L, result.Units); Assert.AreEqual(2, result.Machines);
             CollectionAssert.AreEquivalent(journals.Select(j => j.InstallationId).ToList(), result.Installations);
             Assert.HasCount(1, await DatabaseAsync(db => db.Lockboxes.Where(l => l.RequesterId == setup.User).ToListAsync()));
-            Assert.AreEqual(box.WorkflowId, parent.RootId); Assert.AreEqual(box.WorkflowId, parent.ParentId);
+            Assert.AreEqual(box.WorkflowId, parent.RootId); Assert.IsNull(parent.ParentId);
             Assert.AreEqual(tree.Count, tree.Select(r => r.Id).Distinct().Count()); Assert.IsTrue(tree.All(r => r.Id != Guid.Empty));
             var failed = tree.Where(r => r.State == RunState.Failed).ToList(); Assert.HasCount(2, failed);
             Assert.IsTrue(failed.All(r => r.Definition == AuthoringExamples.Unit.Name && r.ParentId == parent.Id));
@@ -109,7 +109,7 @@ public class WorkflowAuthoringTests : TestBase
             Assert.IsTrue(local.All(r => remote.Any(p => p.Id == r.ParentId && p.MachineId == r.MachineId) && r.Version == AuthoringExamples.Unit.Version));
             foreach (var format in new[] { "table", "json", "csv" })
             {
-                var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", box.WorkflowId.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+                var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", box.WorkflowId!.Value.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
                 Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
                 foreach (var run in tree) StringAssert.Contains(cli.StdOut, run.Id.ToString());
             }
@@ -164,7 +164,7 @@ public class WorkflowAuthoringTests : TestBase
         await db.SaveChangesAsync();
         var failure = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, box.Id, true, "Must not switch versions"));
         Assert.AreEqual(409, failure.StatusCode);
-        Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
+        Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
     }
 
     [TestMethod]

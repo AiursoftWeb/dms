@@ -92,7 +92,7 @@ public class ClusterRemovalMigrationTests
         Assert.AreEqual(enrollment, registration.Id); Assert.AreEqual(machine, registration.MachineId);
         Assert.AreEqual(receiptHash, registration.ReceiptHash); Assert.AreEqual(box, registration.LockboxId);
         var approved = await db.Lockboxes.SingleAsync();
-        Assert.AreEqual(box, approved.Id); Assert.AreEqual(root, approved.WorkflowId); Assert.AreEqual(child, approved.OperationId);
+        Assert.AreEqual(box, approved.Id); Assert.AreEqual(root, approved.LegacyApprovalWorkflowId); Assert.AreEqual(child, approved.WorkflowId);
         Assert.AreEqual(DecisionState.Approved, approved.Decision); Assert.AreEqual("preserved-reviewer", approved.ApproverId);
         Assert.AreEqual(at, approved.DecidedAt); Assert.AreEqual("Approved once", approved.DecisionReason);
         Assert.AreEqual(targets, approved.TargetMachines);

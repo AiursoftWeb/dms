@@ -87,18 +87,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         {
             ClientRequestId = request.RequestId, RequesterId = user,
             Definition = request.Workflow, Risk = risk, Version = definition?.Version ?? WorkflowNames.Version, Parameters = JsonSerializer.Serialize(request),
-            TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason,
-            WorkflowId = Guid.NewGuid()
+            TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason
         };
         db.Lockboxes.Add(lockbox);
-        db.WorkflowRuns.Add(new WorkflowRun
-        {
-            Id = lockbox.WorkflowId, RootId = lockbox.WorkflowId, LockboxId = lockbox.Id,
-            Definition = WorkflowNames.Lockbox, State = RunState.WaitingApproval
-        });
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
         if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the requester's role permissions.");
-        await db.SaveChangesAsync();
+        await SaveDecisionAsync();
         return lockbox;
     }
 
@@ -114,11 +108,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         else
         {
             item.Decision = DecisionState.Denied; item.ApproverId = user; item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
-            var root = await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
-            root.State = RunState.Denied; root.FinishedAt = DateTime.UtcNow;
             access.Audit(user, "lockbox.deny", item.Id, reason);
         }
-        await db.SaveChangesAsync();
+        await SaveDecisionAsync();
         return item;
     });
 
@@ -133,11 +125,42 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         await RequireArtifactsAsync(definition, JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input, item.RequesterId);
         item.Decision = DecisionState.Approved; item.ApproverId = user; item.Automatic = user == null;
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
-        var root = db.WorkflowRuns.Local.FirstOrDefault(r => r.Id == item.WorkflowId)
-            ?? await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
-        await new LockboxWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, root, item, catalog.Find(item.Definition)));
+        var root = new WorkflowRun
+        {
+            LockboxId = item.Id, State = RunState.Queued,
+            Definition = definition?.Location == WorkflowLocation.Machine ? WorkflowNames.Batch : item.Definition,
+            Input = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input, Version = item.Version
+        };
+        root.RootId = root.Id;
+        db.WorkflowRuns.Add(root);
+        item.WorkflowId = root.Id;
         access.Audit(user ?? "system", "lockbox.approve", item.Id, reason);
     }
+
+    // SaveChanges atomically commits the decision, execution root and audit outbox.
+    // The decision concurrency token also protects against a stale second approver.
+    private async Task SaveDecisionAsync()
+    {
+        try { await db.SaveChangesAsync(); }
+        catch (DbUpdateConcurrencyException)
+        {
+            db.ChangeTracker.Clear();
+            throw new DmsException(409, "This request has already been decided.");
+        }
+        catch { db.ChangeTracker.Clear(); throw; }
+    }
+
+    public Task<LockboxPage> ListLockboxesAsync(string user, int page = 0, DecisionState? decision = null) => gate.RunAsync(async () =>
+    {
+        await access.RequireViewAsync(user);
+        if (page is < 0 or > 10000 || (decision != null && !Enum.IsDefined(decision.Value)))
+            throw new DmsException(400, "Invalid Lockbox page or decision filter.");
+        var query = db.Lockboxes.AsNoTracking();
+        if (decision != null) query = query.Where(b => b.Decision == decision);
+        var items = await query.OrderByDescending(b => b.CreatedAt).ThenBy(b => b.Id).Skip(page * 50).Take(51).ToListAsync();
+        access.Audit(user, "lockbox.list"); await db.SaveChangesAsync();
+        return new LockboxPage(items.Take(50).Select(b => b.Details()).ToList(), page, items.Count > 50);
+    });
 
     private async Task RequireArtifactsAsync(WorkflowDefinition? definition, string input, string owner)
     {

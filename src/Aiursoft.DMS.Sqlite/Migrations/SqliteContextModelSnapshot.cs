@@ -182,6 +182,7 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Decision")
+                        .IsConcurrencyToken()
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("DecisionReason")
@@ -194,7 +195,7 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("OperationId")
+                    b.Property<Guid?>("LegacyApprovalWorkflowId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Parameters")
@@ -223,7 +224,7 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("WorkflowId")
+                    b.Property<Guid?>("WorkflowId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

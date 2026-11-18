@@ -40,8 +40,9 @@ public class LockboxRequest
     public bool Automatic { get; set; }
     public DateTime? DecidedAt { get; set; }
     [MaxLength(2000)] public string DecisionReason { get; set; } = string.Empty;
-    public Guid WorkflowId { get; set; }
-    public Guid? OperationId { get; set; }
+    public Guid? WorkflowId { get; set; }
+    // Historical approval wrapper, retained only to keep old callstack and trace links valid.
+    public Guid? LegacyApprovalWorkflowId { get; set; }
 }
 
 public class WorkflowRun

@@ -33,9 +33,9 @@ var key = DmsKeyAuthenticationHandler.CreateKey(true);
         });
     }
 
-    private async Task<List<WorkflowAuditEntry>> HistoryAsync(Guid root) =>
+    private async Task<List<WorkflowAuditEntry>> HistoryAsync(Guid lockbox) =>
         (await DatabaseAsync(db => db.WorkflowAuditOutbox.AsNoTracking().OrderBy(e => e.Id).ToListAsync()))
-        .Select(e => e.Read()).Where(e => e.RootWorkflowId == root).ToList();
+        .Select(e => e.Read()).Where(e => e.LockboxId == lockbox).ToList();
 
     [TestMethod]
     [DataRow(true)]
@@ -57,10 +57,10 @@ var key = DmsKeyAuthenticationHandler.CreateKey(true);
             if (!automatic) await service.DecideAsync(setup.Reviewer, box.Id, true, "never-archive-decision");
             while (await DatabaseAsync(db => db.WorkflowRuns.Where(r => r.Id == box.WorkflowId).Select(r => r.State).SingleAsync()) != RunState.Succeeded)
                 await Task.Delay(50, stop.Token);
-            var events = await HistoryAsync(box.WorkflowId);
+            var events = await HistoryAsync(box.Id);
             Assert.HasCount(1, events.Where(e => e.Kind == WorkflowAuditKind.LockboxSubmitted));
             Assert.HasCount(1, events.Where(e => e.Kind == WorkflowAuditKind.LockboxApproved));
-            var created = events.Where(e => e.Kind == WorkflowAuditKind.WorkflowCreated).ToList(); Assert.HasCount(4, created);
+            var created = events.Where(e => e.Kind == WorkflowAuditKind.WorkflowCreated).ToList(); Assert.HasCount(3, created);
             Assert.IsTrue(events.All(e => e.RequesterId == setup.User && e.LockboxId == box.Id));
             var approval = events.Single(e => e.Kind == WorkflowAuditKind.LockboxApproved);
             Assert.AreEqual(automatic, approval.AutomaticApproval); Assert.AreEqual(automatic ? null : setup.Reviewer, approval.ApproverId);
@@ -86,15 +86,15 @@ var key = DmsKeyAuthenticationHandler.CreateKey(true);
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var request = MachineWorkflows.DiskFree.Request(new EmptyInput(), "Inspect", [setup.Machine]);
         var box = await service.SubmitAsync(setup.User, request); await service.DecideAsync(setup.Reviewer, box.Id, false, "Denied");
-        var before = await HistoryAsync(box.WorkflowId);
+        var before = await HistoryAsync(box.Id);
         Assert.AreEqual(box.Id, (await service.SubmitAsync(setup.User, request)).Id);
         Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Reviewer, box.Id, true, "Too late"))).StatusCode);
-        var after = await HistoryAsync(box.WorkflowId); Assert.HasCount(before.Count, after);
-        Assert.HasCount(1, after.Where(e => e.Kind == WorkflowAuditKind.WorkflowCreated));
+        var after = await HistoryAsync(box.Id); Assert.HasCount(before.Count, after);
+        Assert.HasCount(0, after.Where(e => e.Kind == WorkflowAuditKind.WorkflowCreated));
         var denied = after.Single(e => e.Kind == WorkflowAuditKind.LockboxDenied);
         Assert.AreEqual(setup.Reviewer, denied.ApproverId); Assert.AreEqual(DecisionState.Denied, denied.Decision);
         Assert.AreEqual(MachineWorkflows.DiskFree.Name, denied.RequestedDefinition);
         Assert.AreEqual(MachineWorkflows.DiskFree.Version, denied.RequestedVersion);
-        Assert.IsTrue(after.Any(e => e.State == RunState.Denied)); Assert.IsFalse(after.Any(e => e.State == RunState.Succeeded));
+        Assert.IsTrue(after.All(e => e.WorkflowId == null && e.RootWorkflowId == null && e.State == null));
     }
 }

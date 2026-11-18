@@ -32,11 +32,11 @@ public static class DmsOutputWriter
                     e["RecordedAt"]!.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                     ((WorkflowAuditKind)e["Kind"]!.Value<int>()).ToString(),
                     Cell(e["Kind"]!.Value<int>() <= (int)WorkflowAuditKind.LockboxDenied ? e["RequestedDefinition"] ?? e["Definition"] : e["Definition"]),
-                    HumanScalar("State", e["State"], true), Cell(e["WorkflowId"])
+                    HumanScalar("State", e["State"], true), Cell(e["LockboxId"]), Cell(e["WorkflowId"])
                 }).ToList();
                 if (rows.Count == 0) output.WriteLine("(empty)");
-                else WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "State", "WorkflowId"], rows, width, color,
-                    [19, 20, Math.Max(12, width - 100), 17, 36]);
+                else WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "State", "LockboxId", "WorkflowId"], rows, width, color,
+                    [19, 20, Math.Max(12, width - 140), 17, 39, 36]);
             }
             return;
         }
@@ -69,7 +69,7 @@ public static class DmsOutputWriter
             foreach (var p in properties.Where(p => p.Name == "Result" || p.Value is JObject or JArray))
             {
                 output.WriteLine(); output.WriteLine(p.Name); output.WriteLine(new string('-', p.Name.Length));
-                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "RiskPermissions");
+                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "RiskPermissions" or "Entries");
             }
         }
         else if (value is JArray array)
@@ -148,7 +148,8 @@ public static class DmsOutputWriter
         if (data is JObject page && page["Entries"] is JArray entries)
         {
             data = entries;
-            defaults = ["EventId", "WorkflowId", "Time", "Source", "Message"];
+            defaults = page["Page"] != null ? typeof(LockboxDetails).GetProperties().Select(p => p.Name).ToArray()
+                : ["EventId", "WorkflowId", "Time", "Source", "Message"];
         }
         var records = data is JArray array ? array.ToList() : [data];
         var objects = records.Select(r => r as JObject ?? new JObject { ["Value"] = r }).ToList();
