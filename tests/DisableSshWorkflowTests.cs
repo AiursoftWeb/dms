@@ -48,6 +48,19 @@ public class DisableSshWorkflowTests
         Assert.AreEqual(JsonValueKind.Null, fixture.State().GetProperty("Lease").ValueKind);
     }
 
+    [TestMethod]
+    public async Task DelayedRecoveryCannotCloseANewerLease()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH disable runs on Linux.");
+        using var fixture = new Fixture();
+        var next = Guid.NewGuid();
+        fixture.SeedLease(next);
+        var result = await fixture.RunAsync(Guid.NewGuid(), expiredLease: Guid.NewGuid());
+        StringAssert.Contains(result.Summary, "no longer requires recovery");
+        Assert.AreEqual(0, fixture.MaskCount);
+        Assert.AreEqual(next, fixture.State().GetProperty("Lease").GetProperty("Id").GetGuid());
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly DirectoryInfo _root = Directory.CreateTempSubdirectory("dms-ssh-test-");
@@ -77,7 +90,7 @@ public class DisableSshWorkflowTests
 
         public JsonElement State() => JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(StatePath));
 
-        public async Task<OperationResult> RunAsync(Guid workflowId)
+        public async Task<OperationResult> RunAsync(Guid workflowId, Guid? expiredLease = null)
         {
             var host = new OperationHost(_root.FullName, NativeAsync);
             var agent = new AgentEnvironment(Guid.NewGuid(), "test", 0, 0, Operations: host);
@@ -86,8 +99,14 @@ public class DisableSshWorkflowTests
                 Events.Enqueue(item);
                 return Task.CompletedTask;
             }, agent, _registry);
-            var definition = OperationsWorkflows.SshDisable;
-            return definition.ReadResult(await context.RunAsync(_registry.Create(definition.Name, "{}", agent), CancellationToken.None));
+            if (expiredLease is { } expected)
+            {
+                var recovery = OperationsWorkflows.SshRecover;
+                return recovery.ReadResult(await context.RunAsync(_registry.Create(recovery.Name,
+                    recovery.Serialize(new SshRecoveryInput(expected)), agent), CancellationToken.None));
+            }
+            var disable = OperationsWorkflows.SshDisable;
+            return disable.ReadResult(await context.RunAsync(_registry.Create(disable.Name, "{}", agent), CancellationToken.None));
         }
 
         private async Task<NativeResult> NativeAsync(NativeCommand command, CancellationToken token)

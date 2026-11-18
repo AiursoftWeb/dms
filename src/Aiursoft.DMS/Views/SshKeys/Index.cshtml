@@ -16,6 +16,7 @@
         <form asp-action="Revoke" method="post" class="mb-3">
             <input type="hidden" name="id" value="@key.Id" />
             <strong>@key.Name</strong> <code>@key.Fingerprint</code>
+            <p class="mb-2">@Localizer["Key ID"] <code>@key.Id</code></p>
             <button class="btn btn-outline-danger" type="submit">@Localizer["Revoke"]</button>
         </form>
     }

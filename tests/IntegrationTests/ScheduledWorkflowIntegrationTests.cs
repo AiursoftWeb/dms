@@ -104,8 +104,9 @@ public class ScheduledWorkflowIntegrationTests : TestBase
                 {
                     new AgentClient(Http.BaseAddress!, setup.Key, offline).TickSchedules(DateTime.UtcNow.AddMinutes(-10), startup: true);
                     while (offline.Snapshot().Any(t => !t.State.Terminal())) await Task.Delay(10, stop.Token);
-                    roots.Add(offline.Snapshot().Single().Id);
-                    originalEvents.Add(offline.Snapshot().Single().Pending.ToArray());
+                    var status = offline.Snapshot().Single(t => t.Definition == "machine.agent.scheduled-status");
+                    roots.Add(status.Id);
+                    originalEvents.Add(status.Pending.ToArray());
                 }
                 var recovered = new TaskJournal(path); journals.Add(recovered);
                 executions.Add(new AgentClient(Http.BaseAddress!, setup.Key, recovered).RunAsync(stop.Token));

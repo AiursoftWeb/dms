@@ -48,6 +48,7 @@ public sealed class MachineWorkflowContext
     }
 
     public Guid Id => _id;
+    internal AgentEnvironment Environment => _environment;
     public Guid? ParentId => _parentId;
     public bool HasWarnings => _warning;
 

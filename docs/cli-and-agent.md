@@ -264,6 +264,36 @@ reports success. Use the operation callstack to find the machine workflow
 and read its trace if cleanup needs verification. A new approved disable
 can finish cleanup after the underlying problem has been resolved.
 
+## Open a temporary SSH lease
+
+Verify a personal key on the Controller's **SSH public keys** page and
+copy its key ID. Run the disable workflow successfully on the target to
+establish the managed closed state. Then submit a very-high-risk request
+for one machine.
+
+```sh
+dms machine ssh temp-allow-ssh --machine-id "$MACHINE_ID" --key-id "$KEY_ID" \
+  --minutes 30 --reason "Temporary maintenance access"
+```
+
+The approval records the selected key fingerprint, target, duration and
+sudo choice. The Agent rechecks the selected key with the Controller at
+execution. A revoked key requires a new request. The lease accepts only the
+selected public key for the temporary account. Use `--sudo` only when the
+approved request needs passwordless sudo. The default duration is 30 minutes,
+with a supported range of 30 to 270 minutes.
+
+Get the connection username, port and UTC deadline from the machine
+workflow's result or trace. The network and firewall must already permit
+access to the target's SSH port. Each machine can host one lease. Run
+`dms machine ssh disable` to end it early.
+
+The Agent checks its recorded lease at startup and every five minutes.
+It can close an expired lease while disconnected from the Controller and
+send the trace after reconnecting. Allow for the polling interval when
+estimating when sessions will disconnect. Update the Controller before
+upgrading Agents to this release.
+
 ## Deploy a Box
 
 ```bash

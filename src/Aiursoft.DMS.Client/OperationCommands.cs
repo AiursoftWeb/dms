@@ -958,6 +958,15 @@ public static partial class DmsCommandApp
             _ => new EmptyInput());
     }
 
+    private static ActionCommand NewSshOpenCommand()
+    {
+        var key = new Option<Guid>("--key-id") { Required = true, Description = "Verified personal key ID from the DMS SSH public keys page." };
+        var minutes = new Option<int>("--minutes") { DefaultValueFactory = _ => 30, Description = "Lease duration in minutes, 30 to 270." };
+        var sudo = new Option<bool>("--sudo") { Description = "Grant the temporary account passwordless sudo." };
+        return StandardCommand("temp-allow-ssh", OperationsWorkflows.SshOpen,
+            p => new SshOpenInput(p.GetValue(key), p.GetValue(minutes), p.GetValue(sudo)), key, minutes, sudo);
+    }
+
     private static ActionCommand NewSecuritySshAuditCommand()
     {
         var user = new Option<string>("--user") { DefaultValueFactory = _ => "root" };

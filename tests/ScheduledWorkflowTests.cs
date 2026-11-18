@@ -20,11 +20,15 @@ public class ScheduledWorkflowTests
             if (field.GetValue(null) is WorkflowDefinition definition)
                 Assert.AreEqual(WorkflowMetadata.Risk(field), definition.Risk, field.Name);
         var registry = new MachineWorkflowRegistry();
-        var schedule = registry.Schedules.Single();
+        var schedule = registry.Schedules.Single(s => s.Id == "machine.agent.scheduled-status");
         Assert.IsTrue(schedule.Matches(Slot));
         Assert.IsFalse(schedule.Matches(Slot.AddMinutes(1)));
         Assert.IsTrue(schedule.RunOnStartup);
         Assert.AreEqual(RiskLevel.Safe, schedule.Definition.Risk);
+        Assert.IsFalse(schedule.ReconcileAfterInterruption);
+        var lease = registry.Schedules.Single(s => s.Id == "machine.ssh.reconcile-lease");
+        Assert.IsTrue(lease.RunOnStartup && lease.ReconcileAfterInterruption);
+        Assert.AreEqual(RiskLevel.Medium, lease.Definition.Risk);
         Assert.Throws<InvalidOperationException>(() => registry.RegisterAttributed(typeof(MissingRiskWorkflow)));
         Assert.Throws<Cronos.CronFormatException>(() => registry.RegisterAttributed(typeof(InvalidCronWorkflow)));
         Assert.Throws<InvalidOperationException>(() => registry.RegisterAttributed(typeof(InputWorkflow)));
@@ -72,6 +76,8 @@ public class ScheduledWorkflowTests
             Assert.IsNull(recovered.Start(uncertain));
             Assert.AreEqual(RunState.NeedsVerification, recovered.Snapshot().Single(t => t.Id == uncertain).State);
             Assert.IsNull(recovered.AcceptScheduled("test.schedule", "1", Occurrence(Slot.AddMinutes(5))));
+            Assert.IsNull(recovered.AcceptScheduled("test.schedule", "1", Occurrence(Slot), reconcileAfterInterruption: true));
+            Assert.IsNotNull(recovered.AcceptScheduled("test.schedule", "1", Occurrence(Slot.AddMinutes(5)), reconcileAfterInterruption: true));
         }
         finally { Directory.Delete(path, true); }
     }
@@ -96,8 +102,8 @@ public class ScheduledWorkflowTests
             var failed = journal.Snapshot().Single(t => t.Definition == "test.failing");
             Assert.AreEqual(RunState.Failed, failed.State);
             Assert.AreEqual(RunState.Succeeded, journal.Snapshot().Single(t => t.Definition == "machine.agent.scheduled-status").State);
-            agent.TickSchedules(Slot); Assert.HasCount(3, journal.Snapshot());
-            agent.TickSchedules(Slot.AddMinutes(1)); Assert.HasCount(3, journal.Snapshot());
+            agent.TickSchedules(Slot); Assert.HasCount(4, journal.Snapshot());
+            agent.TickSchedules(Slot.AddMinutes(1)); Assert.HasCount(4, journal.Snapshot());
         }
         finally { Directory.Delete(path, true); }
     }

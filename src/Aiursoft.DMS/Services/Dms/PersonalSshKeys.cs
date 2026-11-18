@@ -1,6 +1,5 @@
 using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Text;
+using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +18,9 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
     {
         if (string.IsNullOrWhiteSpace(name) || name.Trim().Length > 100)
             throw new DmsException(400, "Enter a key name of up to 100 characters.");
-        var (canonical, fingerprint) = Parse(publicKey);
+        string canonical, fingerprint;
+        try { (canonical, fingerprint) = SshPublicKey.Parse(publicKey); }
+        catch (ArgumentException error) { throw new DmsException(400, error.Message); }
         var keys = await db.PersonalSshKeys.Where(k => k.UserId == user && k.Slot != null).ToListAsync();
         if (keys.Count(k => k.VerifiedAt != null) >= 3)
             throw new DmsException(409, "Revoke a key before adding another.");
@@ -36,24 +37,6 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
         await db.SaveChangesAsync();
         return key;
     });
-
-    private static (string Key, string Fingerprint) Parse(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input) || input.Length > 8192 || input.Trim().Any(c => c is '\r' or '\n' or '\0'))
-            throw new DmsException(400, "Enter one OpenSSH public key.");
-        var parts = input.Trim().Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length < 2 || parts[0] is not ("ssh-ed25519" or "ssh-rsa" or "ecdsa-sha2-nistp256" or
-            "ecdsa-sha2-nistp384" or "ecdsa-sha2-nistp521" or "sk-ssh-ed25519@openssh.com" or "sk-ecdsa-sha2-nistp256@openssh.com"))
-            throw new DmsException(400, "Unsupported OpenSSH public key type.");
-        byte[] blob;
-        try { blob = Convert.FromBase64String(parts[1]); }
-        catch (FormatException) { throw new DmsException(400, "Invalid public key encoding."); }
-        var type = Encoding.ASCII.GetBytes(parts[0]);
-        if (blob.Length <= 4 + type.Length || System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(blob) != type.Length ||
-            !blob.AsSpan(4, type.Length).SequenceEqual(type))
-            throw new DmsException(400, "Invalid public key data.");
-        return ($"{parts[0]} {Convert.ToBase64String(blob)}", "SHA256:" + Convert.ToBase64String(SHA256.HashData(blob)).TrimEnd('='));
-    }
 
     public async Task VerifyAsync(string user, Guid id, string signature, CancellationToken token)
     {
@@ -121,10 +104,11 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
         return await db.SaveChangesAsync();
     });
 
-    public async Task<PersonalSshKey> RequireVerifiedAsync(string user, Guid id, string fingerprint, CancellationToken token)
+    public async Task<PersonalSshKey> RequireVerifiedAsync(string user, Guid id, string? fingerprint, CancellationToken token)
     {
-        var key = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.UserId == user && k.Id == id && k.Slot > 0, token);
-        if (key == null || !string.Equals(key.Fingerprint, fingerprint, StringComparison.Ordinal))
+        var key = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.UserId == user &&
+            k.Id == id && k.Slot > 0 && k.VerifiedAt != null && k.RevokedAt == null, token);
+        if (key == null || (fingerprint != null && !string.Equals(key.Fingerprint, fingerprint, StringComparison.Ordinal)))
             throw new DmsException(409, "The selected key is unavailable. Submit a new request.");
         return key;
     }

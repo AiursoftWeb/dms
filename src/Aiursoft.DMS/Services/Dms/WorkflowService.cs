@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user) => gate.RunAsync(async () =>
     {
@@ -49,6 +49,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             // A retry keeps the original inferred scope, even if inventory changes.
             var frozen = JsonSerializer.Deserialize<OperationRequest>(prior.Parameters)!;
             if (!request.AllMachines && request.MachineIds.Count == 0) request.MachineIds = frozen.MachineIds.ToList();
+            if (request.Workflow == OperationsWorkflows.SshOpen.Name && frozen.Workflow == request.Workflow)
+            {
+                var open = OperationsWorkflows.SshOpen.ReadInput(request.Input);
+                var approved = OperationsWorkflows.SshOpen.ReadInput(frozen.Input);
+                request.Input = OperationsWorkflows.SshOpen.Serialize(open with { Fingerprint = open.Fingerprint ?? approved.Fingerprint });
+            }
             if (!JsonNode.DeepEquals(JsonNode.Parse(prior.Parameters), JsonSerializer.SerializeToNode(request))) throw new DmsException(409, "Request ID already belongs to different parameters.");
             return prior;
         }
@@ -85,6 +91,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.Workflow == WorkflowNames.Kill && !await db.WorkflowRuns.AnyAsync(r => r.Id == request.TargetWorkflowId))
             throw new DmsException(404, "Target workflow not found.");
         if (request.Workflow == WorkflowNames.AgentUpgrade) releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(request.Input));
+        if (request.Workflow == OperationsWorkflows.SshOpen.Name)
+        {
+            var input = OperationsWorkflows.SshOpen.ReadInput(request.Input);
+            var key = await sshKeys.RequireVerifiedAsync(user, input.KeyId, input.Fingerprint, CancellationToken.None);
+            request.Input = OperationsWorkflows.SshOpen.Serialize(input with { Fingerprint = key.Fingerprint });
+        }
         await RequireArtifactsAsync(definition, request.Input, user);
         var lockbox = new LockboxRequest
         {

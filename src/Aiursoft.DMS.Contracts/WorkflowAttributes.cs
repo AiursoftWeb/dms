@@ -13,6 +13,7 @@ public sealed class RunCronAttribute(string expression) : Attribute
 {
     public string Expression { get; } = expression;
     public bool RunOnStartup { get; set; }
+    public bool ReconcileAfterInterruption { get; set; }
 }
 
 public static class WorkflowMetadata
