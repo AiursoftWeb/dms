@@ -208,7 +208,8 @@ public static partial class DmsCommandApp
             new ActionCommand("list", "lockboxes"),
             new ActionCommand("get", "get"),
             new ActionCommand("approve", "approve"),
-            new ActionCommand("deny", "deny")
+            new ActionCommand("deny", "deny"),
+            new ActionCommand("withdraw", "withdraw")
         ]))
         .WithFeature(new Group("operation",
         [
@@ -403,7 +404,7 @@ public static partial class DmsCommandApp
 
         protected override string Description => IsSubmission
             ? "Submit a Lockbox request. Execution starts only after approval."
-            : "Inspect or decide an existing workflow request.";
+            : action == "withdraw" ? "Withdraw your pending Lockbox request." : "Inspect or decide an existing workflow request.";
 
         private readonly Option<Guid[]> _machines = new("--machine-id")
         {
@@ -504,7 +505,7 @@ public static partial class DmsCommandApp
                 yield return _page;
                 yield return _decision;
             }
-            else if (action is "get" or "approve" or "deny")
+            else if (action is "get" or "approve" or "deny" or "withdraw")
             {
                 _lockboxId.Required = true;
                 yield return _lockboxId;
@@ -567,6 +568,7 @@ public static partial class DmsCommandApp
                     "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page),
                         context.GetValue(_decision)),
                     "get" => await client.GetLockboxAsync(context.GetValue(_lockboxId)),
+                    "withdraw" => await client.WithdrawAsync(context.GetValue(_lockboxId)),
                     "approve" or "deny" => await client.DecideAsync(context.GetValue(_lockboxId),
                         action == "approve",
                         context.GetValue(_reason) ?? string.Empty),

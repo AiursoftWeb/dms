@@ -46,16 +46,16 @@ public sealed partial class AgentArtifactsController
     private IActionResult UploadMetadata(ArtifactUploadStatus value) => Ok(new ArtifactUploadResponse { Code = Code.ResultShown, Message = "Upload position recorded.", Data = value });
     private async Task RequireUploadAsync(Guid taskId, Guid id)
     {
-        var box = await RequireTaskAsync(taskId); var record = store.UploadRecord(id);
-        if (record.OwnerId != box.RequesterId || record.MachineTaskId != taskId) throw new DmsException(403, "Upload does not belong to this approved task.");
+        var launch = await RequireTaskAsync(taskId); var record = store.UploadRecord(id);
+        if (record.OwnerId != launch.RequesterId || record.MachineTaskId != taskId) throw new DmsException(403, "Upload does not belong to this approved task.");
     }
     [HttpPost("uploads"), RequestSizeLimit(16384)]
     public Task<IActionResult> BeginUpload([FromBody] ArtifactReference? reference, [FromQuery] Guid taskId) => Handle(async () =>
     {
         if (!ModelState.IsValid || reference == null) throw new DmsException(400, "A valid artifact manifest and machine task are required.");
-        var box = await RequireTaskAsync(taskId);
-        var status = await store.BeginUploadAsync(reference, box.RequesterId, taskId, HttpContext.RequestAborted);
-        access.Audit(box.RequesterId, "artifact.machine-export-start", reference.Id, "Task " + taskId); await db.SaveChangesAsync(); return UploadMetadata(status);
+        var launch = await RequireTaskAsync(taskId);
+        var status = await store.BeginUploadAsync(reference, launch.RequesterId, taskId, HttpContext.RequestAborted);
+        access.Audit(launch.RequesterId, "artifact.machine-export-start", reference.Id, "Task " + taskId); await db.SaveChangesAsync(); return UploadMetadata(status);
     });
     [HttpGet("uploads/{id:guid}")]
     public Task<IActionResult> UploadStatus(Guid id, [FromQuery] Guid taskId) => Handle(async () => { await RequireUploadAsync(taskId, id); return UploadMetadata(store.UploadStatus(id)); });
@@ -69,8 +69,8 @@ public sealed partial class AgentArtifactsController
     public Task<IActionResult> CompleteUpload(Guid id, [FromQuery] Guid taskId) => Handle(async () =>
     {
         await RequireUploadAsync(taskId, id); var value = await store.CompleteUploadAsync(id, HttpContext.RequestAborted);
-        var box = await RequireTaskAsync(taskId);
-        access.Audit(box.RequesterId, "artifact.machine-export-complete", id, "Task " + taskId + "; " + System.Text.Json.JsonSerializer.Serialize(value.Artifact)); await db.SaveChangesAsync();
+        var launch = await RequireTaskAsync(taskId);
+        access.Audit(launch.RequesterId, "artifact.machine-export-complete", id, "Task " + taskId + "; " + System.Text.Json.JsonSerializer.Serialize(value.Artifact)); await db.SaveChangesAsync();
         return UploadMetadata(value);
     });
 }

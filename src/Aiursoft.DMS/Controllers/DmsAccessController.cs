@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
 using Aiursoft.DMS.Services.Authentication;
@@ -43,6 +44,32 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Dms
     {
         Keys = await db.PersonalApiKeys.Where(k => k.UserId == Actor).ToListAsync(), NewKey = TempData["DmsNewKey"] as string
     });
+
+    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "My Lockboxes", LinkOrder = 6)]
+    public async Task<IActionResult> MyLockboxes(int page = 0)
+    {
+        page = Math.Clamp(page, 0, 10000);
+        var items = await db.Lockboxes.AsNoTracking().Where(l => l.RequesterId == Actor)
+            .OrderByDescending(l => l.CreatedAt).ThenBy(l => l.Id).Skip(page * 50).Take(51).ToListAsync();
+        return this.StackView(new DmsViewModel
+        {
+            PageTitle = "My Lockboxes", Lockboxes = items.Take(50).ToList(), Page = page,
+            HasNextPage = items.Count > 50, Notice = TempData["DmsNotice"] as string
+        });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Withdraw(LockboxId id, [FromServices] WorkflowService workflows)
+    {
+        if (!ModelState.IsValid) return BadRequest();
+        try { await workflows.WithdrawAsync(Actor, id.Value); }
+        catch (DmsException exception)
+        {
+            if (exception.StatusCode != 409) return StatusCode(exception.StatusCode);
+            TempData["DmsNotice"] = exception.Message;
+        }
+        return RedirectToAction(nameof(MyLockboxes));
+    }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateKey(string name, int days = 30)

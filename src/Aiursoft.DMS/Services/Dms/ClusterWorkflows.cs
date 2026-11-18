@@ -6,20 +6,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run, LockboxRequest lockbox, WorkflowDefinition? definition = null)
+public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run, WorkflowLaunch launch, WorkflowDefinition? definition = null)
 {
     public WorkflowDefinition? Definition => definition;
     public TemplateDbContext Inventory => db;
     public WorkflowRun Run => run;
-    public LockboxRequest Lockbox => lockbox;
-    public OperationRequest Parameters => JsonSerializer.Deserialize<OperationRequest>(lockbox.Parameters)!;
+    public WorkflowLaunch Launch => launch;
+    public OperationRequest Parameters => launch.ReadParameters();
 
     public void CallMachine(string name, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
     {
         RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId,
                 Origin = run.Origin, Trigger = WorkflowTrigger.Subworkflow,
         MachineId = machine, Definition = name, Input = Parameters.Input,
-        Version = lockbox.Version, IsMachineTask = true, State = RunState.Queued
+        Version = launch.Version, IsMachineTask = true, State = RunState.Queued
     });
 }
 
@@ -32,15 +32,15 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
 {
     public override async Task ExecuteAsync(ClusterWorkflowContext context)
     {
-        if (context.Definition?.Location != WorkflowLocation.Machine || context.Definition.Version != context.Lockbox.Version)
+        if (context.Definition?.Location != WorkflowLocation.Machine || context.Definition.Version != context.Launch.Version)
             throw new InvalidOperationException("The approved machine workflow version is no longer available.");
-        var targets = JsonSerializer.Deserialize<List<Guid>>(context.Lockbox.TargetMachines)!;
+        var targets = context.Launch.ReadTargets();
         foreach (var id in targets)
         {
             if (!await context.Inventory.Machines.AnyAsync(m => m.Id == id && !m.Disabled))
                 throw new InvalidOperationException("An approved machine is no longer available.");
         }
-        foreach (var id in targets) context.CallMachine(context.Lockbox.Definition, id);
+        foreach (var id in targets) context.CallMachine(context.Launch.Definition, id);
         context.Run.State = RunState.Running;
     }
 }
@@ -56,7 +56,10 @@ public sealed class AddMachineWorkflow : ClusterWorkflow
 {
     public override async Task ExecuteAsync(ClusterWorkflowContext context)
     {
-        var enrollment = await context.Inventory.AgentEnrollments.Include(e => e.JoinKey).SingleOrDefaultAsync(e => e.LockboxId == context.Lockbox.Id);
+        var enrollment = context.Launch.EnrollmentId is { } id
+            ? await context.Inventory.AgentEnrollments.Include(e => e.JoinKey).SingleOrDefaultAsync(e => e.Id == id)
+                ?? throw new InvalidOperationException("Enrollment no longer exists.")
+            : null;
         if (enrollment != null && (enrollment.JoinKey.Revoked || enrollment.JoinKey.ExpiresAt <= DateTime.UtcNow
             || await context.Inventory.Machines.AnyAsync(m => m.InstallationId == enrollment.InstallationId)))
             throw new InvalidOperationException("Enrollment is unavailable or this installation has already joined.");

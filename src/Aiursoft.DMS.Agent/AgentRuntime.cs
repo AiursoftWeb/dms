@@ -28,7 +28,7 @@ public static class AgentRuntime
                 var status = (await client.StatusAsync()).Data ?? throw new InvalidDataException("Missing enrollment status.");
                 if (status.State != last) { Console.WriteLine($"Enrollment {status.Id}: {status.State}; Lockbox {status.LockboxId}; Workflow {status.WorkflowId}"); last = status.State; }
                 if (status.State == "Joined") { config = config with { MachineId = status.MachineId, ReceiptKey = "" }; config.Save(state); break; }
-                if (status.State is "Denied" or "Unavailable" or "Failed") { Console.Error.WriteLine("Enrollment cannot continue. Ask an administrator and run join again with a valid join key."); return; }
+                if (status.State is "Denied" or "Withdrawn" or "Unavailable" or "Failed") { Console.Error.WriteLine("Enrollment cannot continue. Ask an administrator and run join again with a valid join key."); return; }
             }
             catch (HttpRequestException) { Console.Error.WriteLine("Controller connection interrupted; enrollment will resume."); }
             await Task.Delay(TimeSpan.FromSeconds(2));

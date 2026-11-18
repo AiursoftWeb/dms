@@ -75,7 +75,7 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
             RequestId = input.Id, Workflow = WorkflowNames.AddMachine, MachineName = input.MachineName,
             Input = JsonSerializer.Serialize(new { EnrollmentId = input.Id, input.InstallationId }),
             Reason = $"Agent enrollment: {input.MachineName}; Installation={input.InstallationId}; JoinKey={key.Id}"
-        });
+        }, input.Id);
         var item = new AgentEnrollment { Id = input.Id, JoinKeyId = key.Id, LockboxId = box.Id, InstallationId = input.InstallationId,
             MachineName = input.MachineName, ReceiptHash = receipt, AgentKeyHash = agent, MachineId = null, JoinKey = key, Lockbox = box };
         db.AgentEnrollments.Add(item); access.Audit(key.IssuerId, "enrollment.submit", item.Id, $"JoinKey={key.Id}; Lockbox={box.Id}; Installation={input.InstallationId}");
@@ -92,6 +92,7 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
     private async Task<EnrollmentStatus> StatusCoreAsync(AgentEnrollment item)
     {
         var state = item.MachineId != null ? "Joined" : item.Lockbox.Decision == DecisionState.Denied ? "Denied"
+            : item.Lockbox.Decision == DecisionState.Withdrawn ? "Withdrawn"
             : item.JoinKey.Revoked || item.JoinKey.ExpiresAt <= DateTime.UtcNow ? "Unavailable"
             : item.Lockbox.Decision == DecisionState.Pending ? "PendingApproval" : "Registering";
         if (item.MachineId == null && item.Lockbox.WorkflowId is { } operation)

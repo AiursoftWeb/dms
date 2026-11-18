@@ -23,6 +23,7 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
         Guid? requestId = null) => SubmitAsync(definition.Request(input, reason, machines, allMachines, requestId));
     public Task<DmsResponse> ListLockboxesAsync(int page = 0, DecisionState? decision = null) => http.Get<DmsResponse>(Endpoint("lockboxes", new { page, decision }), headers: Headers);
     public Task<DmsResponse> GetLockboxAsync(LockboxId id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}"), headers: Headers);
+    public Task<DmsResponse> WithdrawAsync(LockboxId id) => http.Post<DmsResponse>(Endpoint($"lockboxes/{id}/withdraw"), new AiurApiPayload(new { }), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
     public Task<DmsResponse> DecideAsync(LockboxId id, bool approve, string reason) => http.Post<DmsResponse>(Endpoint($"lockboxes/{id}/decision"), new AiurApiPayload(new { Approve = approve, Reason = reason }), BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
     public Task<DmsResponse> GetWorkflowAsync(Guid id) => http.Get<DmsResponse>(Endpoint($"operations/{id}"), headers: Headers);
     public Task<DmsResponse> ListDefinitionsAsync() => http.Get<DmsResponse>(Endpoint("workflow-definitions"), headers: Headers);

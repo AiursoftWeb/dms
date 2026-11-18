@@ -45,3 +45,7 @@ Ordinary Cluster code executes outside `ControllerGate`. Inventory work uses `Wi
 Live continuations belong to the current Controller process. This implementation does not serialize or replay a C# stack. On restart, queued work can resume; started ordinary parents whose continuations were lost need verification and are not executed again. Started Machine tasks preserve the existing journal/ACK and installation-identity recovery rules. Already persisted queued children can resume without recreating their calls. Restarting an Agent never automatically repeats a task recorded as started with an unknown outcome.
 
 Use the typed Cluster implementation of `cluster.get-machines` as a built-in example. The two-Agent integration example additionally exercises nested Cluster calls, handled and unhandled failures, independent child parameters and IDs, frozen targets, cancellation, and unknown outcomes. No new public workflow command is added by this framework change.
+
+## Approval handoff
+
+Approval commits the Lockbox decision, queued root, execution snapshot and audit outbox together. All children use their root ID to inherit that snapshot. The Controller uses its frozen definition, version, inputs and machine IDs for dispatch and checks current machine availability. Artifact transport also checks the calling Agent, task state, owner and artifact metadata. Completing, failing or stopping a workflow leaves approval history and other pending requests intact. An Agent's built-in schedule has its own system origin and creates no human approval snapshot.

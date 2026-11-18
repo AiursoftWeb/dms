@@ -129,17 +129,14 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
             if (run.State == RunState.NeedsVerification) throw new WorkflowNeedsVerificationException(id);
             throw new OperationCanceledException("The parent workflow is no longer executing.", token);
         }
-        var box = await db.Lockboxes.SingleAsync(l => l.Id == run.LockboxId, token);
-        if (box.Decision != DecisionState.Approved)
-            throw new InvalidOperationException("The root Lockbox does not authorize this execution.");
         return run;
     }
 
     public Task<IReadOnlyList<Guid>> ApprovedMachinesAsync(Guid id, CancellationToken token) => DatabaseAsync<IReadOnlyList<Guid>>(async db =>
     {
         var parent = await ParentAsync(db, id, token);
-        var box = await db.Lockboxes.SingleAsync(l => l.Id == parent.LockboxId, token);
-        return JsonSerializer.Deserialize<List<Guid>>(box.TargetMachines)!.AsReadOnly();
+        var launch = await db.WorkflowLaunches.SingleAsync(l => l.RootId == parent.RootId, token);
+        return launch.ReadTargets();
     });
 
     public Task<T> WithInventoryAsync<T>(Guid id, Func<TemplateDbContext, Task<T>> action, CancellationToken token) => DatabaseAsync(async db =>
@@ -169,8 +166,8 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         {
             token.ThrowIfCancellationRequested();
             var parent = await ParentAsync(db, parentId, token);
-            var box = await db.Lockboxes.SingleAsync(l => l.Id == parent.LockboxId, token);
-            if (machine != null && (!JsonSerializer.Deserialize<List<Guid>>(box.TargetMachines)!.Contains(machine.Value)
+            var launch = await db.WorkflowLaunches.SingleAsync(l => l.RootId == parent.RootId, token);
+            if (machine != null && (!launch.ReadTargets().Contains(machine.Value)
                 || !await db.Machines.AnyAsync(m => m.Id == machine && !m.Disabled, token)))
                 throw new InvalidOperationException("Machine is outside the approved active target snapshot.");
             var child = new WorkflowRun

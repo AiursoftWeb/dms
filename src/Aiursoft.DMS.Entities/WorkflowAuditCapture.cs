@@ -25,25 +25,31 @@ public abstract partial class TemplateDbContext
                 if (entry.State == EntityState.Added)
                     await CaptureAsync(null, box, WorkflowAuditKind.LockboxSubmitted, box.CreatedAt, null, null).ConfigureAwait(false);
                 if ((entry.State == EntityState.Added || entry.Property(b => b.Decision).OriginalValue != box.Decision) && box.Decision != DecisionState.Pending)
-                    await CaptureAsync(null, box, box.Decision == DecisionState.Approved ? WorkflowAuditKind.LockboxApproved : WorkflowAuditKind.LockboxDenied,
+                    await CaptureAsync(null, box, box.Decision switch
+                    {
+                        DecisionState.Approved => WorkflowAuditKind.LockboxApproved,
+                        DecisionState.Denied => WorkflowAuditKind.LockboxDenied,
+                        DecisionState.Withdrawn => WorkflowAuditKind.LockboxWithdrawn,
+                        _ => throw new InvalidOperationException("Unknown Lockbox decision.")
+                    },
                         box.DecidedAt ?? recorded, null, null).ConfigureAwait(false);
             }
             foreach (var entry in runs)
             {
                 var run = entry.Entity;
-                var box = run.LockboxId == null ? null : Lockboxes.Local.FirstOrDefault(b => b.Id == run.LockboxId)
-                    ?? await Lockboxes.FindAsync([run.LockboxId], cancellationToken).ConfigureAwait(false);
+                var launch = run.Origin == WorkflowOrigin.Automatic ? null :
+                    await WorkflowLaunches.FindAsync([run.RootId], cancellationToken).ConfigureAwait(false);
                 var created = entry.State == EntityState.Added;
                 var occurred = created ? run.CreatedAt : run.State.Terminal() ? run.FinishedAt ?? recorded
                     : run.State == RunState.Running && entry.Property(r => r.StartedAt).OriginalValue != run.StartedAt
                         ? run.StartedAt ?? recorded : recorded;
-                await CaptureAsync(run, box, created ? WorkflowAuditKind.WorkflowCreated : WorkflowAuditKind.WorkflowStateChanged,
-                    occurred, created ? null : entry.Property(r => r.State).OriginalValue, run.State).ConfigureAwait(false);
+                await CaptureAsync(run, null, created ? WorkflowAuditKind.WorkflowCreated : WorkflowAuditKind.WorkflowStateChanged,
+                    occurred, created ? null : entry.Property(r => r.State).OriginalValue, run.State, launch).ConfigureAwait(false);
             }
             WorkflowAuditOutbox.AddRange(captured);
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 
-            async Task CaptureAsync(WorkflowRun? run, LockboxRequest? box, WorkflowAuditKind kind, DateTime occurred, RunState? previous, RunState? state)
+            async Task CaptureAsync(WorkflowRun? run, LockboxRequest? box, WorkflowAuditKind kind, DateTime occurred, RunState? previous, RunState? state, WorkflowLaunch? launch = null)
             {
                 Machine? machine = null;
                 if (run?.MachineId != null)
@@ -55,9 +61,11 @@ public abstract partial class TemplateDbContext
                     run?.ParentId, run?.LockboxId ?? box?.Id,
                     run == null ? null : run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run?.MachineId, machine?.InstallationId, run?.Definition ?? box!.Definition, run?.Version ?? box!.Version,
-                    box?.RequesterId, submitted ? null : box?.ApproverId, submitted ? null : box?.Automatic,
-                    box?.Risk, box?.Definition, box?.Version, submitted ? DecisionState.Pending : box?.Decision,
-                    submitted ? null : box?.DecidedAt, previous, state,
+                    launch?.RequesterId ?? box?.RequesterId, submitted ? null : launch?.ApproverId ?? box?.ApproverId,
+                    submitted || box?.Decision == DecisionState.Withdrawn ? null : launch?.Automatic ?? box?.Automatic,
+                    launch?.Risk ?? box?.Risk, launch?.Definition ?? box?.Definition, launch?.Version ?? box?.Version,
+                    submitted ? DecisionState.Pending : launch != null ? DecisionState.Approved : box?.Decision,
+                    submitted ? null : launch?.DecidedAt ?? box?.DecidedAt, previous, state,
                     run?.Origin ?? WorkflowOrigin.Manual,
                     run?.ParentId != null ? WorkflowTrigger.Subworkflow : run?.Trigger ?? WorkflowTrigger.ManualRequest,
                     run?.ScheduleId, run?.ScheduleExpression, run?.ScheduledAt);

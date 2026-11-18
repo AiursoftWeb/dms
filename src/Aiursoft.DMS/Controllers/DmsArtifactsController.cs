@@ -49,20 +49,21 @@ public sealed partial class DmsArtifactsController(DmsArtifactStore store, Acces
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public sealed partial class AgentArtifactsController(DmsArtifactStore store, TemplateDbContext db, AccessService access, DmsArtifactAccess artifacts) : DmsArtifactControllerBase
 {
-    private async Task<LockboxRequest> RequireTaskAsync(Guid taskId)
+    private async Task<WorkflowLaunch> RequireTaskAsync(Guid taskId)
     {
         var machine = Guid.Parse(User.FindFirst("DmsMachine")!.Value);
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == taskId && r.MachineId == machine && r.IsMachineTask);
         if (run == null || run.State is not (RunState.Running or RunState.NeedsVerification)) throw new DmsException(403, "Artifact transport requires this Agent's already-started machine task.");
-        var request = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.Id == run.LockboxId);
-        if (request.Decision != DecisionState.Approved) throw new DmsException(403, "The machine task has no approved request.");
-        return request;
+        var launch = await db.WorkflowLaunches.AsNoTracking().SingleOrDefaultAsync(l => l.RootId == run.RootId);
+        if (launch == null || !launch.ReadTargets().Contains(machine))
+            throw new DmsException(403, "This machine has no grant to transport artifacts for this workflow.");
+        return launch;
     }
     private async Task<StoredDmsArtifact> RequireArtifactAsync(Guid taskId, Guid id)
     {
         var request = await RequireTaskAsync(taskId); var artifact = store.Get(id);
         if (artifact.OwnerId != request.RequesterId) throw new DmsException(403, "Artifact belongs to another requester.");
-        if (artifact.MachineTaskId != taskId && !artifacts.Inputs(request).Any(frozen => DmsArtifactAccess.Matches(frozen, artifact.Reference)))
+        if (artifact.MachineTaskId != taskId && !artifacts.Inputs(request.Definition, request.Version, request.ReadParameters().Input).Any(frozen => DmsArtifactAccess.Matches(frozen, artifact.Reference)))
             throw new DmsException(403, "Artifact is not an input or output of this approved machine task.");
         return artifact;
     }

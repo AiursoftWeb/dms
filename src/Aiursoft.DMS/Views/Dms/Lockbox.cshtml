@@ -30,6 +30,10 @@
     <a class="ms-3" asp-action="Operation" asp-route-id="@item.LegacyApprovalWorkflowId">@Localizer["Historical approval workflow"]</a>
 }
 </div></div>
+@if (item.Decision == DecisionState.Pending && item.RequesterId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+{
+    <partial name="_WithdrawLockbox" model="item" />
+}
 @if (item.Decision == DecisionState.Pending && Model.CanDecide)
 {
     <form asp-action="Decide" method="post" class="card"><div class="card-body">
