@@ -47,7 +47,7 @@ public static class ProcessDiagnostics
 
     public static async Task<OperationResult> BlockedProcessesAsync(MachineWorkflowContext context, BlockedProcessesInput input, AgentEnvironment agent, CancellationToken token)
     {
-        input.Validate(); var host = OperationOutput.Host(agent); var rows = new List<object>(); var skipped = 0; var scanned = 0;
+        input.Validate(); var host = OperationOutput.Host(agent); var rows = new List<object>(); var skipped = 0; var scanned = 0; var unavailableWaitSymbols = 0;
         var truncated = false; var proc = host.FilePath("/proc");
         foreach (var directory in Directory.EnumerateDirectories(proc))
         {
@@ -80,6 +80,7 @@ public static class ProcessDiagnostics
                         }
                         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
                         { missing = "Wait symbol could not be read; thread may have exited or access was denied."; }
+                        if (missing != null) unavailableWaitSymbols++;
                         if (rows.Count == input.Limit) { truncated = true; break; }
                         rows.Add(new { Pid = pid, Tid = tid, Name = stat[(start + 1)..end], UserId = uid, State = "D", WaitChannel = wait,
                             Cgroup = cgroup.Trim(), ContainerId = container, MissingReason = missing });
@@ -91,7 +92,7 @@ public static class ProcessDiagnostics
             if (truncated) break;
         }
         return await OperationOutput.ReportAsync(context, "Blocked thread snapshot collected; exited historical processes cannot be reconstructed.",
-            new { At = DateTimeOffset.UtcNow, Threads = rows, ScannedThreads = scanned, SkippedOrUnreadable = skipped, Truncated = truncated,
-                Visibility = "D state means uninterruptible wait; the wait symbol is evidence, not proof of a particular failed device. Command lines and environment are not read." }, !truncated && skipped == 0);
+            new { At = DateTimeOffset.UtcNow, Threads = rows, ScannedThreads = scanned, SkippedOrUnreadable = skipped, UnavailableWaitSymbols = unavailableWaitSymbols, Truncated = truncated,
+                Visibility = "D state means uninterruptible wait; the wait symbol is evidence, not proof of a particular failed device. Command lines and environment are not read." }, !truncated && skipped == 0 && unavailableWaitSymbols == 0);
     }
 }

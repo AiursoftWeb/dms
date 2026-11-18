@@ -179,7 +179,7 @@ public class IncidentDiagnosticsTests
             StringAssert.Contains(result.Trace, "reader thread"); Assert.IsTrue(result.Result.Complete);
             File.Delete(task + "/wchan");
             var unavailable = await RunAsync(OperationsWorkflows.PerformanceBlockedProcesses, new BlockedProcessesInput(), new OperationHost(root));
-            StringAssert.Contains(unavailable.Trace, "MissingReason");
+            StringAssert.Contains(unavailable.Trace, "MissingReason"); Assert.IsFalse(unavailable.Result.Complete);
         }
         finally { Directory.Delete(root, true); }
     }
