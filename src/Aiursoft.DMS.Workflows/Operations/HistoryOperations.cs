@@ -45,7 +45,7 @@ public static partial class HistoryOperations
                     found.Add(Source("pcp", archive));
                 }
             }
-        return found.DistinctBy(f => f.Id).OrderBy(f => f.Kind).ThenBy(f => f.Path, StringComparer.Ordinal).ToArray();
+        return found.DistinctBy(f => f.Id).OrderBy(f => f.Kind, StringComparer.Ordinal).ThenBy(f => f.Path, StringComparer.Ordinal).ToArray();
     }
     private static HistorySource Source(string kind, string path) => new(
         Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(kind + ":" + path)))[..24].ToLowerInvariant(), kind, path);

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Workflows;
 using Aiursoft.DMS.Workflows.Operations;
@@ -8,7 +9,7 @@ namespace Aiursoft.DMS.Tests;
 [TestClass]
 public class IncidentDiagnosticsTests
 {
-    private static readonly DateTimeOffset Start = DateTimeOffset.Parse("2026-11-17T15:00:00Z");
+    private static readonly DateTimeOffset Start = DateTimeOffset.Parse("2026-11-17T15:00:00Z", CultureInfo.InvariantCulture);
     private static async Task<(OperationResult Result, string Trace)> RunAsync<T>(MachineWorkflowDefinition<T, OperationResult> definition, T input, OperationHost host)
     {
         var events = new ConcurrentQueue<WorkflowEvent>();
