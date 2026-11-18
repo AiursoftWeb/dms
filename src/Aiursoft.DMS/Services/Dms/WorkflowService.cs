@@ -61,11 +61,15 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var targets = new List<Guid>();
         if (definition?.RequiresTargets == true)
         {
+            if (definition.SingleMachineOnly && (request.AllMachines || request.MachineIds.Count > 1))
+                throw new DmsException(400, "This workflow requires a single machine.");
             if (request.AllMachines && request.MachineIds.Count != 0) throw new DmsException(400, "Choose explicit machines or all machines, not both.");
             if (!request.AllMachines && request.MachineIds.Count == 0)
             {
                 var candidates = await db.Machines.Where(m => !m.Disabled).Select(m => m.Id).Take(2).ToListAsync();
-                if (candidates.Count != 1) throw new DmsException(400, "Specify --machine-id or --all-machines: exactly one active machine is required to omit the target.");
+                if (candidates.Count != 1) throw new DmsException(400, definition.SingleMachineOnly
+                    ? "Specify --machine-id to choose one active machine."
+                    : "Specify --machine-id or --all-machines: exactly one active machine is required to omit the target.");
                 request.MachineIds = candidates;
             }
             targets = request.AllMachines

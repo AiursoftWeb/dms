@@ -190,6 +190,8 @@ public class OperationsApprovalTests : TestBase
             "machine security disk-encryption");
         yield return (OperationsWorkflows.SecuritySshAudit, new SshAuditInput(), RiskLevel.Low,
             "machine security ssh-audit");
+        yield return (OperationsWorkflows.SshDisable, new EmptyInput(), RiskLevel.Medium,
+            "machine ssh disable");
         yield return (OperationsWorkflows.SecurityFail2banStatus, new EmptyInput(), RiskLevel.Low,
             "machine security fail2ban-status");
         yield return (OperationsWorkflows.SecurityCleanTrafficStatus, new EmptyInput(), RiskLevel.Low,
@@ -223,9 +225,17 @@ public class OperationsApprovalTests : TestBase
         await store.AppendUploadAsync(artifact.Id, 0, new MemoryStream(bytes), CancellationToken.None);
         await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
         var cases = Cases(artifact).ToArray();
-        Assert.HasCount(95, cases);
-        Assert.AreEqual(95, cases.Select(c => c.Definition.Name).Distinct().Count());
+        Assert.HasCount(96, cases);
+        Assert.AreEqual(96, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var allMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", allMachines: true);
+        var multipleMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", [machine.Id, Guid.NewGuid()]);
+        foreach (var request in new[] { allMachines, multipleMachines })
+        {
+            var exception = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(user.Id, request));
+            Assert.AreEqual(400, exception.StatusCode);
+            Assert.AreEqual("This workflow requires a single machine.", exception.Message);
+        }
         List<Guid> boxes = [];
         foreach (var item in cases)
         {

@@ -191,6 +191,10 @@ public static partial class DmsCommandApp
                 NewNetworkingFirewallInfoCommand(),
                 NewNetworkingTlsCheckCommand()
             ]),
+            new Group("ssh",
+            [
+                StandardCommand("disable", OperationsWorkflows.SshDisable, _ => new EmptyInput())
+            ]),
             new Group("security",
             [
                 NewSecuritySecureBootCommand(),
@@ -472,8 +476,13 @@ public static partial class DmsCommandApp
                 yield return _reason;
                 if (definition?.RequiresTargets == true)
                 {
+                    if (definition.SingleMachineOnly)
+                    {
+                        _machines.AllowMultipleArgumentsPerToken = false;
+                        _machines.Description = "One machine ID. May be omitted when the Controller has exactly one active machine.";
+                    }
                     yield return _machines;
-                    yield return _all;
+                    if (!definition.SingleMachineOnly) yield return _all;
                 }
 
                 foreach (var option in options ??

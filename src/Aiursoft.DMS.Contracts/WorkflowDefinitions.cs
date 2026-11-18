@@ -31,6 +31,7 @@ public abstract record WorkflowDefinition(string Name, RiskLevel Risk, string Ve
 {
     public abstract WorkflowLocation Location { get; }
     public abstract bool RequiresTargets { get; }
+    public bool SingleMachineOnly { get; init; }
     public abstract void Validate(string input);
     public abstract string Normalize(string input);
     public virtual IEnumerable<ArtifactReference> Artifacts(string input) => [];
