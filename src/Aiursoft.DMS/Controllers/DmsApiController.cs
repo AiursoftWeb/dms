@@ -66,7 +66,8 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     public Task<IActionResult> Submit([FromBody] OperationRequest? request) => Handle(async () =>
     {
         if (request == null || !ModelState.IsValid) throw new DmsException(400, "Invalid operation request.");
-        return await workflows.SubmitAsync(Actor, request);
+        var box = await workflows.SubmitAsync(Actor, request);
+        return new LockboxReceipt(box.Id, box.WorkflowId);
     });
 
     [HttpGet("workflow-definitions")]
@@ -80,8 +81,16 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         return await investigation.ReadAsync(Actor, query);
     });
 
+    [HttpGet("lockboxes")]
+    public Task<IActionResult> Lockboxes(int page = 0, DecisionState? decision = null) => Handle(async () =>
+    {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid Lockbox filters.");
+        return await workflows.ListLockboxesAsync(Actor, page, decision);
+    });
+
     [HttpGet("lockboxes/{id:guid}")]
-    public Task<IActionResult> Get(Guid id) => Handle(async () => await workflows.GetLockboxAsync(Actor, id));
+    [HttpGet("lockboxes/lb/{id:guid}")]
+    public Task<IActionResult> Get(Guid id) => Handle(async () => (await workflows.GetLockboxAsync(Actor, id)).Details());
 
     public sealed class DecisionInput
     {
@@ -90,17 +99,23 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     }
 
     [HttpPost("lockboxes/{id:guid}/decision")]
+    [HttpPost("lockboxes/lb/{id:guid}/decision")]
     public Task<IActionResult> Decide(Guid id, [FromBody] DecisionInput? input) => Handle(async () =>
     {
         if (input == null || !ModelState.IsValid) throw new DmsException(400, "Invalid approval decision.");
-        return await workflows.DecideAsync(Actor, id, input.Approve, input.Reason);
+        return (await workflows.DecideAsync(Actor, id, input.Approve, input.Reason)).Details();
     });
 
     [HttpGet("operations/{id:guid}")]
     public Task<IActionResult> Workflow(Guid id) => Handle(async () => await workflows.GetWorkflowAsync(Actor, id));
 
     [HttpGet("operations/{id:guid}/callstack")]
-    public Task<IActionResult> Callstack(Guid id) => Handle(async () => await workflows.CallstackAsync(Actor, id));
+    public Task<IActionResult> Callstack(Guid id) => Handle(async () => (await workflows.CallstackAsync(Actor, id)).Select(run => new
+    {
+        run.Id, run.RootId, run.ParentId, LockboxId = new LockboxId(run.LockboxId), run.MachineId,
+        run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, run.Result,
+        run.Input, run.Version, run.IsMachineTask, run.LastSequence
+    }).ToList());
 
     [HttpGet("operations/{id:guid}/trace")]
     public Task<IActionResult> Trace(Guid id, int skip = 0) => Handle(async () =>

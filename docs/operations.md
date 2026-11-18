@@ -6,7 +6,7 @@ Client 1.3.0 and Agent 1.4.0 add 86 public Machine workflows in ten categories. 
 
 ## Submit and investigate
 
-Every command in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `WorkflowId`, including when automatic approval is enabled.
+Every command in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root.
 
 ```sh
 dms machine performance processes --machine-id "$MACHINE_ID" --sort memory --reason "Find the largest processes"
@@ -15,7 +15,7 @@ dms operation get-callstack --id "$WORKFLOW_ID"
 dms operation get-trace --id "$CHILD_WORKFLOW_ID"
 ```
 
-Inspect the root Lockbox and business children with these existing commands. Each child has its own ID. A pending request performs no machine operation. Read `get-trace` for observations and command output, and `get-workflow` for the typed result. Investigation commands default to tables and support `--output-format json` or `csv`. Output formatting on a submission changes the receipt only.
+Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `get-trace` for observations and command output, and `get-workflow` for the typed result. Investigation commands default to tables and support `--output-format json` or `csv`. Output formatting on a submission changes the receipt only.
 
 Trace entries include their UTC time, source and text. Workflow authors use `TraceAsync` for execution context and `WarningAsync` for incomplete observations; native process output is written as `stdout` and `stderr`. Fixed operations report their tool, time limit, elapsed time, exit code and output character counts. Completed `OperationWorkflow` functions also write their result summary. These diagnostics do not dump arguments, standard input or environment variables; operations that suppress raw output retain that choice.
 

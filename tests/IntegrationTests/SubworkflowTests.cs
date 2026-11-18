@@ -37,9 +37,9 @@ public class SubworkflowTests : TestBase
             var keys = Enumerable.Range(0, 2).Select(_ => DmsKeyAuthenticationHandler.CreateKey(true)).ToArray();
             var machines = keys.Select((key, index) => new Machine { Name = $"node-{index}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }).ToArray();
             var box = new LockboxRequest { WorkflowId = Guid.NewGuid(), ClientRequestId = Guid.NewGuid(), Decision = DecisionState.Approved, TargetMachines = JsonSerializer.Serialize(machines.Select(m => m.Id)), Definition = definition.Name };
-            var root = new WorkflowRun { Id = box.WorkflowId, RootId = box.WorkflowId, LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.Running };
+            var root = new WorkflowRun { Id = box.WorkflowId!.Value, RootId = box.WorkflowId.Value, LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.Running };
             var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, Definition = definition.Name, Input = definition.Serialize(new EmptyInput()), State = initial };
-            box.OperationId = parent.Id;
+            box.WorkflowId = parent.Id;
             db.Machines.AddRange(machines); db.Lockboxes.Add(box); db.WorkflowRuns.AddRange(root, parent);
             await db.SaveChangesAsync();
             return (parent, machines, keys);

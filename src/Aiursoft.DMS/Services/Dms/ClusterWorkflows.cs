@@ -27,28 +27,6 @@ public abstract class ClusterWorkflow
     public abstract Task ExecuteAsync(ClusterWorkflowContext context);
 }
 
-public sealed class LockboxWorkflow : ClusterWorkflow
-{
-    public override Task ExecuteAsync(ClusterWorkflowContext context)
-    {
-        if (context.Lockbox.Decision != DecisionState.Approved || context.Lockbox.OperationId != null)
-            throw new InvalidOperationException("Lockbox must be approved exactly once before creating its operation.");
-        var child = new WorkflowRun
-        {
-            RootId = context.Run.Id, ParentId = context.Run.Id, LockboxId = context.Lockbox.Id,
-            State = RunState.Queued,
-            Definition = context.Definition?.Location == WorkflowLocation.Machine
-                ? WorkflowNames.Batch : context.Lockbox.Definition,
-            Input = context.Parameters.Input, Version = context.Lockbox.Version
-        };
-        context.Inventory.WorkflowRuns.Add(child);
-        context.Lockbox.OperationId = child.Id;
-        context.Run.State = RunState.Running;
-        context.Run.StartedAt = DateTime.UtcNow;
-        return Task.CompletedTask;
-    }
-}
-
 public sealed class MachineBatchWorkflow : ClusterWorkflow
 {
     public override async Task ExecuteAsync(ClusterWorkflowContext context)
@@ -111,12 +89,7 @@ public sealed class CancelWorkflow : ClusterWorkflow
                 || (run.IsMachineTask && run.StartedAt == null && run.State is RunState.Offered or RunState.CancelRequested))
             {
                 run.State = RunState.Cancelled; run.FinishedAt = DateTime.UtcNow;
-                if (run.Definition == WorkflowNames.Lockbox)
-                {
-                    var lockbox = await context.Inventory.Lockboxes.SingleAsync(l => l.Id == run.LockboxId);
-                    lockbox.Decision = DecisionState.Denied; lockbox.DecidedAt = DateTime.UtcNow;
-                    lockbox.DecisionReason = $"Cancelled by approved workflow {context.Run.Id}.";
-                }
+
             }
             else run.State = RunState.CancelRequested;
         }

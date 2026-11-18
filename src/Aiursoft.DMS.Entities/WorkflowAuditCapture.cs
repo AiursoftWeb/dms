@@ -22,13 +22,10 @@ public abstract partial class TemplateDbContext
             foreach (var entry in boxes)
             {
                 var box = entry.Entity;
-                var root = WorkflowRuns.Local.FirstOrDefault(r => r.Id == box.WorkflowId)
-                    ?? await WorkflowRuns.FindAsync([box.WorkflowId], cancellationToken).ConfigureAwait(false);
-                if (root == null) throw new InvalidDataException("A Lockbox audit event requires its root workflow.");
                 if (entry.State == EntityState.Added)
-                    await CaptureAsync(root, box, WorkflowAuditKind.LockboxSubmitted, box.CreatedAt, null, null).ConfigureAwait(false);
+                    await CaptureAsync(null, box, WorkflowAuditKind.LockboxSubmitted, box.CreatedAt, null, null).ConfigureAwait(false);
                 if ((entry.State == EntityState.Added || entry.Property(b => b.Decision).OriginalValue != box.Decision) && box.Decision != DecisionState.Pending)
-                    await CaptureAsync(root, box, box.Decision == DecisionState.Approved ? WorkflowAuditKind.LockboxApproved : WorkflowAuditKind.LockboxDenied,
+                    await CaptureAsync(null, box, box.Decision == DecisionState.Approved ? WorkflowAuditKind.LockboxApproved : WorkflowAuditKind.LockboxDenied,
                         box.DecidedAt ?? recorded, null, null).ConfigureAwait(false);
             }
             foreach (var entry in runs)
@@ -46,16 +43,21 @@ public abstract partial class TemplateDbContext
             WorkflowAuditOutbox.AddRange(captured);
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 
-            async Task CaptureAsync(WorkflowRun run, LockboxRequest? box, WorkflowAuditKind kind, DateTime occurred, RunState? previous, RunState? state)
+            async Task CaptureAsync(WorkflowRun? run, LockboxRequest? box, WorkflowAuditKind kind, DateTime occurred, RunState? previous, RunState? state)
             {
                 Machine? machine = null;
-                if (run.MachineId != null)
+                if (run?.MachineId != null)
                     machine = Machines.Local.FirstOrDefault(m => m.Id == run.MachineId)
                         ?? await Machines.FindAsync([run.MachineId.Value], cancellationToken).ConfigureAwait(false);
-                var item = new WorkflowAuditEntry(kind, occurred, recorded, run.Id, run.RootId, run.ParentId, run.LockboxId,
-                    run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
-                    run.MachineId, machine?.InstallationId, run.Definition, run.Version, box?.RequesterId, box?.ApproverId,
-                    box?.Automatic, box?.Risk, box?.Definition, box?.Version, box?.Decision, box?.DecidedAt, previous, state);
+                var submitted = kind == WorkflowAuditKind.LockboxSubmitted;
+                var workflow = run?.Id ?? (submitted ? null : box?.WorkflowId);
+                var item = new WorkflowAuditEntry(kind, occurred, recorded, workflow, run?.RootId ?? workflow,
+                    run?.ParentId, run?.LockboxId ?? box!.Id,
+                    run == null ? null : run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
+                    run?.MachineId, machine?.InstallationId, run?.Definition ?? box!.Definition, run?.Version ?? box!.Version,
+                    box?.RequesterId, submitted ? null : box?.ApproverId, submitted ? null : box?.Automatic,
+                    box?.Risk, box?.Definition, box?.Version, submitted ? DecisionState.Pending : box?.Decision,
+                    submitted ? null : box?.DecidedAt, previous, state);
                 captured.Add(new WorkflowAuditOutbox { Metadata = JsonSerializer.Serialize(item) });
             }
         }

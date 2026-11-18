@@ -48,6 +48,7 @@ public class WorkflowInvestigationTests : TestBase
             Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode); Assert.DoesNotContain("ClickHouse", await response.Content.ReadAsStringAsync());
         }
         Assert.AreEqual(HttpStatusCode.ServiceUnavailable, (await Http.GetAsync("/api/v1/dms/audit-events")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, (await Http.GetAsync("/api/v1/dms/audit-events?LockboxId=lb%2F" + Guid.NewGuid())).StatusCode);
         await DatabaseAsync(async db => { DmsTestPermissions.Set(db, (await db.PersonalApiKeys.SingleAsync(k => k.KeyHash == DmsKeyAuthenticationHandler.Hash(setup.Key))).UserId, AppPermissionNames.CanReadDmsOperations, false); await db.SaveChangesAsync(); return true; });
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync(route)).StatusCode);
     }
@@ -59,6 +60,7 @@ public class WorkflowInvestigationTests : TestBase
     [DataRow("Kind=999")]
     [DataRow("State=not-a-state")]
     [DataRow("MachineId=not-a-guid")]
+    [DataRow("LockboxId=lb/not-a-guid")]
     [DataRow("From=2026-11-14T00:00:00Z&Until=2026-11-14T00:00:00Z")]
     [DataRow("From=2026-01-01T00:00:00Z&Until=2026-03-01T00:00:00Z")]
     [DataRow("From=0001-01-01T00:00:00Z&Until=0001-01-02T00:00:00Z")]

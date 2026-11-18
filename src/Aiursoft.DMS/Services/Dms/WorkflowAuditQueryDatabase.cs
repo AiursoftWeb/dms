@@ -14,7 +14,7 @@ public sealed partial class TraceDatabase
             ["until"] = query.Until!.Value.UtcDateTime, ["skip"] = query.Page * 50
         };
         Add("machine", "MachineId", query.MachineId?.ToString()); Add("workflow", "WorkflowId", query.WorkflowId?.ToString());
-        Add("root", "RootWorkflowId", query.RootWorkflowId?.ToString()); Add("lockbox", "LockboxId", query.LockboxId?.ToString());
+        Add("root", "RootWorkflowId", query.RootWorkflowId?.ToString()); Add("lockbox", "LockboxId", query.LockboxId?.Value.ToString());
         Add("requester", "RequesterId", query.RequesterId); Add("approver", "ApproverId", query.ApproverId);
         Add("definition", "Definition", query.Definition); Add("requested", "RequestedDefinition", query.RequestedDefinition);
         Add("kind", "Kind", query.Kind?.ToString()); Add("state", "State", query.State?.ToString());
@@ -47,8 +47,8 @@ public sealed partial class TraceDatabase
         DateTime Time(int i) => DateTime.SpecifyKind(row.GetDateTime(i), DateTimeKind.Utc);
         return new WorkflowAuditRow(Guid.Parse(row.GetString(0)), row.GetInt64(1), new WorkflowAuditEntry(
             Enum.Parse<WorkflowAuditKind>(row.GetString(2)), Time(3), Time(4),
-            Guid.Parse(row.GetString(5)), Guid.Parse(row.GetString(6)), Id(7), Guid.Parse(row.GetString(8)),
-            Enum.Parse<WorkflowLocation>(row.GetString(9)), Id(10), Id(11), row.GetString(12), row.GetString(13),
+            Id(5), Id(6), Id(7), Guid.Parse(row.GetString(8)),
+            Value<WorkflowLocation>(9), Id(10), Id(11), row.GetString(12), row.GetString(13),
             Text(14), Text(15), row.IsDBNull(16) ? null : row.GetBoolean(16), Value<RiskLevel>(17), Text(18), Text(19),
             Value<DecisionState>(20), row.IsDBNull(21) ? null : Time(21), Value<RunState>(22), Value<RunState>(23)));
     }

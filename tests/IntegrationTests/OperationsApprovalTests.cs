@@ -130,7 +130,7 @@ public class OperationsApprovalTests : TestBase
             var request = new OperationRequest { Workflow = item.Definition.Name, MachineIds = [machine.Id], Reason = "Approval contract acceptance", Input = serialized };
             var box = await service.SubmitAsync(user.Id, request); boxes.Add(box.Id);
             Assert.AreEqual(item.Risk, box.Risk, item.Command); Assert.AreEqual(DecisionState.Pending, box.Decision, item.Command);
-            Assert.IsNull(box.OperationId, item.Command);
+            Assert.IsNull(box.WorkflowId, item.Command);
             var frozen = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
             Assert.AreEqual(item.Definition.Normalize(serialized), frozen.Input, item.Command);
             CollectionAssert.AreEqual(new[] { machine.Id }, JsonSerializer.Deserialize<Guid[]>(box.TargetMachines)!, item.Command);
@@ -140,6 +140,6 @@ public class OperationsApprovalTests : TestBase
             StringAssert.Contains(help.StdOut, "--reason", item.Command); StringAssert.Contains(help.StdOut, "--machine-id", item.Command);
         }
         var runs = await db.WorkflowRuns.Where(r => boxes.Contains(r.LockboxId)).ToListAsync();
-        Assert.HasCount(95, runs); Assert.IsTrue(runs.All(r => r.Definition == WorkflowNames.Lockbox && r.State == RunState.WaitingApproval));
+        Assert.HasCount(0, runs);
     }
 }

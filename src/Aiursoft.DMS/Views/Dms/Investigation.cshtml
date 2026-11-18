@@ -62,7 +62,9 @@ else if (Model.AuditPage != null)
         <tr>
             <td>@fact.RecordedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)<br /><small>@fact.OccurredAt.ToString("O", CultureInfo.InvariantCulture)</small></td>
             <td>@fact.Kind<br /><small>@row.EventId</small><br /><small>#@row.ControllerSequence</small></td>
-            <td><a asp-action="Operation" asp-route-id="@fact.WorkflowId">@fact.Definition</a><br /><small>@fact.WorkflowId</small>
+            <td>
+                @if (fact.WorkflowId != null) { <a asp-action="Operation" asp-route-id="@fact.WorkflowId">@fact.Definition</a><br /><small>@fact.WorkflowId</small> }
+                else { @fact.Definition }
                 <div>@Localizer["Requested"]: @fact.RequestedDefinition @fact.RequestedVersion</div>
                 <a asp-action="Lockbox" asp-route-id="@fact.LockboxId">@Localizer["Approval context"]</a>
             </td>

@@ -15,11 +15,44 @@ public class WorkflowAuditTests
         var box = new LockboxRequest { RequesterId = "engineer", ClientRequestId = Guid.NewGuid(),
             Definition = "example.operation", Risk = RiskLevel.Medium, Decision = decision, Automatic = decision == DecisionState.Approved,
             Parameters = "never-archive-parameters", Reason = "never-archive-reason", DecisionReason = "never-archive-decision" };
-        var root = new WorkflowRun { RootId = box.WorkflowId = Guid.NewGuid(),
+        var root = new WorkflowRun { RootId = Guid.NewGuid(),
             LockboxId = box.Id, Definition = WorkflowNames.Lockbox, State = RunState.WaitingApproval };
-        root.Id = root.RootId;
+        root.Id = root.RootId; box.WorkflowId = root.Id;
         db.Lockboxes.Add(box); db.WorkflowRuns.Add(root);
         return (box, root);
+    }
+
+    [TestMethod]
+    public async Task ApprovalWithoutAnExecutionArchivesIndependentLockboxFacts()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = Open(connection); await db.Database.EnsureCreatedAsync();
+        var box = new LockboxRequest { RequesterId = "requester", Definition = "future.non-execution-approval" };
+        db.Lockboxes.Add(box); await db.SaveChangesAsync();
+        box.Decision = DecisionState.Approved; box.ApproverId = "reviewer"; box.DecidedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        Assert.AreEqual(0, await db.WorkflowRuns.CountAsync());
+        var facts = (await db.WorkflowAuditOutbox.OrderBy(e => e.Id).ToListAsync()).Select(e => e.Read()).ToList();
+        CollectionAssert.AreEqual(new[] { WorkflowAuditKind.LockboxSubmitted, WorkflowAuditKind.LockboxApproved }, facts.Select(e => e.Kind).ToArray());
+        Assert.IsTrue(facts.All(e => e.WorkflowId == null && e.RootWorkflowId == null && e.State == null && e.LockboxId == box.Id));
+    }
+
+    [TestMethod]
+    public async Task FailedApprovalSaveCannotLeaveAnApprovedRequestOrExecutionRoot()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = Open(connection); await db.Database.EnsureCreatedAsync();
+        var box = new LockboxRequest { RequesterId = "requester", Definition = WorkflowNames.ListMachines };
+        db.Lockboxes.Add(box); await db.SaveChangesAsync();
+        var root = new WorkflowRun { LockboxId = box.Id, Definition = box.Definition, State = RunState.Queued };
+        root.RootId = root.Id; box.WorkflowId = root.Id; box.Decision = DecisionState.Approved; box.DecidedAt = DateTime.UtcNow;
+        db.WorkflowRuns.Add(root);
+        db.WorkflowAuditOutbox.Add(new WorkflowAuditOutbox { EventId = (await db.WorkflowAuditOutbox.SingleAsync()).EventId });
+        await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
+        await using var read = Open(connection);
+        var persisted = await read.Lockboxes.SingleAsync();
+        Assert.AreEqual(DecisionState.Pending, persisted.Decision); Assert.IsNull(persisted.WorkflowId);
+        Assert.AreEqual(0, await read.WorkflowRuns.CountAsync()); Assert.AreEqual(1, await read.WorkflowAuditOutbox.CountAsync());
     }
 
     [TestMethod]
@@ -45,7 +78,7 @@ public class WorkflowAuditTests
         Assert.AreEqual(root.Id, local.RootWorkflowId); Assert.AreEqual(root.Id, local.ParentWorkflowId);
         Assert.AreEqual(machine.Id, local.MachineId); Assert.AreEqual(machine.InstallationId, local.InstallationId);
         Assert.AreEqual("process-1", local.Version); Assert.AreEqual(WorkflowLocation.Machine, local.Location);
-        Assert.AreEqual(RiskLevel.Medium, local.RequestedRisk); Assert.AreEqual(box.Id, local.LockboxId);
+        Assert.AreEqual(RiskLevel.Medium, local.RequestedRisk); Assert.AreEqual(new LockboxId(box.Id), local.LockboxId);
         Assert.IsTrue(events.Where(e => e.WorkflowId == root.Id).All(e => e.MachineId == null && e.InstallationId == null));
     }
 

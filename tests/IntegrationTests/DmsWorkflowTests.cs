@@ -56,7 +56,7 @@ public class DmsWorkflowTests : TestBase
                 using (var scope = Server.Services.CreateScope())
                     rejected = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
                         definition.Request(new EmptyInput(), "Report an unsupported offer", [setup.Machine]));
-                var failed = await WaitForMachineAsync(rejected.WorkflowId, RunState.Failed);
+                var failed = await WaitForMachineAsync(rejected.WorkflowId!.Value, RunState.Failed);
                 Assert.IsNull(failed.StartedAt);
                 Assert.IsNotNull(failed.FinishedAt);
                 StringAssert.Contains(failed.Result, "UnsupportedWorkflow");
@@ -66,7 +66,7 @@ public class DmsWorkflowTests : TestBase
                 while (true)
                 {
                     using var scope = Server.Services.CreateScope();
-                    var tree = await scope.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, rejected.WorkflowId);
+                    var tree = await scope.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, rejected.WorkflowId!.Value);
                     if (tree.All(r => r.State == RunState.Failed)) break;
                     await Task.Delay(50, stopping.Token);
                 }
@@ -75,7 +75,7 @@ public class DmsWorkflowTests : TestBase
                 using (var scope = Server.Services.CreateScope())
                     supported = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
                         MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Continue after rejection", [setup.Machine]));
-                var succeeded = await WaitForMachineAsync(supported.WorkflowId, RunState.Succeeded);
+                var succeeded = await WaitForMachineAsync(supported.WorkflowId!.Value, RunState.Succeeded);
                 StringAssert.Contains(succeeded.Result, journal.InstallationId.ToString());
                 Assert.AreSame(connection, sessions.Get(setup.Machine));
             }
@@ -112,7 +112,7 @@ public class DmsWorkflowTests : TestBase
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
         Guid operation;
         using (var scope = Server!.Services.CreateScope())
-            operation = (await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Machine))).OperationId!.Value;
+            operation = (await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, Request(setup.Machine))).WorkflowId!.Value;
         WorkflowRun? machine = null;
         while (machine == null)
         {
@@ -136,7 +136,7 @@ public class DmsWorkflowTests : TestBase
         {
             using var scope = Server.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            var kill = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == cancellation.OperationId, timeout.Token);
+            var kill = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == cancellation.WorkflowId, timeout.Token);
             if (kill.State is RunState.Running or RunState.Succeeded) break;
             await Task.Delay(50, timeout.Token);
         }
@@ -213,7 +213,9 @@ public class DmsWorkflowTests : TestBase
         var child = new WorkflowRun { RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
         var sibling = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
 
-        var hiddenRun = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
+        var lockboxId = Guid.NewGuid();
+        foreach (var run in new[] { root, parent, child, sibling }) run.LockboxId = lockboxId;
+        var hiddenRun = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded, LockboxId = Guid.NewGuid() };
         hiddenRun.RootId = hiddenRun.Id;
         int lockboxes;
         using (var scope = Server!.Services.CreateScope())
@@ -233,7 +235,7 @@ public class DmsWorkflowTests : TestBase
             var details = body.GetValue("Data", StringComparison.OrdinalIgnoreCase)!.ToObject<WorkflowDetails>()!;
             Assert.AreEqual(run.Id, details.WorkflowId); Assert.AreEqual(root.Id, details.RootWorkflowId);
             Assert.AreEqual(run.ParentId, details.ParentWorkflowId);
-            Assert.AreEqual(run.LockboxId, details.LockboxId);
+            Assert.AreEqual(new LockboxId(run.LockboxId), details.LockboxId);
             Assert.AreEqual(run.MachineId, details.MachineId); Assert.AreEqual(run.Definition, details.Definition);
             Assert.AreEqual(run.State, details.State); Assert.AreEqual(run.Result, details.Result);
             Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);
@@ -422,7 +424,7 @@ public class DmsWorkflowTests : TestBase
         var accepted = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(0, accepted.ProgramReturn, accepted.StdErr);
         var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
-        Assert.AreEqual(RiskLevel.VeryHigh, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
+        Assert.AreEqual(RiskLevel.VeryHigh, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
         var request = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
         var input = MachineWorkflows.DockerExec.ReadInput(request.Input);
         Assert.AreEqual(container, input.Container);
@@ -444,7 +446,7 @@ public class DmsWorkflowTests : TestBase
         Assert.AreEqual(0, kill.ProgramReturn, kill.StdErr);
         var killBox = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User && l.Definition == "machine.docker.kill");
         Assert.AreEqual(RiskLevel.High, killBox.Risk);
-        Assert.IsNull(killBox.OperationId);
+        Assert.IsNull(killBox.WorkflowId);
     }
 
     private async Task<(string User, string Approver, Guid Machine)> ArrangeAsync(bool automatic = false)
@@ -481,7 +483,7 @@ public class DmsWorkflowTests : TestBase
         {
             var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
             var item = await service.SubmitAsync(setup.User, Request(setup.Machine));
-            Assert.AreEqual(DecisionState.Pending, item.Decision); Assert.IsNull(item.OperationId); id = item.Id;
+            Assert.AreEqual(DecisionState.Pending, item.Decision); Assert.IsNull(item.WorkflowId); id = item.Id;
             var forbidden = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.User, id, true, "Self approval"));
             Assert.AreEqual(403, forbidden.StatusCode);
         }
@@ -489,9 +491,9 @@ public class DmsWorkflowTests : TestBase
         {
             var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
             var item = await service.DecideAsync(setup.Approver, id, true, "Approved maintenance");
-            Assert.AreEqual(DecisionState.Approved, item.Decision); Assert.IsNotNull(item.OperationId);
-            var tree = await service.CallstackAsync(setup.User, item.WorkflowId);
-            Assert.IsTrue(tree.Any(r => r.Id == item.OperationId && r.ParentId == item.WorkflowId));
+            Assert.AreEqual(DecisionState.Approved, item.Decision); Assert.IsNotNull(item.WorkflowId);
+            var tree = await service.CallstackAsync(setup.User, item.WorkflowId!.Value);
+            Assert.IsTrue(tree.Any(r => r.Id == item.WorkflowId && r.ParentId == null && r.RootId == r.Id));
             var conflict = await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, id, false, "Late rejection"));
             Assert.AreEqual(409, conflict.StatusCode);
         }
@@ -524,7 +526,7 @@ public class DmsWorkflowTests : TestBase
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var item = await service.SubmitAsync(setup.User, Request(setup.Machine));
         await service.DecideAsync(setup.Approver, item.Id, false, "Maintenance window closed");
-        Assert.IsNull(item.OperationId);
+        Assert.IsNull(item.WorkflowId);
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanApproveOwnWorkflow); await db.SaveChangesAsync();
         var second = await service.SubmitAsync(setup.User, Request(setup.Machine));
@@ -622,7 +624,7 @@ await db.SaveChangesAsync();
         using var check = Server.Services.CreateScope();
         var db = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var item = await db.Lockboxes.SingleAsync(l => l.Id == id);
-        Assert.AreEqual(1, await db.WorkflowRuns.CountAsync(r => r.ParentId == item.WorkflowId));
+        Assert.AreEqual(1, await db.WorkflowRuns.CountAsync(r => r.Id == item.WorkflowId && r.ParentId == null));
     }
 
     [TestMethod]
@@ -639,7 +641,7 @@ await db.SaveChangesAsync();
         var late = new Machine { Name = "Eleventh machine", KeyHash = Guid.NewGuid().ToString() };
         db.Machines.Add(late); await db.SaveChangesAsync();
         await service.DecideAsync(setup.Approver, item.Id, true, "Ten machines approved");
-        var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.OperationId);
+        var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
         await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, item, Server!.Services.GetRequiredService<WorkflowCatalog>().Find(item.Definition)));
         var dispatched = db.WorkflowRuns.Local.Where(r => r.ParentId == operation.Id).ToList();
         Assert.HasCount(10, dispatched);
@@ -665,7 +667,7 @@ await db.SaveChangesAsync();
         {
             var input = Request(setup.Machine); input.Workflow = WorkflowNames.AgentStatus; input.Input = JsonSerializer.Serialize(new EmptyInput());
             var item = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, input);
-            operationId = item.OperationId!.Value;
+            operationId = item.WorkflowId!.Value;
         }
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         while (true)
@@ -703,7 +705,7 @@ await db.SaveChangesAsync();
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
             Assert.AreEqual(WorkflowNames.PullerForceUpdate, box.Definition); Assert.AreEqual("2", box.Version);
-            Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.OperationId);
+            Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
             var input = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
             var frozen = MachineWorkflows.PullerForceUpdate.ReadInput(input.Input);
             Assert.AreEqual("aiursoft/dms:latest", frozen.Image);
@@ -849,11 +851,11 @@ await db.SaveChangesAsync();
         input.AllMachines = true; input.MachineIds.Clear();
         var item = await service.SubmitAsync(setup.User, input);
         Assert.AreEqual(risk, item.Risk); Assert.AreEqual(DecisionState.Pending, item.Decision);
-        Assert.IsNull(item.OperationId);
+        Assert.IsNull(item.WorkflowId);
         db.Machines.Add(new Machine { Name = "Late target", KeyHash = "late" });
         await db.SaveChangesAsync();
         await service.DecideAsync(setup.Approver, item.Id, true, "Read only approval");
-        var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.OperationId);
+        var operation = await db.WorkflowRuns.SingleAsync(r => r.Id == item.WorkflowId);
         Assert.AreEqual(WorkflowNames.Batch, operation.Definition);
         await new MachineBatchWorkflow().ExecuteAsync(new ClusterWorkflowContext(db, operation, item, Server!.Services.GetRequiredService<WorkflowCatalog>().Find(item.Definition)));
         var child = db.WorkflowRuns.Local.Single(r => r.ParentId == operation.Id);
@@ -891,13 +893,13 @@ await db.SaveChangesAsync();
                 {
                     using var scope = Server!.Services.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-                    operation = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == request.OperationId);
+                    operation = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == request.WorkflowId);
                     if (operation.State.Terminal()) break;
                     await Task.Delay(100, stopping.Token);
                 }
                 Assert.IsNotNull(operation); Assert.AreEqual(RunState.Succeeded, operation.State);
                 using var check = Server!.Services.CreateScope();
-                var tree = await check.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, request.WorkflowId);
+                var tree = await check.ServiceProvider.GetRequiredService<WorkflowService>().CallstackAsync(setup.User, request.WorkflowId!.Value);
                 var machine = tree.Single(r => r.IsMachineTask);
                 Assert.AreEqual(RunState.Succeeded, machine.State);
                 if (definition == WorkflowNames.DiskFree)

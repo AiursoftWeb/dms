@@ -76,11 +76,14 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         return this.StackView(new DmsViewModel { Lockboxes = items.Take(50).ToList(), Page = page, HasNextPage = items.Count > 50 });
     }
 
-    public async Task<IActionResult> Lockbox(Guid id)
+    [HttpGet("/Dms/Lockbox", Order = 0)]
+    [HttpGet("/Dms/Lockbox/{id:guid}", Order = 1)]
+    public async Task<IActionResult> Lockbox(LockboxId id)
     {
         try
         {
-            var item = await workflows.GetLockboxAsync(Actor, id);
+            if (!ModelState.IsValid) return BadRequest();
+            var item = await workflows.GetLockboxAsync(Actor, id.Value);
             return this.StackView(new DmsViewModel
             {
                 Lockbox = item, Notice = TempData["DmsNotice"] as string, InputArtifacts = artifacts.Inputs(item),
@@ -120,10 +123,11 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
 
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Decide(Guid id, bool approve, string reason = "")
+    [HttpPost("/Dms/Decide"), ValidateAntiForgeryToken]
+    public async Task<IActionResult> Decide(LockboxId id, bool approve, string reason = "")
     {
-        try { await workflows.DecideAsync(Actor, id, approve, reason); }
+        if (!ModelState.IsValid) return BadRequest();
+        try { await workflows.DecideAsync(Actor, id.Value, approve, reason); }
         catch (DmsException exception) { TempData["DmsNotice"] = exception.Message; }
         return RedirectToAction(nameof(Lockbox), new { id });
     }

@@ -136,7 +136,7 @@ public class ArtifactWorkflowTests : TestBase
             var box = await SubmitAsync(setup.User, OperationsWorkflows.FilesystemExport, new ExportPathInput(source), setup.Machine);
             using (var scope = Server!.Services.CreateScope())
             {
-                await scope.ServiceProvider.GetRequiredService<WorkflowService>().DecideAsync(setup.Reviewer, box.Id, true, "Export exactly this fixture file");
+                box = await scope.ServiceProvider.GetRequiredService<WorkflowService>().DecideAsync(setup.Reviewer, box.Id, true, "Export exactly this fixture file");
             }
             running = new AgentClient(Http.BaseAddress!, setup.AgentKey, journal).RunAsync(stop.Token);
             List<WorkflowRun> tree;
@@ -158,7 +158,7 @@ public class ArtifactWorkflowTests : TestBase
             Assert.IsFalse(File.Exists(imported));
             using (var scope = Server!.Services.CreateScope())
             {
-                await scope.ServiceProvider.GetRequiredService<WorkflowService>().DecideAsync(setup.Reviewer, importBox.Id, true, "Import only the frozen exported bytes");
+                importBox = await scope.ServiceProvider.GetRequiredService<WorkflowService>().DecideAsync(setup.Reviewer, importBox.Id, true, "Import only the frozen exported bytes");
             }
             while (true)
             {
