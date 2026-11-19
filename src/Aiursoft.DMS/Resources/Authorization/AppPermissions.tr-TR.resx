@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Yeni Kullanıcı Ekle</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede yüksek riskli iş akışı isteklerini onaylama veya reddetme izni verir.</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede düşük riskli iş akışı isteklerini onaylama veya reddetme imkânı tanır.</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede orta riskli iş akışı isteklerini onaylama veya reddetme izni verir.</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede güvenli iş akışı isteklerini onaylama veya reddetme izni verir.</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede çok yüksek riskli iş akışı isteklerini onaylama veya reddetme izni verir.</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Herhangi bir kullanıcıya rol atanmasına veya kaldırılmasına izin verir.</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Risk seviyesi için onay izniniz de varsa kendi isteklerinizi karara bağlamanıza olanak tanır.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Rol isimlerinin ve atanmış izinlerin değiştirilmesine izin verir.</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>Kullanıcı detaylarını (e-posta ve roller gibi) değiştirmeye izin verir ve ayrıca kullanıcı şifrelerini sıfırlayabilir.</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede yüksek riskli iş akışları talep etmeye izin verir.</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede düşük riskli iş akışları talep etme izni verir.</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede orta riskli iş akışları isteme izni verir.</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede güvenli iş akışları talep etmeye izin verir.</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>Herhangi bir makinede çok yüksek riskli iş akışları talep etmeye izin verir.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Rollerin kalıcı olarak silinmesine izin verir.</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Genel uygulama ayarlarını görüntüleme ve değiştirme izni verir.</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>Makinelere, iş akışı geçmişine, Lockbox&apos;lara, izlere ve inceleme kayıtlarına görüntüleme izni verir.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Sistem düzeyindeki bilgileri ve ayarları görüntülemeye izin verir.</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>Rollerin listesini ve atanmış izinlerini görüntülemeye izin verir.</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>Yüksek riskli iş akışlarını onayla</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>Düşük riskli iş akışlarını onayla</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>Orta riskli iş akışlarını onayla</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>Kendi iş akışı isteklerini onayla</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>Güvenli iş akışlarını onayla</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>Çok yüksek riskli iş akışlarını onayla</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Kullanıcılara Rol Atama</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>Yüksek riskli iş akışlarını otomatik olarak onayla</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>Düşük riskli iş akışlarını otomatik olarak onayla</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>Orta riskli iş akışlarını otomatik olarak onayla</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>Güvenli iş akışlarını otomatik olarak onayla</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>Çok yüksek riskli iş akışlarını otomatik olarak onayla</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>İstenen yüksek riskli iş akışlarını otomatik olarak onaylar. Ayrıca istek izni de gereklidir.</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Talep edilen düşük riskli iş akışlarını otomatik olarak onaylar. Ayrıca talep izni de gereklidir.</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>İstenen orta riskli iş akışlarını otomatik olarak onaylar. İzin isteme yetkisi de gereklidir.</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>İstenen güvenli iş akışlarını otomatik olarak onaylar. İzin isteme yetkisi de gereklidir.</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>İstenen çok yüksek riskli iş akışlarını otomatik olarak onaylar. Ayrıca istek izni de gereklidir.</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>Kümeleri oluşturun, küme yetkilerini yapılandırın ve Agent kimliklerini yönetin.</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Genel Ayarları Yönet</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>Envanteri, kayıt anahtarlarını ve Agent kimliklerini yönetin. İş akışı izinleri roller üzerinde yapılandırılır.</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>DMS işlemlerini oku</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>İzinleri Oku</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>Bu Uygulamayı Yeniden Başlat</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>Yüksek riskli iş akışları iste</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>Düşük riskli iş akışlarını iste</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>Orta riskli iş akışları iste</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>Güvenli iş akışları iste</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>Çok yüksek riskli iş akışları iste</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Arka Plan İşlerini Görüntüle</value>

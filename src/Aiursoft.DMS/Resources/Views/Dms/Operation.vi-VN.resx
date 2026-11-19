@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>Gọi chồng</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Nguồn gốc</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>Cha</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>Trạng thái</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Lịch hệ thống</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>Theo dõi</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>Trình kích hoạt</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Quy trình</value>

@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>Tất cả các loại</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Tất cả nguồn gốc</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>Tất cả các trạng thái</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>Chỉ hiển thị các sự kiện đã được lưu trữ. Các thay đổi gần đây có thể vẫn đang chờ giao. Trạng thái sự kiện mang tính lịch sử, không phải trạng thái quy trình làm việc hiện tại.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Nguồn gốc</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>Người dùng và phê duyệt</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>Trạng thái</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Lịch hệ thống</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>Khoảng thời gian mặc định là 24 giờ gần nhất. Mỗi truy vấn hỗ trợ tối đa 31 ngày.</value>

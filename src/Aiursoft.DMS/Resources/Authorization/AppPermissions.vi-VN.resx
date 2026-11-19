@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Thêm Người Dùng Mới</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc rủi ro cao trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc rủi ro thấp trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc có rủi ro trung bình trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc an toàn trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc rủi ro rất cao trên bất kỳ máy nào.</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Cho phép gán hoặc gỡ bỏ vai trò cho bất kỳ người dùng nào.</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Cho phép quyết định các yêu cầu của chính bạn khi bạn cũng có quyền phê duyệt cho cấp độ rủi ro của chúng.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Cho phép sửa đổi tên vai trò và các quyền đã được gán.</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>Cho phép sửa đổi thông tin chi tiết của người dùng như email và vai trò, đồng thời có thể đặt lại mật khẩu người dùng.</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>Cho phép yêu cầu các quy trình làm việc có rủi ro cao trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>Cho phép yêu cầu các quy trình làm việc rủi ro thấp trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>Cho phép yêu cầu các quy trình làm việc có mức độ rủi ro trung bình trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>Cho phép yêu cầu các quy trình làm việc an toàn trên bất kỳ máy nào.</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>Cho phép yêu cầu các quy trình làm việc có rủi ro rất cao trên bất kỳ máy nào.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Cho phép xóa vĩnh viễn các vai trò.</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Cho phép xem và chỉnh sửa cài đặt toàn cục của ứng dụng.</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>Cho phép xem các máy, lịch sử quy trình làm việc, Lockboxes, vết theo dõi và hồ sơ điều tra.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Cho phép xem thông tin và cài đặt ở cấp hệ thống.</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>Cho phép xem danh sách các vai trò và quyền đã được gán cho chúng.</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>Phê duyệt quy trình làm việc rủi ro cao</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>Phê duyệt các luồng công việc rủi ro thấp</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>Phê duyệt quy trình làm việc rủi ro trung bình</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>Phê duyệt yêu cầu quy trình làm việc của chính mình</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>Phê duyệt các quy trình làm việc an toàn</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>Phê duyệt các quy trình làm việc rủi ro rất cao</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Gán Vai trò cho Người dùng</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>Tự động phê duyệt quy trình làm việc rủi ro cao</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>Tự động phê duyệt quy trình làm việc rủi ro thấp</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>Tự động phê duyệt các quy trình làm việc có rủi ro trung bình</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>Tự động phê duyệt quy trình làm việc an toàn</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>Tự động phê duyệt quy trình làm việc rủi ro rất cao</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Tự động phê duyệt các quy trình làm việc rủi ro cao đã được yêu cầu. Quyền yêu cầu cũng là bắt buộc.</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Tự động phê duyệt các quy trình làm việc rủi ro thấp đã được yêu cầu. Quyền yêu cầu cũng được yêu cầu.</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Tự động phê duyệt các quy trình làm việc rủi ro trung bình đã được yêu cầu. Quyền yêu cầu cũng là bắt buộc.</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>Tự động phê duyệt các quy trình làm việc an toàn đã được yêu cầu. Quyền yêu cầu cũng bắt buộc phải có.</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Tự động phê duyệt các quy trình làm việc rủi ro rất cao đã được yêu cầu. Quyền yêu cầu cũng được yêu cầu.</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>Tạo các cụm, cấu hình quyền cấp phát cụm và quản lý danh tính Agent.</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Quản lý Cài đặt Toàn cầu</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>Quản lý kho, khóa đăng ký và danh tính Agent. Quyền workflow được cấu hình trên các vai trò.</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>Đọc các hoạt động DMS</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>Đọc Quyền</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>Khởi Động Lại Ứng Dụng Này</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>Yêu cầu quy trình làm việc rủi ro cao</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>Yêu cầu các luồng công việc rủi ro thấp</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>Yêu cầu quy trình làm việc rủi ro trung bình</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>Yêu cầu các quy trình làm việc an toàn</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>Yêu cầu các luồng làm việc rủi ro rất cao</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Xem các nhiệm vụ nền</value>

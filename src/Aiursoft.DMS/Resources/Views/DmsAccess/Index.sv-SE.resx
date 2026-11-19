@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>Klusteråtkomst</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>Konfigurera arbetsflödesriskbehörigheter på roller. De tillämpas på varje maskin i denna DMS-instans.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>Kopiera den här agentnyckeln nu. Den tidigare nyckeln har återkallats.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>Aktuella behörigheter</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS-åtkomst</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>Utfärda agentnyckel</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Roller</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Spara</value>

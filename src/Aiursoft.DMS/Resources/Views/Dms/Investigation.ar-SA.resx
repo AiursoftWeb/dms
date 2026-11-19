@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>جميع الأنواع</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>جميع الأصول</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>جميع الحالات</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>تُعرض الأحداث المؤرشفة فقط. قد لا تكون التغييرات الأخيرة قد أُرسلت بعد. حالة الحدث تاريخية، وليست حالة سير العمل الحالية.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>الأشخاص والموافقة</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>الحالة</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>جدولة النظام</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>المدة الافتراضية هي آخر 24 ساعة. تدعم كل عملية بحث مدة تصل إلى 31 يومًا كحد أقصى.</value>

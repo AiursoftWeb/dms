@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>呼叫堆疊</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>來源</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>父項目</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>狀態</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>系統排程</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>追蹤</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>觸發</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流程</value>

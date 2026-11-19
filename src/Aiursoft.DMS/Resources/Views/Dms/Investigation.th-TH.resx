@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>ทุกประเภท</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>แหล่งที่มาทั้งหมด</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>ทุกสถานะ</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>แสดงเฉพาะเหตุการณ์ที่ถูกรวมในคลังเท่านั้น การเปลี่ยนแปลงล่าสุดอาจยังไม่ได้รับการส่งมอบ สถานะของเหตุการณ์เป็นข้อมูลย้อนหลัง ไม่ใช่สถานะเวิร์กโฟลว์ปัจจุบัน</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>ต้นทาง</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>บุคคลและการอนุมัติ</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>สถานะ</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>ตารางเวลาของระบบ</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>หน้าต่างเริ่มต้นคือ 24 ชั่วโมงที่ผ่านมา การสอบถามแต่ละครั้งรองรับได้สูงสุด 31 วัน</value>

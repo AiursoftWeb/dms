@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>Alle soorten</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Alle oorsprongen</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>Alle statussen</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>Alleen gearchiveerde gebeurtenissen worden weergegeven. Recente wijzigingen zijn mogelijk nog niet afgeleverd. De gebeurtenisstatus is historisch en geeft niet de huidige workflowstatus weer.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Oorsprong</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>Personen en goedkeuring</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>Status</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Systeemplanning</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>Het standaard tijdvenster is de afgelopen 24 uur. Elke zoekopdracht beslaat maximaal 31 dagen.</value>

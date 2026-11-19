@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>叢集存取</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>於角色上設定工作流程風險權限。此權限適用於此 DMS 實例中的所有機器。</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>請立即複製此 Agent 金鑰。之前的金鑰已被撤銷。</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>目前權限</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS 存取</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>簽發 Agent 金鑰</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>風險</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>角色</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>儲存</value>

@@ -36,6 +36,12 @@
   <data name="Deny" xml:space="preserve">
     <value>拒絕</value>
   </data>
+  <data name="Frozen input files" xml:space="preserve">
+    <value>凍結的輸入檔案</value>
+  </data>
+  <data name="Historical approval workflow" xml:space="preserve">
+    <value>歷史核准工作流</value>
+  </data>
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>

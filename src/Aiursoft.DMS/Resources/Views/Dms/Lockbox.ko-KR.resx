@@ -36,6 +36,12 @@
   <data name="Deny" xml:space="preserve">
     <value>거부</value>
   </data>
+  <data name="Frozen input files" xml:space="preserve">
+    <value>동결된 입력 파일</value>
+  </data>
+  <data name="Historical approval workflow" xml:space="preserve">
+    <value>과거 승인 워크플로</value>
+  </data>
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>

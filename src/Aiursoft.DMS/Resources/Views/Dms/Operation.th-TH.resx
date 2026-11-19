@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>Callstack</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>แหล่งที่มา</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>ผู้ดูแล</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>สถานะ</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>ตารางเวลาของระบบ</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>การติดตาม</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>ตัวกระตุ้น</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>เวิร์กโฟลว์</value>

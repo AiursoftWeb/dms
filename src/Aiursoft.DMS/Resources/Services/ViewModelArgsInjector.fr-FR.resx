@@ -39,6 +39,9 @@
   <data name="Anonymous" xml:space="preserve">
     <value>Anonyme</value>
   </data>
+  <data name="Artifact" xml:space="preserve">
+    <value>Artefact</value>
+  </data>
   <data name="Background Jobs" xml:space="preserve">
     <value>Travaux en arrière-plan</value>
   </data>
@@ -68,6 +71,9 @@
   </data>
   <data name="DMS" xml:space="preserve">
     <value>DMS</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>Accès DMS</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Tableau de bord</value>
@@ -132,6 +138,9 @@
   <data name="Manage" xml:space="preserve">
     <value>Gérer</value>
   </data>
+  <data name="My Lockboxes" xml:space="preserve">
+    <value>Mes coffres-forts</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>Non trouvé</value>
   </data>
@@ -161,6 +170,9 @@
   </data>
   <data name="Roles" xml:space="preserve">
     <value>Rôles</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Clés publiques SSH</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Paramètres</value>

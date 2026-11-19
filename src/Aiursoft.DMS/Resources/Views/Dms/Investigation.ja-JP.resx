@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>すべての種類</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>すべての起源</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>すべての状態</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>アーカイブ済みのイベントのみが表示されます。最近の変更は、まだ配信待ちである場合があります。イベントの状態は履歴であり、現在のワークフローの状態ではありません。</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>起源</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>担当者および承認</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>ステート</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>システムスケジュール</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>デフォルトのウィンドウは過去24時間です。各クエリは最大31日間まで対応しています。</value>

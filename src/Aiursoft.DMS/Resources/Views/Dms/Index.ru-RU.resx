@@ -36,6 +36,9 @@
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>Машин не обнаружено. Настройте доступ к кластеру, затем используйте CLI для запроса регистрации машины.</value>
   </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>Ни один компьютер не подключён. Используйте ключ подключения для запроса регистрации агента.</value>
+  </data>
   <data name="Status" xml:space="preserve">
     <value>Статус</value>
   </data>

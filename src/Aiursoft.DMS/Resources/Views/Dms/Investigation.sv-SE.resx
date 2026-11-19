@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>Alla typer</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Alla ursprung</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>Alla tillstånd</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>Endast arkiverade händelser visas. Nya ändringar kan fortfarande invänta leverans. Händelsens status är historisk och återspeglar inte arbetsflödets aktuella status.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Ursprung</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>Personer och godkännande</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>Status</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Systemschema</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>Standardintervallet är de senaste 24 timmarna. Varje sökning kan omfatta högst 31 dagar.</value>

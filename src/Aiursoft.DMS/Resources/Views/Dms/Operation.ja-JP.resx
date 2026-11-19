@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>呼び出しスタック</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>発生源</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>親</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>状態</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>システムスケジュール</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>トレース</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>トリガー</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>ワークフロー</value>
