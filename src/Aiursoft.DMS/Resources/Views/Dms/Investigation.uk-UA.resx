@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>Усі види</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Усі походження</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Усі стани</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>Будь-який режим затвердження</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
+    <value>Контекст затвердження</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>Затверджувач</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID затверджувача</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Автоматичне схвалення</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>Оберіть коректні фільтри розслідування та часовий діапазон тривалістю не більше 31 дня. Використовуйте час у форматі ISO 8601 зі зміщенням UTC.</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Подія</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>Тип події</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>Стан події</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>Тип workflow-інстанції</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Дослідження</value>
+  </data>
+  <data name="Lockbox ID" xml:space="preserve">
+    <value>Ідентифікатор сейфа</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Машині</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>Ідентифікатор машини</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>Додаткові фільтри</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далі</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Ні</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>Жодні архівовані події не відповідають цим фільтрам.</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>Показуються лише архівовані події. Недавні зміни можуть ще очікувати на доставку. Стан події є історичним, а не поточним станом робочого процесу.</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Походження</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>Особи та затвердження</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Попередня</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>Записано (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>Записано з (включно, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>Записано до (не включно, UTC)</value>
+  </data>
+  <data name="Requested" xml:space="preserve">
+    <value>Запитуваний</value>
+  </data>
+  <data name="Requested workflow type" xml:space="preserve">
+    <value>Запитаний тип робочого процесу</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>Заявник</value>
+  </data>
+  <data name="Requester ID" xml:space="preserve">
+    <value>ID запитувача</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>Ідентифікатор кореневого робочого процесу</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>Пошук по архіву</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Стан</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Системне розкладання</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>Типовий вікно — останні 24 години. Кожний запит підтримує не більше 31 дня.</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>Архів розслідувань недоступний або не налаштований. Спробуйте пізніше; очікувані події залишаються надійними.</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Workflow</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>Ідентифікатор робочого процесу</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Так</value>
+  </data>
+
+</root>

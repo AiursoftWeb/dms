@@ -21,6 +21,9 @@
       <data name="All clusters" xml:space="preserve">
     <value>Alle klynger</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Alle oprindelser</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Klynge</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Next" xml:space="preserve">
     <value>Næste</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Oprindelse</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Forrige</value>

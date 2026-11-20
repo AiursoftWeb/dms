@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Approval context" xml:space="preserve">
+    <value>अनुमोदन संदर्भ</value>
+  </data>
+  <data name="Callstack" xml:space="preserve">
+    <value>कॉल स्टैक</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>उत्पत्ति</value>
+  </data>
+  <data name="Parent" xml:space="preserve">
+    <value>माता-पिता</value>
+  </data>
+  <data name="Result" xml:space="preserve">
+    <value>परिणाम</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>अवस्था</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>सिस्टम शेड्यूल</value>
+  </data>
+  <data name="Trace" xml:space="preserve">
+    <value>ट्रेस</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>ट्रिगर</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>कार्यप्रवाह</value>
+  </data>
+
+</root>

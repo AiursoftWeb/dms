@@ -36,6 +36,9 @@
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>Nu este vizibilă nicio mașină. Configurați accesul la cluster, apoi folosiți CLI-ul pentru a solicita înregistrarea unei mașini.</value>
   </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>Nicio mașină nu s-a alăturat. Folosiți o cheie de alăturare pentru a solicita înregistrarea Agentului.</value>
+  </data>
   <data name="Status" xml:space="preserve">
     <value>Stare</value>
   </data>

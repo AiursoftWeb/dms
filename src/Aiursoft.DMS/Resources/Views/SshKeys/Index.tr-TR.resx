@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Challenge expires at" xml:space="preserve">
+    <value>Zorlama şu tarihte sona erer:</value>
+  </data>
+  <data name="Create signing challenge" xml:space="preserve">
+    <value>İmzalama zorlaması oluştur</value>
+  </data>
+  <data name="Key ID" xml:space="preserve">
+    <value>Anahtar Kimliği</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Ad</value>
+  </data>
+  <data name="OpenSSH public key" xml:space="preserve">
+    <value>OpenSSH genel anahtarı</value>
+  </data>
+  <data name="Register a public key" xml:space="preserve">
+    <value>Bir genel anahtar kaydedin</value>
+  </data>
+  <data name="Revoke" xml:space="preserve">
+    <value>Geri Al</value>
+  </data>
+  <data name="Run this on your computer, replacing KEY_PATH with the path to your key. Paste the resulting SSH signature below." xml:space="preserve">
+    <value>Bunu bilgisayarınızda çalıştırın ve KEY_PATH&apos;yi anahtarınızın yoluna göre değiştirin. Oluşan SSH imzasını aşağıya yapıştırın.</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH genel anahtarları</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH imzası</value>
+  </data>
+  <data name="Verified keys" xml:space="preserve">
+    <value>Doğrulanmış anahtarlar</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>Doğrula</value>
+  </data>
+  <data name="Verify key ownership" xml:space="preserve">
+    <value>Anahtar sahipliğini doğrula</value>
+  </data>
+
+</root>

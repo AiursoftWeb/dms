@@ -66,6 +66,9 @@
   <data name="Risk" xml:space="preserve">
     <value>Ryzyko</value>
   </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
+    <value>Uprawnienia ról dotyczą każdego komputera w tej instancji DMS oraz poziomu ryzyka każdego workflow. Automatyczne zatwierdzanie wymaga uprawnienia do składania wniosków. Zatwierdzanie własnego wniosku wymaga również uprawnienia do samodzielnego zatwierdzania.</value>
+  </data>
   <data name="Safe" xml:space="preserve">
     <value>Bezpieczny</value>
   </data>

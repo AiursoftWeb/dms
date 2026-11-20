@@ -75,6 +75,9 @@
   <data name="Consistency Validation" xml:space="preserve">
     <value>Перевірка сумісності</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
   <data name="Develop exclusively in UTC while the system automatically converts and displays dates in the user&apos;s local time zone." xml:space="preserve">
     <value>Розробляйте виключно в UTC, тоді як система автоматично перетворює та відображає дати у часовому поясі користувача.</value>
   </data>
@@ -102,6 +105,9 @@
   <data name="Features a built-in file management system with automatic avatar compression." xml:space="preserve">
     <value>Містить вбудовану систему керування файлами з автоматичним стисненням аватарів.</value>
   </data>
+  <data name="Follow the callstack and inspect execution traces." xml:space="preserve">
+    <value>Слідкуйте за стеком викликів та оглядайте сліди виконання.</value>
+  </data>
   <data name="Handle recurring jobs like cleanup and synchronization with a comprehensive GUI for monitoring execution history and logs." xml:space="preserve">
     <value>Керуйте періодичними завданнями, такими як очищення та синхронізація, за допомогою комплексного графічного інтерфейсу для моніторингу історії виконання та журналів.</value>
   </data>
@@ -113,6 +119,15 @@
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Інтегроване управління файлами</value>
+  </data>
+  <data name="Lockboxes" xml:space="preserve">
+    <value>Сейфи</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Машини</value>
+  </data>
+  <data name="Manage servers through approved workflows." xml:space="preserve">
+    <value>Керуйте серверами через затверджені робочі процеси.</value>
   </data>
   <data name="Models are validated on both client and server sides based on data annotations." xml:space="preserve">
     <value>Моделі перевіряються на клієнтській та серверній сторонах на основі анотацій даних.</value>
@@ -134,6 +149,12 @@
   </data>
   <data name="Responsive Design" xml:space="preserve">
     <value>Адаптивний дизайн</value>
+  </data>
+  <data name="Review requests" xml:space="preserve">
+    <value>Переглянути запити</value>
+  </data>
+  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
+    <value>Перегляньте запитану операцію, параметри та заздалегідь визначені цілі.</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Надійне тестування інтеграції</value>
@@ -165,11 +186,23 @@
   <data name="This is a template project, where we start the voyager..." xml:space="preserve">
     <value>Це шаблонний проект, з якого ми розпочинаємо нашу подорож...</value>
   </data>
+  <data name="View Agent connectivity and machine history." xml:space="preserve">
+    <value>Перегляд з&apos;єднання Agent та історії машин.</value>
+  </data>
+  <data name="View history" xml:space="preserve">
+    <value>Переглянути історію</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>Переглянути машини</value>
+  </data>
   <data name="Welcome" xml:space="preserve">
     <value>Ласкаво просимо</value>
   </data>
   <data name="Why use the Aiursoft Template?" xml:space="preserve">
     <value>Чому варто використовувати шаблон Aiursoft?</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Історія робочих процесів</value>
   </data>
 
 </root>
