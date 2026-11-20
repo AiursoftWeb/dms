@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Approve" xml:space="preserve">
+    <value>स्वीकारें</value>
+  </data>
+  <data name="Approved target machines" xml:space="preserve">
+    <value>स्वीकृत लक्ष्य मशीनें</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>निर्मित</value>
+  </data>
+  <data name="Decision" xml:space="preserve">
+    <value>निर्णय</value>
+  </data>
+  <data name="Decision reason" xml:space="preserve">
+    <value>निर्णय का कारण</value>
+  </data>
+  <data name="Deny" xml:space="preserve">
+    <value>अस्वीकार करें</value>
+  </data>
+  <data name="Frozen input files" xml:space="preserve">
+    <value>स्थिर इनपुट फ़ाइलें</value>
+  </data>
+  <data name="Historical approval workflow" xml:space="preserve">
+    <value>प्राचीन अनुमोदन वर्कफ़्लो</value>
+  </data>
+  <data name="ID" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Lockbox" xml:space="preserve">
+    <value>लॉकबॉक्स</value>
+  </data>
+  <data name="Parameters" xml:space="preserve">
+    <value>पैरामीटर</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>कारण</value>
+  </data>
+  <data name="Requester" xml:space="preserve">
+    <value>अनुरोधकर्ता</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>जोखिम</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>वर्कफ्लो</value>
+  </data>
+
+</root>

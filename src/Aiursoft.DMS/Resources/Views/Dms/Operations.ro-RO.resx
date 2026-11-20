@@ -21,6 +21,9 @@
       <data name="All clusters" xml:space="preserve">
     <value>Toate clusterele</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Toate originile</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Next" xml:space="preserve">
     <value>Următoarea</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Origine</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Anterior</value>

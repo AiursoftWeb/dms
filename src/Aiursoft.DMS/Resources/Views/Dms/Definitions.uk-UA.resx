@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="About these permissions" xml:space="preserve">
+    <value>Про ці дозволи</value>
+  </data>
+  <data name="Automatically approve" xml:space="preserve">
+    <value>Автоматично схвалювати</value>
+  </data>
+  <data name="Cluster" xml:space="preserve">
+    <value>Кластер</value>
+  </data>
+  <data name="High" xml:space="preserve">
+    <value>Високий</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Розташування</value>
+  </data>
+  <data name="Low" xml:space="preserve">
+    <value>Низький</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Машинний</value>
+  </data>
+  <data name="May approve" xml:space="preserve">
+    <value>Можна схвалити</value>
+  </data>
+  <data name="May approve own requests" xml:space="preserve">
+    <value>Можна затверджувати власні запити</value>
+  </data>
+  <data name="May request" xml:space="preserve">
+    <value>Може надсилати запити</value>
+  </data>
+  <data name="Medium" xml:space="preserve">
+    <value>Середній</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Ні</value>
+  </data>
+  <data name="No public standard workflows are registered." xml:space="preserve">
+    <value>Не зареєстровано жодних публічних стандартних робочих процесів.</value>
+  </data>
+  <data name="Requires machine targets" xml:space="preserve">
+    <value>Потребують цільових машин</value>
+  </data>
+  <data name="Risk" xml:space="preserve">
+    <value>Ризик</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
+    <value>Дозволи ролей застосовуються до кожної машини в цій інстанції DMS та до рівня ризику кожного робочого процесу. Автоматичне затвердження вимагає дозволу на подання запиту. Затвердження власного запиту також вимагає дозволу на самозатвердження.</value>
+  </data>
+  <data name="Safe" xml:space="preserve">
+    <value>Безпечний</value>
+  </data>
+  <data name="Standard workflows" xml:space="preserve">
+    <value>Стандартні робочі процеси</value>
+  </data>
+  <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
+    <value>Цей каталог містить публічні стандартні робочі процеси, доступні на контролері. Доступність агентів та підтримувані версії перевіряються під час виконання. Спеціальні операції керування та внутрішні підпроцеси не перелічені.</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>Версія</value>
+  </data>
+  <data name="Very high" xml:space="preserve">
+    <value>Дуже високий</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Процес</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Так</value>
+  </data>
+
+</root>

@@ -30,6 +30,15 @@
   <data name="GitHub" xml:space="preserve">
     <value>GitHub</value>
   </data>
+  <data name="GitLab" xml:space="preserve">
+    <value>GitLab</value>
+  </data>
+  <data name="Issues" xml:space="preserve">
+    <value>Προβλήματα</value>
+  </data>
+  <data name="Open DMS" xml:space="preserve">
+    <value>Ανοίξτε το DMS</value>
+  </data>
   <data name="Source Code" xml:space="preserve">
     <value>Πηγαίος Κώδικας</value>
   </data>

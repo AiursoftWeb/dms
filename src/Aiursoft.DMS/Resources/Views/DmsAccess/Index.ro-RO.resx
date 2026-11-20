@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>Acces la cluster</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>Configurați permisiunile de risc pentru fluxurile de lucru pe roluri. Acestea se aplică tuturor mașinilor din această instanță DMS.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>Copiază acum cheia Agentului. Cheia anterioară a fost revocată.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>Permisiuni curente</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>Acces DMS</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>Emite cheia Agentului</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risc</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Roluri</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Salvează</value>

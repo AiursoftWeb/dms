@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>Küme erişimi</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>Roller üzerinde iş akışı risk izinlerini yapılandırın. Bunlar, bu DMS örneğindeki her makineye uygulanır.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>Bu Agent anahtarını şimdi kopyalayın. Önceki anahtar iptal edildi.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>Mevcut izinler</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS erişimi</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>Ajan Anahtarı Oluştur</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Roller</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Kaydet</value>

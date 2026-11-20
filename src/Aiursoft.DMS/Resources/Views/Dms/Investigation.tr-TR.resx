@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>Tüm türler</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Tüm kaynaklar</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>Tüm durumlar</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>Yalnızca arşivlenmiş olaylar gösterilir. Son değişikliklerin iletilmesi hâlâ bekleniyor olabilir. Olayın durumu geçmişe aittir; mevcut iş akışının durumunu yansıtmaz.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Kaynak</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>Kişiler ve onay</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>Durum</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Sistem zamanlaması</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>Varsayılan zaman aralığı son 24 saattir. Her sorgu en fazla 31 günlük bir aralığı kapsayabilir.</value>

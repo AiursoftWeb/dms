@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>Çağrı yığını</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Kaynak</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>Üst</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>Durum</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Sistem zamanlaması</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>İz Kaydı</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>Tetikleyici</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>İş Akışı</value>
