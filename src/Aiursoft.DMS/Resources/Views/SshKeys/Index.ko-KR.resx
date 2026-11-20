@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Challenge expires at" xml:space="preserve">
+    <value>도전이 만료되는 시각</value>
+  </data>
+  <data name="Create signing challenge" xml:space="preserve">
+    <value>서명 챌린지 생성</value>
+  </data>
+  <data name="Key ID" xml:space="preserve">
+    <value>키 ID</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>이름</value>
+  </data>
+  <data name="OpenSSH public key" xml:space="preserve">
+    <value>OpenSSH 공개 키</value>
+  </data>
+  <data name="Register a public key" xml:space="preserve">
+    <value>공개 키 등록</value>
+  </data>
+  <data name="Revoke" xml:space="preserve">
+    <value>해제</value>
+  </data>
+  <data name="Run this on your computer, replacing KEY_PATH with the path to your key. Paste the resulting SSH signature below." xml:space="preserve">
+    <value>컴퓨터에서 이 명령을 실행하고, KEY_PATH를 키 경로로 대체하세요. 생성된 SSH 서명을 아래에 붙여넣으세요.</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 공개 키</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH 서명</value>
+  </data>
+  <data name="Verified keys" xml:space="preserve">
+    <value>인증된 키</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>확인</value>
+  </data>
+  <data name="Verify key ownership" xml:space="preserve">
+    <value>키 소유권 확인</value>
+  </data>
+
+</root>

@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>Truy cập cụm</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>Cấu hình quyền hạn rủi ro quy trình làm việc trên các vai trò. Chúng được áp dụng cho mọi máy trong bản thể DMS này.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>Sao chép khóa Agent này ngay bây giờ. Khóa trước đã bị thu hồi.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>Quyền hiện tại</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>Truy cập DMS</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>Phát hành khóa Agent</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Rủi ro</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Vai trò</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Lưu</value>

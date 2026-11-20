@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>Все виды</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Все источники</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>Все состояния</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>Отображаются только архивированные события. Недавние изменения могут всё ещё ожидать доставки. Состояние события является историческим, а не текущим состоянием рабочего процесса.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Источник</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>Люди и одобрение</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>Состояние</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Системное расписание</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>Оконно по умолчанию — последние 24 часа. Каждый запрос поддерживает максимум 31 день.</value>

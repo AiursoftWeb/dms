@@ -36,6 +36,9 @@
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>Không có máy nào hiển thị. Cấu hình quyền truy cập cụm, sau đó sử dụng CLI để yêu cầu đăng ký máy.</value>
   </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>Chưa có máy nào tham gia. Sử dụng khóa tham gia để yêu cầu đăng ký Agent.</value>
+  </data>
   <data name="Status" xml:space="preserve">
     <value>Trạng thái</value>
   </data>

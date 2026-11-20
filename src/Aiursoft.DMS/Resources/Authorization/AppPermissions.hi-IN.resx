@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>नए उपयोगकर्ता जोड़ें</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर उच्च-जोखिम वर्कफ्लो अनुरोधों को स्वीकृत या अस्वीकार करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर कम जोखिम वाले वर्कफ्लो अनुरोधों को स्वीकृत या अस्वीकार करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>यह किसी भी मशीन पर मध्यम जोखिम वाले वर्कफ्लो अनुरोधों को स्वीकृत या अस्वीकार करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर सुरक्षित वर्कफ्लो अनुरोधों को स्वीकार करने या अस्वीकार करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर अत्यधिक उच्च-जोखिम वर्कफ्लो अनुरोधों को स्वीकृत या अस्वीकार करने की अनुमति देता है।</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>किसी भी उपयोगकर्ता को भूमिकाएँ सौंपने या हटाने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>जब आपको उनके जोखिम स्तर के लिए स्वीकृति अनुमतियाँ भी हों, तब अपने स्वयं के अनुरोधों पर निर्णय लेने की अनुमति देता है।</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>रोल नामों और उनके सौंपे गए अनुमतियों में संशोधन की अनुमति देता है।</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>उपयोगकर्ता के विवरण जैसे ईमेल और भूमिकाओं में संशोधन की अनुमति देता है, और उपयोगकर्ता के पासवर्ड को रीसेट भी कर सकता है।</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर उच्च-जोखिम वर्कफ्लो के अनुरोध की अनुमति देता है।</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर कम जोखिम वाले वर्कफ़्लो का अनुरोध करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर मध्यम-जोखिम वाले वर्कफ़्लो के अनुरोध की अनुमति देता है।</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर सुरक्षित वर्कफ्लो की अनुरोध करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>किसी भी मशीन पर अत्यधिक उच्च-जोखिम वर्कफ़्लो का अनुरोध करने की अनुमति देता है।</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>भूमिकाओं को स्थायी रूप से हटाने की अनुमति देता है।</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>सभी अनुप्रयोग सेटिंग्स को देखने और संशोधित करने की अनुमति देता है।</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>यह मशीनों, वर्कफ्लो इतिहास, लॉकबॉक्स, ट्रेसेस और जांच रिकॉर्ड को देखने की अनुमति देता है।</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>सिस्टम-स्तरीय जानकारी और सेटिंग्स देखने की अनुमति देता है।</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>भूमिकाओं की सूची और उनके सौंपे गए अनुमतियों को देखने की अनुमति देता है।</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>उच्च-जोखिम वर्कफ्लो स्वीकृत करें</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>कम-जोखिम वर्कफ्लो स्वीकृत करें</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>मध्यम-जोखिम वर्कफ्लो को स्वीकृत करें</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>अपने वर्कफ़्लो अनुरोधों को स्वीकृत करें</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>सुरक्षित वर्कफ़्लो को स्वीकृत करें</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>अत्यधिक उच्च-जोखिम वर्कफ्लो स्वीकृत करें</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>उपयोगकर्ताओं को भूमिकाएँ नियत करें</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>उच्च-जोखिम वर्कफ्लो को स्वतः स्वीकृत करें</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>कम जोखिम वाले वर्कफ़्लो को स्वतः स्वीकृत करें</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>मध्यम-जोखिम वर्कफ्लो को स्वतः स्वीकृत करें</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>सुरक्षित वर्कफ़्लो को स्वतः स्वीकृत करें</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>बहुत उच्च-जोखिम वर्कफ़्लो को स्वतः स्वीकृत करें</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>अनुरोधित उच्च-जोखिम वर्कफ्लो को स्वतः स्वीकृत करता है। अनुरोध की अनुमति भी आवश्यक है।</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>नियत रूप से अनुरोधित कम-जोखिम वर्कफ़्लो को स्वीकृत करता है। अनुरोध अनुमतियाँ भी आवश्यक हैं।</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>यह अनुरोधित मध्यम-जोखिम वर्कफ्लो को स्वतः स्वीकृत करता है। इसके लिए अनुरोध अनुमतियाँ भी आवश्यक हैं।</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>यह अनुरोधित सुरक्षित वर्कफ्लो को स्वतः स्वीकृत करता है। इसके लिए अनुरोध की अनुमति भी आवश्यक है।</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>अनुरोधित अत्यधिक उच्च-जोखिम वर्कफ्लो को स्वतः स्वीकृत करता है। अनुरोध की अनुमति भी आवश्यक है।</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>क्लस्टर बनाएं, क्लस्टर अनुमतियों की कॉन्फ़िगरेशन करें और एजेंट पहचानों का प्रबंधन करें।</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>ग्लोबल सेटिंग्स प्रबंधित करें</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>इन्वेंटरी, एनरोलमेंट कीज़ और एजेंट पहचानों का प्रबंधन करें। वर्कफ़्लो अनुमतियाँ भूमिकाओं पर कॉन्फ़िगर की जाती हैं।</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>DMS संचालन पढ़ें</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>अनुमतियाँ पढ़ें</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>इस ऐप को पुनरारंभ करें</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>उच्च-जोखिम वर्कफ्लो का अनुरोध करें</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>कम जोखिम वाले वर्कफ्लो का अनुरोध करें</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>मध्यम-जोखिम वर्कफ्लो का अनुरोध करें</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>सुरक्षित वर्कफ़्लो का अनुरोध करें</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>बहुत अधिक जोखिम वाले वर्कफ़्लो का अनुरोध करें</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>बैकग्राउंड जॉब्स देखें</value>

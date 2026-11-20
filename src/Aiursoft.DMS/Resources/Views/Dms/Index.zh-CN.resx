@@ -36,6 +36,9 @@
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>未检测到任何机器。请配置集群访问权限，然后使用 CLI 请求机器注册。</value>
   </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>暂无机器加入。请使用加入密钥请求注册 Agent。</value>
+  </data>
   <data name="Status" xml:space="preserve">
     <value>状态</value>
   </data>

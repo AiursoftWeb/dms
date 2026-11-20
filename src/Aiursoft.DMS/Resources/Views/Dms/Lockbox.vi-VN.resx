@@ -36,6 +36,12 @@
   <data name="Deny" xml:space="preserve">
     <value>Từ chối</value>
   </data>
+  <data name="Frozen input files" xml:space="preserve">
+    <value>Tệp đầu vào đã đóng băng</value>
+  </data>
+  <data name="Historical approval workflow" xml:space="preserve">
+    <value>Quy trình phê duyệt lịch sử</value>
+  </data>
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>

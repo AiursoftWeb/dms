@@ -21,6 +21,9 @@
       <data name="All clusters" xml:space="preserve">
     <value>Все кластеры</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Все источники</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Кластер</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Next" xml:space="preserve">
     <value>Далее</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Источник</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Предыдущая</value>

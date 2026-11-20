@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>콜스택</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>출처</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>부모</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>상태</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>시스템 일정</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>추적</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>트리거</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>워크플로</value>

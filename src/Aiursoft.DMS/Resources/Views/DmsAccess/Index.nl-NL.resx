@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>Clustertoegang</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>Configureer workflowrisicopermissies op rollen. Ze worden toegepast op elke machine in deze DMS-instantie.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>Kopieer deze agentensleutel nu. De vorige sleutel is ingetrokken.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>Huidige machtigingen</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS-toegang</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>Agent-sleutel uitgeven</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risico</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>Rollen</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>Opslaan</value>

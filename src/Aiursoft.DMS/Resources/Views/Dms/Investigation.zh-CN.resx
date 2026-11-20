@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>所有类型</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>所有来源</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>所有状态</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>仅显示已归档的事件。最近的更改可能仍在等待交付。事件状态为历史状态，而非当前工作流状态。</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>来源</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>人员与审批</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>状态</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>系统计划</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>默认时间窗口为最近 24 小时。每次查询最多支持 31 天。</value>

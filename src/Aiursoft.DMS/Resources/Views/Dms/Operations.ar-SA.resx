@@ -21,6 +21,9 @@
       <data name="All clusters" xml:space="preserve">
     <value>كل المجموعات</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>جميع المصادر</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>عنقود</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Next" xml:space="preserve">
     <value>التالي</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>المصدر</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>السابق</value>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Challenge expires at" xml:space="preserve">
+    <value>El reto caduca a las</value>
+  </data>
+  <data name="Create signing challenge" xml:space="preserve">
+    <value>Crear desafío de firma</value>
+  </data>
+  <data name="Key ID" xml:space="preserve">
+    <value>ID de la clave</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="OpenSSH public key" xml:space="preserve">
+    <value>Clave pública OpenSSH</value>
+  </data>
+  <data name="Register a public key" xml:space="preserve">
+    <value>Registrar una clave pública</value>
+  </data>
+  <data name="Revoke" xml:space="preserve">
+    <value>Revocar</value>
+  </data>
+  <data name="Run this on your computer, replacing KEY_PATH with the path to your key. Paste the resulting SSH signature below." xml:space="preserve">
+    <value>Ejecuta esto en tu ordenador, sustituyendo KEY_PATH por la ruta a tu clave. Pega a continuación la firma SSH resultante.</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Claves públicas SSH</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>Firma SSH</value>
+  </data>
+  <data name="Verified keys" xml:space="preserve">
+    <value>Claves verificadas</value>
+  </data>
+  <data name="Verify" xml:space="preserve">
+    <value>Verificar</value>
+  </data>
+  <data name="Verify key ownership" xml:space="preserve">
+    <value>Verificar la propiedad de la clave</value>
+  </data>
+
+</root>

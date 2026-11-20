@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>الوصول إلى العنقود</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>قم بإعداد أذونات مخاطر سير العمل على الأدوار. تنطبق هذه الأذونات على كل جهاز في هذه النسخة من DMS.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>انسخ مفتاح الوكيل هذا الآن. أُبطل المفتاح السابق.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>الأذونات الحالية</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>الوصول إلى DMS</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>إصدار مفتاح الوكيل</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>المخاطر</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>الأدوار</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>حفظ</value>

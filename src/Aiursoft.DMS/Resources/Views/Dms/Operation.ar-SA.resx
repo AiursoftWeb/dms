@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>سجل استدعاءات الدوال</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>المصدر</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>الأصل</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>الحالة</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>الجدولة بالنظام</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>سجل التتبّع</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>المحفز</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>سير العمل</value>

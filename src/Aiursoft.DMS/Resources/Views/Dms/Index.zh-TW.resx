@@ -36,6 +36,9 @@
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>目前沒有可見的機器。請設定叢集存取權限，然後使用 CLI 要求機器註冊。</value>
   </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>尚無機器加入。請使用加入金鑰請求 Agent 註冊。</value>
+  </data>
   <data name="Status" xml:space="preserve">
     <value>狀態</value>
   </data>

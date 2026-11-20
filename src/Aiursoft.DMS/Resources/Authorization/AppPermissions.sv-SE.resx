@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Lägg till nya användare</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avvisande av arbetsflödesansökningar med hög risk på valfri maskin.</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avslag av lågriskarbetsflödesansökningar på valfri enhet.</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avvisande av arbetsflödesansökningar med medelrisk på valfri maskin.</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avslag av säkra arbetsflödesbegäran på valfri maskin.</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avvisande av arbetsflödesbegäranden med mycket hög risk på valfri enhet.</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Tillåter att tilldela eller ta bort roller för alla användare.</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Tillåter att du fattar beslut om egna begäranden när du också har godkännandehandling för deras risknivå.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Tillåter modifiering av rollnamn och deras tilldelade behörigheter.</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>Tillåter ändring av användardetaljer som e-post och roller, och kan också återställa användarlösenord.</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>Tillåter att begära hög riskflöden på valfri maskin.</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>Tillåter att begära arbetsflöden med låg risk på valfri maskin.</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>Tillåter att begära medelrisksarbetsflöden på valfri maskin.</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>Tillåter att begära säkra arbetsflöden på valfri enhet.</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>Tillåter att begära arbetsflöden med mycket hög risk på valfri maskin.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Tillåter permanent borttagning av roller.</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Tillåter visning och ändring av globala programinställningar.</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>Tillåter visning av maskiner, arbetsflödeshistorik, lådor, spårar och undersökningsregister.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Ger tillgång att visa systemnivåinformation och inställningar.</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>Tillåter att se listan över roller och deras tilldelade behörigheter.</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>Godkänn högriskarbetsflöden</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>Godkänn arbetsflöden med låg risk</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>Godkänn arbetsflöden med medelrisk</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>Godkänn egna arbetsflödesbegäran</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>Godkänn säkra arbetsflöden</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>Godkänn arbetsflöden med mycket hög risk</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Tilldela roller till användare</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>Godkänn automatiskt högriskarbetsflöden</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>Godkänn lågriskarbetsflöden automatiskt</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>Godkänn medelriskflöden automatiskt</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>Godkänn säkra arbetsflöden automatiskt</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>Godkänn automatiskt arbetsflöden med mycket hög risk</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Godkänner automatiskt begärda högriskarbetsflöden. Tillstånd för begäran krävs också.</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Godkänner automatiskt begärda lågriskarbetsflöden. Behörighet för att begära krävs också.</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Godkänner automatiskt begärda medelrisikoflöden. Behörighet för att begära krävs också.</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>Godkänner automatiskt begärda säkra arbetsflöden. Behörighet för att begära krävs också.</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Godkänner automatiskt begärda flöden med mycket hög risk. Behörighet för att begära krävs också.</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>Skapa kluster, konfigurera klusterbeviljanden och hantera agentidentiteter.</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Hantera globala inställningar</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>Hantera inventering, registreringsnycklar och agentidentiteter. Arbetsflödesbehörigheter konfigureras på roller.</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>Läs DMS-operationer</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>Läs behörigheter</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>Starta om den här appen</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>Begär arbetsflöden med hög risk</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>Begär arbetsflöden med låg risk</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>Begär medelrisksarbetsflöden</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>Begär säkra arbetsflöden</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>Begär arbetsflöden med mycket hög risk</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Visa bakgrundsjobb</value>

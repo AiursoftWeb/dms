@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>Todos los tipos</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Todos los orígenes</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>Todos los estados</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>Solo se muestran eventos archivados. Los cambios recientes pueden estar aún pendientes de entrega. El estado del evento es histórico, no el estado actual del flujo de trabajo.</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Origen</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>Personas y aprobación</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>Estado</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Programación del sistema</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>La ventana predeterminada son las últimas 24 horas. Cada consulta admite un máximo de 31 días.</value>

@@ -21,6 +21,9 @@
       <data name="All kinds" xml:space="preserve">
     <value>所有類型</value>
   </data>
+  <data name="All origins" xml:space="preserve">
+    <value>全部來源</value>
+  </data>
   <data name="All states" xml:space="preserve">
     <value>所有狀態</value>
   </data>
@@ -84,6 +87,9 @@
   <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
     <value>僅顯示已封存的事件。近期的變更可能仍在等待送達。事件狀態為歷史狀態，而非目前的工作流程狀態。</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>來源</value>
+  </data>
   <data name="People and approval" xml:space="preserve">
     <value>人員與核准</value>
   </data>
@@ -119,6 +125,9 @@
   </data>
   <data name="State" xml:space="preserve">
     <value>狀態</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>系統排程</value>
   </data>
   <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
     <value>預設時間範圍為最近 24 小時。每個查詢最多支援 31 天。</value>

@@ -36,6 +36,9 @@
   <data name="Anonymous" xml:space="preserve">
     <value>Anonim</value>
   </data>
+  <data name="Artifact" xml:space="preserve">
+    <value>Artefakt</value>
+  </data>
   <data name="Background Jobs" xml:space="preserve">
     <value>Arka Plan Görevleri</value>
   </data>
@@ -65,6 +68,9 @@
   </data>
   <data name="DMS" xml:space="preserve">
     <value>DMS</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS erişimi</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>Gösterge Paneli</value>
@@ -129,6 +135,9 @@
   <data name="Manage" xml:space="preserve">
     <value>Yönet</value>
   </data>
+  <data name="My Lockboxes" xml:space="preserve">
+    <value>Kilit Kutularım</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>Bulunamadı</value>
   </data>
@@ -158,6 +167,9 @@
   </data>
   <data name="Roles" xml:space="preserve">
     <value>Roller</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH genel anahtarları</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Ayarlar</value>

@@ -24,6 +24,9 @@
   <data name="Callstack" xml:space="preserve">
     <value>Pile d&apos;appels</value>
   </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Origine</value>
+  </data>
   <data name="Parent" xml:space="preserve">
     <value>Parent</value>
   </data>
@@ -33,8 +36,14 @@
   <data name="State" xml:space="preserve">
     <value>État</value>
   </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Planification système</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>Trace</value>
+  </data>
+  <data name="Trigger" xml:space="preserve">
+    <value>Déclencheur</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flux de travail</value>

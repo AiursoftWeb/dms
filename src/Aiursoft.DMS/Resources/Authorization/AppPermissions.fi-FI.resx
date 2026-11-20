@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Lisää uusia käyttäjiä</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Salluu korkean riskin työvuo-toimipyyntöjen hyväksymisen tai hylkäämisen millä tahansa koneella.</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>Salluu matalan riskin työvuo-omien pyyntöjen hyväksymisen tai hylkäämisen millä tahansa koneella.</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>Salluu keskiriskisten työvuo-annotusten hyväksymisen tai hylkäämisen mille tahansa koneelle.</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>Salluu turvallisten työvuo-annotusten hyväksymisen tai hylkäämisen millä tahansa koneella.</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Salluu erittäin korkean riskin työvuo-toimipyyntöjen hyväksymisen tai hylkäämisen mille tahansa koneelle.</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Mahdollistaa roolien määrittämisen tai poistamisen mille tahansa käyttäjälle.</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Sallii omien pyyntöjen käsittelyn, kun sinulla on myöntämislupa kyseisen riskitaso-tason pyyntöihin.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Sallii roolien nimien ja niihin liitettyjen käyttöoikeuksien muokkaamisen.</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>Sallii käyttäjätietojen, kuten sähköpostiosoitteen ja roolien, muokkaamisen sekä käyttäjien salasanojen nollaamisen.</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>Sallii korkean riskin työvuojojen pyytämisen millä tahansa koneella.</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>Sallii matalan riskin työvirtausten pyytämisen millä tahansa koneella.</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>Sallii keskiriskisten työvirtojen pyytämisen mistä tahansa koneesta.</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>Sallii turvallisten työvirtausten pyytämisen mille tahansa koneelle.</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>Sallii erittäin korkean riskin työvuojojen pyytämisen missä tahansa koneessa.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Sallii roolien pysyvän poistamisen.</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Salli näytön ja muokkaus yleiset sovelluksen asetukset.</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>Salli koneiden, työvireiden historian, lukittujen laatikoiden, jäljitelmien ja tutkimusmerkintöjen katselu.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Mahdollistaa järjestelmätason tietojen ja asetusten tarkastelemisen.</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>Mahdollistaa rooliluettelon ja niihin liitettyjen käyttöoikeuksien tarkastelemisen.</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>Hyväksy korkean riskin työvirrat</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>Hyväksy matalan riskin työvirtaukset</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>Hyväksy keskiriskiset työvuo</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>Hyväksy omat työvirenpyyntösi</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>Hyväksy turvatut työvuolet</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>Hyväksy erittäin korkean riskin työvireet</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Anna roolit käyttäjille</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>Hyväksy korkeariskiset työvuoimat automaattisesti</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>Hyväksy matalan riskin työvirtaukset automaattisesti</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>Hyväksy keskiriskiset työvirrat automaattisesti</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>Hyväksy turvallisia työvuoimia automaattisesti</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>Hyväksy erittäin korkean riskin työvirrat automaattisesti</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Hyväksyy pyydetyt korkean riskin työvirrat automaattisesti. Pyyntioikeus on myös vaadittu.</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Hyväksyy pyydetyt matalan riskin työvuoimat automaattisesti. Pyyntiluvan on oltava myös käytössä.</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Hyväksyy pyydettyjen keskiriskityövirtausten pyynnöt automaattisesti. Myös pyyntioikeus on vaadittava.</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>Hyväksyy pyydetyt turvalliset työvuolet automaattisesti. Pyyntilupa on myös välttämätön.</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Hyväksyy pyydetyt erittäin korkean riskin työvuoget automaattisesti. Pyytämislupa on myös vaadittu.</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>Luo klustereita, määritä klusterioikeudet ja hallinnoi Agent-tunnuksia.</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Hallinnoi yleisiä asetuksia</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>Hallinnoi varastoa, rekisteröintitavukoja ja Agent-identiteettejä. Työvuo-oikeudet määritellään rooleissa.</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>Lue DMS-operaatiot</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>Lue käyttöoikeudet</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>Käynnistä tämä sovellus uudelleen</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>Pyydä korkean riskin työvuojoja</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>Pyydä matalan riskin työvuojoita</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>Pyydä keskiriskisiä työskentelykulkuja</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>Pyydä turvallisia työvaiheita</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>Pyydä erittäin korkean riskin työvirtauksia</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Näytä taustatehtävät</value>

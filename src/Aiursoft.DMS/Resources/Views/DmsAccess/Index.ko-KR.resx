@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>클러스터 접근</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>역할에 워크플로 위험 권한을 구성합니다. 이 권한은 이 DMS 인스턴스의 모든 기계에 적용됩니다.</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>지금 이 Agent 키를 복사하세요. 이전 키는 폐기되었습니다.</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>현재 권한</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS 액세스</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>에이전트 키 발급</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>위험도</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>역할</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>저장</value>

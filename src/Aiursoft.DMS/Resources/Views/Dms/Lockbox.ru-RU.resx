@@ -36,6 +36,12 @@
   <data name="Deny" xml:space="preserve">
     <value>Отклонить</value>
   </data>
+  <data name="Frozen input files" xml:space="preserve">
+    <value>Замороженные входные файлы</value>
+  </data>
+  <data name="Historical approval workflow" xml:space="preserve">
+    <value>Исторический рабочий процесс утверждения</value>
+  </data>
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>

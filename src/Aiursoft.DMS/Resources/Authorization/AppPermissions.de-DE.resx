@@ -24,14 +24,47 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Neue Benutzer hinzufügen</value>
   </data>
+  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Ermöglicht das Genehmigen oder Ablehnen von Workflow-Anfragen mit hohem Risiko auf jedem Computer.</value>
+  </data>
+  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
+    <value>Ermöglicht das Genehmigen oder Ablehnen von Workflow-Anfragen mit geringem Risiko auf jedem Computer.</value>
+  </data>
+  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
+    <value>Ermöglicht das Genehmigen oder Ablehnen von Workflowanfragen mit mittlerem Risiko auf jedem Computer.</value>
+  </data>
+  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
+    <value>Ermöglicht das Genehmigen oder Ablehnen von sicheren Workflow-Anfragen auf jedem Computer.</value>
+  </data>
+  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
+    <value>Ermöglicht das Genehmigen oder Ablehnen von Workflow-Anfragen mit sehr hohem Risiko auf jedem Computer.</value>
+  </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Ermöglicht das Zuweisen oder Entfernen von Rollen für beliebige Benutzer.</value>
+  </data>
+  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Ermöglicht das Entscheiden über eigene Anfragen, sofern auch die Genehmigungsberechtigung für das jeweilige Risikoniveau vorliegt.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Ermöglicht die Änderung von Rollennamen und deren zugewiesenen Berechtigungen.</value>
   </data>
   <data name="Allows modification of user details like email and roles, and can also reset user passwords." xml:space="preserve">
     <value>Ermöglicht die Änderung von Benutzerdetails wie E-Mail und Rollen und kann auch Benutzerpasswörter zurücksetzen.</value>
+  </data>
+  <data name="Allows requesting high-risk workflows on any machine." xml:space="preserve">
+    <value>Ermöglicht das Anfordern von Workflows mit hohem Risiko auf jedem Computer.</value>
+  </data>
+  <data name="Allows requesting low-risk workflows on any machine." xml:space="preserve">
+    <value>Ermöglicht das Anfordern von Workflows mit geringem Risiko auf jedem Computer.</value>
+  </data>
+  <data name="Allows requesting medium-risk workflows on any machine." xml:space="preserve">
+    <value>Ermöglicht das Anfordern von Workflows mit mittlerem Risiko auf jedem Computer.</value>
+  </data>
+  <data name="Allows requesting safe workflows on any machine." xml:space="preserve">
+    <value>Ermöglicht das Anfordern sicherer Workflows auf jedem Computer.</value>
+  </data>
+  <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
+    <value>Ermöglicht das Anfordern von Workflows mit sehr hohem Risiko auf jedem Computer.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Ermöglicht das dauerhafte Löschen von Rollen.</value>
@@ -41,6 +74,9 @@
   </data>
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Erlaubt das Anzeigen und Ändern von globalen Anwendungseinstellungen.</value>
+  </data>
+  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
+    <value>Ermöglicht das Anzeigen von Maschinen, Workflowverlauf, Lockboxes, Traces und Untersuchungsprotokollen.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Ermöglicht das Anzeigen von systemweiten Informationen und Einstellungen.</value>
@@ -57,8 +93,56 @@
   <data name="Allows viewing the list of roles and their assigned permissions." xml:space="preserve">
     <value>Ermöglicht das Anzeigen der Liste der Rollen und ihrer zugewiesenen Berechtigungen.</value>
   </data>
+  <data name="Approve high-risk workflows" xml:space="preserve">
+    <value>Hochrisiko-Workflows genehmigen</value>
+  </data>
+  <data name="Approve low-risk workflows" xml:space="preserve">
+    <value>Niedrigrisikoprozesse genehmigen</value>
+  </data>
+  <data name="Approve medium-risk workflows" xml:space="preserve">
+    <value>Workflows mit mittlerem Risiko genehmigen</value>
+  </data>
+  <data name="Approve own workflow requests" xml:space="preserve">
+    <value>Eigene Workflow-Anfragen genehmigen</value>
+  </data>
+  <data name="Approve safe workflows" xml:space="preserve">
+    <value>Sichere Workflows genehmigen</value>
+  </data>
+  <data name="Approve very-high-risk workflows" xml:space="preserve">
+    <value>Sehr hohe Risikoprozesse genehmigen</value>
+  </data>
   <data name="Assign Roles to Users" xml:space="preserve">
     <value>Rollen Benutzern zuweisen</value>
+  </data>
+  <data name="Automatically approve high-risk workflows" xml:space="preserve">
+    <value>Automatisch Hochrisiko-Workflows genehmigen</value>
+  </data>
+  <data name="Automatically approve low-risk workflows" xml:space="preserve">
+    <value>Niedrigrisikoprozesse automatisch genehmigen</value>
+  </data>
+  <data name="Automatically approve medium-risk workflows" xml:space="preserve">
+    <value>Workflow mit mittlerem Risiko automatisch genehmigen</value>
+  </data>
+  <data name="Automatically approve safe workflows" xml:space="preserve">
+    <value>Sichere Workflows automatisch genehmigen</value>
+  </data>
+  <data name="Automatically approve very-high-risk workflows" xml:space="preserve">
+    <value>Sehr hohe Risikoworkflows automatisch genehmigen</value>
+  </data>
+  <data name="Automatically approves requested high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Genehmigt angeforderte Hochrisiko-Workflows automatisch. Dafür ist auch die Berechtigung zum Anfordern erforderlich.</value>
+  </data>
+  <data name="Automatically approves requested low-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Genehmigt angeforderte Workflows mit geringem Risiko automatisch. Die Berechtigung zum Anfordern ist ebenfalls erforderlich.</value>
+  </data>
+  <data name="Automatically approves requested medium-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Genehmigt angeforderte Workflows mit mittlerem Risiko automatisch. Die Berechtigung zum Anfordern ist ebenfalls erforderlich.</value>
+  </data>
+  <data name="Automatically approves requested safe workflows. Request permission is also required." xml:space="preserve">
+    <value>Genehmigt angeforderte sichere Workflows automatisch. Die Berechtigung zum Anfordern ist ebenfalls erforderlich.</value>
+  </data>
+  <data name="Automatically approves requested very-high-risk workflows. Request permission is also required." xml:space="preserve">
+    <value>Genehmigt angeforderte Workflows mit sehr hohem Risiko automatisch. Es ist auch die Berechtigung zum Anfordern erforderlich.</value>
   </data>
   <data name="Create clusters, configure cluster grants and manage Agent identities." xml:space="preserve">
     <value>Cluster erstellen, Cluster-Berechtigungen konfigurieren und Agent-Identitäten verwalten.</value>
@@ -90,6 +174,12 @@
   <data name="Manage Global Settings" xml:space="preserve">
     <value>Globale Einstellungen verwalten</value>
   </data>
+  <data name="Manage inventory, enrollment keys and Agent identities. Workflow permissions are configured on roles." xml:space="preserve">
+    <value>Inventar, Registrierungskeys und Agent-Identitäten verwalten. Workflow-Berechtigungen werden über Rollen konfiguriert.</value>
+  </data>
+  <data name="Read DMS operations" xml:space="preserve">
+    <value>DMS-Operationen lesen</value>
+  </data>
   <data name="Read Permissions" xml:space="preserve">
     <value>Berechtigungen lesen</value>
   </data>
@@ -101,6 +191,21 @@
   </data>
   <data name="Reboot This App" xml:space="preserve">
     <value>Diese App neu starten</value>
+  </data>
+  <data name="Request high-risk workflows" xml:space="preserve">
+    <value>Hochrisiko-Workflows anfordern</value>
+  </data>
+  <data name="Request low-risk workflows" xml:space="preserve">
+    <value>Niedrigrisikoprozesse anfordern</value>
+  </data>
+  <data name="Request medium-risk workflows" xml:space="preserve">
+    <value>Mittelfristige Workflows anfordern</value>
+  </data>
+  <data name="Request safe workflows" xml:space="preserve">
+    <value>Sichere Workflows anfordern</value>
+  </data>
+  <data name="Request very-high-risk workflows" xml:space="preserve">
+    <value>Sehr hochrisiko-Workflows anfordern</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Hintergrundaufträge anzeigen</value>

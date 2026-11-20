@@ -36,6 +36,9 @@
   <data name="Cluster access" xml:space="preserve">
     <value>การเข้าถึงคลัสเตอร์</value>
   </data>
+  <data name="Configure workflow risk permissions on roles. They apply to every machine in this DMS instance." xml:space="preserve">
+    <value>กำหนดสิทธิ์ความเสี่ยงของเวิร์กโฟลว์บนบทบาท สิทธิ์เหล่านี้จะนำไปใช้กับทุกเครื่องในอินสแตนซ์ DMS นี้</value>
+  </data>
   <data name="Copy this Agent key now. The previous key is revoked." xml:space="preserve">
     <value>คัดลอกคีย์ Agent นี้ทันที คีย์ก่อนหน้าถูกเพิกถอนแล้ว</value>
   </data>
@@ -47,6 +50,9 @@
   </data>
   <data name="Current permissions" xml:space="preserve">
     <value>สิทธิ์ปัจจุบัน</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>การเข้าถึง DMS</value>
   </data>
   <data name="Issue Agent key" xml:space="preserve">
     <value>ออกคีย์ Agent</value>
@@ -74,6 +80,9 @@
   </data>
   <data name="Risk" xml:space="preserve">
     <value>ความเสี่ยง</value>
+  </data>
+  <data name="Roles" xml:space="preserve">
+    <value>บทบาท</value>
   </data>
   <data name="Save" xml:space="preserve">
     <value>บันทึก</value>
