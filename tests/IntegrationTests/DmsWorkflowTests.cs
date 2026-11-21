@@ -184,7 +184,7 @@ public class DmsWorkflowTests : TestBase
                 (["machine", "systemctl", "status", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
                 (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
                 (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
-                (["machine", "list", "--reason", new string('a', 2001)], key, "A request ID and a reason of at most 2000 characters are required.")
+                (["machine", "list", "--reason", new string('a', 2001)], key, "The optional reason must be at most 2000 characters.")
             })
             {
                 var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--server", Http.BaseAddress!.ToString(), "--api-key", credential, "--output-format", format]);

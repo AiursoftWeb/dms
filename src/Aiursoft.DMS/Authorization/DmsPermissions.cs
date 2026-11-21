@@ -3,7 +3,7 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Authorization;
 
-// Maps five risk levels to the existing Identity Permission claims. No per-workflow grants.
+// Maps workflow risk levels to the existing Identity permission claims.
 public static class DmsPermissions
 {
     public static string Request(RiskLevel risk) => Name("Request", risk);
@@ -15,6 +15,7 @@ public static class DmsPermissions
     public static RiskPermission ForRisk(ClaimsPrincipal principal, RiskLevel risk)
     {
         var request = principal.HasClaim(AppPermissions.Type, Request(risk));
+        if (risk == RiskLevel.Open) return new RiskPermission(risk, request, request, CanApprove: false);
         return new RiskPermission(risk, request,
             request && principal.HasClaim(AppPermissions.Type, AutoApprove(risk)),
             principal.HasClaim(AppPermissions.Type, Approve(risk)));
@@ -27,6 +28,6 @@ public static class DmsPermissions
     public static CurrentUser Describe(ClaimsPrincipal principal) => new(
         principal.FindFirstValue(ClaimTypes.NameIdentifier)!, principal.Identity?.Name ?? "", CanApproveOwn(principal),
         principal.FindAll(ClaimTypes.Role).Select(c => c.Value).Distinct().Order().ToList(),
-        Enum.GetValues<RiskLevel>().Select(risk => ForRisk(principal, risk)).ToList(),
+        Enum.GetValues<RiskLevel>().OrderBy(risk => risk != RiskLevel.Open).Select(risk => ForRisk(principal, risk)).ToList(),
         principal.FindAll(AppPermissions.Type).Select(c => c.Value).Distinct().Order().ToList());
 }

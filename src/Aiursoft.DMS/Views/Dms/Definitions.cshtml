@@ -23,6 +23,7 @@
                     }</td>
                     <td>@switch (item.Risk)
                     {
+                        case RiskLevel.Open: @Localizer["Open"] break;
                         case RiskLevel.Safe: @Localizer["Safe"] break;
                         case RiskLevel.Low: @Localizer["Low"] break;
                         case RiskLevel.Medium: @Localizer["Medium"] break;

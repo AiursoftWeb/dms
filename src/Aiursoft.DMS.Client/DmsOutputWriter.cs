@@ -60,6 +60,23 @@ public static class DmsOutputWriter
         else WriteHuman(output, data, width, color, true);
     }
 
+    public static void WriteResult(TextWriter output, object result, OutputFormat format, bool color, int width)
+    {
+        var data = JToken.FromObject(result);
+        if (format == OutputFormat.Json)
+            output.WriteLine(data.ToString(Formatting.Indented));
+        else if (format == OutputFormat.Csv)
+        {
+            var emptyListType = data is JArray { Count: 0 }
+                ? result.GetType().GetInterfaces().FirstOrDefault(type =>
+                    type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                : null;
+            var headers = emptyListType?.GetGenericArguments()[0].GetProperties().Select(property => property.Name);
+            WriteCsv(output, data, headers);
+        }
+        else WriteHuman(output, data, width, color);
+    }
+
     private static void WriteLockboxStatus(TextWriter output, JObject summary, int width)
     {
         var decision = (DecisionState)summary["Decision"]!.Value<int>();

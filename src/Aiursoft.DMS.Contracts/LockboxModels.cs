@@ -46,6 +46,7 @@ public sealed class LockboxIdNewtonsoftConverter : Newtonsoft.Json.JsonConverter
 
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxReceipt(LockboxId LockboxId, Guid? WorkflowId);
+public sealed record OpenWorkflowResult(Guid WorkflowId, RunState State, string? Result);
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxDetails(
     LockboxId LockboxId, Guid ClientRequestId, string RequesterId, string Definition, string Version,

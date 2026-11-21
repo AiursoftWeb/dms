@@ -1,4 +1,5 @@
 using Aiursoft.DMS.Client;
+using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Tests;
 
@@ -32,6 +33,15 @@ public class DmsCliHelpTests
         Assert.AreEqual(0, result.ProgramReturn);
         StringAssert.Contains(result.StdOut, "invalidate its previous key");
         StringAssert.Contains(result.StdOut, "whose Agent key will be replaced");
+    }
+
+    [TestMethod]
+    public void EmptyInventoryCsvRetainsColumnHeaders()
+    {
+        using var output = new StringWriter();
+        DmsOutputWriter.WriteResult(output, new List<MachineSummary>(),
+            OutputFormat.Csv, color: false, width: 120);
+        Assert.AreEqual("AgentVersion,Disabled,Id,LastSeen,Name\r\n", output.ToString());
     }
 
     [TestMethod]

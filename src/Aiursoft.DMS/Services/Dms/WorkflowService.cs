@@ -1,8 +1,10 @@
-using System.Text.Json.Nodes;
+using System.Diagnostics;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
@@ -44,7 +46,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (prior != null)
         {
             if (enrollmentId.HasValue) throw new DmsException(409, "Enrollment ID already belongs to another request.");
-            await access.PrincipalAsync(user);
+            var principal = await access.PrincipalAsync(user);
+            if (prior.Risk == RiskLevel.Open && !DmsPermissions.ForRisk(principal, RiskLevel.Open).CanRequest)
+                throw new DmsException(403, "Run open workflows permission is required.");
             // Returning the caller's own submission receipt does not require global log-reading permission.
             // A retry keeps the original inferred scope, even if inventory changes.
             var frozen = JsonSerializer.Deserialize<OperationRequest>(prior.Parameters)!;
@@ -58,12 +62,16 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             if (!JsonNode.DeepEquals(JsonNode.Parse(prior.Parameters), JsonSerializer.SerializeToNode(request))) throw new DmsException(409, "Request ID already belongs to different parameters.");
             return prior;
         }
-        if (request.RequestId == Guid.Empty || request.Reason.Length is < 1 or > 2000)
-            throw new DmsException(400, "A request ID and a reason of at most 2000 characters are required.");
         var risk = RequestRisk(definition, request.Workflow)
             ?? throw new DmsException(400, "This workflow is not available as an external operation.");
+        if (request.RequestId == Guid.Empty || request.Reason.Length > 2000 ||
+            (risk != RiskLevel.Open && request.Reason.Length == 0))
+            throw new DmsException(400, risk == RiskLevel.Open
+                ? "A request ID is required. The optional reason must be at most 2000 characters."
+                : "A request ID and a reason of at most 2000 characters are required.");
         var grant = DmsPermissions.ForRisk(await access.PrincipalAsync(user), risk);
-        if (!grant.CanRequest) throw new DmsException(403, "You cannot request this risk level.");
+        if (!grant.CanRequest) throw new DmsException(403, risk == RiskLevel.Open
+            ? "Run open workflows permission is required." : "You cannot request this risk level.");
         var targets = new List<Guid>();
         if (definition?.RequiresTargets == true)
         {
@@ -106,7 +114,10 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         };
         db.Lockboxes.Add(lockbox);
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
-        if (grant.AutoApprove) await ApproveAsync(lockbox, null, "Automatic approval by the requester's role permissions.", enrollmentId);
+        if (grant.AutoApprove)
+            await ApproveAsync(lockbox, null, risk == RiskLevel.Open
+                ? "Automatic approval by the Open workflow policy."
+                : "Automatic approval by the requester's role permissions.", enrollmentId);
         await SaveDecisionAsync();
         return lockbox;
     }
@@ -251,6 +262,36 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             item.DecidedAt is { } decidedAt ? DateTime.SpecifyKind(decidedAt, DateTimeKind.Utc) : null,
             decidedBy, item.Automatic, approvers, item.WorkflowId);
     });
+
+    public async Task<OpenWorkflowResult> WaitForOpenResultAsync(string user, Guid id, CancellationToken token)
+    {
+        if (!DmsPermissions.ForRisk(await access.PrincipalAsync(user), RiskLevel.Open).CanRequest)
+            throw new DmsException(403, "Run open workflows permission is required.");
+        var box = await db.Lockboxes.AsNoTracking().NotCacheable()
+            .SingleOrDefaultAsync(item => item.Id == id && item.RequesterId == user && item.Risk == RiskLevel.Open, token)
+            ?? throw new DmsException(404, "Open Lockbox not found.");
+        if (box.Decision != DecisionState.Approved || box.WorkflowId is not { } workflowId)
+            throw new DmsException(409, "The Lockbox has no approved execution.");
+
+        // The scheduler can finish while this request waits. Use fresh snapshots outside ControllerGate.
+        var elapsed = Stopwatch.StartNew();
+        while (true)
+        {
+            var run = await db.WorkflowRuns.AsNoTracking().NotCacheable()
+                .Where(item => item.Id == workflowId && item.LockboxId == id && item.ParentId == null)
+                .Select(item => new { item.State, item.Result }).SingleOrDefaultAsync(token)
+                ?? throw new DmsException(404, "Workflow not found.");
+            if (run.State.Terminal() || run.State == RunState.NeedsVerification ||
+                elapsed.Elapsed >= TimeSpan.FromSeconds(10))
+            {
+                var succeeded = run.State is RunState.Succeeded or RunState.Warning;
+                access.Audit(user, "lockbox.result", id);
+                await db.SaveChangesAsync(token);
+                return new OpenWorkflowResult(workflowId, run.State, succeeded ? run.Result : null);
+            }
+            await Task.Delay(TimeSpan.FromMilliseconds(200), token);
+        }
+    }
 
     public Task<WorkflowDetails> GetWorkflowAsync(string user, Guid id) => gate.RunAsync(async () =>
     {

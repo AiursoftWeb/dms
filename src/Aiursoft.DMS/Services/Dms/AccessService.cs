@@ -26,6 +26,7 @@ public sealed class AccessService(TemplateDbContext db, UserManager<User> users,
 
     public async Task<IReadOnlyList<string>> EligibleApproversAsync(RiskLevel risk, string requesterId)
     {
+        if (risk == RiskLevel.Open) return [];
         var approval = DmsPermissions.Approve(risk);
         const string selfApproval = AppPermissionNames.CanApproveOwnWorkflow;
         var direct = db.UserClaims.Select(claim => new { claim.UserId, claim.ClaimType, claim.ClaimValue });

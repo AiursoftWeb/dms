@@ -5,6 +5,7 @@ using Aiursoft.CommandFramework;
 using Aiursoft.CommandFramework.Framework;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
+using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
@@ -31,7 +32,7 @@ public static partial class DmsCommandApp
         .WithFeature(new Group("machine", "List managed machines and request operations on them.",
         [
             StandardCommand("list",
-                "List registered machines and their Agent versions.",
+                "Print the machine inventory. Requires Run open workflows.",
                 ClusterWorkflows.GetMachines, _ => new EmptyInput()),
             StandardCommand("disk-usage",
                 "Summarize filesystem capacity and usage across selected machines.",
@@ -281,7 +282,8 @@ public static partial class DmsCommandApp
         WorkflowDefinition<TInput, TResult> definition,
         Func<ParseResult, TInput> input,
         params Option[] options) =>
-        new(name, description, definition.Name, definition, context => definition.Serialize(input(context)), options);
+        new(name, description, definition.Name, definition, context => definition.Serialize(input(context)), options,
+            readResult: definition.Risk == RiskLevel.Open ? result => definition.ReadResult(result)! : null);
 
     private static ActionCommand BoxDeployCommand()
     {
@@ -480,7 +482,8 @@ public static partial class DmsCommandApp
         Option[]? options = null,
         Argument? argument = null,
         Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null,
-        bool positionalOnly = false) : DmsCommandHandler
+        bool positionalOnly = false,
+        Func<string, object>? readResult = null) : DmsCommandHandler
     {
         public override Command BuildAsCommand()
         {
@@ -597,8 +600,10 @@ public static partial class DmsCommandApp
         {
             if (IsSubmission)
             {
-                _reason.Required = true;
-                _reason.Description = "Reason recorded in the Lockbox. Execution starts after approval.";
+                _reason.Required = readResult == null;
+                _reason.Description = readResult == null
+                    ? "Reason recorded in the Lockbox. Execution starts after approval."
+                    : "Optional reason for the automatically approved Lockbox.";
                 yield return _request;
                 yield return _reason;
                 if (definition?.RequiresTargets == true)
@@ -684,7 +689,8 @@ public static partial class DmsCommandApp
                     MachineName = context.GetValue(_machineName) ?? string.Empty,
                     TargetWorkflowId = action == WorkflowNames.Kill ? id : null
                 });
-                // The Controller returns only the Lockbox ID and its optional execution root.
+                if (readResult != null)
+                    response = await ReadOpenResultAsync(client, response, requestId, context);
             }
             else
                 response = action switch
@@ -716,6 +722,46 @@ public static partial class DmsCommandApp
                 };
 
             return response;
+        }
+
+        protected override void WriteResponse(TextWriter output, DmsResponse response, OutputFormat format, bool color, int width)
+        {
+            if (readResult == null) base.WriteResponse(output, response, format, color, width);
+            else DmsOutputWriter.WriteResult(output, response.Data!, format, color, width);
+        }
+
+        private async Task<DmsResponse> ReadOpenResultAsync(DmsApiClient client, DmsResponse response, Guid requestId,
+            ParseResult context)
+        {
+            var receipt = (response.Data as JObject)?.ToObject<LockboxReceipt>()
+                ?? throw new ArgumentException("The Controller returned no Lockbox receipt.");
+            var workflowId = receipt.WorkflowId ?? throw new ArgumentException(
+                $"Lockbox {receipt.LockboxId} has no approved execution. Check its status before submitting a new request.");
+            try
+            {
+                var reply = await client.WaitForOpenResultAsync(receipt.LockboxId);
+                var run = (reply.Data as JObject)?.ToObject<OpenWorkflowResult>();
+                if (run == null || run.WorkflowId != workflowId)
+                    throw new ArgumentException("The Controller returned an unexpected workflow result.");
+                if (run.State is RunState.Succeeded or RunState.Warning && run.Result != null)
+                {
+                    var result = readResult!(run.Result);
+                    if (run.State == RunState.Warning)
+                        context.InvocationConfiguration.Error.WriteLine($"Warning: Workflow {workflowId} reported warnings.");
+                    reply.Data = result;
+                    return reply;
+                }
+
+                if (run.State.Terminal() || run.State == RunState.NeedsVerification)
+                    throw new ArgumentException($"Workflow state is {run.State}.");
+                throw new ArgumentException($"Timed out waiting for the result. Workflow state: {run.State}.");
+            }
+            catch
+            {
+                context.InvocationConfiguration.Error.WriteLine(
+                    $"Lockbox {receipt.LockboxId}, Workflow {workflowId}. Retry the same request with --request-id {requestId}.");
+                throw;
+            }
         }
     }
 }
