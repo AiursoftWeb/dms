@@ -1,7 +1,5 @@
 using System.Net;
 using System.Net.Http.Headers;
-using System.Net.WebSockets;
-using System.Text.RegularExpressions;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
@@ -74,83 +72,42 @@ public class DmsManagementTests : TestBase
             Assert.AreNotEqual(0, result.ProgramReturn);
         }
         await LoginAsAdmin();
-        Assert.DoesNotContain("Create cluster", await Http.GetStringAsync("/DmsAccess"));
+        Assert.DoesNotContain("Create cluster", await Http.GetStringAsync("/Dms"));
     }
 
     [TestMethod]
-    public async Task WebKeyReplacementRequiresReviewOfTheCurrentMachineAndCannotBeRepeated()
+    public async Task WebDoesNotExposeAgentKeyReplacement()
     {
         await LoginAsAdmin();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-        var oldKey = DmsKeyAuthenticationHandler.CreateKey(true);
-        var machine = new Machine { Name = "Demo Global", KeyHash = DmsKeyAuthenticationHandler.Hash(oldKey) };
-        var other = new Machine { Name = "Demo GX10", KeyHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)) };
-        db.Machines.AddRange(machine, other);
+        var originalHash = DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true));
+        var machine = new Machine { Name = "Demo Global", KeyHash = originalHash };
+        db.Machines.Add(machine);
         await db.SaveChangesAsync();
 
-        var page = await Http.GetStringAsync("/DmsAccess");
-        StringAssert.Contains(page, "Replace the Agent connection key");
-        StringAssert.Contains(page, "View replacement steps");
-        Assert.DoesNotContain("name=\"machineId\"", page);
-        Assert.DoesNotContain("confirmationToken", page);
+        var machines = await Http.GetStringAsync("/Dms");
+        Assert.DoesNotContain("/DmsAccess/RotateAgentKey", machines);
+        Assert.DoesNotContain("Machine connection recovery", machines);
         var detail = await Http.GetStringAsync($"/Dms/Machine/{machine.Id}");
+        StringAssert.Contains(detail, machine.Name);
         StringAssert.Contains(detail, "Workflow history");
-        var path = $"/DmsAccess/RotateAgentKey/{machine.Id}";
-        StringAssert.Contains(detail, path);
-        var review = await Http.GetStringAsync(path);
-        StringAssert.Contains(review, machine.Name);
-        StringAssert.Contains(review, "This immediately invalidates the current key.");
-        Assert.DoesNotContain(oldKey, review);
-        Assert.DoesNotContain(machine.KeyHash, review);
-        var token = Regex.Match(review, """name="confirmationToken" value="([^"]+)""").Groups[1].Value;
-        Assert.IsFalse(string.IsNullOrWhiteSpace(token));
+        Assert.DoesNotContain("/DmsAccess/RotateAgentKey", detail);
 
-        Dictionary<string, string> Confirmation(string name, string value) => new()
+        var replacement = $"/DmsAccess/RotateAgentKey/{machine.Id}";
+        foreach (var removed in new[] { "/DmsAccess", "/DmsAccess/Index", replacement })
         {
-            ["confirmationName"] = name,
-            ["confirmationToken"] = value
-        };
-        var wrongName = await PostForm(path, Confirmation(other.Name, token), path);
-        StringAssert.Contains(await wrongName.Content.ReadAsStringAsync(), "The machine name did not match.");
-        var wrongMachine = await PostForm($"/DmsAccess/RotateAgentKey/{other.Id}", Confirmation(other.Name, token), path);
-        StringAssert.Contains(await wrongMachine.Content.ReadAsStringAsync(), "This confirmation expired");
-        var withoutReview = await PostForm(path, Confirmation(machine.Name, ""), path);
-        StringAssert.Contains(await withoutReview.Content.ReadAsStringAsync(), "This confirmation expired");
-        Assert.AreEqual(HttpStatusCode.NotFound, (await PostForm("/DmsAccess/AgentKey", new() { ["machineId"] = machine.Id.ToString() }, path)).StatusCode);
-        Assert.AreEqual(0, await db.AuditEvents.CountAsync(a => a.Action == "key.agent.rotate" && a.ResourceId == machine.Id));
-
-        var replaced = await PostForm(path, Confirmation(machine.Name, token), path);
-        Assert.AreEqual(HttpStatusCode.OK, replaced.StatusCode);
-        var result = await replaced.Content.ReadAsStringAsync();
-        StringAssert.Contains(result, "Reconnect the Agent");
-        var newKey = Regex.Match(result, @"dmsa_[0-9A-F]{64}").Value;
-        Assert.IsFalse(string.IsNullOrWhiteSpace(newKey));
-        Assert.IsTrue(replaced.Headers.CacheControl?.NoStore);
-        var repeated = await PostForm(path, Confirmation(machine.Name, token), path);
-        var repeatedOutput = await repeated.Content.ReadAsStringAsync();
-        StringAssert.Contains(repeatedOutput, "This confirmation expired");
-        Assert.DoesNotContain(newKey, repeatedOutput);
-        Assert.DoesNotContain(newKey, await Http.GetStringAsync("/DmsAccess/Keys"));
-
-        Assert.AreEqual(1, await db.AuditEvents.CountAsync(a => a.Action == "key.agent.rotate" && a.ResourceId == machine.Id));
-        var saved = await db.Machines.AsNoTracking().SingleAsync(m => m.Id == machine.Id);
-        Assert.IsTrue(DmsKeyAuthenticationHandler.Hash(newKey) == saved.KeyHash);
-        var untouched = await db.Machines.AsNoTracking().SingleAsync(m => m.Id == other.Id);
-        Assert.IsTrue(other.KeyHash == untouched.KeyHash);
-
-        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", oldKey);
-        Assert.AreEqual(HttpStatusCode.Unauthorized, (await Http.GetAsync("/api/agent/channel")).StatusCode);
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        using var socket = new ClientWebSocket();
-        socket.Options.SetRequestHeader("Authorization", $"Bearer {newKey}");
-        await socket.ConnectAsync(new UriBuilder(Http.BaseAddress!) { Scheme = "ws", Path = "/api/agent/channel" }.Uri, timeout.Token);
-        var installationId = Guid.NewGuid();
-        await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", Version = "fixture", InstallationId = installationId }, timeout.Token);
-        while (!await db.Machines.AsNoTracking().AnyAsync(m => m.Id == machine.Id && m.InstallationId == installationId, timeout.Token))
-        {
-            await Task.Delay(25, timeout.Token);
+            Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync(removed)).StatusCode, removed);
         }
+        foreach (var removed in new[] { "/DmsAccess/AgentKey", replacement })
+        {
+            var form = new Dictionary<string, string> { ["machineId"] = machine.Id.ToString(), ["confirmationName"] = machine.Name };
+            Assert.AreEqual(HttpStatusCode.NotFound, (await PostForm(removed, form, "/DmsAccess/Keys")).StatusCode, removed);
+        }
+
+        var saved = await db.Machines.AsNoTracking().SingleAsync(m => m.Id == machine.Id);
+        Assert.AreEqual(originalHash, saved.KeyHash);
+        Assert.IsFalse(await db.AuditEvents.AnyAsync(a => a.Action == "key.agent.rotate" && a.ResourceId == machine.Id));
     }
 
     [TestMethod]

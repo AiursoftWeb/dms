@@ -1,6 +1,4 @@
 using System.Security.Claims;
-using System.Security.Cryptography;
-using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
@@ -8,9 +6,7 @@ using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Services;
 using Aiursoft.UiStack.Navigation;
-using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,76 +14,9 @@ namespace Aiursoft.DMS.Controllers;
 
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsAccessController(TemplateDbContext db, AccessService access, DmsManagementService management,
-    IDataProtectionProvider dataProtection) : Controller
+public class DmsAccessController(TemplateDbContext db, AccessService access) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
-    [HttpGet, Authorize(Policy = AppPermissionNames.CanManageDmsAccess)]
-    [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "DMS", CascadedLinksIcon = "shield", LinkText = "Replace the Agent connection key", LinkOrder = 1)]
-    public async Task<IActionResult> Index() => this.StackView(new DmsViewModel
-    {
-        PageTitle = "Replace the Agent connection key",
-        Machines = await db.Machines.AsNoTracking().Where(m => !m.Disabled).OrderBy(m => m.Name).ToListAsync()
-    });
-
-    [HttpGet, Authorize(Policy = AppPermissionNames.CanManageDmsAccess)]
-    public async Task<IActionResult> RotateAgentKey(Guid id)
-    {
-        var machine = await FindMachineAsync(id);
-        return machine == null ? NotFound() : Review(machine);
-    }
-
-    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = AppPermissionNames.CanManageDmsAccess)]
-    public async Task<IActionResult> RotateAgentKey(Guid id, string? confirmationName, string? confirmationToken)
-    {
-        var machine = await FindMachineAsync(id);
-        if (machine == null) return NotFound();
-        if (machine.Disabled) return Conflict();
-        if (confirmationName?.Trim() != machine.Name)
-            return Review(machine, AgentKeyRotationError.WrongName);
-
-        try
-        {
-            if (string.IsNullOrEmpty(confirmationToken))
-                return Review(machine, AgentKeyRotationError.StaleReview);
-            var expectedHash = Protector(id).Unprotect(confirmationToken);
-            var result = await management.RotateConfirmedAgentKeyAsync(Actor, id, expectedHash, machine.Name);
-            return this.StackView(new AgentKeyRotationViewModel
-            {
-                MachineId = id, MachineName = machine.Name, NewKey = result.Key, PageTitle = "Connection key replaced"
-            }, "AgentKeyReplaced");
-        }
-        catch (CryptographicException)
-        {
-            return Review(machine, AgentKeyRotationError.StaleReview);
-        }
-        catch (DmsException error) when (error.StatusCode == 409)
-        {
-            machine = await FindMachineAsync(id);
-            return machine == null ? NotFound() : Review(machine, AgentKeyRotationError.StaleReview);
-        }
-        catch (DmsException error)
-        {
-            return StatusCode(error.StatusCode);
-        }
-    }
-
-    private Task<Machine?> FindMachineAsync(Guid id) =>
-        db.Machines.AsNoTracking().NotCacheable().SingleOrDefaultAsync(m => m.Id == id);
-
-    private ITimeLimitedDataProtector Protector(Guid id) =>
-        dataProtection.CreateProtector("Dms.AgentKeyRotation", Actor, id.ToString("D")).ToTimeLimitedDataProtector();
-
-    private IActionResult Review(Machine machine, AgentKeyRotationError error = AgentKeyRotationError.None)
-    {
-        if (machine.Disabled) return Conflict();
-        return this.StackView(new AgentKeyRotationViewModel
-        {
-            MachineId = machine.Id, MachineName = machine.Name, Error = error,
-            ConfirmationToken = Protector(machine.Id).Protect(machine.KeyHash, TimeSpan.FromMinutes(10))
-        }, nameof(RotateAgentKey));
-    }
 
     [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "Personal", CascadedLinksIcon = "user", LinkText = "API Keys", LinkOrder = 2)]
     public async Task<IActionResult> Keys() => this.StackView(new DmsViewModel

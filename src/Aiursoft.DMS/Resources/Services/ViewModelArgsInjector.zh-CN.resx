@@ -63,9 +63,6 @@
   <data name="Cluster access" xml:space="preserve">
     <value>集群访问</value>
   </data>
-  <data name="Connection key replaced" xml:space="preserve">
-    <value>连接密钥已替换</value>
-  </data>
   <data name="Create Role" xml:space="preserve">
     <value>创建角色</value>
   </data>
@@ -135,9 +132,6 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>登录以使用所有功能。</value>
   </data>
-  <data name="Machine connection recovery" xml:space="preserve">
-    <value>机器连接恢复</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>机器</value>
   </data>
@@ -170,9 +164,6 @@
   </data>
   <data name="Register" xml:space="preserve">
     <value>注册</value>
-  </data>
-  <data name="Replace the Agent connection key" xml:space="preserve">
-    <value>替换 Agent 连接密钥</value>
   </data>
   <data name="Role Details" xml:space="preserve">
     <value>角色详情</value>

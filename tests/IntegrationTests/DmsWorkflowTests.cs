@@ -761,7 +761,7 @@ await db.SaveChangesAsync();
     public async Task CorePagesRenderWithAuthorizedUser()
     {
         await ArrangeAsync(); await LoginAsAdmin();
-        foreach (var route in new[] { "/Dms", "/Dms/Lockboxes", "/Dms/Operations", "/DmsAccess", "/DmsAccess/Keys" })
+        foreach (var route in new[] { "/Dms", "/Dms/Lockboxes", "/Dms/Operations", "/DmsAccess/Keys" })
         {
             var response = await Http.GetAsync(route);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, route);

@@ -38,15 +38,5 @@
                 </dl>
             </div>
         </div>
-        @if (Model.CanRotateAgentKey)
-        {
-            <details class="card">
-                <summary class="card-header fw-semibold">@Localizer["Advanced actions"]</summary>
-                <div class="card-body">
-                    <p>@Localizer["Replace the connection key if it has been lost or exposed. The Agent will need the new key to connect to DMS."]</p>
-                    <a asp-controller="DmsAccess" asp-action="RotateAgentKey" asp-route-id="@machine.Id" class="btn btn-outline-danger">@Localizer["Replace the Agent connection key"]</a>
-                </div>
-            </details>
-        }
     </div>
 </div>
