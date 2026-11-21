@@ -67,8 +67,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             if (!JsonNode.DeepEquals(JsonSerializer.SerializeToNode(frozen), JsonSerializer.SerializeToNode(request))) throw new DmsException(409, "Request ID already belongs to different parameters.");
             return prior;
         }
-        var risk = RequestRisk(definition)
-            ?? throw new DmsException(400, "This workflow is not available as an external operation.");
+        if (definition is not { PublicEntry: true })
+            throw new DmsException(400, "This workflow is not available as an external operation.");
+        var risk = definition.Risk;
         if (request.RequestId == Guid.Empty || request.Reason.Length > 2000 ||
             (risk != RiskLevel.Open && request.Reason.Length == 0))
             throw new DmsException(400, risk == RiskLevel.Open
@@ -78,7 +79,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (!grant.CanRequest) throw new DmsException(403, risk == RiskLevel.Open
             ? "Run open workflows permission is required." : "You cannot request this risk level.");
         var targets = new List<Guid>();
-        if (definition?.RequiresTargets == true)
+        if (definition.RequiresTargets)
         {
             if (definition.SingleMachineOnly && (request.AllMachines || request.MachineIds.Count > 1))
                 throw new DmsException(400, "This workflow requires a single machine.");
@@ -168,13 +169,10 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             : $"Cannot withdraw a {item.Decision} Lockbox.");
     });
 
-    private static RiskLevel? RequestRisk(WorkflowDefinition? definition) =>
-        definition is { PublicEntry: true } ? definition.Risk : null;
-
     private async Task ApproveAsync(LockboxRequest item, string? user, string reason, Guid? enrollmentId = null)
     {
         var definition = catalog.Find(item.Definition);
-        if (RequestRisk(definition) != item.Risk || definition?.Version != item.Version)
+        if (definition is not { PublicEntry: true } || definition.Risk != item.Risk || definition.Version != item.Version)
             throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
         var request = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!;
         LegacyClusterWorkflowInput.Normalize(request, item.Definition);
@@ -187,7 +185,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var root = new WorkflowRun
         {
             LockboxId = item.Id, State = RunState.Queued,
-            Definition = definition?.Location == WorkflowLocation.Machine ? WorkflowNames.Batch : item.Definition,
+            Definition = definition.Location == WorkflowLocation.Machine ? WorkflowNames.Batch : item.Definition,
             Input = input, Version = item.Version
         };
         root.RootId = root.Id;

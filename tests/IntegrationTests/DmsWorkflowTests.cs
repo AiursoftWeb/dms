@@ -720,14 +720,19 @@ await db.SaveChangesAsync();
             if (cancel)
             {
                 Assert.AreEqual(new CancelWorkflowInput(target.Id), ClusterWorkflows.Cancel.ReadInput(run.Input));
-                Assert.AreEqual(new CancelWorkflowResult(target.Id, true, false), ClusterWorkflows.Cancel.ReadResult(run.Result));
+                var result = ClusterWorkflows.Cancel.ReadResult(run.Result);
+                Assert.AreEqual(target.Id, result.TargetWorkflowId);
+                Assert.IsTrue(result.CancellationRequested);
+                Assert.IsFalse(result.SideEffectsRolledBack);
                 Assert.AreEqual(RunState.Cancelled, (await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == target.Id, timeout.Token)).State);
             }
             else
             {
                 Assert.AreEqual(new AddMachineInput(name), ClusterWorkflows.AddMachine.ReadInput(run.Input));
                 var machine = await db.Machines.AsNoTracking().SingleAsync(m => m.Name == name, timeout.Token);
-                Assert.AreEqual(new AddMachineResult(machine.Id, name), ClusterWorkflows.AddMachine.ReadResult(run.Result));
+                var result = ClusterWorkflows.AddMachine.ReadResult(run.Result);
+                Assert.AreEqual(machine.Id, result.Id);
+                Assert.AreEqual(name, result.Name);
             }
             break;
         }
