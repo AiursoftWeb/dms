@@ -1,3 +1,4 @@
+@using Aiursoft.WebTools
 @using Aiursoft.DMS.Services.Dms
 @model Aiursoft.DMS.Models.DmsViewModels.SshKeyVerificationViewModel
 @{
@@ -23,7 +24,7 @@
                 <p class="mb-4 text-break"><strong>@key.Name</strong> <code class="ms-sm-2">@key.Fingerprint</code></p>
                 <div data-verification-active>
                     <noscript>
-                        <p class="text-body-secondary">@Localizer["Verification expires at"] <time datetime="@expiresAt.ToString("s")Z">@expiresAt.ToString("u")</time></p>
+                        <p class="text-body-secondary">@Localizer["Verification expires at"] <span data-utc-time="@expiresAt.ToHtmlDateTime()"></span></p>
                     </noscript>
                     <p>@Localizer["To finish adding this key, run the command below on the computer that holds its private key."]</p>
                     <p class="text-body-secondary">@Localizer["Anyone can copy a public key. This step proves you hold its private key, which stays on your computer."]</p>

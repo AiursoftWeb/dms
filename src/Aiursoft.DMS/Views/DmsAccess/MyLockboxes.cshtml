@@ -1,3 +1,4 @@
+@using Aiursoft.WebTools
 @using Aiursoft.DMS.Contracts
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 <h1>@Localizer["My Lockboxes"]</h1>
@@ -6,7 +7,7 @@
 <table class="table"><thead><tr><th>@Localizer["Request"]</th><th>@Localizer["Workflow"]</th><th>@Localizer["Reason"]</th><th>@Localizer["Decision"]</th><th>@Localizer["Created"]</th><th></th></tr></thead><tbody>
 @foreach (var item in Model.Lockboxes)
 {
-    <tr><td>@(new LockboxId(item.Id))</td><td>@item.Definition</td><td>@item.Reason</td><td>@item.Decision</td><td>@item.CreatedAt</td>
+    <tr><td>@(new LockboxId(item.Id))</td><td>@item.Definition</td><td>@item.Reason</td><td>@item.Decision</td><td><span data-utc-time="@item.CreatedAt.ToHtmlDateTime()"></span></td>
     <td>@if (item.Decision == DecisionState.Pending) { <partial name="_WithdrawLockbox" model="item" /> }</td></tr>
 }
 </tbody></table></div></div>
