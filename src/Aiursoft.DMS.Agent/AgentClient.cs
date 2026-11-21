@@ -230,7 +230,8 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token),
             Artifacts: new AgentArtifactTransport(controller, key, task.Id),
             Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token),
-            AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token));
+            AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token),
+            GetSecurityBaselinePolicy: token => AgentSecurityBaselinePolicy.GetAsync(controller, key, token));
         var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try

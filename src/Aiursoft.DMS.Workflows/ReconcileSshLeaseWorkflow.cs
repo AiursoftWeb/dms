@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
-using Aiursoft.DMS.Workflows.Operations;
 
 namespace Aiursoft.DMS.Workflows;
 
@@ -13,14 +12,8 @@ public sealed class ReconcileSshLeaseWorkflow : MachineWorkflow
 
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
-        var host = OperationOutput.Host(context.Environment);
-        var state = new SshLeaseStore(host).ReadState();
-        if (state?.Lease is not { } lease || !await SshLeaseStore.ShouldRecoverAsync(host, state, lease, token))
-            return JsonSerializer.Serialize(new OperationResult("No SSH lease needs recovery."));
-
-        await context.TraceAsync($"Reconciling SSH lease {lease.Id}. Healthy={state.Healthy}, expires_at={lease.ExpiresAtUtc:u}.");
-        var result = await context.CallAsync(OperationsWorkflows.SshRecover, new SshRecoveryInput(lease.Id), token);
-        return JsonSerializer.Serialize(result);
+        var result = await context.CallAsync(OperationsWorkflows.SshCheckLease, new SshLeaseCheckInput(), token);
+        return JsonSerializer.Serialize(new OperationResult(result.Summary));
     }
 }
 
@@ -29,4 +22,11 @@ internal sealed class RecoverSshLeaseWorkflow(SshRecoveryInput input, AgentEnvir
 {
     public override Task<OperationResult> ExecuteAsync(MachineWorkflowContext context, SshRecoveryInput value, CancellationToken token) =>
         DisableSshWorkflow.RevokeAsync(context, environment, value.ExpectedLeaseId, token);
+}
+
+internal sealed class CheckSshLeaseWorkflow(SshLeaseCheckInput input, AgentEnvironment environment)
+    : MachineWorkflow<SshLeaseCheckInput, SshLeaseCheckResult>(OperationsWorkflows.SshCheckLease, input)
+{
+    public override Task<SshLeaseCheckResult> ExecuteAsync(MachineWorkflowContext context, SshLeaseCheckInput value, CancellationToken token) =>
+        DisableSshWorkflow.CheckLeaseAsync(context, environment, value.CloseSshWhenNoLease, token);
 }

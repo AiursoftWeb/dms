@@ -17,6 +17,10 @@ public sealed record SshOpenInput(Guid KeyId, int Minutes = 30, bool Sudo = fals
 public sealed record SshLeaseAuthorization(Guid KeyId, string RequesterId, string PublicKey);
 public sealed record SshRecoveryInput(Guid ExpectedLeaseId);
 
+public sealed record SshLeaseCheckInput(bool CloseSshWhenNoLease = false);
+
+public sealed record SshLeaseCheckResult(string Summary, bool? SshClosed);
+
 public static class SshPublicKey
 {
     public static (string Key, string Fingerprint) Parse(string input)

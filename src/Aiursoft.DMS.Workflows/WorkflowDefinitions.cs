@@ -8,7 +8,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     IAgentArtifactTransport? Artifacts = null,
     Func<MachineWorkflowContext, RebootInput, CancellationToken, Task<OperationResult>>? Reboot = null,
     OperationHost? Operations = null,
-    Func<Guid, CancellationToken, Task<SshLeaseAuthorization>>? AuthorizeSshLease = null);
+    Func<Guid, CancellationToken, Task<SshLeaseAuthorization>>? AuthorizeSshLease = null,
+    Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null);
 
 public sealed partial class MachineWorkflowRegistry
 {

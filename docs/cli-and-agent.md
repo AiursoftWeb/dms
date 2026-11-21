@@ -302,6 +302,39 @@ send the trace after reconnecting. Allow for the polling interval when
 estimating when sessions will disconnect. Update the Controller before
 upgrading Agents to this release.
 
+### Schedule security baseline application
+
+In **Administration → Global Settings**, configure **Scheduled Security Baseline** with the IDs of the machines to include and the desired policy.
+
+```json
+{
+  "machineIds": ["f271c4e3-b328-41de-bef7-1b031bf716d2"],
+  "policy": {
+    "version": "maintenance-v1",
+    "requireFail2ban": true,
+    "ufwEnabled": false
+  }
+}
+```
+
+The Agent runs `machine.security.apply-baseline` daily at 03:00 UTC.
+Only machines explicitly listed in the Controller setting apply the baseline.
+An empty setting or machine list disables enforcement. The Controller must be reachable to supply the current policy.
+
+The workflow closes ordinary OpenSSH when there is no temporary lease.
+A healthy, unexpired lease remains usable, and the existing five-minute lease
+check still handles its expiry. Firewall changes are deferred while a lease
+is present. Setting `requireFail2ban` installs the package if missing.
+Omit `ufwEnabled` to leave UFW as it is. Setting it to `true` enables UFW
+with the host's existing rules. Configure those rules before enabling it.
+Setting it to `false` disables UFW. After a change, the Agent checks the
+state and its Controller connection, and attempts to restore the prior
+state if verification fails. Secure Boot, encryption and CleanTraffic
+remain part of the separate read-only audit.
+
+Automatic runs and the SSH lease-check child appear in workflow history.
+Update the Controller before upgrading Agents to this release.
+
 ## Deploy a Box
 
 ```bash

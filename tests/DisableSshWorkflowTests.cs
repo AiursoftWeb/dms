@@ -61,12 +61,99 @@ public class DisableSshWorkflowTests
         Assert.AreEqual(next, fixture.State().GetProperty("Lease").GetProperty("Id").GetGuid());
     }
 
+    [TestMethod]
+    public async Task BaselineRepairsAnUnleasedSshListenerWhileFiveMinuteCheckLeavesItAlone()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
+        using var fixture = new Fixture { SshListening = true };
+
+        var periodic = await fixture.CheckAsync(new SshLeaseCheckInput());
+        Assert.IsNull(periodic.SshClosed);
+        Assert.IsTrue(fixture.SshListening);
+
+        var baseline = await fixture.CheckAsync(new SshLeaseCheckInput(CloseSshWhenNoLease: true));
+        Assert.AreEqual(true, baseline.SshClosed);
+        Assert.IsFalse(fixture.SshListening);
+        Assert.AreEqual(1, fixture.MaskCount);
+
+        var repeated = await fixture.CheckAsync(new SshLeaseCheckInput(CloseSshWhenNoLease: true));
+        Assert.AreEqual(true, repeated.SshClosed);
+        Assert.AreEqual(1, fixture.MaskCount);
+
+        fixture.SshListening = true;
+        await fixture.CheckAsync(new SshLeaseCheckInput(CloseSshWhenNoLease: true));
+        Assert.IsFalse(fixture.SshListening);
+        Assert.AreEqual(2, fixture.MaskCount);
+    }
+
+    [TestMethod]
+    public async Task BaselinePreservesValidLeaseAndPeriodicCheckClosesExpiredLease()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
+        using var fixture = new Fixture { SshListening = true };
+        var lease = Guid.NewGuid();
+        fixture.SeedLease(lease, DateTimeOffset.UtcNow.AddHours(1));
+
+        var result = await fixture.CheckAsync(new SshLeaseCheckInput(CloseSshWhenNoLease: true));
+        Assert.AreEqual(false, result.SshClosed);
+        Assert.AreEqual(lease, fixture.State().GetProperty("Lease").GetProperty("Id").GetGuid());
+        Assert.IsTrue(fixture.SshListening);
+        Assert.AreEqual(0, fixture.MaskCount);
+
+        fixture.SeedLease(lease, DateTimeOffset.UtcNow.AddHours(-1));
+        var periodic = await fixture.CheckAsync(new SshLeaseCheckInput());
+        Assert.AreEqual(true, periodic.SshClosed);
+        Assert.IsFalse(fixture.SshListening);
+        Assert.AreEqual(JsonValueKind.Null, fixture.State().GetProperty("Lease").ValueKind);
+    }
+
+    [TestMethod]
+    public async Task ScheduledApplicationSkipsUnconfiguredMachinesAndDefersUfwForAnActiveLease()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
+        using var fixture = new Fixture { SshListening = true };
+        var settings = new SecurityBaselinePolicy("test", UfwEnabled: true);
+        var unconfigured = await fixture.ApplyBaselineAsync(null);
+        StringAssert.Contains(unconfigured.Summary, "no scheduled security baseline");
+        Assert.AreEqual(0, fixture.MaskCount);
+
+        var lease = Guid.NewGuid();
+        fixture.SeedLease(lease, DateTimeOffset.UtcNow.AddHours(1));
+        var active = await fixture.ApplyBaselineAsync(settings);
+        Assert.IsFalse(active.Complete);
+        Assert.IsTrue(active.Facts!.Value.GetProperty("UfwDeferred").GetBoolean());
+        Assert.IsFalse(active.Facts!.Value.GetProperty("Ssh").GetProperty("SshClosed").GetBoolean());
+        Assert.IsTrue(fixture.SshListening);
+        Assert.AreEqual(0, fixture.MaskCount);
+    }
+
+    [TestMethod]
+    public async Task UfwReturnsToItsPreviousStateWhenTheControllerBecomesUnreachable()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
+        using var fixture = new Fixture();
+        var policy = new SecurityBaselinePolicy("test", UfwEnabled: true);
+        var result = await fixture.ApplyBaselineAsync(policy);
+        Assert.IsTrue(result.Complete);
+        Assert.IsTrue(fixture.UfwActive);
+
+        fixture.BlockPolicyReadAfterUfwChange = true;
+        await Assert.ThrowsAsync<IOException>(() => fixture.ApplyBaselineAsync(policy with { UfwEnabled = false }));
+        Assert.IsTrue(fixture.UfwActive);
+        Assert.IsTrue(fixture.Events.Any(item => item.IsTrace &&
+            item.Message.Contains("previous UFW state was restored", StringComparison.Ordinal)));
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly DirectoryInfo _root = Directory.CreateTempSubdirectory("dms-ssh-test-");
         private readonly MachineWorkflowRegistry _registry = new();
         private int _inMask;
         public int MaskCount { get; private set; }
+        public bool SshListening { get; set; }
+        public bool UfwActive { get; private set; }
+        public bool BlockPolicyReadAfterUfwChange { get; set; }
+        private bool _policyBlocked;
         public bool FailFirewall { get; set; }
         public System.Collections.Concurrent.ConcurrentQueue<WorkflowEvent> Events { get; } = new();
         private string StatePath => Path.Combine(_root.FullName, "var/lib/aiursoft-dms-ssh/state.json");
@@ -83,10 +170,35 @@ public class DisableSshWorkflowTests
             File.WriteAllText(Path.Combine(_root.FullName, "proc/self/mountinfo"), "");
         }
 
-        public void SeedLease(Guid id) => File.WriteAllText(StatePath, JsonSerializer.Serialize(new
+        public void SeedLease(Guid id, DateTimeOffset? expires = null) => File.WriteAllText(StatePath, JsonSerializer.Serialize(new
         {
-            Healthy = true, Lease = new { Id = id, Uid = 2400, Port = 22, Ipv4Rule = true, Ipv6Rule = false }
+            Healthy = true,
+            Lease = new { Id = id, Uid = 2400, Port = 22, Ipv4Rule = true, Ipv6Rule = false, ExpiresAtUtc = expires }
         }));
+
+        public async Task<SshLeaseCheckResult> CheckAsync(SshLeaseCheckInput input)
+        {
+            var definition = OperationsWorkflows.SshCheckLease;
+            return definition.ReadResult(await InvokeAsync(definition.Name, definition.Serialize(input)));
+        }
+
+        public async Task<OperationResult> ApplyBaselineAsync(SecurityBaselinePolicy? policy) =>
+            JsonSerializer.Deserialize<OperationResult>(await InvokeAsync("machine.security.apply-baseline", "{}", policy))!;
+
+        private async Task<string> InvokeAsync(string name, string input, SecurityBaselinePolicy? policy = null)
+        {
+            var host = new OperationHost(_root.FullName, NativeAsync);
+            var agent = new AgentEnvironment(Guid.NewGuid(), "test", 0, 0, Operations: host,
+                GetSecurityBaselinePolicy: _ => _policyBlocked
+                    ? Task.FromException<SecurityBaselinePolicy?>(new IOException("Controller unavailable."))
+                    : Task.FromResult(policy));
+            var context = new MachineWorkflowContext(Guid.NewGuid(), null, item =>
+            {
+                Events.Enqueue(item);
+                return Task.CompletedTask;
+            }, agent, _registry);
+            return await context.RunAsync(_registry.Create(name, input, agent), CancellationToken.None);
+        }
 
         public JsonElement State() => JsonSerializer.Deserialize<JsonElement>(File.ReadAllText(StatePath));
 
@@ -119,14 +231,29 @@ public class DisableSshWorkflowTests
                     Assert.AreEqual(1, Interlocked.Increment(ref _inMask));
                     await Task.Delay(240, token);
                     MaskCount++;
+                    SshListening = false;
                     Interlocked.Decrement(ref _inMask);
                     return new NativeResult(0, "", "");
                 case "systemctl":
-                    return new NativeResult(0, "LoadState=masked\nActiveState=inactive\n", "");
-                case "ss" or "loginctl":
+                    return new NativeResult(0, SshListening
+                        ? "LoadState=loaded\nActiveState=active\n"
+                        : "LoadState=masked\nActiveState=inactive\n", "");
+                case "ss":
+                    return new NativeResult(0, SshListening ? "LISTEN users:((\"sshd\",pid=123,fd=3))" : "", "");
+                case "loginctl":
                     return new NativeResult(0, "", "");
                 case "pkill":
                     return new NativeResult(1, "", "");
+                case "dpkg-query" when command.Arguments[^1] == "ufw":
+                    return new NativeResult(0, "install ok installed", "");
+                case "ufw" when command.Arguments[0] == "status":
+                    return new NativeResult(0, UfwActive ? "Status: active" : "Status: inactive", "");
+                case "ufw" when command.Arguments[0] == "--dry-run":
+                    return new NativeResult(0, "", "");
+                case "ufw" when command.Arguments[0] == "--force":
+                    UfwActive = command.Arguments[1] == "enable";
+                    _policyBlocked = BlockPolicyReadAfterUfwChange;
+                    return new NativeResult(0, "", "");
                 case "iptables":
                     return FailFirewall ? new NativeResult(2, "", "Fixture firewall error.") : new NativeResult(0, "", "");
                 default:

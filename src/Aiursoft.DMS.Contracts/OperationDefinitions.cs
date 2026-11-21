@@ -586,6 +586,10 @@ public static class OperationsWorkflows
                     throw new ArgumentException("SSH lease recovery requires an expected lease ID.");
             });
 
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<SshLeaseCheckInput, SshLeaseCheckResult> SshCheckLease =
+        new("internal.ssh.check-lease", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SshCheckLease)), "1");
+
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SecurityCleanTrafficStatus =
         new("machine.security.clean-traffic-status", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityCleanTrafficStatus)), "1", PublicEntry: true);
