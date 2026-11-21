@@ -37,15 +37,14 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [HttpGet]
-    public async Task<IActionResult> Machine(Guid id, [FromServices] IAuthorizationService authorization)
+    public async Task<IActionResult> Machine(Guid id)
     {
         var machine = await db.Machines.AsNoTracking().SingleOrDefaultAsync(m => m.Id == id);
         if (machine == null) return NotFound();
         return this.StackView(new DmsMachineViewModel
         {
             Machine = machine,
-            PageTitle = machine.Name,
-            CanRotateAgentKey = !machine.Disabled && (await authorization.AuthorizeAsync(User, AppPermissionNames.CanManageDmsAccess)).Succeeded
+            PageTitle = machine.Name
         });
     }
 
