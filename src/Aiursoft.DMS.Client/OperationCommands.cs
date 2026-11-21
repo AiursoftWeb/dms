@@ -1358,7 +1358,8 @@ public static partial class DmsCommandApp
             definition,
             options: options,
             preparedInput: async (client, context, requestId) =>
-                definition.Serialize(await prepare(client, context, requestId)));
+                definition.Serialize(await prepare(client, context, requestId)),
+            readResult: definition.Risk == RiskLevel.Open ? result => definition.ReadResult(result) : null);
 
     private static async Task<ArtifactReference> PrepareOperationTextAsync(DmsApiClient client,
         string file,

@@ -49,6 +49,7 @@ public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<Machi
 {
     public override Task<List<MachineSummary>> ExecuteAsync(WorkflowExecutionContext context, EmptyInput input, CancellationToken token) =>
         context.WithInventoryAsync(db => db.Machines.AsNoTracking()
+            .OrderBy(m => m.Name).ThenBy(m => m.Id)
             .Select(m => new MachineSummary(m.Id, m.Name, m.AgentVersion, m.LastSeen, m.Disabled)).ToListAsync(token), token);
 }
 

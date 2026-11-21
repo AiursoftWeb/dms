@@ -214,4 +214,10 @@
     <value>查看系统上下文</value>
   </data>
 
+  <data name="Run open workflows" xml:space="preserve">
+    <value>运行放开工作流</value>
+  </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>允许运行放开档工作流。此档的 Lockbox 会自动批准。</value>
+  </data>
 </root>

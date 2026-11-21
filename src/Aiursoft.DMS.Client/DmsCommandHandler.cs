@@ -73,10 +73,13 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
         using var provider = CreateProvider();
         var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), credentials.Endpoint, credentials.ApiKey);
         var response = await RequestAsync(client, context);
-        DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
-            Callstack, !Console.IsOutputRedirected,
-            Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus);
+        WriteResponse(context.InvocationConfiguration.Output, response, format, !Console.IsOutputRedirected,
+            Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth));
     }
+
+    protected virtual void WriteResponse(TextWriter output, DmsResponse response, OutputFormat format, bool color, int width) =>
+        DmsOutputWriter.Write(output, response, format, Callstack, color, width,
+            catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus);
 
     internal static ServiceProvider CreateProvider()
     {

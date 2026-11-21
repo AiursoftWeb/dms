@@ -6,6 +6,7 @@ namespace Aiursoft.DMS.Authorization;
 public static class AppPermissionNames
 {
     // DMS operations (global within this Controller).
+    public const string CanRequestOpenRiskWorkflow = nameof(CanRequestOpenRiskWorkflow);
     public const string CanRequestSafeRiskWorkflow = nameof(CanRequestSafeRiskWorkflow);
     public const string CanAutoApproveSafeRiskWorkflow = nameof(CanAutoApproveSafeRiskWorkflow);
     public const string CanApproveSafeRiskWorkflow = nameof(CanApproveSafeRiskWorkflow);

@@ -35,6 +35,15 @@ public class DmsCliHelpTests
     }
 
     [TestMethod]
+    public void EmptyInventoryCsvRetainsColumnHeaders()
+    {
+        using var output = new StringWriter();
+        DmsOutputWriter.WriteResult(output, new List<Aiursoft.DMS.Contracts.MachineSummary>(),
+            OutputFormat.Csv, color: false, width: 120);
+        Assert.AreEqual("AgentVersion,Disabled,Id,LastSeen,Name\r\n", output.ToString());
+    }
+
+    [TestMethod]
     public async Task InvalidCommandsStillReportAnError()
     {
         var result = await DmsCommandApp.Create().TestRunAsync(["access", "whoamii"]);
