@@ -17,6 +17,7 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
     protected virtual bool Callstack => false;
     protected virtual bool Catalog => false;
     protected virtual bool Audit => false;
+    protected virtual bool LockboxStatus => false;
     protected abstract IEnumerable<Option> GetActionOptions();
     protected abstract Task<DmsResponse> RequestAsync(DmsApiClient client, ParseResult context);
 
@@ -71,7 +72,7 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
         var response = await RequestAsync(client, context);
         DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format,
             Callstack, !Console.IsOutputRedirected,
-            Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: Catalog, audit: Audit);
+            Console.IsOutputRedirected ? 120 : Math.Max(60, Console.WindowWidth), catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus);
     }
 
     internal static ServiceProvider CreateProvider()

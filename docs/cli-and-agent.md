@@ -606,6 +606,18 @@ Approval and workflow state changes are automatically archived to ClickHouse thr
 
 `GET /api/v1/dms/lockboxes?page=0&decision=Pending` lists 50 requests per page, with `Entries`, `Page` and `HasNextPage`. `GET /api/v1/dms/lockboxes/lb/<UUID>` returns the request, frozen input/targets, decision context and optional execution ID. `POST /api/v1/dms/lockboxes/lb/<UUID>/decision` accepts `{ "Approve": true, "Reason": "Reviewed scope" }`. These management endpoints need a personal API Key; reads require Read DMS operations, decisions require the corresponding risk approval permission and self-approval permission when applicable. They create no approval workflow and can be used directly by an independent approval app.
 
+Use the ID printed by the submission to see who requested the action, when it was requested and decided, and who can currently approve at that risk.
+
+```sh
+dms lockbox status "$LOCKBOX_ID"
+dms lockbox approve "$LOCKBOX_ID" --reason "Reviewed the request"
+dms workflow status "$WORKFLOW_ID"
+dms workflow callstack "$WORKFLOW_ID"
+dms workflow trace "$WORKFLOW_ID"
+```
+
+The requester can check their own Lockbox. Viewing another person's Lockbox or inspecting a Workflow requires operations read permission. The approver list reflects current effective permissions, including self-approval and account lockout. Automatic approvals show the system as the decision maker. The Workflow ID appears when a linked execution exists. Use `dms lockbox get --id "$LOCKBOX_ID"` for the full request record.
+
 While a request is pending, its requester can run `dms lockbox withdraw --id lb/<UUID>`, use **DMS → My Lockboxes → Withdraw request**, or POST to `/api/v1/dms/lockboxes/lb/<UUID>/withdraw` with their personal API key. Withdrawal takes effect immediately, including after the requester loses the original risk permission. An identical retry returns the withdrawn request. Use `dms lockbox list --decision Withdrawn` with operations read permission to find withdrawn requests.
 
 Approval, denial and withdrawal compete for the same pending request. The first committed decision wins. If approval wins, withdrawal returns HTTP 409 with the workflow ID. To stop that execution, submit `dms operation kill-workflow --id <workflow-id> --reason "Stop requested"`, which follows its own approval policy. Automatically approved submissions already have an execution ID when they return.

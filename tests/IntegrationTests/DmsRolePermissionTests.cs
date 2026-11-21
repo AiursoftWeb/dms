@@ -56,6 +56,94 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task LockboxStatusUsesLiveApproverNamesAndSupportsPositionalWorkflowIds()
+    {
+        var approval = DmsPermissions.Approve(RiskLevel.Safe);
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe), approval);
+        using var scope = Server!.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var reviewerRole = new IdentityRole("status-reviewers");
+        Assert.IsTrue((await roles.CreateAsync(reviewerRole)).Succeeded);
+        Assert.IsTrue((await roles.AddClaimAsync(reviewerRole, new Claim(AppPermissions.Type, approval))).Succeeded);
+
+        async Task<User> CreatePerson(string name, string permission, bool locked = false)
+        {
+            var person = new User { UserName = name, Email = $"{name}@example.test", DisplayName = name, LockoutEnabled = locked };
+            if (locked) person.LockoutEnd = DateTimeOffset.UtcNow.AddHours(1);
+            Assert.IsTrue((await users.CreateAsync(person)).Succeeded);
+            Assert.IsTrue((await users.AddClaimAsync(person, new Claim(AppPermissions.Type, permission))).Succeeded);
+            return person;
+        }
+
+        var reviewer = await CreatePerson("Sam", approval);
+        Assert.IsTrue((await users.AddToRoleAsync(reviewer, reviewerRole.Name!)).Succeeded);
+        await CreatePerson("LockedReviewer", approval, locked: true);
+        await CreatePerson("AutomaticOnly", DmsPermissions.AutoApprove(RiskLevel.Safe));
+        await CreatePerson("DifferentRisk", DmsPermissions.Approve(RiskLevel.Low));
+
+        Task<LockboxRequest> SubmitAsync() => workflows.SubmitAsync(setup.User,
+            MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Approval status fixture", [setup.First]));
+        async Task<string> Cli(string key, params string[] command)
+        {
+            var result = await Client.DmsCommandApp.Create().TestRunAsync(
+                [.. command, "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+            Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+            return result.StdOut;
+        }
+
+        var box = await SubmitAsync();
+        var id = new LockboxId(box.Id).ToString();
+        var pending = await Cli(setup.Key, "lockbox", "status", id);
+        foreach (var expected in new[] { id, "Operator", "Requested at", "UTC", "Awaiting approval", "Eligible approvers now", "Sam" })
+            StringAssert.Contains(pending, expected);
+        foreach (var hidden in new[] { "Workflow ID", "ClientRequestId", "RequesterId", "LockedReviewer", "AutomaticOnly", "DifferentRisk" })
+            Assert.DoesNotContain(hidden, pending);
+        var json = await Cli(setup.Key, "lockbox", "status", id, "--output-format", "json");
+        var summary = JObject.Parse(json)["Data"]!.ToObject<LockboxStatus>()!;
+        Assert.IsNull(summary.WorkflowId);
+        Assert.IsNull(summary.DecidedAt);
+        Assert.AreEqual(1, summary.EligibleApprovers.Count(name => name == "Sam"));
+        Assert.IsFalse(summary.EligibleApprovers.Contains(summary.RequestedBy));
+
+        await SetRoleAsync(setup.Role, AppPermissionNames.CanApproveOwnWorkflow, true);
+        json = await Cli(setup.Key, "lockbox", "status", id, "--output-format", "json");
+        summary = JObject.Parse(json)["Data"]!.ToObject<LockboxStatus>()!;
+        Assert.IsTrue(summary.EligibleApprovers.Contains(summary.RequestedBy));
+
+        var approved = await workflows.DecideAsync(reviewer.Id, box.Id, true, "Manual approval");
+        var approvedText = await Cli(setup.Key, "lockbox", "status", id);
+        StringAssert.Contains(approvedText, "Approved at");
+        StringAssert.Contains(approvedText, "Approved by");
+        StringAssert.Contains(approvedText, approved.WorkflowId!.Value.ToString());
+        Assert.AreEqual("Sam", JObject.Parse(await Cli(setup.Key, "lockbox", "status", id, "--output-format", "json"))["Data"]!["DecidedBy"]!.Value<string>());
+
+        var denied = await SubmitAsync();
+        await workflows.DecideAsync(reviewer.Id, denied.Id, false, "Rejected");
+        StringAssert.Contains(await Cli(setup.Key, "lockbox", "status", denied.Id.ToString()), "Rejected by");
+        var withdrawn = await SubmitAsync();
+        await workflows.WithdrawAsync(setup.User, withdrawn.Id);
+        StringAssert.Contains(await Cli(setup.Key, "lockbox", "status", withdrawn.Id.ToString()), "Withdrawn by");
+
+        await SetRoleAsync(setup.Role, AppPermissionNames.CanReadDmsOperations, true);
+        await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Safe), true);
+        var automatic = await SubmitAsync();
+        StringAssert.Contains(await Cli(setup.Key, "lockbox", "status", automatic.Id.ToString()), "System (automatic approval)");
+        StringAssert.Contains(await Cli(setup.Key, "lockbox", "get", "--id", id), "ClientRequestId");
+        StringAssert.Contains(await Cli(setup.Key, "workflow", "status", approved.WorkflowId.Value.ToString()), "WorkflowId");
+        var workflowId = approved.WorkflowId.Value.ToString();
+        StringAssert.Contains(await Cli(setup.Key, "workflow", "callstack", workflowId), workflowId);
+        StringAssert.Contains(await Cli(setup.Key, "operation", "get-callstack", workflowId), workflowId);
+
+        var other = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
+        var unauthorized = await Client.DmsCommandApp.Create().TestRunAsync(
+            ["lockbox", "status", id, "--server", Http.BaseAddress!.ToString(), "--api-key", other.Key]);
+        Assert.AreEqual(1, unauthorized.ProgramReturn);
+        Assert.DoesNotContain("Sam", unauthorized.StdOut);
+    }
+
+    [TestMethod]
     public async Task WebLockboxLinksAndDecisionFormRoundTripTheSlashPrefix()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
