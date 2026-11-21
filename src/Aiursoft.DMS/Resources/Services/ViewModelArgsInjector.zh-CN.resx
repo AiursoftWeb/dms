@@ -18,11 +18,17 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Access Denied" xml:space="preserve">
+      <data name="API Keys" xml:space="preserve">
+    <value>API 密钥</value>
+  </data>
+  <data name="Access Denied" xml:space="preserve">
     <value>访问被拒绝</value>
   </data>
   <data name="Account Settings" xml:space="preserve">
     <value>账户设置</value>
+  </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>添加 SSH 公钥</value>
   </data>
   <data name="Admin" xml:space="preserve">
     <value>管理员</value>
@@ -35,9 +41,6 @@
   </data>
   <data name="Anonymous" xml:space="preserve">
     <value>匿名</value>
-  </data>
-  <data name="API Keys" xml:space="preserve">
-    <value>API 密钥</value>
   </data>
   <data name="Artifact" xml:space="preserve">
     <value>制品</value>
@@ -69,6 +72,12 @@
   <data name="Create User" xml:space="preserve">
     <value>创建用户</value>
   </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS 访问</value>
+  </data>
   <data name="Dashboard" xml:space="preserve">
     <value>仪表板</value>
   </data>
@@ -83,12 +92,6 @@
   </data>
   <data name="Directory" xml:space="preserve">
     <value>目录</value>
-  </data>
-  <data name="DMS" xml:space="preserve">
-    <value>DMS</value>
-  </data>
-  <data name="DMS access" xml:space="preserve">
-    <value>DMS 访问</value>
   </data>
   <data name="Edit Role" xml:space="preserve">
     <value>编辑角色</value>
@@ -171,14 +174,17 @@
   <data name="Roles" xml:space="preserve">
     <value>角色</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>SSH 公钥已添加</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公钥</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>设置</value>
   </data>
   <data name="Sign out" xml:space="preserve">
     <value>退出登录</value>
-  </data>
-  <data name="SSH public keys" xml:space="preserve">
-    <value>SSH 公钥</value>
   </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>标准工作流</value>
@@ -200,6 +206,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>用户</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>验证您的 SSH 公钥</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>工作流历史</value>

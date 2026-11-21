@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>모든 머신에서 매우 높은 위험도의 워크플로우 요청을 허용합니다.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>오픈 워크플로 실행을 허용합니다. 해당 락박스는 자동으로 승인됩니다.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>역할을 영구적으로 삭제할 수 있습니다.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>매우 높은 위험 워크플로 요청</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>열린 워크플로 실행</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>백그라운드 작업 보기</value>

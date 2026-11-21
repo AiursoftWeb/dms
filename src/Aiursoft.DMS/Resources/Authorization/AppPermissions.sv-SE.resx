@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Tillåter att begära arbetsflöden med mycket hög risk på valfri maskin.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Tillåter att köra öppna arbetsflöden. Deras lådor godkänns automatiskt.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Tillåter permanent borttagning av roller.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Begär arbetsflöden med mycket hög risk</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Kör öppna arbetsflöden</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Visa bakgrundsjobb</value>

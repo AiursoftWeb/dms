@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>允许在任何机器上请求极高风险工作流。</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>允许运行放开档工作流。此档的 Lockbox 会自动批准。</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>允许永久删除角色。</value>
   </data>
@@ -207,6 +210,9 @@
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>请求极高风险工作流</value>
   </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>运行放开工作流</value>
+  </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>查看后台任务</value>
   </data>
@@ -214,10 +220,4 @@
     <value>查看系统上下文</value>
   </data>
 
-  <data name="Run open workflows" xml:space="preserve">
-    <value>运行放开工作流</value>
-  </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>允许运行放开档工作流。此档的 Lockbox 会自动批准。</value>
-  </data>
 </root>
