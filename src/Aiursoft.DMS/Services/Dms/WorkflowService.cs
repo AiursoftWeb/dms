@@ -116,7 +116,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var lockbox = new LockboxRequest
         {
             ClientRequestId = request.RequestId, RequesterId = user,
-            Definition = request.Workflow, Risk = risk, Version = definition?.Version ?? WorkflowNames.Version, Parameters = JsonSerializer.Serialize(request),
+            Definition = request.Workflow, Risk = risk, Version = definition.Version, Parameters = JsonSerializer.Serialize(request),
             TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason
         };
         db.Lockboxes.Add(lockbox);
