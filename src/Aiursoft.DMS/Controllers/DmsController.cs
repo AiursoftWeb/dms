@@ -36,6 +36,19 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         });
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Machine(Guid id, [FromServices] IAuthorizationService authorization)
+    {
+        var machine = await db.Machines.AsNoTracking().SingleOrDefaultAsync(m => m.Id == id);
+        if (machine == null) return NotFound();
+        return this.StackView(new DmsMachineViewModel
+        {
+            Machine = machine,
+            PageTitle = machine.Name,
+            CanRotateAgentKey = !machine.Disabled && (await authorization.AuthorizeAsync(User, AppPermissionNames.CanManageDmsAccess)).Succeeded
+        });
+    }
+
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Investigation", LinkOrder = 5)]
     public async Task<IActionResult> Investigation([FromQuery] WorkflowAuditQuery query)
     {

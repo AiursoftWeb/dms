@@ -1,0 +1,39 @@
+@using Aiursoft.DMS.Models.DmsViewModels
+@model AgentKeyRotationViewModel
+
+<div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+        <a asp-action="Index" class="d-inline-block mb-3">@Localizer["Back to registered machines"]</a>
+        <div class="card">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-2">@Localizer["Replace the Agent connection key"]</h1>
+                <p class="text-break mb-4">@Localizer["Machine"] <strong class="ms-2">@Model.MachineName</strong></p>
+                <div class="alert alert-warning" role="alert">
+                    <div class="alert-message">
+                        <p class="fw-semibold mb-1">@Localizer["This immediately invalidates the current key."]</p>
+                        <p class="mb-0">@Localizer["The Agent will disconnect until you install the new key on this machine and restart the Agent service. Make sure you can reach the machine through its console or another connection before continuing."]</p>
+                    </div>
+                </div>
+                @if (Model.Error == AgentKeyRotationError.WrongName)
+                {
+                    <div class="alert alert-danger" role="alert"><div class="alert-message">@Localizer["The machine name did not match. Enter the name shown above."]</div></div>
+                }
+                @if (Model.Error == AgentKeyRotationError.StaleReview)
+                {
+                    <div class="alert alert-danger" role="alert"><div class="alert-message">@Localizer["This confirmation expired or the machine's key changed. Review the details before trying again."]</div></div>
+                }
+                <form asp-action="RotateAgentKey" asp-route-id="@Model.MachineId" method="post">
+                    <input type="hidden" name="confirmationToken" value="@Model.ConfirmationToken" />
+                    <div class="mb-4">
+                        <label for="confirmationName" class="form-label">@Localizer["Type the machine name to confirm"]</label>
+                        <input id="confirmationName" name="confirmationName" class="form-control" maxlength="100" autocomplete="off" autocapitalize="off" spellcheck="false" required />
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-danger" type="submit">@Localizer["Replace key and disconnect Agent"]</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">@Localizer["Cancel"]</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
