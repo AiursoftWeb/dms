@@ -1,3 +1,4 @@
+@using Aiursoft.WebTools
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.DMS.Contracts
@@ -19,7 +20,7 @@
 <div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["State"]</th><th>@Localizer["Origin"]</th><th>@Localizer["Machine"]</th><th>@Localizer["Created"]</th></tr></thead><tbody>
 @foreach (var run in Model.Runs)
 {
-    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td><td>@Localizer[run.Origin.ToString()]</td><td>@run.MachineId</td><td>@run.CreatedAt</td></tr>
+    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td><td>@Localizer[run.Origin.ToString()]</td><td>@run.MachineId</td><td><span data-utc-time="@run.CreatedAt.ToHtmlDateTime()"></span></td></tr>
 }
 </tbody></table></div></div>
 @if (Model.Page > 0) { <a class="btn btn-secondary" asp-route-page="@(Model.Page - 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly" asp-route-origin="@Model.Origin">@Localizer["Previous"]</a> }

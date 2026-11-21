@@ -1,3 +1,4 @@
+@using Aiursoft.WebTools
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @{ var artifact = Model.Artifact!; var file = artifact.Reference; }
 <h1>@Localizer["Artifact"]: @file.Name</h1>
@@ -6,8 +7,8 @@
 <dt class="col-sm-3">@Localizer["ID"]</dt><dd class="col-sm-9">@file.Id</dd>
 <dt class="col-sm-3">SHA256</dt><dd class="col-sm-9 text-break">@file.Sha256</dd>
 <dt class="col-sm-3">@Localizer["Size"]</dt><dd class="col-sm-9">@file.Length bytes</dd>
-<dt class="col-sm-3">@Localizer["Created"]</dt><dd class="col-sm-9">@artifact.CreatedAt</dd>
-<dt class="col-sm-3">@Localizer["Retention"]</dt><dd class="col-sm-9">@(artifact.AuditInput ? Localizer["Retained for approval audit"] : artifact.ExpiresAt.ToString("u"))</dd>
+<dt class="col-sm-3">@Localizer["Created"]</dt><dd class="col-sm-9"><span data-utc-time="@artifact.CreatedAt.ToHtmlDateTime()"></span></dd>
+<dt class="col-sm-3">@Localizer["Retention"]</dt><dd class="col-sm-9">@if (artifact.AuditInput) { @Localizer["Retained for approval audit"] } else { <span data-utc-time="@artifact.ExpiresAt.ToHtmlDateTime()"></span> }</dd>
 </dl>
 <a asp-action="DownloadArtifact" asp-route-id="@file.Id">@Localizer["Download"]</a>
 </div></div>

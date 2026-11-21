@@ -1,3 +1,4 @@
+@using Aiursoft.WebTools
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using Aiursoft.DMS.Contracts
 @{ var item = Model.Lockbox!; }
@@ -10,7 +11,7 @@
 <dt class="col-sm-3">@Localizer["Workflow"]</dt><dd class="col-sm-9">@item.Definition (@item.Version)</dd>
 <dt class="col-sm-3">@Localizer["Risk"]</dt><dd class="col-sm-9">@item.Risk</dd>
 <dt class="col-sm-3">@Localizer["Reason"]</dt><dd class="col-sm-9">@item.Reason</dd>
-<dt class="col-sm-3">@Localizer["Created"]</dt><dd class="col-sm-9">@item.CreatedAt</dd>
+<dt class="col-sm-3">@Localizer["Created"]</dt><dd class="col-sm-9"><span data-utc-time="@item.CreatedAt.ToHtmlDateTime()"></span></dd>
 <dt class="col-sm-3">@Localizer["Approved target machines"]</dt><dd class="col-sm-9"><pre>@item.TargetMachines</pre></dd>
 <dt class="col-sm-3">@Localizer["Parameters"]</dt><dd class="col-sm-9"><pre>@item.Parameters</pre></dd>
 @if (Model.InputArtifacts.Count != 0)
@@ -19,7 +20,7 @@
     @foreach (var artifact in Model.InputArtifacts) { <p><a asp-action="Artifact" asp-route-id="@artifact.Id">@artifact.Name</a> (@artifact.Length bytes)<br /><small>SHA256: @artifact.Sha256</small></p> }
     </dd>
 }
-<dt class="col-sm-3">@Localizer["Decision"]</dt><dd class="col-sm-9">@item.Decision — @(item.Automatic ? Localizer["Automatic approval"] : item.ApproverId) @item.DecidedAt<br />@item.DecisionReason</dd>
+<dt class="col-sm-3">@Localizer["Decision"]</dt><dd class="col-sm-9">@item.Decision — @(item.Automatic ? Localizer["Automatic approval"] : item.ApproverId) <span data-utc-time="@item.DecidedAt?.ToHtmlDateTime()"></span><br />@item.DecisionReason</dd>
 </dl>
 @if (item.WorkflowId != null)
 {
