@@ -24,10 +24,10 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Dms
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     [HttpGet, Authorize(Policy = AppPermissionNames.CanManageDmsAccess)]
-    [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "DMS", CascadedLinksIcon = "shield", LinkText = "Machine connection recovery", LinkOrder = 1)]
+    [RenderInNavBar(NavGroupName = "Settings", NavGroupOrder = 9998, CascadedLinksGroupName = "DMS", CascadedLinksIcon = "shield", LinkText = "Replace the Agent connection key", LinkOrder = 1)]
     public async Task<IActionResult> Index() => this.StackView(new DmsViewModel
     {
-        PageTitle = "Machine connection recovery",
+        PageTitle = "Replace the Agent connection key",
         Machines = await db.Machines.AsNoTracking().Where(m => !m.Disabled).OrderBy(m => m.Name).ToListAsync()
     });
 

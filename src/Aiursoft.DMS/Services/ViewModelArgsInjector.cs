@@ -92,7 +92,6 @@ public class ViewModelArgsInjector(
         _ = localizer["Operations"];
         _ = localizer["Workflow history"];
     
-        _ = localizer["Machine connection recovery"];
         _ = localizer["Replace the Agent connection key"];
         _ = localizer["Connection key replaced"];
     

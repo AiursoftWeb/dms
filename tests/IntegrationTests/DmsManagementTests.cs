@@ -90,6 +90,8 @@ public class DmsManagementTests : TestBase
         await db.SaveChangesAsync();
 
         var page = await Http.GetStringAsync("/DmsAccess");
+        StringAssert.Contains(page, "Replace the Agent connection key");
+        StringAssert.Contains(page, "View replacement steps");
         Assert.DoesNotContain("name=\"machineId\"", page);
         Assert.DoesNotContain("confirmationToken", page);
         var detail = await Http.GetStringAsync($"/Dms/Machine/{machine.Id}");

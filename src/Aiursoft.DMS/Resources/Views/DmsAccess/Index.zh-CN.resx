@@ -18,7 +18,7 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-  <data name="Agent identity" xml:space="preserve">
+      <data name="Agent identity" xml:space="preserve">
     <value>代理身份</value>
   </data>
   <data name="Approve" xml:space="preserve">
@@ -66,9 +66,6 @@
   <data name="Machine" xml:space="preserve">
     <value>机器</value>
   </data>
-  <data name="Machine connection recovery" xml:space="preserve">
-    <value>机器连接恢复</value>
-  </data>
   <data name="May approve" xml:space="preserve">
     <value>可审批</value>
   </data>
@@ -93,11 +90,11 @@
   <data name="Registered machines" xml:space="preserve">
     <value>已注册机器</value>
   </data>
+  <data name="Replace the Agent connection key" xml:space="preserve">
+    <value>替换 Agent 连接密钥</value>
+  </data>
   <data name="Request" xml:space="preserve">
     <value>请求</value>
-  </data>
-  <data name="Review key replacement" xml:space="preserve">
-    <value>查看密钥替换</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>风险</value>
@@ -117,11 +114,17 @@
   <data name="Set risk permissions" xml:space="preserve">
     <value>设置风险权限</value>
   </data>
+  <data name="The Agent uses this key to connect to DMS. Replace it if the key is lost or exposed." xml:space="preserve">
+    <value>Agent 使用此密钥连接到 DMS。如果密钥丢失或已泄露，请替换它。</value>
+  </data>
   <data name="Use this page if a machine&apos;s Agent connection key has been lost or exposed. Choose the machine to review the replacement steps." xml:space="preserve">
     <value>如果某台机器的 Agent 连接密钥已丢失或泄露，请使用此页面。选择该机器以查看替换步骤。</value>
   </data>
   <data name="User" xml:space="preserve">
     <value>用户</value>
+  </data>
+  <data name="View replacement steps" xml:space="preserve">
+    <value>查看替换步骤</value>
   </data>
 
 </root>

@@ -3,8 +3,8 @@
 
 <div class="row">
     <div class="col-xl-9">
-        <h1 class="h3 mb-2">@Localizer["Machine connection recovery"]</h1>
-        <p class="text-body-secondary mb-4">@Localizer["Use this page if a machine's Agent connection key has been lost or exposed. Choose the machine to review the replacement steps."]</p>
+        <h1 class="h3 mb-2">@Localizer["Replace the Agent connection key"]</h1>
+        <p class="text-body-secondary mb-4">@Localizer["The Agent uses this key to connect to DMS. Replace it if the key is lost or exposed."]</p>
         <div class="card">
             <div class="card-header"><h2 class="h5 mb-0">@Localizer["Registered machines"]</h2></div>
             @if (Model.Machines.Count == 0)
@@ -32,7 +32,7 @@
                                     <div class="small text-body-secondary mt-1">@Localizer["Last seen"] @machine.LastSeen.Value.ToString("u", CultureInfo.InvariantCulture)</div>
                                 }
                             </div>
-                            <a asp-action="RotateAgentKey" asp-route-id="@machine.Id" class="btn btn-sm btn-outline-secondary">@Localizer["Review key replacement"]</a>
+                            <a asp-action="RotateAgentKey" asp-route-id="@machine.Id" class="btn btn-sm btn-outline-secondary">@Localizer["View replacement steps"]</a>
                         </li>
                     }
                 </ul>
