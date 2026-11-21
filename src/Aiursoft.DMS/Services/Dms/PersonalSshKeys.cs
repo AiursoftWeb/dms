@@ -8,11 +8,19 @@ namespace Aiursoft.DMS.Services.Dms;
 public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, AccessService access)
 {
     public const string SignatureNamespace = "aiursoft-dms-key-registration";
+    private static readonly TimeSpan VerificationLifetime = TimeSpan.FromMinutes(10);
     public static string Challenge(Guid id) => $"{SignatureNamespace}/{id:D}";
-    public static DateTime ExpiresAt(PersonalSshKey key) => key.CreatedAt.AddMinutes(10);
+    public static DateTime ExpiresAt(PersonalSshKey key) => key.CreatedAt + VerificationLifetime;
 
     public Task<List<PersonalSshKey>> ListAsync(string user) => db.PersonalSshKeys.AsNoTracking()
-        .Where(k => k.UserId == user && k.Slot != null).OrderBy(k => k.Slot).ToListAsync();
+        .Where(k => k.UserId == user && k.Slot > 0).OrderBy(k => k.Slot).ToListAsync();
+
+    public Task<PersonalSshKey?> GetPendingAsync(string user, Guid? id = null, CancellationToken token = default)
+    {
+        var cutoff = DateTime.UtcNow - VerificationLifetime;
+        return db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(
+            k => k.UserId == user && k.Slot == 0 && k.CreatedAt > cutoff && (id == null || k.Id == id), token);
+    }
 
     public Task<PersonalSshKey> BeginAsync(string user, string name, string publicKey) => gate.RunAsync(async () =>
     {
@@ -29,6 +37,8 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
         var pending = keys.SingleOrDefault(k => k.Slot == 0);
         if (pending != null)
         {
+            if (ExpiresAt(pending) > DateTime.UtcNow)
+                throw new DmsException(409, "Finish or abandon the current verification before adding another key.");
             db.Remove(pending);
             await db.SaveChangesAsync();
         }
@@ -42,8 +52,8 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
     {
         if (string.IsNullOrWhiteSpace(signature) || signature.Length > 16384)
             throw new DmsException(400, "Enter an SSH signature.");
-        var candidate = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.Id == id && k.UserId == user && k.Slot == 0, token);
-        if (candidate == null || ExpiresAt(candidate) <= DateTime.UtcNow)
+        var candidate = await GetPendingAsync(user, id, token);
+        if (candidate == null)
             throw new DmsException(409, "Request a new signing challenge.");
         if (!await VerifySignatureAsync(candidate, signature, token))
             throw new DmsException(400, "The signature could not be verified for this challenge and key.");
@@ -61,6 +71,23 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
             return await db.SaveChangesAsync(token);
         });
     }
+
+    public Task<int> AbandonAsync(string user, Guid id) => gate.RunAsync(async () =>
+    {
+        var key = await db.PersonalSshKeys.SingleOrDefaultAsync(k => k.UserId == user && k.Id == id && k.Slot == 0);
+        if (key == null) return 0;
+        db.Remove(key);
+        return await db.SaveChangesAsync();
+    });
+
+    public Task<int> RemoveExpiredVerificationsAsync() => gate.RunAsync(async () =>
+    {
+        var cutoff = DateTime.UtcNow - VerificationLifetime;
+        var expired = await db.PersonalSshKeys.Where(k => k.Slot == 0 && k.CreatedAt <= cutoff).ToListAsync();
+        if (expired.Count == 0) return 0;
+        db.PersonalSshKeys.RemoveRange(expired);
+        return await db.SaveChangesAsync();
+    });
 
     private static async Task<bool> VerifySignatureAsync(PersonalSshKey key, string signature, CancellationToken token)
     {

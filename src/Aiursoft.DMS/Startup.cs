@@ -94,12 +94,17 @@ public class Startup : IWebStartup
         // Background jobs
         services.RegisterBackgroundJob<DummyJob>();
         var orphanAvatarCleanupJob = services.RegisterBackgroundJob<OrphanAvatarCleanupJob>();
+        var sshKeyVerificationCleanupJob = services.RegisterBackgroundJob<SshKeyVerificationCleanupJob>();
 
         // Scheduled tasks (attach a schedule to any registered background job)
         services.RegisterScheduledTask(
             registration: orphanAvatarCleanupJob,
             period:     TimeSpan.FromHours(6),
             startDelay: TimeSpan.FromMinutes(5));
+        services.RegisterScheduledTask(
+            registration: sshKeyVerificationCleanupJob,
+            period: TimeSpan.FromMinutes(1),
+            startDelay: TimeSpan.FromMinutes(1));
 
         // Controllers and localization
         services.AddControllersWithViews()
