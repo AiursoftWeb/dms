@@ -230,6 +230,28 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         access.Audit(user, "lockbox.get", id); await db.SaveChangesAsync(); return item;
     });
 
+    public Task<LockboxStatus> GetLockboxStatusAsync(string user, Guid id) => gate.RunAsync(async () =>
+    {
+        var item = await db.Lockboxes.AsNoTracking().SingleOrDefaultAsync(box => box.Id == id)
+            ?? throw new DmsException(404, "Lockbox not found.");
+        if (item.RequesterId == user) await access.PrincipalAsync(user);
+        else await access.RequireViewAsync(user);
+
+        var people = await db.Users.AsNoTracking()
+            .Where(person => person.Id == item.RequesterId || person.Id == item.ApproverId)
+            .Select(person => new { person.Id, person.DisplayName, person.UserName })
+            .ToDictionaryAsync(person => person.Id, person => AccessService.PersonName(person.DisplayName, person.UserName));
+        var requester = people.GetValueOrDefault(item.RequesterId, "Unknown user");
+        var decidedBy = item.Decision == DecisionState.Withdrawn ? requester :
+            item.ApproverId == null ? null : people.GetValueOrDefault(item.ApproverId, "Unknown user");
+        var approvers = await access.EligibleApproversAsync(item.Risk, item.RequesterId);
+        access.Audit(user, "lockbox.get", id);
+        await db.SaveChangesAsync();
+        return new LockboxStatus(item.Id, requester, DateTime.SpecifyKind(item.CreatedAt, DateTimeKind.Utc), item.Decision,
+            item.DecidedAt is { } decidedAt ? DateTime.SpecifyKind(decidedAt, DateTimeKind.Utc) : null,
+            decidedBy, item.Automatic, approvers, item.WorkflowId);
+    });
+
     public Task<WorkflowDetails> GetWorkflowAsync(string user, Guid id) => gate.RunAsync(async () =>
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id)
