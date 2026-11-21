@@ -18,10 +18,7 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="API Keys" xml:space="preserve">
-    <value>API 密钥</value>
-  </data>
-  <data name="Access Denied" xml:space="preserve">
+      <data name="Access Denied" xml:space="preserve">
     <value>访问被拒绝</value>
   </data>
   <data name="Account Settings" xml:space="preserve">
@@ -38,6 +35,9 @@
   </data>
   <data name="Anonymous" xml:space="preserve">
     <value>匿名</value>
+  </data>
+  <data name="API Keys" xml:space="preserve">
+    <value>API 密钥</value>
   </data>
   <data name="Artifact" xml:space="preserve">
     <value>制品</value>
@@ -63,17 +63,14 @@
   <data name="Cluster access" xml:space="preserve">
     <value>集群访问</value>
   </data>
+  <data name="Connection key replaced" xml:space="preserve">
+    <value>连接密钥已替换</value>
+  </data>
   <data name="Create Role" xml:space="preserve">
     <value>创建角色</value>
   </data>
   <data name="Create User" xml:space="preserve">
     <value>创建用户</value>
-  </data>
-  <data name="DMS" xml:space="preserve">
-    <value>DMS</value>
-  </data>
-  <data name="DMS access" xml:space="preserve">
-    <value>DMS 访问</value>
   </data>
   <data name="Dashboard" xml:space="preserve">
     <value>仪表板</value>
@@ -89,6 +86,12 @@
   </data>
   <data name="Directory" xml:space="preserve">
     <value>目录</value>
+  </data>
+  <data name="DMS" xml:space="preserve">
+    <value>DMS</value>
+  </data>
+  <data name="DMS access" xml:space="preserve">
+    <value>DMS 访问</value>
   </data>
   <data name="Edit Role" xml:space="preserve">
     <value>编辑角色</value>
@@ -132,6 +135,9 @@
   <data name="Login to get access to all features." xml:space="preserve">
     <value>登录以使用所有功能。</value>
   </data>
+  <data name="Machine connection recovery" xml:space="preserve">
+    <value>机器连接恢复</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>机器</value>
   </data>
@@ -165,20 +171,23 @@
   <data name="Register" xml:space="preserve">
     <value>注册</value>
   </data>
+  <data name="Replace the Agent connection key" xml:space="preserve">
+    <value>替换 Agent 连接密钥</value>
+  </data>
   <data name="Role Details" xml:space="preserve">
     <value>角色详情</value>
   </data>
   <data name="Roles" xml:space="preserve">
     <value>角色</value>
   </data>
-  <data name="SSH public keys" xml:space="preserve">
-    <value>SSH 公钥</value>
-  </data>
   <data name="Settings" xml:space="preserve">
     <value>设置</value>
   </data>
   <data name="Sign out" xml:space="preserve">
     <value>退出登录</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公钥</value>
   </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>标准工作流</value>
