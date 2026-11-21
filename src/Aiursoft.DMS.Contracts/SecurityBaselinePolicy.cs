@@ -16,15 +16,17 @@ public sealed record ScheduledSecurityBaselineSettings(Guid[] MachineIds, Securi
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
-        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        RespectNullableAnnotations = true,
+        RespectRequiredConstructorParameters = true
     };
 
     public static ScheduledSecurityBaselineSettings? Parse(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return null;
         var settings = JsonSerializer.Deserialize<ScheduledSecurityBaselineSettings>(value, JsonOptions);
-        if (settings?.Policy == null || settings.MachineIds == null ||
-            settings.MachineIds.Contains(Guid.Empty) || settings.MachineIds.Distinct().Count() != settings.MachineIds.Length)
+        if (settings == null || settings.MachineIds.Contains(Guid.Empty) ||
+            settings.MachineIds.Distinct().Count() != settings.MachineIds.Length)
             throw new ArgumentException("Set a security baseline policy and provide distinct, nonempty machine IDs.");
         settings.Policy.Validate();
         return settings;

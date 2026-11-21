@@ -580,11 +580,7 @@ public static class OperationsWorkflows
     [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<SshRecoveryInput, OperationResult> SshRecover =
         new("internal.ssh.recover-lease", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SshRecover)), "1",
-            ValidateInput: input =>
-            {
-                if (input.ExpectedLeaseId == Guid.Empty)
-                    throw new ArgumentException("SSH lease recovery requires an expected lease ID.");
-            });
+            ValidateInput: input => input.Validate());
 
     [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<SshLeaseCheckInput, SshLeaseCheckResult> SshCheckLease =

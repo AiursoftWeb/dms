@@ -15,7 +15,14 @@ public sealed record SshOpenInput(Guid KeyId, int Minutes = 30, bool Sudo = fals
 }
 
 public sealed record SshLeaseAuthorization(Guid KeyId, string RequesterId, string PublicKey);
-public sealed record SshRecoveryInput(Guid ExpectedLeaseId);
+public sealed record SshRecoveryInput(Guid ExpectedLeaseId)
+{
+    public void Validate()
+    {
+        if (ExpectedLeaseId == Guid.Empty)
+            throw new ArgumentException("SSH lease recovery requires an expected lease ID.");
+    }
+}
 
 public sealed record SshLeaseCheckInput(bool CloseSshWhenNoLease = false);
 
