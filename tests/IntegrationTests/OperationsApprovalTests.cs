@@ -121,7 +121,7 @@ public class OperationsApprovalTests : TestBase
         yield return (OperationsWorkflows.SwarmServiceLogs, new SwarmLogsInput("dms-fixture"), RiskLevel.Medium,
             "machine swarm service logs");
         yield return (OperationsWorkflows.SwarmServiceUpdateStatus, new SwarmServiceInput("dms-fixture"), RiskLevel.Low,
-            "machine swarm service update-status");
+            "machine swarm service rollout-status");
         yield return (OperationsWorkflows.SwarmServiceStop, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
             RiskLevel.High, "machine swarm service stop");
         yield return (OperationsWorkflows.SwarmServiceStart, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
@@ -264,5 +264,9 @@ public class OperationsApprovalTests : TestBase
 
         var runs = await db.WorkflowRuns.Where(r => r.LockboxId != null && boxes.Contains(r.LockboxId.Value)).ToListAsync();
         Assert.HasCount(0, runs);
+        var rolloutHelp = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "swarm", "service", "rollout-status", "--help"]);
+        var previousHelp = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "swarm", "service", "update-status", "--help"]);
+        Assert.AreEqual(0, previousHelp.ProgramReturn, previousHelp.StdErr);
+        Assert.AreEqual(rolloutHelp.StdOut, previousHelp.StdOut);
     }
 }
