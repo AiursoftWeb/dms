@@ -1,48 +1,52 @@
-@using Aiursoft.DMS.Services.Dms
 @model Aiursoft.DMS.Models.DmsViewModels.SshKeysViewModel
-@{
-    var verified = Model.Keys.Where(k => k.VerifiedAt.HasValue).ToList();
-    var challenge = Model.Keys.SingleOrDefault(k => k.Slot == 0);
-}
-<h1>@Localizer["SSH public keys"]</h1>
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <h1 class="mb-0">@Localizer["SSH public keys"]</h1>
+    @if (Model.PendingId is { } pendingId)
+    {
+        <a asp-action="Verify" asp-route-id="@pendingId" class="btn btn-primary">@Localizer["Resume adding a key"]</a>
+    }
+    else if (Model.Keys.Count < 3)
+    {
+        <a asp-action="Add" class="btn btn-primary">@Localizer["Add SSH public key"]</a>
+    }
+</div>
+
 @if (Model.Notice != null)
 {
-    <div class="alert alert-warning"><div class="alert-message">@Localizer[Model.Notice]</div></div>
+    <div class="alert alert-warning" role="alert"><div class="alert-message">@Localizer[Model.Notice]</div></div>
 }
-<div class="card"><div class="card-body">
-    <h2>@Localizer["Verified keys"] (@verified.Count / 3)</h2>
-    @foreach (var key in verified)
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center gap-3">
+        <h2 class="h5 mb-0">@Localizer["Verified keys"]</h2>
+        <span class="text-body-secondary">@Model.Keys.Count / 3</span>
+    </div>
+    @if (Model.Keys.Count == 0)
     {
-        <form asp-action="Revoke" method="post" class="mb-3">
-            <input type="hidden" name="id" value="@key.Id" />
-            <strong>@key.Name</strong> <code>@key.Fingerprint</code>
-            <p class="mb-2">@Localizer["Key ID"] <code>@key.Id</code></p>
-            <button class="btn btn-outline-danger" type="submit">@Localizer["Revoke"]</button>
-        </form>
+        <div class="card-body text-body-secondary">@Localizer["No verified SSH public keys yet."]</div>
     }
-</div></div>
-@if (challenge != null && PersonalSshKeys.ExpiresAt(challenge) > DateTime.UtcNow)
-{
-    <form asp-action="Verify" method="post" class="card"><div class="card-body">
-        <h2>@Localizer["Verify key ownership"]</h2>
-        <p>@challenge.Name <code>@challenge.Fingerprint</code></p>
-        <p>@Localizer["Run this on your computer, replacing KEY_PATH with the path to your key. Paste the resulting SSH signature below."]</p>
-        <pre>printf '%s' '@PersonalSshKeys.Challenge(challenge.Id)' | ssh-keygen -Y sign -n @PersonalSshKeys.SignatureNamespace -f KEY_PATH</pre>
-        <p>@Localizer["Challenge expires at"] @PersonalSshKeys.ExpiresAt(challenge).ToString("u")</p>
-        <input type="hidden" name="id" value="@challenge.Id" />
-        <label for="signature" class="form-label">@Localizer["SSH signature"]</label>
-        <textarea id="signature" name="signature" class="form-control mb-2" maxlength="16384" rows="4" required></textarea>
-        <button class="btn btn-primary">@Localizer["Verify"]</button>
-    </div></form>
-}
-@if (verified.Count < 3)
-{
-    <form asp-action="Register" method="post" class="card"><div class="card-body">
-        <h2>@Localizer["Register a public key"]</h2>
-        <label for="name" class="form-label">@Localizer["Name"]</label>
-        <input id="name" name="name" class="form-control mb-2" maxlength="100" required />
-        <label for="publicKey" class="form-label">@Localizer["OpenSSH public key"]</label>
-        <textarea id="publicKey" name="publicKey" class="form-control mb-2" maxlength="8192" rows="2" required></textarea>
-        <button class="btn btn-primary">@Localizer["Create signing challenge"]</button>
-    </div></form>
-}
+    else
+    {
+        <ul class="list-group list-group-flush">
+            @foreach (var key in Model.Keys)
+            {
+                <li class="list-group-item px-4 py-3">
+                    <div class="row align-items-center gy-3">
+                        <div class="col-sm">
+                            <h3 class="h6 text-break mb-2">@key.Name</h3>
+                            <div class="small text-body-secondary text-break">@Localizer["Fingerprint"] <code>@key.Fingerprint</code></div>
+                            <div class="small text-body-secondary text-break">@Localizer["Key ID"] <code>@key.Id</code></div>
+                        </div>
+                        <div class="col-sm-auto">
+                            <form asp-action="Revoke" method="post">
+                                <input type="hidden" name="id" value="@key.Id" />
+                                <button class="btn btn-sm btn-outline-danger" type="submit">@Localizer["Revoke"]</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>

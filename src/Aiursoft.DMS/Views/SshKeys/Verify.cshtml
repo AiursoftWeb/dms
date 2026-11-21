@@ -1,0 +1,66 @@
+@using Aiursoft.DMS.Services.Dms
+@model Aiursoft.DMS.Models.DmsViewModels.SshKeyVerificationViewModel
+@{
+    var key = Model.Key;
+    var expiresAt = PersonalSshKeys.ExpiresAt(key);
+    var seconds = Math.Max(0, (int)Math.Ceiling((expiresAt - DateTime.UtcNow).TotalSeconds));
+    var command = $"printf '%s' '{PersonalSshKeys.Challenge(key.Id)}' | ssh-keygen -Y sign -n {PersonalSshKeys.SignatureNamespace} -f \"$HOME/.ssh/id_ed25519\"";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9 col-xl-8">
+        <a asp-action="Index" class="d-inline-block mb-3">@Localizer["Back to SSH public keys"]</a>
+        <div class="card" data-ssh-key-verification data-seconds="@seconds">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <span class="small fw-semibold text-body-secondary">@Localizer["Step 2 of 2"]</span>
+                    <span class="small text-body-secondary" data-verification-timer>
+                        @Localizer["Time remaining"]
+                        <span class="font-monospace fs-5 fw-semibold ms-1" role="timer" aria-live="off" data-countdown>@TimeSpan.FromSeconds(seconds).ToString(@"mm\:ss")</span>
+                    </span>
+                </div>
+                <h1 class="h3 mb-2">@Localizer["Verify your SSH public key"]</h1>
+                <p class="mb-4 text-break"><strong>@key.Name</strong> <code class="ms-sm-2">@key.Fingerprint</code></p>
+                <div data-verification-active>
+                    <noscript>
+                        <p class="text-body-secondary">@Localizer["Verification expires at"] <time datetime="@expiresAt.ToString("s")Z">@expiresAt.ToString("u")</time></p>
+                    </noscript>
+                    <p>@Localizer["To finish adding this key, run the command below on the computer that holds its private key."]</p>
+                    <p class="text-body-secondary">@Localizer["Anyone can copy a public key. This step proves you hold its private key, which stays on your computer."]</p>
+                    <div class="border rounded p-3 mb-3 bg-body-tertiary">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                            <span class="small fw-semibold">@Localizer["Terminal command"]</span>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" data-copy-command hidden>@Localizer["Copy command"]</button>
+                            <span hidden data-copy-label>@Localizer["Command copied"]</span>
+                        </div>
+                        <pre class="mb-0 text-wrap text-break" tabindex="0"><code data-sign-command>@command</code></pre>
+                    </div>
+                    <p class="small text-body-secondary mb-3">@Localizer["If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command."]</p>
+                    <p class="small text-body-secondary mb-4">@Localizer["If time runs out, add the key again."]</p>
+                    @if (Model.SignatureInvalid)
+                    {
+                        <div class="alert alert-warning" role="alert"><div class="alert-message">@Localizer["The signature did not match. Run the command above with the private key for this public key and paste the complete result."]</div></div>
+                    }
+                    <form asp-action="Verify" method="post">
+                        <input type="hidden" name="id" value="@key.Id" />
+                        <label for="signature" class="form-label">@Localizer["SSH signature"]</label>
+                        <textarea id="signature" name="signature" class="form-control font-monospace mb-3" maxlength="16384" rows="4" spellcheck="false" required></textarea>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary" type="submit">@Localizer["Verify and add key"]</button>
+                            <button class="btn btn-outline-secondary" type="submit" formaction="@Url.Action("Abandon")" formnovalidate>@Localizer["Cancel adding this key"]</button>
+                        </div>
+                    </form>
+                </div>
+                <div data-verification-expired hidden>
+                    <p role="status">@Localizer["Verification expired. This key was not added."]</p>
+                    <a asp-action="Add" class="btn btn-primary">@Localizer["Start again"]</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section scripts {
+    <script src="~/scripts/ssh-key-verification.js" asp-append-version="true"></script>
+}

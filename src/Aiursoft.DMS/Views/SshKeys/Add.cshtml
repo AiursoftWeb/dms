@@ -1,0 +1,33 @@
+@model Aiursoft.DMS.Models.DmsViewModels.AddSshKeyViewModel
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <a asp-action="Index" class="d-inline-block mb-3">@Localizer["Back to SSH public keys"]</a>
+        <div class="card">
+            <div class="card-body p-4">
+                <p class="small fw-semibold text-body-secondary mb-2">@Localizer["Step 1 of 2"]</p>
+                <h1 class="h3 mb-2">@Localizer["Add an SSH public key"]</h1>
+                <p class="text-body-secondary mb-4">@Localizer["Paste your public key. In the next step, you'll confirm that you can use its private key."]</p>
+                @if (Model.VerificationUnavailable)
+                {
+                    <div class="alert alert-warning" role="alert"><div class="alert-message">@Localizer["This verification has expired or was abandoned. Add the key again to continue."]</div></div>
+                }
+                @if (Model.Notice != null)
+                {
+                    <div class="alert alert-warning" role="alert"><div class="alert-message">@Localizer[Model.Notice]</div></div>
+                }
+                <form asp-action="Register" method="post">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">@Localizer["Key name"]</label>
+                        <input id="name" name="name" value="@Model.KeyName" class="form-control" maxlength="100" required />
+                    </div>
+                    <div class="mb-4">
+                        <label for="publicKey" class="form-label">@Localizer["OpenSSH public key"]</label>
+                        <textarea id="publicKey" name="publicKey" class="form-control font-monospace" rows="3" maxlength="8192" spellcheck="false" required>@Model.PublicKey</textarea>
+                    </div>
+                    <button class="btn btn-primary" type="submit">@Localizer["Continue to verification"]</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
