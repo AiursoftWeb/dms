@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>يتيح طلب مسارات العمل عالية الخطورة جدًا على أي جهاز.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>يتيح تشغيل سيرورات العمل المفتوحة. يتم اعتماد صناديق قفلها تلقائيًا.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>يسمح بالحذف الدائم للأدوار.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>طلب سير عمل ذات مخاطر عالية جداً</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>تشغيل العمليات المفتوحة</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>عرض المهام الخلفية</value>

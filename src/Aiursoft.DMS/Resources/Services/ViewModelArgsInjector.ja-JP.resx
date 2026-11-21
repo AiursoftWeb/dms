@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>アカウント設定</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>SSH公開鍵を追加</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>管理者</value>
   </data>
@@ -171,6 +174,9 @@
   <data name="Roles" xml:space="preserve">
     <value>ロール</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>SSH公開鍵が追加されました</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH公開鍵</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>ユーザー</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>SSH公開鍵を確認してください</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>ワークフロー履歴</value>

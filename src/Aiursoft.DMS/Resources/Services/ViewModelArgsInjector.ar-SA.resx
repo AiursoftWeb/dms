@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>الوصول ممنوع</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>إضافة مفتاح SSH عام</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>المشرف</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>الأدوار</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>تمت إضافة المفتاح العام SSH</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>المفاتيح العامة SSH</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>المستخدمون</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>تحقق من مفتاح SSH العام الخاص بك</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>سجل سير العمل</value>

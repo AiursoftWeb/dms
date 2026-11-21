@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>帳戶設定</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>新增 SSH 公鑰</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>管理員</value>
   </data>
@@ -171,6 +174,9 @@
   <data name="Roles" xml:space="preserve">
     <value>角色</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>SSH 公鑰已新增</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH 公鑰</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>用戶</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>驗證您的 SSH 公鑰</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>工作流程歷史</value>
