@@ -9,7 +9,7 @@ public enum OutputFormat { Table, Json, Csv }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false)
     {
         if (format == OutputFormat.Json)
         {
@@ -53,10 +53,44 @@ public static class DmsOutputWriter
                     item.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())))));
             WriteCsv(output, data);
         }
+        else if (lockboxStatus && data is JObject summary)
+            WriteLockboxStatus(output, summary, width);
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
         else WriteHuman(output, data, width, color, true);
     }
+
+    private static void WriteLockboxStatus(TextWriter output, JObject summary, int width)
+    {
+        var decision = (DecisionState)summary["Decision"]!.Value<int>();
+        var approvers = summary["EligibleApprovers"]?.Values<string>().ToArray() ?? [];
+        List<string[]> rows =
+        [
+            ["Lockbox ID", Cell(summary["LockboxId"])],
+            ["Requested by", TerminalName(Cell(summary["RequestedBy"]))],
+            ["Requested at", HumanScalar("RequestedAt", summary["RequestedAt"])],
+            ["Status", decision switch
+            {
+                DecisionState.Pending => "Awaiting approval",
+                DecisionState.Denied => "Rejected",
+                _ => decision.ToString()
+            }]
+        ];
+        if (decision != DecisionState.Pending)
+        {
+            var verb = decision == DecisionState.Denied ? "Rejected" : decision.ToString();
+            rows.Add([$"{verb} at", HumanScalar("DecidedAt", summary["DecidedAt"])]);
+            rows.Add([$"{verb} by", summary["Automatic"]?.Value<bool>() == true
+                ? "System (automatic approval)" : TerminalName(HumanScalar("DecidedBy", summary["DecidedBy"]))]);
+        }
+        rows.Add(["Eligible approvers now", approvers.Length == 0 ? "None" : string.Join('\n', approvers.Select(TerminalName))]);
+        if (summary["WorkflowId"]?.Type is JTokenType.String or JTokenType.Guid)
+            rows.Add(["Workflow ID", Cell(summary["WorkflowId"])]);
+        WriteRows(output, ["Property", "Value"], rows, width, false);
+    }
+
+    private static string TerminalName(string? name) => name == null ? "-" :
+        new string(name.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
 
     private static void WriteHuman(TextWriter output, JToken value, int width, bool color, bool workflowMetadata = false)
     {

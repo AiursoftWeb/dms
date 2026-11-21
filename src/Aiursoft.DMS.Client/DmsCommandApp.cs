@@ -211,10 +211,17 @@ public static partial class DmsCommandApp
         .WithFeature(new Group("lockbox",
         [
             new ActionCommand("list", "lockboxes"),
+            new ActionCommand("status", "lockbox-status", positionalOnly: true),
             new ActionCommand("get", "get"),
             new ActionCommand("approve", "approve"),
             new ActionCommand("deny", "deny"),
             new ActionCommand("withdraw", "withdraw")
+        ]))
+        .WithFeature(new Group("workflow",
+        [
+            new ActionCommand("status", "workflow", positionalOnly: true),
+            new ActionCommand("callstack", "callstack", positionalOnly: true),
+            new ActionCommand("trace", "trace", positionalOnly: true)
         ]))
         .WithFeature(new Group("operation",
         [
@@ -395,21 +402,47 @@ public static partial class DmsCommandApp
         Func<ParseResult, string>? input = null,
         Option[]? options = null,
         Argument? argument = null,
-        Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null) : DmsCommandHandler
+        Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null,
+        bool positionalOnly = false) : DmsCommandHandler
     {
         public override Command BuildAsCommand()
         {
             var command = base.BuildAsCommand();
             if (argument != null) command.Arguments.Add(argument);
+            if (UsesId)
+            {
+                _positionalId.Arity = positionalOnly ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne;
+                _positionalId.Description = UsesLockboxId ? "Lockbox ID (lb/<UUID>)." : "Workflow ID.";
+                command.Arguments.Add(_positionalId);
+                command.Validators.Add(ValidateId);
+            }
             return command;
         }
 
+        private bool UsesLockboxId => action is "lockbox-status" or "get" or "approve" or "deny" or "withdraw";
+        private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" or WorkflowNames.Kill;
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
 
         protected override string Description => IsSubmission
             ? "Submit a Lockbox request. Execution starts only after approval."
-            : action == "withdraw" ? "Withdraw your pending Lockbox request." : "Inspect or decide an existing workflow request.";
+            : action switch
+            {
+                "lockbox-status" => "Show a Lockbox's approval status and eligible approvers.",
+                "lockboxes" => "List Lockbox requests.",
+                "get" => "Show the full record for a Lockbox request.",
+                "approve" => "Approve a pending Lockbox request.",
+                "deny" => "Reject a pending Lockbox request.",
+                "withdraw" => "Withdraw your pending Lockbox request.",
+                "workflow" => "Show a Workflow's status and result.",
+                "callstack" => "Show a Workflow and its child executions.",
+                "trace" => "Show trace entries for a Workflow.",
+                "definitions" => "List available Workflow definitions.",
+                "audit" => "Search archived Workflow and Lockbox events.",
+                _ => "Inspect a Workflow."
+            };
+
+        private readonly Argument<string?> _positionalId = new("id");
 
         private readonly Option<Guid[]> _machines = new("--machine-id")
         {
@@ -468,6 +501,19 @@ public static partial class DmsCommandApp
             return null;
         }
 
+        private void ValidateId(CommandResult result)
+        {
+            var positional = result.GetValue(_positionalId);
+            var option = UsesLockboxId ? (Option)_lockboxId : _id;
+            var suppliedOption = result.GetResult(option) != null;
+            if (!positionalOnly && positional == null && !suppliedOption)
+                result.AddError(UsesLockboxId ? "Provide a Lockbox ID (lb/<UUID>)." : "Provide a Workflow ID.");
+            else if (positional != null && suppliedOption)
+                result.AddError("Pass the ID once, as an argument or with --id.");
+            else if (positional != null && !(UsesLockboxId ? LockboxId.TryParse(positional, out _) : Guid.TryParse(positional, out _)))
+                result.AddError(UsesLockboxId ? "Expected a Lockbox ID in the form lb/<UUID>." : "Expected a Workflow UUID.");
+        }
+
         protected override IEnumerable<Option> GetActionOptions()
         {
             if (IsSubmission)
@@ -495,11 +541,7 @@ public static partial class DmsCommandApp
                     yield return _machineName;
                 }
 
-                if (action == WorkflowNames.Kill)
-                {
-                    _id.Required = true;
-                    yield return _id;
-                }
+                if (action == WorkflowNames.Kill) yield return _id;
             }
             else if (action == "audit")
             {
@@ -515,17 +557,14 @@ public static partial class DmsCommandApp
                 yield return _page;
                 yield return _decision;
             }
-            else if (action is "get" or "approve" or "deny" or "withdraw")
+            else if (UsesLockboxId)
             {
-                _lockboxId.Required = true;
-                yield return _lockboxId;
+                if (!positionalOnly) yield return _lockboxId;
                 if (action is "approve" or "deny") yield return _reason;
             }
-            else if (action != "definitions")
+            else if (UsesId)
             {
-                _id.Required = true;
-                yield return _id;
-                if (action is "approve" or "deny") yield return _reason;
+                if (!positionalOnly) yield return _id;
                 if (action == "trace") yield return _skip;
             }
         }
@@ -533,10 +572,13 @@ public static partial class DmsCommandApp
         protected override bool Callstack => action == "callstack";
         protected override bool Catalog => action == "definitions";
         protected override bool Audit => action == "audit";
+        protected override bool LockboxStatus => action == "lockbox-status";
 
         protected override async Task<DmsResponse> RequestAsync(DmsApiClient client, ParseResult context)
         {
-            var id = context.GetValue(_id);
+            var positional = UsesId ? context.GetValue(_positionalId) : null;
+            var id = !UsesLockboxId && positional != null ? Guid.Parse(positional) : context.GetValue(_id);
+            var lockboxId = UsesLockboxId && positional != null ? LockboxId.Parse(positional) : context.GetValue(_lockboxId);
             DmsResponse response;
             if (IsSubmission)
             {
@@ -577,9 +619,10 @@ public static partial class DmsCommandApp
                     "definitions" => await client.ListDefinitionsAsync(),
                     "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page),
                         context.GetValue(_decision)),
-                    "get" => await client.GetLockboxAsync(context.GetValue(_lockboxId)),
-                    "withdraw" => await client.WithdrawAsync(context.GetValue(_lockboxId)),
-                    "approve" or "deny" => await client.DecideAsync(context.GetValue(_lockboxId),
+                    "lockbox-status" => await client.LockboxStatusAsync(lockboxId),
+                    "get" => await client.GetLockboxAsync(lockboxId),
+                    "withdraw" => await client.WithdrawAsync(lockboxId),
+                    "approve" or "deny" => await client.DecideAsync(lockboxId,
                         action == "approve",
                         context.GetValue(_reason) ?? string.Empty),
                     "workflow" => await client.GetWorkflowAsync(id),

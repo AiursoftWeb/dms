@@ -92,6 +92,10 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     [HttpGet("lockboxes/lb/{id:guid}")]
     public Task<IActionResult> Get(Guid id) => Handle(async () => (await workflows.GetLockboxAsync(Actor, id)).Details());
 
+    [HttpGet("lockboxes/{id:guid}/status")]
+    [HttpGet("lockboxes/lb/{id:guid}/status")]
+    public Task<IActionResult> LockboxStatus(Guid id) => Handle(async () => await workflows.GetLockboxStatusAsync(Actor, id));
+
     public sealed class DecisionInput
     {
         public bool Approve { get; set; }
