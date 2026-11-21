@@ -1,4 +1,5 @@
 using Aiursoft.DMS.Client;
+using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Tests;
 
@@ -38,7 +39,7 @@ public class DmsCliHelpTests
     public void EmptyInventoryCsvRetainsColumnHeaders()
     {
         using var output = new StringWriter();
-        DmsOutputWriter.WriteResult(output, new List<Aiursoft.DMS.Contracts.MachineSummary>(),
+        DmsOutputWriter.WriteResult(output, new List<MachineSummary>(),
             OutputFormat.Csv, color: false, width: 120);
         Assert.AreEqual("AgentVersion,Disabled,Id,LastSeen,Name\r\n", output.ToString());
     }
