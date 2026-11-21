@@ -21,7 +21,7 @@ On an empty database, the default local account is `admin@default.com` with pass
 - A web console for machine inventory, approvals and workflow history.
 - A CLI and reusable SDK for requesting operations and inspecting their results.
 - Linux Agents that connect outward to the Controller over WebSocket. Managed machines need access to the Controller, without requiring internet access or an SSH service.
-- Role permissions with independent request, automatic approval and approval rights for five risk levels.
+- Role permissions for six risk levels, including automatic approval for Open requests.
 - Persistent workflow state, parent/child callstacks and ClickHouse trace archives.
 - Shared Aiursoft accounts, OIDC, roles, themes and localization.
 
@@ -65,10 +65,10 @@ Run the interactive login, follow its link to create a personal API key, then ch
 ```sh
 dms login
 dms access whoami
-dms machine list --reason "Inspect inventory"
+dms machine list
 ```
 
-The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and administrative inspection queries do not create Lockboxes. `machine list` is a Safe workflow and submits a Lockbox. Server operations still require global role risk permissions and Lockbox approval. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
+The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and administrative inspection queries do not create Lockboxes. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
 
 ### SDK
 
@@ -167,10 +167,10 @@ Create a personal key under **API Keys** in the Controller, then set its URL and
 export DMS_SERVER=https://dms.example.com
 export DMS_API_KEY='<personal-key>'
 dms access whoami
-dms machine list --reason "Inspect inventory"
+dms machine list
 ```
 
-`access whoami` creates no Lockbox; `machine list` submits a Safe Lockbox request. Server operations submit a Lockbox and require the global request Permission plus automatic or human approval for the workflow's risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
+`access whoami` shows your effective role permissions. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. Other server operations follow the configured request and approval permissions for their risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
 
 ### Join and manage machines
 

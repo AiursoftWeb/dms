@@ -25,6 +25,8 @@ public class AppPermissions
         var localizer = new FakeLocalizer();
         List<PermissionDescriptor> allPermission =
         [
+            new(AppPermissionNames.CanRequestOpenRiskWorkflow, localizer["Run open workflows"],
+                localizer["Allows running Open workflows. Their Lockboxes are approved automatically."]),
             new(AppPermissionNames.CanRequestSafeRiskWorkflow, localizer["Request safe workflows"], localizer["Allows requesting safe workflows on any machine."]),
             new(AppPermissionNames.CanAutoApproveSafeRiskWorkflow, localizer["Automatically approve safe workflows"], localizer["Automatically approves requested safe workflows. Request permission is also required."]),
             new(AppPermissionNames.CanApproveSafeRiskWorkflow, localizer["Approve safe workflows"], localizer["Allows approving or denying safe workflow requests on any machine."]),

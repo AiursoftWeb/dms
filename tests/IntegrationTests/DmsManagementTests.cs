@@ -57,7 +57,7 @@ public class DmsManagementTests : TestBase
         var snapshot = await CliAsync<AccessSnapshot>(setup.ManagerKey, "access", "get");
         Assert.IsNotNull(snapshot.Machines);
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.ManagerKey);
-        var request = ClusterWorkflows.GetMachines.Request(new EmptyInput(), "Must require Safe permission");
+        var request = ClusterWorkflows.GetMachines.Request(new EmptyInput(), "");
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.PostAsJsonAsync("/api/v1/dms/lockboxes", request)).StatusCode);
     }
 

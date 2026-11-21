@@ -59,7 +59,7 @@ internal sealed class LoginCommand : ExecutableCommandHandlerBuilder
         await client.CurrentUserAsync();
         await new DmsCredentials(endpoint, key).SaveAsync();
         output.WriteLine($"Logged in to {endpoint}. Authentication saved to ~/.DMS/auth.json.");
-        output.WriteLine("Run 'dms access whoami' or 'dms machine list --reason \"Inspect inventory\"' to get started.");
+        output.WriteLine("Run 'dms access whoami' or 'dms machine list' to get started.");
         if (Environment.GetEnvironmentVariable("DMS_SERVER") != null || Environment.GetEnvironmentVariable("DMS_API_KEY") != null)
             output.WriteLine("DMS_SERVER and DMS_API_KEY environment variables override saved authentication. Unset them to use this login.");
     }

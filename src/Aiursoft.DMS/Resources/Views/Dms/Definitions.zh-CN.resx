@@ -97,4 +97,7 @@
     <value>您没有访问任何集群的权限。</value>
   </data>
 
+  <data name="Open" xml:space="preserve">
+    <value>放开</value>
+  </data>
 </root>

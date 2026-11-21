@@ -71,7 +71,7 @@ Subsequent terminal sessions use the saved login automatically:
 
 ```sh
 dms access whoami
-dms machine list --reason "Inspect inventory"
+dms machine list
 ```
 
 Run `dms login` again to change the saved Controller or key. `dms login --server https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
@@ -86,23 +86,23 @@ export DMS_API_KEY
 dms access whoami
 ```
 
-`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, five-risk permission matrix, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
+`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, effective workflow permissions, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
 
 The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox approval flow apply equally to both forms.
 
 ### Manage Agent access and permissions
 
-Users with **Manage DMS access** can inspect inventory and manage Agent identities through the CLI or **DMS access** web page. Configure workflow permissions in **Administration → Directory → Roles → Edit**. See [role permissions](permissions.md) for the five-risk matrix and upgrade requirements. Permissions apply to every machine in the instance.
+Users with **Manage DMS access** can inspect inventory and manage Agent identities through the CLI or **DMS access** web page. Configure workflow permissions in **Administration → Directory → Roles → Edit**. See [role permissions](permissions.md) for the risk matrix and upgrade requirements. Permissions apply to every machine in the instance.
 
 ```sh
 dms access whoami
 dms access whoami --output-format json
 dms access whoami --output-format csv
-dms machine list --reason "Inspect inventory"
+dms machine list
 dms access get
 ```
 
-`access set-grant` and `access set-self-approval` have been removed. `access get` lists inventory and Agent identity metadata, without a second permissions configuration surface. Issuing a key never grants workflow execution privileges. `machine list` is a Safe standard workflow and creates a Lockbox; `access get` is an authenticated administrative inspection.
+`access set-grant` and `access set-self-approval` have been removed. `access get` lists inventory and Agent identity metadata, without a second permissions configuration surface. Issuing a key never grants workflow execution privileges. `machine list` is an Open workflow and prints its inventory result. `access get` is an authenticated administrative inspection.
 
 
 ## Manage Docker containers
@@ -546,8 +546,7 @@ Use `dms operation list-definitions` to see the Controller's registered public s
 ## Request and inspect operations
 
 ```sh
-dotnet ./bin/client/dms.dll machine list \
-  --reason 'Inspect inventory'
+dotnet ./bin/client/dms.dll machine list
 dotnet ./bin/client/dms.dll machine performance info \
   --machine-id <machine-id> --reason 'Inspect capacity'
 dotnet ./bin/client/dms.dll machine agent status \
@@ -605,6 +604,16 @@ For a typed aggregate across a frozen set of machines, see [Cluster disk usage](
 Approval and workflow state changes are automatically archived to ClickHouse through a transactional pending queue. See [structured workflow audit](workflow-audit.md) for attribution, deduplication and outage behavior. Existing trace commands continue to query trace text; no new investigation command is added in this phase.
 
 ## Lockbox API and receipts
+
+`dms machine list` requires **Run open workflows**. The Controller records an automatically approved Lockbox and the CLI waits for the inventory.
+
+```sh
+dms machine list
+dms machine list --output-format json
+dms machine list --output-format csv
+```
+
+The reason is optional for Open. The CLI prints only the result on stdout. JSON is an array, CSV has one row per machine, and an empty list retains the CSV header. When waiting times out, the CLI prints the Workflow ID, Lockbox ID and reusable request ID on stderr and exits nonzero. Reuse the same input and request ID to check the original run. The submission API continues to return the receipt described below. SDK callers can use `WaitForOpenResultAsync` with that Lockbox ID to wait for their own result.
 
 `POST /api/v1/dms/lockboxes` returns only these business fields inside the usual AiurProtocol `Data` envelope:
 
