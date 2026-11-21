@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Aiursoft.ClickhouseSdk;
 using Aiursoft.ClickhouseSdk.Abstractions;
 using Aiursoft.DMS.Contracts;
@@ -14,6 +15,8 @@ public sealed class TraceEntry
     public string? ScheduleId { get; set; }
     public string EventId { get; set; } = string.Empty;
     public string WorkflowId { get; set; } = string.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? WorkflowDefinition { get; set; }
     public DateTime Time { get; set; }
     public string Source { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
@@ -46,11 +49,21 @@ public sealed partial class TraceDatabase(IConfiguration configuration) : Clickh
         await command.ExecuteNonQueryAsync();
     }
 
-    public Task<IReadOnlyList<TraceEntry>> ReadAsync(Guid id, int skip) => QueryAsync(
-        "SELECT EventId, WorkflowId, Time, Source, Message, Origin, Trigger, ScheduleId FROM DmsWorkflowTrace FINAL WHERE WorkflowId = {workflow:String} ORDER BY Time, EventId LIMIT 200 OFFSET {skip:UInt32}",
+    public const int PageSize = 200;
+
+    public Task<IReadOnlyList<TraceEntry>> ReadAsync(Guid id, int skip) => ReadAsync([id.ToString()], skip);
+
+    public Task<IReadOnlyList<TraceEntry>> ReadAsync(string[] workflowIds, int skip) => QueryAsync(
+        """
+        SELECT EventId, WorkflowId, Time, Source, Message, Origin, Trigger, ScheduleId
+        FROM DmsWorkflowTrace FINAL
+        WHERE WorkflowId IN {workflows:Array(String)}
+        ORDER BY Time, EventId, WorkflowId
+        LIMIT {limit:UInt32} OFFSET {skip:UInt32}
+        """,
         r => new TraceEntry { EventId = r.GetString(0), WorkflowId = r.GetString(1), Time = r.GetDateTime(2), Source = r.GetString(3), Message = r.GetString(4),
             Origin = Enum.Parse<WorkflowOrigin>(r.GetString(5)), Trigger = Enum.Parse<WorkflowTrigger>(r.GetString(6)), ScheduleId = r.IsDBNull(7) ? null : r.GetString(7) },
-        new Dictionary<string, object?> { ["workflow"] = id.ToString(), ["skip"] = skip });
+        new Dictionary<string, object?> { ["workflows"] = workflowIds, ["limit"] = PageSize, ["skip"] = skip });
 }
 
 public sealed class TraceStore(IConfiguration configuration)

@@ -311,14 +311,46 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
         await access.RequireViewAsync(user);
         var all = await db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == run.RootId).OrderBy(r => r.CreatedAt).ToListAsync();
-        var selected = new HashSet<Guid> { id };
-        while (true)
-        {
-            var count = selected.Count;
-            foreach (var child in all.Where(r => r.ParentId != null && selected.Contains(r.ParentId.Value))) selected.Add(child.Id);
-            if (count == selected.Count) break;
-        }
+        var selected = SubtreeIds(id, all.Select(r => (r.Id, r.ParentId)));
         access.Audit(user, "operation.callstack", id); await db.SaveChangesAsync();
         return all.Where(r => selected.Contains(r.Id)).ToList();
     });
+
+    public async Task<IReadOnlyDictionary<string, string>> TraceScopeAsync(string user, Guid id, bool recursive)
+    {
+        var run = await db.WorkflowRuns.AsNoTracking().NotCacheable().Where(r => r.Id == id)
+            .Select(r => new { r.RootId, r.Definition }).SingleOrDefaultAsync()
+            ?? throw new DmsException(404, "Workflow not found.");
+        await access.RequireViewAsync(user);
+
+        var scope = new Dictionary<string, string> { [id.ToString()] = run.Definition };
+        if (recursive)
+        {
+            var all = await db.WorkflowRuns.AsNoTracking().NotCacheable().Where(r => r.RootId == run.RootId)
+                .Select(r => new { r.Id, r.ParentId, r.Definition }).ToListAsync();
+            var selected = SubtreeIds(id, all.Select(r => (r.Id, r.ParentId)));
+            foreach (var descendant in all.Where(r => selected.Contains(r.Id)))
+                scope[descendant.Id.ToString()] = descendant.Definition;
+        }
+
+        access.Audit(user, "operation.trace", id);
+        await db.SaveChangesAsync();
+        return scope;
+    }
+
+    private static HashSet<Guid> SubtreeIds(Guid id, IEnumerable<(Guid Id, Guid? ParentId)> runs)
+    {
+        var childrenByParent = runs.ToLookup(r => r.ParentId, r => r.Id);
+        var selected = new HashSet<Guid> { id };
+        var pending = new Queue<Guid>();
+        pending.Enqueue(id);
+        while (pending.TryDequeue(out var parent))
+        {
+            foreach (var child in childrenByParent[parent])
+            {
+                if (selected.Add(child)) pending.Enqueue(child);
+            }
+        }
+        return selected;
+    }
 }

@@ -178,7 +178,7 @@ public static partial class DmsCommandApp
                     NewSwarmServiceInspectCommand(),
                     NewSwarmServicePsCommand(),
                     NewSwarmServiceLogsCommand(),
-                    NewSwarmServiceUpdateStatusCommand(),
+                    NewSwarmServiceRolloutStatusCommand(),
                     NewSwarmServiceStopCommand(),
                     NewSwarmServiceStartCommand(),
                     NewSwarmServiceUpdateCommand(),
@@ -261,7 +261,7 @@ public static partial class DmsCommandApp
             new ActionCommand("callstack",
                 "Show a workflow and its descendants as a tree.",
                 "callstack", positionalOnly: true),
-            new ActionCommand("trace", "Read trace entries for a workflow.", "trace", positionalOnly: true)
+            new ActionCommand("trace", "Read archived trace entries for a workflow and its descendants.", "trace", positionalOnly: true)
         ]))
         .WithFeature(new Group("operation", "Browse the workflow catalog, search audit history, or request cancellation.",
         [
@@ -271,7 +271,7 @@ public static partial class DmsCommandApp
             new ActionCommand("query-audit", "Search archived Lockbox and workflow events.", "audit"),
             new ActionCommand("get-workflow", "Show a workflow's execution status and result.", "workflow"),
             new ActionCommand("get-callstack", "Show a workflow and its descendants as a tree.", "callstack"),
-            new ActionCommand("get-trace", "Read trace entries for a workflow.", "trace"),
+            new ActionCommand("get-trace", "Read archived trace entries for a workflow and its descendants.", "trace"),
             new ActionCommand("kill-workflow",
                 "Request cancellation of a workflow and its descendants.",
                 WorkflowNames.Kill)
@@ -485,6 +485,9 @@ public static partial class DmsCommandApp
         bool positionalOnly = false,
         Func<string, object>? readResult = null) : DmsCommandHandler
     {
+        public string[] CommandAliases { private get; set; } = [];
+        protected override string[] Alias => CommandAliases;
+
         public override Command BuildAsCommand()
         {
             var command = base.BuildAsCommand();
@@ -527,6 +530,11 @@ public static partial class DmsCommandApp
             { Description = "Name to give the new machine in the Controller inventory." };
         private readonly Option<int> _skip = new("--skip")
             { Description = "Skip this many trace entries before returning the next page." };
+        private readonly Option<bool> _recursive = new("--recursive")
+        {
+            DefaultValueFactory = _ => true,
+            Description = "Include descendants in the time-ordered trace page (default: true). Use --recursive false for only the specified workflow."
+        };
 
         private readonly Option<DateTimeOffset?> _from = new("--from")
         {
@@ -654,7 +662,11 @@ public static partial class DmsCommandApp
             else if (UsesId)
             {
                 if (!positionalOnly) yield return _id;
-                if (action == "trace") yield return _skip;
+                if (action == "trace")
+                {
+                    yield return _skip;
+                    yield return _recursive;
+                }
             }
         }
 
@@ -717,7 +729,7 @@ public static partial class DmsCommandApp
                         context.GetValue(_reason) ?? string.Empty),
                     "workflow" => await client.GetWorkflowAsync(id),
                     "callstack" => await client.CallstackAsync(id),
-                    "trace" => await client.TraceAsync(id, context.GetValue(_skip)),
+                    "trace" => await client.TraceAsync(id, context.GetValue(_skip), context.GetValue(_recursive)),
                     _ => throw new InvalidOperationException("Unsupported command.")
                 };
 

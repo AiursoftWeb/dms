@@ -203,7 +203,7 @@ public static class DmsOutputWriter
         {
             data = entries;
             defaults = page["Page"] != null ? typeof(LockboxDetails).GetProperties().Select(p => p.Name).ToArray()
-                : ["EventId", "WorkflowId", "Time", "Source", "Message"];
+                : ["EventId", "WorkflowId", "WorkflowDefinition", "Time", "Source", "Message"];
         }
         var records = data is JArray array ? array.ToList() : [data];
         var objects = records.Select(r => r as JObject ?? new JObject { ["Value"] = r }).ToList();
