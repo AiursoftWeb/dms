@@ -26,7 +26,7 @@ If your SDK installation has not already configured this directory, add that sam
 dms --help
 ```
 
-Run `dms` or a command group such as `dms access` to see the available commands. For the options and effects of one command, use `--help`:
+Run `dms` or a command group such as `dms access` to see the available commands. Use `--help` with a command to see its options and effects.
 
 ```sh
 dms access
