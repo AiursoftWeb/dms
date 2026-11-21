@@ -1,3 +1,4 @@
+@using System.Globalization
 @model Aiursoft.DMS.Models.DmsViewModels.DmsMachineViewModel
 @{
     var machine = Model.Machine;
@@ -31,7 +32,7 @@
                     <dt class="col-sm-4">Agent @Localizer["Version"]</dt>
                     <dd class="col-sm-8">@(string.IsNullOrEmpty(machine.AgentVersion) ? "—" : machine.AgentVersion)</dd>
                     <dt class="col-sm-4">@Localizer["Last seen"]</dt>
-                    <dd class="col-sm-8">@(machine.LastSeen?.ToString("u") ?? "—")</dd>
+                    <dd class="col-sm-8">@(machine.LastSeen?.ToString("u", CultureInfo.InvariantCulture) ?? "—")</dd>
                     <dt class="col-sm-4">@Localizer["Machine ID"]</dt>
                     <dd class="col-sm-8 mb-0 text-break"><code>@machine.Id</code></dd>
                 </dl>

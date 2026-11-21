@@ -1,3 +1,4 @@
+@using System.Globalization
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 
 <div class="row">
@@ -28,7 +29,7 @@
                                 }
                                 @if (machine.LastSeen.HasValue)
                                 {
-                                    <div class="small text-body-secondary mt-1">@Localizer["Last seen"] @machine.LastSeen.Value.ToString("u")</div>
+                                    <div class="small text-body-secondary mt-1">@Localizer["Last seen"] @machine.LastSeen.Value.ToString("u", CultureInfo.InvariantCulture)</div>
                                 }
                             </div>
                             <a asp-action="RotateAgentKey" asp-route-id="@machine.Id" class="btn btn-sm btn-outline-secondary">@Localizer["Review key replacement"]</a>
