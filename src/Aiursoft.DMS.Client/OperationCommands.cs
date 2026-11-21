@@ -687,14 +687,16 @@ public static partial class DmsCommandApp
             since);
     }
 
-    private static ActionCommand NewSwarmServiceUpdateStatusCommand()
+    private static ActionCommand NewSwarmServiceRolloutStatusCommand()
     {
         var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
-        return StandardCommand("update-status",
+        var command = StandardCommand("rollout-status",
             "Check a Swarm rollout's image, replicas, and task state.",
             OperationsWorkflows.SwarmServiceUpdateStatus,
             p => new SwarmServiceInput(p.GetValue(service)!),
             service);
+        command.CommandAliases = ["update-status"];
+        return command;
     }
 
     private static ActionCommand NewSwarmServiceStopCommand()

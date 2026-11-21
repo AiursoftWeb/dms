@@ -283,6 +283,17 @@ public class DmsWorkflowTests : TestBase
         var checkedDb = check.ServiceProvider.GetRequiredService<TemplateDbContext>();
         Assert.AreEqual(lockboxes, await checkedDb.Lockboxes.CountAsync());
         Assert.IsTrue(await checkedDb.AuditEvents.AnyAsync(a => a.ActorId == setup.User && a.Action == "operation.get" && a.ResourceId == child.Id));
+
+        var workflows = check.ServiceProvider.GetRequiredService<WorkflowService>();
+        var traceTree = await workflows.TraceScopeAsync(setup.User, root.Id, recursive: true);
+        CollectionAssert.AreEquivalent(new[] { root, parent, child, sibling }.Select(run => run.Id.ToString()).ToArray(), traceTree.Keys.ToArray());
+        var traceBranch = await workflows.TraceScopeAsync(setup.User, parent.Id, recursive: true);
+        CollectionAssert.AreEquivalent(new[] { parent.Id.ToString(), child.Id.ToString() }, traceBranch.Keys.ToArray());
+        Assert.AreEqual(child.Definition, traceBranch[child.Id.ToString()]);
+        var singleTrace = await workflows.TraceScopeAsync(setup.User, parent.Id, recursive: false);
+        CollectionAssert.AreEqual(new[] { parent.Id.ToString() }, singleTrace.Keys.ToArray());
+        Assert.AreEqual(parent.Definition, singleTrace[parent.Id.ToString()]);
+        Assert.IsTrue(await checkedDb.AuditEvents.AnyAsync(a => a.ActorId == setup.User && a.Action == "operation.trace" && a.ResourceId == parent.Id));
     }
 
     [TestMethod]
@@ -340,7 +351,7 @@ public class DmsWorkflowTests : TestBase
     public void TraceCsvPreservesQuotesNewlinesAndEmptyPageHeaders()
     {
         var id = Guid.NewGuid(); var message = "disk, \"quoted\"\nsecond line";
-        var response = new DmsResponse { Message = "Request completed.", Data = new { Entries = new[] { new { EventId = "one", WorkflowId = id, Time = DateTime.UnixEpoch, Source = "stdout", Message = message } }, PendingArchiveEvents = 3, NextOffset = 200 } };
+        var response = new DmsResponse { Message = "Request completed.", Data = new { Entries = new[] { new { EventId = "one", WorkflowId = id, WorkflowDefinition = "internal.process", Time = DateTime.UnixEpoch, Source = "stdout", Message = message } }, PendingArchiveEvents = 3, NextOffset = 200 } };
         using var csv = new StringWriter();
         Client.DmsOutputWriter.Write(csv, response, Client.OutputFormat.Csv, false, true);
         using var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.ToString()));
@@ -348,6 +359,7 @@ public class DmsWorkflowTests : TestBase
         var headers = parser.ReadFields()!; var values = parser.ReadFields()!;
         Assert.AreEqual(message, values[Array.IndexOf(headers, "Message")]);
         Assert.AreEqual(id.ToString(), values[Array.IndexOf(headers, "WorkflowId")]);
+        Assert.AreEqual("internal.process", values[Array.IndexOf(headers, "WorkflowDefinition")]);
         Assert.IsTrue(parser.EndOfData); Assert.DoesNotContain("\u001b", csv.ToString());
         using var empty = new StringWriter();
         Client.DmsOutputWriter.Write(empty, new DmsResponse { Message = "Request completed.", Data = new { Entries = Array.Empty<object>(), PendingArchiveEvents = 0, NextOffset = 200 } }, Client.OutputFormat.Csv, false, false);
@@ -356,6 +368,7 @@ public class DmsWorkflowTests : TestBase
         Client.DmsOutputWriter.Write(table, response, Client.OutputFormat.Table, false, false);
         StringAssert.Contains(table.ToString(), "PendingArchiveEvents"); StringAssert.Contains(table.ToString(), "NextOffset");
         StringAssert.Contains(table.ToString(), "second line");
+        StringAssert.Contains(table.ToString(), "internal.process");
     }
 
     [TestMethod]

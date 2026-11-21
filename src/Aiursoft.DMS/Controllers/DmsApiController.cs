@@ -7,7 +7,6 @@ using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Controllers;
 
@@ -132,17 +131,19 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     }).ToList());
 
     [HttpGet("operations/{id:guid}/trace")]
-    public Task<IActionResult> Trace(Guid id, int skip = 0) => Handle(async () =>
+    public Task<IActionResult> Trace(Guid id, int skip = 0, bool recursive = false) => Handle(async () =>
     {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid trace options.");
         if (skip < 0) throw new DmsException(400, "Offset cannot be negative.");
-        if (!await db.WorkflowRuns.AnyAsync(r => r.Id == id)) throw new DmsException(404, "Workflow not found.");
-        await access.RequireViewAsync(Actor);
-        access.Audit(Actor, "operation.trace", id); await db.SaveChangesAsync();
+        var scope = await workflows.TraceScopeAsync(Actor, id, recursive);
         if (!traces.Enabled) throw new DmsException(503, "ClickHouse is not configured. Trace remains in the durable backlog.");
         try
         {
             await traces.InitializeAsync();
-            return new { Entries = await traces.ReadAsync(id, skip), PendingArchiveEvents = spool.PendingCount, NextOffset = skip + 200 };
+            var entries = await traces.ReadAsync(scope.Keys.ToArray(), skip);
+            foreach (var entry in entries)
+                entry.WorkflowDefinition = scope[entry.WorkflowId];
+            return new { Entries = entries, PendingArchiveEvents = spool.PendingCount, NextOffset = (long)skip + TraceDatabase.PageSize };
         }
         catch (Exception exception)
         {
