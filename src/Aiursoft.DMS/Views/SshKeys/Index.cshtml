@@ -2,7 +2,7 @@
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <h1 class="mb-0">@Localizer["SSH public keys"]</h1>
-    @if (Model.PendingId is Guid pendingId)
+    @if (Model.PendingId is { } pendingId)
     {
         <a asp-action="Verify" asp-route-id="@pendingId" class="btn btn-primary">@Localizer["Resume adding a key"]</a>
     }

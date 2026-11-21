@@ -27,6 +27,9 @@
   <data name="Back to SSH public keys" xml:space="preserve">
     <value>返回 SSH 公钥</value>
   </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>取消添加此密钥</value>
+  </data>
   <data name="Command copied" xml:space="preserve">
     <value>命令已复制</value>
   </data>
