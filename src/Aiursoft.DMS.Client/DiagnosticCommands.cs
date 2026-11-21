@@ -15,19 +15,34 @@ public static partial class DmsCommandApp
         MachineWorkflowDefinition<HistoryInput, OperationResult> definition,
         string? resourceOption = null)
     {
+        // Discovery accepts historical query options for compatibility. It only uses the limit.
+        var discoversSources = definition == OperationsWorkflows.PerformanceHistorySources;
         var since = new Option<DateTimeOffset?>("--since")
-            { Description = "Start with explicit UTC offset; default is one hour before until." };
+        {
+            Hidden = discoversSources,
+            Description = "Start with an explicit UTC offset. Defaults to one hour before --until."
+        };
         var until = new Option<DateTimeOffset?>("--until")
-            { Description = "End with explicit UTC offset; default is execution time." };
+        {
+            Hidden = discoversSources,
+            Description = "End with an explicit UTC offset. Defaults to execution time."
+        };
         var interval = new Option<int>("--interval-seconds")
         {
+            Hidden = discoversSources,
             DefaultValueFactory = _ => 60,
-            Description = "Select the first original sample per interval bucket; does not interpolate."
+            Description = "Keep the first original sample per time bucket."
         };
         var limit = new Option<int>("--limit")
-            { DefaultValueFactory = _ => 200, Description = "Maximum historical samples to return." };
+        {
+            DefaultValueFactory = _ => 200,
+            Description = discoversSources ? "Maximum archives to list." : "Maximum historical samples to return."
+        };
         var after = new Option<string?>("--after")
-            { Description = "Continue after NextCursor, keeping the same explicit window and filters." };
+        {
+            Hidden = discoversSources,
+            Description = "Continue from the returned NextCursor with the same time window and filters."
+        };
         if (resourceOption == null)
             return StandardCommand(name,
                 description,
