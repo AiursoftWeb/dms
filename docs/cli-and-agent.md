@@ -440,7 +440,7 @@ dms operation get-trace --id "$WORKFLOW_ID"
 An administrator with **Manage DMS access** issues a dedicated join key for this Controller:
 
 ```sh
-dotnet ./bin/client/dms.dll access create-join-key \
+dms access create-join-key \
   --name 'Production enrollment' --days 7
 ```
 
@@ -460,9 +460,9 @@ The installer keeps versioned Tool installations under `/opt/aiursoft-dms-agent/
 The join prints the enrollment, prefixed Lockbox and installation IDs, plus a Workflow ID only once execution has been approved. The service starts immediately and waits for approval without requiring another visit to the machine. An authorized approver can inspect and approve the request:
 
 ```sh
-dotnet ./bin/client/dms.dll access list-enrollments
-dotnet ./bin/client/dms.dll lockbox get --id <lockbox-id>
-dotnet ./bin/client/dms.dll lockbox approve \
+dms access list-enrollments
+dms lockbox get --id <lockbox-id>
+dms lockbox approve \
   --id <lockbox-id> --reason 'Verified machine registration'
 ```
 
@@ -492,11 +492,30 @@ Repeated joins resume the same pending request. A denied or unavailable request 
 Administrators can inspect or revoke join keys:
 
 ```sh
-dotnet ./bin/client/dms.dll access list-join-keys
-dotnet ./bin/client/dms.dll access revoke-join-key --id <join-key-id>
+dms access list-join-keys
+dms access revoke-join-key --id <join-key-id>
 ```
 
 Revocation prevents new registrations and activation of pending registrations. Previously approved machines retain their independent credentials. The enrollment history and approval decisions remain available for investigation.
+
+### Recover an existing Agent connection key
+
+Use this procedure if an enrolled Agent's connection key is lost or exposed and its installation state is still available. An administrator with **Manage DMS access** needs access to the machine independently of DMS.
+
+1. Find the machine ID under **Machines** and open the machine's console or another independent connection. Issuing a key immediately invalidates the old key, and the Agent needs the new one to connect.
+2. From the administrator's DMS CLI, request the replacement key. Copy the returned key directly into the Agent's configuration.
+
+   ```sh
+   dms access issue-agent-key --machine-id <machine-id>
+   ```
+
+3. On the machine, open `/var/lib/aiursoft-dms-agent/connection.json` with `sudoedit` and replace the value of `AgentKey`. Use the configured state directory if the service uses a custom path. Restart the service, then verify under **Machines** that the last seen time updates.
+
+   ```sh
+   sudo systemctl restart dms-agent.service
+   ```
+
+For a rebuilt host with a fresh state directory, follow the installation and approval steps above. Approval creates a new machine ID. A fresh enrollment leaves the previous credential valid until an administrator replaces it separately.
 
 ### Upgrade an installed Agent
 

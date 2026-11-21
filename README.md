@@ -105,7 +105,7 @@ Requirements about how to run
 3. Execute `dotnet run --project src/Aiursoft.DMS/Aiursoft.DMS.csproj -- --urls http://localhost:5000` to run the app.
 4. Use your browser to view [http://localhost:5000](http://localhost:5000).
 
-The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Use the CLI to manage inventory and issue join keys; **DMS access** provides inventory and Agent identity management in the web UI. Configure workflow risk permissions on the existing **Roles** page. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for registration and the first operation.
+The defaults use SQLite and local accounts. Create a personal key under **API Keys**. Open **Machines** to see registered Agents and their connection status. Use the CLI to manage inventory and issue join keys. Configure workflow risk permissions on the existing **Roles** page. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for registration, credential recovery and the first operation.
 
 ## Run in Microsoft Visual Studio
 
