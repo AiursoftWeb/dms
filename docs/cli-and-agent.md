@@ -502,14 +502,14 @@ Revocation prevents new registrations and activation of pending registrations. P
 
 Use this procedure if an enrolled Agent's connection key is lost or exposed and its installation state is still available. An administrator with **Manage DMS access** needs access to the machine independently of DMS.
 
-1. Find the machine ID under **Machines** and open the machine's console or another independent connection. Issuing a key immediately invalidates the old key, and the Agent needs the new one to connect.
-2. From the administrator's DMS CLI, request the replacement key. Copy the returned key directly into the Agent's configuration.
+1. Use `dms access get` to find the machine ID, then open the machine's console or another independent connection. Issuing a key immediately invalidates the old key, and the Agent needs the new one to connect.
+2. From the administrator's DMS CLI, request the replacement key.
 
    ```sh
    dms access issue-agent-key --machine-id <machine-id>
    ```
 
-3. On the machine, open `/var/lib/aiursoft-dms-agent/connection.json` with `sudoedit` and replace the value of `AgentKey`. Use the configured state directory if the service uses a custom path. Restart the service, then verify under **Machines** that the last seen time updates.
+3. On the machine, open `/var/lib/aiursoft-dms-agent/connection.json` with `sudoedit` and set `AgentKey` to the returned key. Use the configured state directory if the service uses a custom path. Restart the service, then have an operator with **Read DMS operations** verify under **Machines** that the last seen time updates.
 
    ```sh
    sudo systemctl restart dms-agent.service
