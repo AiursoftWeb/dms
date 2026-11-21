@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using Aiursoft.CommandFramework;
 using Aiursoft.CommandFramework.Framework;
@@ -9,15 +10,15 @@ namespace Aiursoft.DMS.Client;
 
 public static partial class DmsCommandApp
 {
-    public static NestedCommandApp Create() => new NestedCommandApp()
+    public static NestedCommandApp Create() => new DmsNavigationApp()
         .WithFeature(new LoginCommand())
-        .WithFeature(new Group("artifact",
+        .WithFeature(new Group("artifact", "Upload, inspect, and download files used by workflows.",
         [
             new ArtifactCommand("upload"),
             new ArtifactCommand("get"),
             new ArtifactCommand("download")
         ]))
-        .WithFeature(new Group("access",
+        .WithFeature(new Group("access", "Check your permissions and manage Agent credentials or enrollment.",
         [
             new ManagementCommand("whoami", "identity"),
             new ManagementCommand("get", "access"),
@@ -27,12 +28,16 @@ public static partial class DmsCommandApp
             new ManagementCommand("revoke-join-key", "join-revoke"),
             new ManagementCommand("list-enrollments", "enrollments")
         ]))
-        .WithFeature(new Group("machine",
+        .WithFeature(new Group("machine", "List managed machines and request operations on them.",
         [
-            StandardCommand("list", ClusterWorkflows.GetMachines, _ => new EmptyInput()),
-            StandardCommand("disk-usage", ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
-            new ActionCommand("add", WorkflowNames.AddMachine),
-            new Group("docker",
+            StandardCommand("list",
+                "List registered machines and their Agent versions.",
+                ClusterWorkflows.GetMachines, _ => new EmptyInput()),
+            StandardCommand("disk-usage",
+                "Summarize filesystem capacity and usage across selected machines.",
+                ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
+            new ActionCommand("add", "Add a machine record to the Controller inventory.", WorkflowNames.AddMachine),
+            new Group("docker", "Inspect and control standalone Docker containers.",
             [
                 DockerPsCommand(),
                 DockerLogsCommand(),
@@ -45,18 +50,20 @@ public static partial class DmsCommandApp
                 NewDockerStopCommand(),
                 NewDockerStartCommand(),
                 NewDockerRestartCommand(),
-                new Group("filesystem",
+                new Group("filesystem", "Export container files or copy files between a container and its host.",
                 [
                     NewDockerFilesystemExportCommand(),
                     NewDockerFilesystemCpToCommand(),
                     NewDockerFilesystemCpFromCommand()
                 ]),
-                new Group("system",
+                new Group("system", "Inspect Docker storage usage.",
                 [
-                    StandardCommand("df", MachineWorkflows.DockerDiskUsage, _ => new EmptyInput())
+                    StandardCommand("df",
+                        "Show disk space used by Docker images, containers, volumes, and build cache.",
+                        MachineWorkflows.DockerDiskUsage, _ => new EmptyInput())
                 ])
             ]),
-            new Group("filesystem",
+            new Group("filesystem", "Inspect, move, transfer, and delete files on a machine.",
             [
                 DirectoryUsageCommand(),
                 RemovePathCommand(),
@@ -71,19 +78,23 @@ public static partial class DmsCommandApp
                 NewFilesystemExportCommand(),
                 NewFilesystemImportCommand()
             ]),
-            new Group("box",
+            new Group("box", "Inspect or deploy the Box repository on a machine.",
             [
-                StandardCommand("inspect", MachineWorkflows.BoxInspect, _ => new EmptyInput()),
+                StandardCommand("inspect",
+                    "Check the local Box repository's branch, commit, and working tree.",
+                    MachineWorkflows.BoxInspect, _ => new EmptyInput()),
                 BoxConfigureGitCommand(),
                 BoxDeployCommand(),
-                new Group("puller",
+                new Group("puller", "Refresh images with the Box Puller.",
                 [
                     PullerCommand()
                 ])
             ]),
-            new Group("performance",
+            new Group("performance", "Inspect processes and diagnose CPU, memory, and I/O usage.",
             [
-                StandardCommand("info", MachineWorkflows.Performance, _ => new EmptyInput()),
+                StandardCommand("info",
+                    "Show a machine's CPU, memory, and load snapshot.",
+                    MachineWorkflows.Performance, _ => new EmptyInput()),
                 NewPerformanceProcessesCommand(),
                 NewPerformanceCpuSampleCommand(),
                 NewPerformanceMemoryBreakdownCommand(),
@@ -92,34 +103,54 @@ public static partial class DmsCommandApp
                 NewPerformancePressureCommand(),
                 NewPerformanceOomHistoryCommand(),
                 HistorySourcesCommand(),
-                new Group("history",
+                new Group("history", "Read historical performance samples from the selected machine.",
                 [
-                    HistoryCommand("cpu", OperationsWorkflows.PerformanceHistoryCpu, "--cpu"),
-                    HistoryCommand("load", OperationsWorkflows.PerformanceHistoryLoad),
-                    HistoryCommand("memory", OperationsWorkflows.PerformanceHistoryMemory),
-                    HistoryCommand("disk", OperationsWorkflows.PerformanceHistoryDisk, "--device"),
-                    HistoryCommand("network", OperationsWorkflows.PerformanceHistoryNetwork, "--interface")
+                    HistoryCommand("cpu",
+                        "Read recorded CPU utilization.",
+                        OperationsWorkflows.PerformanceHistoryCpu, "--cpu"),
+                    HistoryCommand("load",
+                        "Read recorded system load averages.",
+                        OperationsWorkflows.PerformanceHistoryLoad),
+                    HistoryCommand("memory",
+                        "Read recorded memory and swap usage.",
+                        OperationsWorkflows.PerformanceHistoryMemory),
+                    HistoryCommand("disk",
+                        "Read recorded block-device I/O.",
+                        OperationsWorkflows.PerformanceHistoryDisk, "--device"),
+                    HistoryCommand("network",
+                        "Read recorded network interface activity.",
+                        OperationsWorkflows.PerformanceHistoryNetwork, "--interface")
                 ]),
                 PcpHistoryCommand(),
                 BlockedProcessesCommand()
             ]),
-            new Group("systemctl",
+            new Group("systemctl", "Inspect and control systemd services.",
             [
-                ServiceCommand("restart", MachineWorkflows.Restart),
-                ServiceCommand("status", MachineWorkflows.ServiceStatus),
+                ServiceCommand("restart", "Restart a systemd service.", MachineWorkflows.Restart),
+                ServiceCommand("status",
+                    "Read the current status of a systemd service.",
+                    MachineWorkflows.ServiceStatus),
                 NewSystemctlListCommand(),
                 NewSystemctlStartCommand(),
                 NewSystemctlStopCommand()
             ]),
-            new Group("agent",
+            new Group("agent", "Check Agent health or install the Controller-provided release.",
             [
-                StandardCommand("status", MachineWorkflows.AgentStatus, _ => new EmptyInput()),
-                new ActionCommand("upgrade", WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)
+                StandardCommand("status",
+                    "Check Agent version, connection identity, and pending events.",
+                    MachineWorkflows.AgentStatus, _ => new EmptyInput()),
+                new ActionCommand("upgrade",
+                    "Upgrade the Agent and confirm that the new version reconnects.",
+                    WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)
             ]),
-            new Group("layout",
+            new Group("layout", "Inspect disks, filesystems, mounts, and storage health.",
             [
-                StandardCommand("lsblk", MachineWorkflows.ListBlockDevices, _ => new EmptyInput()),
-                StandardCommand("df", MachineWorkflows.DiskFree, _ => new EmptyInput()),
+                StandardCommand("lsblk",
+                    "List disks, partitions, and their filesystems.",
+                    MachineWorkflows.ListBlockDevices, _ => new EmptyInput()),
+                StandardCommand("df",
+                    "Show used and available space on mounted filesystems.",
+                    MachineWorkflows.DiskFree, _ => new EmptyInput()),
                 NewLayoutFdiskQueryCommand(),
                 NewLayoutMountsCommand(),
                 NewLayoutInodesCommand(),
@@ -129,7 +160,7 @@ public static partial class DmsCommandApp
                 NewLayoutBcacheInfoCommand(),
                 NewLayoutBcacheAuditCommand()
             ]),
-            new Group("nvidia",
+            new Group("nvidia", "Inspect NVIDIA GPUs, drivers, and workload usage.",
             [
                 NewNvidiaSmiCommand(),
                 NewNvidiaProcessesCommand(),
@@ -138,9 +169,9 @@ public static partial class DmsCommandApp
                 NewNvidiaTopologyCommand(),
                 NewNvidiaDriverInfoCommand()
             ]),
-            new Group("swarm",
+            new Group("swarm", "Inspect or operate Docker Swarm services.",
             [
-                new Group("service",
+                new Group("service", "Inspect service tasks and manage Swarm rollout, scaling, or rollback.",
                 [
                     NewSwarmServiceListCommand(),
                     NewSwarmServiceInspectCommand(),
@@ -153,7 +184,7 @@ public static partial class DmsCommandApp
                     NewSwarmServiceRollbackCommand()
                 ])
             ]),
-            new Group("system",
+            new Group("system", "Check system details, read logs, or request a reboot or script run.",
             [
                 NewSystemInfoCommand(),
                 NewSystemUptimeCommand(),
@@ -163,13 +194,13 @@ public static partial class DmsCommandApp
                 NewSystemExecuteScriptCommand(),
                 KernelEventsCommand()
             ]),
-            new Group("apt",
+            new Group("apt", "Inspect, install, or upgrade APT packages.",
             [
                 NewAptInspectCommand(),
                 NewAptInstallCommand(),
                 NewAptUpgradeCommand()
             ]),
-            new Group("database",
+            new Group("database", "Inspect and query configured database connections on a machine.",
             [
                 NewDatabaseDiscoverCommand(),
                 NewDatabaseListDatabasesCommand(),
@@ -180,7 +211,7 @@ public static partial class DmsCommandApp
                 NewDatabaseExecuteSqlCommand(),
                 NewDatabaseDiagnosticsCommand()
             ]),
-            new Group("networking",
+            new Group("networking", "Inspect interfaces, routes, firewall rules, and connectivity.",
             [
                 NewNetworkingInterfacesCommand(),
                 NewNetworkingRoutesCommand(),
@@ -191,12 +222,14 @@ public static partial class DmsCommandApp
                 NewNetworkingFirewallInfoCommand(),
                 NewNetworkingTlsCheckCommand()
             ]),
-            new Group("ssh",
+            new Group("ssh", "Open time-limited SSH access or close it immediately.",
             [
                 NewSshOpenCommand(),
-                StandardCommand("disable", OperationsWorkflows.SshDisable, _ => new EmptyInput())
+                StandardCommand("disable",
+                    "Close SSH access, disconnect sessions, and remove the temporary lease.",
+                    OperationsWorkflows.SshDisable, _ => new EmptyInput())
             ]),
-            new Group("security",
+            new Group("security", "Check host security controls and authentication events.",
             [
                 NewSecuritySecureBootCommand(),
                 NewSecurityDiskEncryptionCommand(),
@@ -208,36 +241,47 @@ public static partial class DmsCommandApp
                 NewSecurityBaselineAuditCommand()
             ])
         ]))
-        .WithFeature(new Group("lockbox",
+        .WithFeature(new Group("lockbox", "View, approve, reject, or withdraw Lockbox requests.",
         [
-            new ActionCommand("list", "lockboxes"),
-            new ActionCommand("status", "lockbox-status", positionalOnly: true),
-            new ActionCommand("get", "get"),
-            new ActionCommand("approve", "approve"),
-            new ActionCommand("deny", "deny"),
-            new ActionCommand("withdraw", "withdraw")
+            new ActionCommand("list", "List Lockbox requests, optionally filtered by decision.", "lockboxes"),
+            new ActionCommand("status",
+                "Show the requester, decision, and eligible approvers for a Lockbox.",
+                "lockbox-status", positionalOnly: true),
+            new ActionCommand("get", "Read the full Lockbox record, including the submitted parameters.", "get"),
+            new ActionCommand("approve", "Approve a pending Lockbox and queue its workflow.", "approve"),
+            new ActionCommand("deny", "Reject a pending Lockbox request.", "deny"),
+            new ActionCommand("withdraw", "Withdraw one of your pending Lockbox requests.", "withdraw")
         ]))
-        .WithFeature(new Group("workflow",
+        .WithFeature(new Group("workflow", "Check execution status, results, child workflows, and trace.",
         [
-            new ActionCommand("status", "workflow", positionalOnly: true),
-            new ActionCommand("callstack", "callstack", positionalOnly: true),
-            new ActionCommand("trace", "trace", positionalOnly: true)
+            new ActionCommand("status",
+                "Show a workflow's execution status and result.",
+                "workflow", positionalOnly: true),
+            new ActionCommand("callstack",
+                "Show a workflow and its descendants as a tree.",
+                "callstack", positionalOnly: true),
+            new ActionCommand("trace", "Read trace entries for a workflow.", "trace", positionalOnly: true)
         ]))
-        .WithFeature(new Group("operation",
+        .WithFeature(new Group("operation", "Browse the workflow catalog, search audit history, or request cancellation.",
         [
-            new ActionCommand("list-definitions", "definitions"),
-            new ActionCommand("query-audit", "audit"),
-            new ActionCommand("get-workflow", "workflow"),
-            new ActionCommand("get-callstack", "callstack"),
-            new ActionCommand("get-trace", "trace"),
-            new ActionCommand("kill-workflow", WorkflowNames.Kill)
+            new ActionCommand("list-definitions",
+                "List workflow definitions, risk levels, and your permissions.",
+                "definitions"),
+            new ActionCommand("query-audit", "Search archived Lockbox and workflow events.", "audit"),
+            new ActionCommand("get-workflow", "Show a workflow's execution status and result.", "workflow"),
+            new ActionCommand("get-callstack", "Show a workflow and its descendants as a tree.", "callstack"),
+            new ActionCommand("get-trace", "Read trace entries for a workflow.", "trace"),
+            new ActionCommand("kill-workflow",
+                "Request cancellation of a workflow and its descendants.",
+                WorkflowNames.Kill)
         ]));
 
     private static ActionCommand StandardCommand<TInput, TResult>(string name,
+        string description,
         WorkflowDefinition<TInput, TResult> definition,
         Func<ParseResult, TInput> input,
         params Option[] options) =>
-        new(name, definition.Name, definition, context => definition.Serialize(input(context)), options);
+        new(name, description, definition.Name, definition, context => definition.Serialize(input(context)), options);
 
     private static ActionCommand BoxDeployCommand()
     {
@@ -252,6 +296,7 @@ public static partial class DmsCommandApp
                 "Earlier stages and shared preparation are not filtered."
         };
         return StandardCommand("deploy",
+            "Update the local Box repository and deploy from the selected stage.",
             MachineWorkflows.BoxDeploy,
             context => new BoxDeployInput(context.GetValue(stage), context.GetValue(filter)),
             stage,
@@ -268,6 +313,7 @@ public static partial class DmsCommandApp
             Description = "Directory depth, 0 to 3 (default 1). Scan is limited to one filesystem and 60 seconds."
         };
         return StandardCommand("du",
+            "Measure disk usage under a directory.",
             MachineWorkflows.DirectoryUsage,
             context => new DirectoryUsageInput(context.GetValue(path)!, context.GetValue(depth)),
             path,
@@ -288,6 +334,7 @@ public static partial class DmsCommandApp
                 "filesystem device. Symlink parents are rejected."
         };
         return StandardCommand("rm",
+            "Permanently remove the specified file or directory.",
             MachineWorkflows.RemovePath,
             context => new RemovePathInput(context.GetValue(path)!, context.GetValue(recursive)),
             path,
@@ -301,6 +348,7 @@ public static partial class DmsCommandApp
         var hosts = new Option<string>("--known-hosts-file")
             { Required = true, Description = "Existing machine-local file containing verified GitLab host keys." };
         return StandardCommand("configure-git",
+            "Configure the local SSH key and known hosts used to pull Box updates.",
             MachineWorkflows.BoxConfigureGit,
             context => new BoxGitInput(context.GetValue(identity)!, context.GetValue(hosts)!),
             identity,
@@ -311,8 +359,9 @@ public static partial class DmsCommandApp
     {
         var image = new Option<string?>("--image")
             { Description = "One image; omit to refresh all images configured in the selected Puller." };
-        var puller = new Option<string>("--puller") { Description = "Puller to update: main (default) or cn." };
+        var puller = new Option<string>("--puller") { Description = "Puller to refresh. Use main (default) or cn." };
         return StandardCommand("force-update",
+            "Refresh one image or all configured images through the Box Puller.",
             MachineWorkflows.PullerForceUpdate,
             context => new PullerForceUpdateInput(context.GetValue(image), context.GetValue(puller) ?? "main"),
             image,
@@ -325,6 +374,7 @@ public static partial class DmsCommandApp
         var name = new Option<string?>("--grep-name")
             { Description = "Only containers whose names contain this literal text." };
         return StandardCommand("ps",
+            "List Docker containers and their full IDs.",
             MachineWorkflows.DockerPs,
             context => new DockerPsInput(context.GetValue(all), context.GetValue(name)),
             all,
@@ -333,7 +383,7 @@ public static partial class DmsCommandApp
 
     private static Option<string> ContainerOption() => new("--container")
     {
-        Required = true, Description = "Full container ID from docker ps; names and short IDs are not accepted."
+        Required = true, Description = "Full container ID from dms machine docker ps."
     };
 
     private static ActionCommand DockerLogsCommand()
@@ -344,6 +394,7 @@ public static partial class DmsCommandApp
         var since = new Option<DateTimeOffset?>("--since")
             { Description = "Only logs since this timestamp with UTC offset." };
         return StandardCommand("logs",
+            "Read recent stdout and stderr from a Docker container.",
             MachineWorkflows.DockerLogs,
             context => new DockerLogsInput(context.GetValue(container)!,
                 context.GetValue(tail),
@@ -357,8 +408,12 @@ public static partial class DmsCommandApp
     {
         var container = ContainerOption();
         var command = new Argument<string[]>("command")
-            { Arity = ArgumentArity.OneOrMore, Description = "Executable and arguments after --; no implicit shell." };
+        {
+            Arity = ArgumentArity.OneOrMore,
+            Description = "Executable and arguments after --. Include the shell explicitly when needed."
+        };
         return new ActionCommand("exec",
+            "Run an executable inside a Docker container.",
             MachineWorkflows.DockerExec.Name,
             MachineWorkflows.DockerExec,
             context => MachineWorkflows.DockerExec.Serialize(new DockerExecInput(context.GetValue(container)!,
@@ -373,30 +428,52 @@ public static partial class DmsCommandApp
     {
         var container = ContainerOption();
         return StandardCommand("kill",
+            "Send SIGKILL to a running Docker container.",
             MachineWorkflows.DockerKill,
             context => new DockerContainerInput(context.GetValue(container)!),
             container);
     }
 
     private static ActionCommand ServiceCommand(string name,
+        string description,
         MachineWorkflowDefinition<ServiceInput, ProcessResult> definition)
     {
-        var service = new Option<string>("--service") { Required = true };
+        var service = new Option<string>("--service")
+            { Required = true, Description = "systemd unit name, such as nginx.service." };
         return StandardCommand(name,
+            description,
             definition,
             context => new ServiceInput(context.GetValue(service) ?? string.Empty),
             service);
     }
 
-    private sealed class Group(string name, CommandHandlerBuilder[] children) : NavigationCommandHandlerBuilder
+    private sealed class DmsNavigationApp : NestedCommandApp
+    {
+        public DmsNavigationApp()
+        {
+            RootCommand.Description = "Request server operations, check approvals, and inspect workflow results.";
+            RootCommand.SetAction(new HelpAction().Invoke);
+        }
+    }
+
+    private sealed class Group(string name, string description, CommandHandlerBuilder[] children)
+        : NavigationCommandHandlerBuilder
     {
         protected override string Name => name;
-        protected override string Description => $"Manage {name}.";
+        protected override string Description => description;
         protected override CommandHandlerBuilder[] GetSubCommandHandlers() => children;
+
+        public override Command BuildAsCommand()
+        {
+            var command = base.BuildAsCommand();
+            command.SetAction(new HelpAction().Invoke);
+            return command;
+        }
     }
 
     private sealed class ActionCommand(
         string name,
+        string description,
         string action,
         WorkflowDefinition? definition = null,
         Func<ParseResult, string>? input = null,
@@ -424,41 +501,29 @@ public static partial class DmsCommandApp
         private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
         protected override string Name => name;
 
-        protected override string Description => IsSubmission
-            ? "Submit a Lockbox request. Execution starts only after approval."
-            : action switch
-            {
-                "lockbox-status" => "Show a Lockbox's approval status and eligible approvers.",
-                "lockboxes" => "List Lockbox requests.",
-                "get" => "Show the full record for a Lockbox request.",
-                "approve" => "Approve a pending Lockbox request.",
-                "deny" => "Reject a pending Lockbox request.",
-                "withdraw" => "Withdraw your pending Lockbox request.",
-                "workflow" => "Show a Workflow's status and result.",
-                "callstack" => "Show a Workflow and its child executions.",
-                "trace" => "Show trace entries for a Workflow.",
-                "definitions" => "List available Workflow definitions.",
-                "audit" => "Search archived Workflow and Lockbox events.",
-                _ => "Inspect a Workflow."
-            };
+        protected override string Description => description;
 
         private readonly Argument<string?> _positionalId = new("id");
 
         private readonly Option<Guid[]> _machines = new("--machine-id")
         {
             AllowMultipleArgumentsPerToken = true,
-            Description = "Explicit machines; may be omitted when this Controller has exactly one active machine."
+            Description = "Target machine IDs. Omit when exactly one machine is enabled."
         };
 
-        private readonly Option<bool> _all = new("--all-machines");
-        private readonly Option<Guid> _id = new("--id");
+        private readonly Option<bool> _all = new("--all-machines")
+            { Description = "Select every enabled machine at submission time." };
+        private readonly Option<Guid> _id = new("--id")
+            { Description = "Workflow ID from a Lockbox or workflow query." };
 
         private readonly Option<Guid> _request = new("--request-id")
             { Description = "Reuse this ID only to retry the same submission." };
 
         private readonly Option<string> _reason = new("--reason");
-        private readonly Option<string> _machineName = new("--name");
-        private readonly Option<int> _skip = new("--skip");
+        private readonly Option<string> _machineName = new("--name")
+            { Description = "Name to give the new machine in the Controller inventory." };
+        private readonly Option<int> _skip = new("--skip")
+            { Description = "Skip this many trace entries before returning the next page." };
 
         private readonly Option<DateTimeOffset?> _from = new("--from")
         {
@@ -472,26 +537,40 @@ public static partial class DmsCommandApp
                 "Exclusive archive recording time, ISO 8601 with UTC offset; defaults to now. Maximum range: 31 days."
         };
 
-        private readonly Option<Guid?> _machineFilter = new("--machine-id");
-        private readonly Option<Guid?> _workflowFilter = new("--workflow-id");
-        private readonly Option<Guid?> _rootFilter = new("--root-workflow-id");
-        private readonly Option<LockboxId?> _lockboxFilter = new("--lockbox-id") { CustomParser = ParseLockboxId };
+        private readonly Option<Guid?> _machineFilter = new("--machine-id")
+            { Description = "Filter events to the specified machine ID." };
+        private readonly Option<Guid?> _workflowFilter = new("--workflow-id")
+            { Description = "Filter events to the specified workflow ID." };
+        private readonly Option<Guid?> _rootFilter = new("--root-workflow-id")
+            { Description = "Filter events by root workflow ID to include an execution tree." };
+        private readonly Option<LockboxId?> _lockboxFilter = new("--lockbox-id")
+            { Description = "Filter events to the specified Lockbox ID (lb/<UUID>).", CustomParser = ParseLockboxId };
 
         private readonly Option<LockboxId> _lockboxId = new("--id")
             { Description = "Lockbox ID, lb/<UUID>.", CustomParser = result => ParseLockboxId(result) ?? default };
 
-        private readonly Option<DecisionState?> _decision = new("--decision");
-        private readonly Option<string?> _requester = new("--requester-id");
-        private readonly Option<string?> _approver = new("--approver-id");
-        private readonly Option<string?> _definitionFilter = new("--definition");
-        private readonly Option<string?> _requestedDefinition = new("--requested-definition");
-        private readonly Option<WorkflowAuditKind?> _kind = new("--kind");
-        private readonly Option<RunState?> _state = new("--state");
-        private readonly Option<WorkflowOrigin?> _origin = new("--origin") { Description = "Filter Manual or Automatic workflow origin." };
-        private readonly Option<bool?> _automatic = new("--automatic-approval");
+        private readonly Option<DecisionState?> _decision = new("--decision")
+            { Description = "Filter by Pending, Approved, Denied, or Withdrawn." };
+        private readonly Option<string?> _requester = new("--requester-id")
+            { Description = "Filter events to the specified requester user ID." };
+        private readonly Option<string?> _approver = new("--approver-id")
+            { Description = "Filter events to the specified approver user ID." };
+        private readonly Option<string?> _definitionFilter = new("--definition")
+            { Description = "Filter by the workflow definition recorded for the event." };
+        private readonly Option<string?> _requestedDefinition = new("--requested-definition")
+            { Description = "Filter by the workflow the Lockbox originally requested." };
+        private readonly Option<WorkflowAuditKind?> _kind = new("--kind")
+            { Description = "Filter by audit event type." };
+        private readonly Option<RunState?> _state = new("--state")
+            { Description = "Filter by the workflow state recorded in the event." };
+        private readonly Option<WorkflowOrigin?> _origin = new("--origin") { Description = "Filter by Manual or Automatic execution origin." };
+        private readonly Option<bool?> _automatic = new("--automatic-approval")
+            { Description = "Filter decisions by whether approval was automatic." };
 
         private readonly Option<int> _page = new("--page")
-            { Description = "Zero-based archive page, 50 events per page." };
+        {
+            Description = action == "lockboxes" ? "Zero-based page of 50 Lockbox requests." : "Zero-based page of 50 audit events."
+        };
 
         private static LockboxId? ParseLockboxId(ArgumentResult result)
         {
@@ -519,6 +598,7 @@ public static partial class DmsCommandApp
             if (IsSubmission)
             {
                 _reason.Required = true;
+                _reason.Description = "Reason recorded in the Lockbox. Execution starts after approval.";
                 yield return _request;
                 yield return _reason;
                 if (definition?.RequiresTargets == true)
@@ -526,7 +606,7 @@ public static partial class DmsCommandApp
                     if (definition.SingleMachineOnly)
                     {
                         _machines.AllowMultipleArgumentsPerToken = false;
-                        _machines.Description = "One machine ID. May be omitted when the Controller has exactly one active machine.";
+                        _machines.Description = "Target machine ID. Omit when exactly one machine is enabled.";
                     }
                     yield return _machines;
                     if (!definition.SingleMachineOnly) yield return _all;
@@ -560,7 +640,11 @@ public static partial class DmsCommandApp
             else if (UsesLockboxId)
             {
                 if (!positionalOnly) yield return _lockboxId;
-                if (action is "approve" or "deny") yield return _reason;
+                if (action is "approve" or "deny")
+                {
+                    _reason.Description = "Optional explanation recorded with the approval or rejection.";
+                    yield return _reason;
+                }
             }
             else if (UsesId)
             {

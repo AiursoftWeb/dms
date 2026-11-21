@@ -26,6 +26,14 @@ If your SDK installation has not already configured this directory, add that sam
 dms --help
 ```
 
+Run `dms` or a command group such as `dms access` to see the available commands. For the options and effects of one command, use `--help`:
+
+```sh
+dms access
+dms access issue-agent-key --help
+dms machine filesystem rm --help
+```
+
 Update or remove the CLI using the standard tool commands:
 
 ```sh
