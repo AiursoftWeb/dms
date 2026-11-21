@@ -38,7 +38,11 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             throw new DmsException(400, "Request fields cannot be null.");
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
         var definition = catalog.Find(request.Workflow);
-        try { request.Input = definition?.Normalize(request.Input) ?? request.Input; }
+        try
+        {
+            LegacyClusterWorkflowInput.Normalize(request, request.Workflow);
+            request.Input = definition?.Normalize(request.Input) ?? request.Input;
+        }
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
         { throw new DmsException(400, "Invalid workflow input: " + exception.Message); }
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
@@ -52,6 +56,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             // Returning the caller's own submission receipt does not require global log-reading permission.
             // A retry keeps the original inferred scope, even if inventory changes.
             var frozen = JsonSerializer.Deserialize<OperationRequest>(prior.Parameters)!;
+            LegacyClusterWorkflowInput.Normalize(frozen, prior.Definition);
             if (!request.AllMachines && request.MachineIds.Count == 0) request.MachineIds = frozen.MachineIds.ToList();
             if (request.Workflow == OperationsWorkflows.SshOpen.Name && frozen.Workflow == request.Workflow)
             {
@@ -59,10 +64,10 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
                 var approved = OperationsWorkflows.SshOpen.ReadInput(frozen.Input);
                 request.Input = OperationsWorkflows.SshOpen.Serialize(open with { Fingerprint = open.Fingerprint ?? approved.Fingerprint });
             }
-            if (!JsonNode.DeepEquals(JsonNode.Parse(prior.Parameters), JsonSerializer.SerializeToNode(request))) throw new DmsException(409, "Request ID already belongs to different parameters.");
+            if (!JsonNode.DeepEquals(JsonSerializer.SerializeToNode(frozen), JsonSerializer.SerializeToNode(request))) throw new DmsException(409, "Request ID already belongs to different parameters.");
             return prior;
         }
-        var risk = RequestRisk(definition, request.Workflow)
+        var risk = RequestRisk(definition)
             ?? throw new DmsException(400, "This workflow is not available as an external operation.");
         if (request.RequestId == Guid.Empty || request.Reason.Length > 2000 ||
             (risk != RiskLevel.Open && request.Reason.Length == 0))
@@ -94,10 +99,11 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         }
         else if (request.AllMachines || request.MachineIds.Count != 0)
             throw new DmsException(400, "This workflow does not accept machine targets.");
-        if (request.Workflow == WorkflowNames.AddMachine && (string.IsNullOrWhiteSpace(request.MachineName) || request.MachineName.Length > 100))
-            throw new DmsException(400, "Machine name must contain 1 to 100 characters.");
-        if (request.Workflow == WorkflowNames.Kill && !await db.WorkflowRuns.AnyAsync(r => r.Id == request.TargetWorkflowId))
-            throw new DmsException(404, "Target workflow not found.");
+        if (request.Workflow == WorkflowNames.Kill)
+        {
+            var target = ClusterWorkflows.Cancel.ReadInput(request.Input).TargetWorkflowId;
+            if (!await db.WorkflowRuns.AnyAsync(r => r.Id == target)) throw new DmsException(404, "Target workflow not found.");
+        }
         if (request.Workflow == WorkflowNames.AgentUpgrade) releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(request.Input));
         if (request.Workflow == OperationsWorkflows.SshOpen.Name)
         {
@@ -162,21 +168,17 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             : $"Cannot withdraw a {item.Decision} Lockbox.");
     });
 
-    private static RiskLevel? RequestRisk(WorkflowDefinition? definition, string name) => definition != null
-        ? definition.PublicEntry ? definition.Risk : null
-        : name switch
-        {
-            WorkflowNames.AddMachine => WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.AddMachine)),
-            WorkflowNames.Kill => WorkflowMetadata.Risk(typeof(WorkflowNames), nameof(WorkflowNames.Kill)),
-            _ => null
-        };
+    private static RiskLevel? RequestRisk(WorkflowDefinition? definition) =>
+        definition is { PublicEntry: true } ? definition.Risk : null;
 
     private async Task ApproveAsync(LockboxRequest item, string? user, string reason, Guid? enrollmentId = null)
     {
         var definition = catalog.Find(item.Definition);
-        if (RequestRisk(definition, item.Definition) != item.Risk || (definition?.Version ?? WorkflowNames.Version) != item.Version)
+        if (RequestRisk(definition) != item.Risk || definition?.Version != item.Version)
             throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
-        var input = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input;
+        var request = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!;
+        LegacyClusterWorkflowInput.Normalize(request, item.Definition);
+        var input = request.Input;
         if (item.Definition == WorkflowNames.AgentUpgrade)
             releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(input));
         await RequireArtifactsAsync(definition, input, item.RequesterId);

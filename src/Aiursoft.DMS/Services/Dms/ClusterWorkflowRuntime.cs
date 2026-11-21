@@ -15,24 +15,37 @@ public abstract class ClusterWorkflow<TInput, TResult>
 // Registration is compiled application code. Registration alone never exposes a Lockbox API entry point.
 public sealed class ClusterWorkflowRegistry
 {
-    private readonly Dictionary<string, (WorkflowDefinition Definition, Func<WorkflowExecutionContext, string, CancellationToken, Task<string>> Execute)> _definitions = new(StringComparer.Ordinal);
+    private sealed record Registration(WorkflowDefinition Definition,
+        Func<WorkflowExecutionContext, string, CancellationToken, Task<string>>? Execute = null,
+        Func<ClusterWorkflow>? CreateTransactional = null);
+
+    private readonly Dictionary<string, Registration> _definitions = new(StringComparer.Ordinal);
 
     public void Register<TInput, TResult>(ClusterWorkflowDefinition<TInput, TResult> definition,
-        Func<ClusterWorkflow<TInput, TResult>> factory) => _definitions.Add(definition.Name, (definition, async (context, input, token) =>
+        Func<ClusterWorkflow<TInput, TResult>> factory) => _definitions.Add(definition.Name, new Registration(definition, async (context, input, token) =>
             JsonSerializer.Serialize(await factory().ExecuteAsync(context,
                 definition.ReadInput(input), token))));
+
+    public void Register<TInput, TResult>(ClusterWorkflowDefinition<TInput, TResult> definition,
+        Func<TransactionalClusterWorkflow<TInput, TResult>> factory) =>
+        _definitions.Add(definition.Name, new Registration(definition, CreateTransactional: factory));
 
     public ClusterWorkflowRegistry()
     {
         Register(ClusterWorkflows.GetMachines, () => new GetMachinesWorkflow());
         Register(ClusterWorkflows.DiskUsage, () => new ClusterDiskUsageWorkflow());
+        Register(ClusterWorkflows.AddMachine, () => new AddMachineWorkflow());
+        Register(ClusterWorkflows.Cancel, () => new CancelWorkflow());
     }
 
     public WorkflowDefinition? FindDefinition(string name) => _definitions.TryGetValue(name, out var entry) ? entry.Definition : null;
     public IEnumerable<WorkflowDefinition> Definitions => _definitions.Values.Select(entry => entry.Definition);
-    public bool Contains(string name) => _definitions.ContainsKey(name);
+    public bool HasContinuation(string name) => _definitions.TryGetValue(name, out var entry) && entry.Execute != null;
+    public ClusterWorkflow? CreateTransactional(string name, string version) =>
+        _definitions.TryGetValue(name, out var entry) && entry.Definition.Version == version
+            ? entry.CreateTransactional?.Invoke() : null;
     public Task<string> ExecuteAsync(string name, WorkflowExecutionContext context, string input, CancellationToken token) =>
-        _definitions.TryGetValue(name, out var execute) ? execute.Execute(context, input, token)
+        _definitions.TryGetValue(name, out var entry) && entry.Execute is { } execute ? execute(context, input, token)
             : throw new InvalidDataException("Unsupported cluster workflow definition.");
 }
 
@@ -78,7 +91,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         foreach (var run in await db.WorkflowRuns.Where(r => r.MachineId != null && r.State == RunState.Running).ToListAsync(token))
             run.State = RunState.NeedsVerification;
         foreach (var run in await db.WorkflowRuns.Where(r => r.MachineId == null && (r.State == RunState.Running || r.State == RunState.CancelRequested)).ToListAsync(token))
-            if (workflows.Contains(run.Definition)) run.State = RunState.NeedsVerification;
+            if (workflows.HasContinuation(run.Definition)) run.State = RunState.NeedsVerification;
         await db.SaveChangesAsync(token);
     }
 
@@ -161,7 +174,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         token.ThrowIfCancellationRequested();
         if (input.Length > 24000) throw new ArgumentException("Workflow input exceeds the size limit.");
         if (machine != null) machines.Validate(definition, input);
-        else if (!workflows.Contains(definition)) throw new InvalidDataException("Unsupported cluster workflow definition.");
+        else if (!workflows.HasContinuation(definition)) throw new InvalidDataException("Unsupported cluster workflow definition.");
         var id = await DatabaseAsync(async db =>
         {
             token.ThrowIfCancellationRequested();

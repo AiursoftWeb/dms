@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
@@ -70,12 +69,10 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
         foreach (var attempt in attempts)
             if ((await StatusCoreAsync(attempt)).State is "PendingApproval" or "Registering") throw new DmsException(409, "This installation already has an active enrollment. Resume it using its receipt.");
         await using var transaction = await db.Database.BeginTransactionAsync();
-        var box = await workflows.SubmitCoreAsync(key.IssuerId, new OperationRequest
-        {
-            RequestId = input.Id, Workflow = WorkflowNames.AddMachine, MachineName = input.MachineName,
-            Input = JsonSerializer.Serialize(new { EnrollmentId = input.Id, input.InstallationId }),
-            Reason = $"Agent enrollment: {input.MachineName}; Installation={input.InstallationId}; JoinKey={key.Id}"
-        }, input.Id);
+        var request = ClusterWorkflows.AddMachine.Request(new AddMachineInput(input.MachineName),
+            $"Agent enrollment: {input.MachineName}; Installation={input.InstallationId}; JoinKey={key.Id}",
+            requestId: input.Id);
+        var box = await workflows.SubmitCoreAsync(key.IssuerId, request, input.Id);
         var item = new AgentEnrollment { Id = input.Id, JoinKeyId = key.Id, LockboxId = box.Id, InstallationId = input.InstallationId,
             MachineName = input.MachineName, ReceiptHash = receipt, AgentKeyHash = agent, MachineId = null, JoinKey = key, Lockbox = box };
         db.AgentEnrollments.Add(item); access.Audit(key.IssuerId, "enrollment.submit", item.Id, $"JoinKey={key.Id}; Lockbox={box.Id}; Installation={input.InstallationId}");

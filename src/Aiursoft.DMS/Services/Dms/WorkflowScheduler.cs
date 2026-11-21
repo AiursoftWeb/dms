@@ -45,7 +45,7 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                 Fail(run, "Workflow launch snapshot is missing.");
                 continue;
             }
-            if (workflows.Contains(run.Definition))
+            if (workflows.HasContinuation(run.Definition))
             {
                 run.State = RunState.Running; run.StartedAt = DateTime.UtcNow;
                 await db.SaveChangesAsync(token);
@@ -55,16 +55,13 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             run.StartedAt = DateTime.UtcNow;
             try
             {
-                ClusterWorkflow workflow = run.Definition switch
-                {
-                    WorkflowNames.Batch => new MachineBatchWorkflow(),
-                    WorkflowNames.AddMachine when launch.Version == WorkflowNames.Version => new AddMachineWorkflow(),
-                    WorkflowNames.Kill when launch.Version == WorkflowNames.Version => new CancelWorkflow(),
-                    _ => throw new InvalidOperationException("The approved cluster workflow version is no longer available.")
-                };
+                var workflow = run.Definition == WorkflowNames.Batch ? new MachineBatchWorkflow()
+                    : workflows.CreateTransactional(run.Definition, launch.Version)
+                        ?? throw new InvalidOperationException("The approved cluster workflow version is no longer available.");
                 await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, launch, catalog.Find(launch.Definition)));
             }
-            catch (InvalidOperationException exception) { Fail(run, exception.Message); }
+            catch (Exception exception) when (exception is InvalidOperationException or JsonException or InvalidDataException or ArgumentException)
+            { Fail(run, exception.Message); }
             if (run.State.Terminal()) run.FinishedAt = DateTime.UtcNow;
             await db.SaveChangesAsync(token);
         }
@@ -108,7 +105,7 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
         var active = await db.WorkflowRuns.Where(r => !r.IsMachineTask && r.MachineId == null && r.State != RunState.Succeeded && r.State != RunState.Failed && r.State != RunState.Denied && r.State != RunState.Cancelled).OrderByDescending(r => r.CreatedAt).ToListAsync(token);
         foreach (var run in active)
         {
-            if (workflows.Contains(run.Definition))
+            if (workflows.HasContinuation(run.Definition))
             {
                 if (run.State == RunState.CancelRequested)
                 {
@@ -129,7 +126,9 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                     continue;
                 }
                 var request = launch.ReadParameters();
-                var target = await db.WorkflowRuns.SingleAsync(r => r.Id == request.TargetWorkflowId, token);
+                LegacyClusterWorkflowInput.Normalize(request, WorkflowNames.Kill);
+                var targetId = ClusterWorkflows.Cancel.ReadInput(request.Input).TargetWorkflowId;
+                var target = await db.WorkflowRuns.SingleAsync(r => r.Id == targetId, token);
                 if (target.State.Terminal()) { run.State = RunState.Succeeded; run.FinishedAt = DateTime.UtcNow; }
             }
             var children = await db.WorkflowRuns.Where(r => r.ParentId == run.Id).ToListAsync(token);
