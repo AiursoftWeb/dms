@@ -605,7 +605,7 @@ Approval and workflow state changes are automatically archived to ClickHouse thr
 
 ## Lockbox API and receipts
 
-`dms machine list` requires **Run open workflows**. The Controller records an automatically approved Lockbox and the CLI waits for the inventory:
+`dms machine list` requires **Run open workflows**. The Controller records an automatically approved Lockbox and the CLI waits for the inventory.
 
 ```sh
 dms machine list
@@ -613,7 +613,7 @@ dms machine list --output-format json
 dms machine list --output-format csv
 ```
 
-The reason is optional for Open. The CLI prints only the result on stdout. JSON is an array, CSV has one row per machine, and an empty list retains the CSV header. When waiting times out, the CLI prints the Workflow ID, Lockbox ID and reusable request ID on stderr and exits nonzero. Reuse the same input and request ID to check the original run. The submission API continues to return the receipt described below.
+The reason is optional for Open. The CLI prints only the result on stdout. JSON is an array, CSV has one row per machine, and an empty list retains the CSV header. When waiting times out, the CLI prints the Workflow ID, Lockbox ID and reusable request ID on stderr and exits nonzero. Reuse the same input and request ID to check the original run. The submission API continues to return the receipt described below. SDK callers can use `WaitForOpenResultAsync` with that Lockbox ID to wait for their own result.
 
 `POST /api/v1/dms/lockboxes` returns only these business fields inside the usual AiurProtocol `Data` envelope:
 
