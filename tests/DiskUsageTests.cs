@@ -1,3 +1,5 @@
+using Aiursoft.DMS.Contracts;
+using System.Text.Json;
 using Aiursoft.DMS.Workflows;
 
 namespace Aiursoft.DMS.Tests;
@@ -44,4 +46,30 @@ public class DiskUsageTests
     [TestMethod]
     public void FilesystemSumCannotSilentlyOverflow() =>
         Assert.Throws<OverflowException>(() => MachineDiskUsageWorkflow.Parse($"Size Used Avail\n{long.MaxValue} 0 0\n1 0 0\n", Guid.NewGuid()));
+
+    [TestMethod]
+    public void HistoricalControllerResultCanStillBeReadBySdkConsumers()
+    {
+        const string historicalResult = """
+            {
+              "TotalBytes": 100,
+              "UsedBytes": 20,
+              "AvailableBytes": 70,
+              "MachineCount": 1,
+              "Machines": [{
+                "MachineId": "ca264013-6534-4d0f-9acb-e6a84492ab15",
+                "Usage": { "WorkflowId": "2fd0fbc8-75b4-4fb1-a6d3-0686b88430df", "TotalBytes": 100,
+                           "UsedBytes": 20, "AvailableBytes": 70, "Filesystems": 1 }
+              }]
+            }
+            """;
+        var result = JsonSerializer.Deserialize<ClusterDiskUsageResult>(historicalResult)!;
+        Assert.AreEqual(100L, result.TotalBytes);
+        Assert.AreEqual(20L, result.UsedBytes);
+        Assert.AreEqual(70L, result.AvailableBytes);
+        Assert.AreEqual(1, result.MachineCount);
+        Assert.AreEqual(Guid.Parse("ca264013-6534-4d0f-9acb-e6a84492ab15"), result.Machines.Single().MachineId);
+        Assert.AreEqual(1, result.Machines.Single().Usage.Filesystems);
+    }
+
 }

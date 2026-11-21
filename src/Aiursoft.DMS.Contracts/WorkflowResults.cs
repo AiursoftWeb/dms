@@ -6,6 +6,7 @@ public sealed record AgentStatusResult(Guid InstallationId, string Version, int 
 public sealed record MachineSummary(Guid Id, string Name, string AgentVersion, DateTime? LastSeen, bool Disabled);
 
 public sealed record DiskUsageResult(Guid WorkflowId, long TotalBytes, long UsedBytes, long AvailableBytes, int Filesystems);
+// Historical version-1 Controller result shape. Keep it available to SDK history readers.
 public sealed record MachineDiskUsage(Guid MachineId, DiskUsageResult Usage);
 public sealed record ClusterDiskUsageResult(long TotalBytes, long UsedBytes, long AvailableBytes, int MachineCount, List<MachineDiskUsage> Machines);
 

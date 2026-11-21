@@ -284,7 +284,7 @@ public class DmsRolePermissionTests : TestBase
             Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
             return JObject.Parse(result.StdOut)["Data"]!;
         }
-        var receipt = await Cli("machine", "agent", "status", "--machine-id", setup.First.ToString(), "--reason", "Independent approval fixture");
+        var receipt = await Cli("machine", "layout", "lsblk", "--machine-id", setup.First.ToString(), "--reason", "Independent approval fixture");
         Assert.HasCount(2, (JObject)receipt);
         var id = receipt["LockboxId"]!.Value<string>()!;
         StringAssert.StartsWith(id, "lb/"); Assert.AreEqual(JTokenType.Null, receipt["WorkflowId"]!.Type);

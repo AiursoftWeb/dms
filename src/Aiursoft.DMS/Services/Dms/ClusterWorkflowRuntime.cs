@@ -268,7 +268,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
                 await ParentAsync(db, parentId, token);
                 var expired = elapsed.Elapsed >= TimeSpan.FromSeconds(6);
                 var children = await db.WorkflowRuns.NotCacheable().Where(r => r.ParentId == parentId && pending.Keys.Contains(r.Id)).ToListAsync(token);
-                var machineIds = children.Select(child => child.MachineId!.Value).ToArray();
+                var machineIds = children.Select(child => child.MachineId!.Value).ToList();
                 var targets = await db.Machines.AsNoTracking().NotCacheable().Where(m => machineIds.Contains(m.Id)).ToDictionaryAsync(m => m.Id, token);
                 foreach (var child in children)
                 {

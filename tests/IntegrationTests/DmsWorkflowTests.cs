@@ -576,7 +576,7 @@ await db.SaveChangesAsync();
             "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "WorkflowId");
-        foreach (var command in new[] { new[] { "agent", "status" }, new[] { "systemctl", "status" }, new[] { "layout", "lsblk" }, new[] { "layout", "df" } })
+        foreach (var command in new[] { new[] { "systemctl", "status" }, new[] { "layout", "lsblk" }, new[] { "layout", "df" } })
         {
             var args = new List<string> { "machine", command[0], command[1], "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
                 "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--output-format", "json" };

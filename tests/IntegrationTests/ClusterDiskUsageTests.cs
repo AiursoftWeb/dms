@@ -38,7 +38,7 @@ public class ClusterDiskUsageTests : TestBase
         });
     }
 
-    private async Task WaitForReadyAsync(IEnumerable<Guid> ids, CancellationToken token)
+    private async Task WaitForReadyAsync(IReadOnlyList<Guid> ids, CancellationToken token)
     {
         var sessions = Server!.Services.GetRequiredService<AgentSessions>();
         while (ids.Any(id => sessions.Get(id)?.Ready != true)) await Task.Delay(30, token);
@@ -82,7 +82,7 @@ public class ClusterDiskUsageTests : TestBase
         var agents = journals.Select((journal, i) => new AgentClient(Http.BaseAddress!, setup.Keys[i], journal).RunAsync(stop.Token)).ToArray();
         try
         {
-            await WaitForReadyAsync(setup.Machines.Take(2), stop.Token);
+            await WaitForReadyAsync(setup.Machines[..2], stop.Token);
             var cli = await CliAsync(setup.Key, "machine", "disk-usage", "--all-machines", "--output-format", "json");
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             var result = ClusterWorkflows.DiskUsage.ReadResult(cli.StdOut);
@@ -117,7 +117,7 @@ public class ClusterDiskUsageTests : TestBase
             var rows = ClusterWorkflows.AgentHealth.ReadResult(health.StdOut);
             Assert.HasCount(3, rows);
             Assert.IsTrue(rows.Take(2).All(row => row.Online && row.Status == "Succeeded" &&
-                !string.IsNullOrEmpty(row.Version) && row.ActiveTasks >= 0 && row.PendingEvents >= 0));
+                row.WorkflowId != null && !string.IsNullOrEmpty(row.Version) && row.ActiveTasks >= 0 && row.PendingEvents >= 0));
             Assert.IsFalse(rows[2].Online);
             Assert.AreEqual("Offline", rows[2].Status);
             Assert.IsNull(rows[2].PendingEvents);
@@ -168,14 +168,18 @@ public class ClusterDiskUsageTests : TestBase
         using var first = await ConnectIdleAgentAsync(setup.Machines[0], setup.Keys[0], timeout.Token);
         using var second = await ConnectIdleAgentAsync(setup.Machines[1], setup.Keys[1], timeout.Token);
         var root = await SubmitAsync(setup.User);
-        var firstOffer = await WebSocketJson.ReceiveAsync(first, timeout.Token);
-        var secondOffer = await WebSocketJson.ReceiveAsync(second, timeout.Token);
-        Assert.AreEqual("offer", firstOffer?.Kind);
-        Assert.AreEqual("offer", secondOffer?.Kind);
         // Add a machine after submission to exercise the frozen target snapshot.
         await DatabaseAsync(async db =>
         {
             db.Machines.Add(new Machine { Name = "Late machine", KeyHash = "fixture" });
+            return await db.SaveChangesAsync(timeout.Token);
+        });
+        var firstOffer = await WebSocketJson.ReceiveAsync(first, timeout.Token);
+        var secondOffer = await WebSocketJson.ReceiveAsync(second, timeout.Token);
+        Assert.AreEqual("offer", firstOffer?.Kind);
+        Assert.AreEqual("offer", secondOffer?.Kind);
+        await DatabaseAsync(async db =>
+        {
             var good = await db.WorkflowRuns.SingleAsync(r => r.Id == firstOffer!.TaskId);
             good.State = RunState.Succeeded;
             good.Result = JsonSerializer.Serialize(new DiskUsageResult(good.Id, 100, 82, 16, 1));
