@@ -11,8 +11,9 @@ namespace Aiursoft.DMS.Client;
 internal sealed class LoginCommand : ExecutableCommandHandlerBuilder
 {
     protected override string Name => "login";
-    protected override string Description => "Sign in with a personal API Key and save authentication to ~/.DMS/auth.json.";
-    private readonly Option<string?> _server = new("--server") { Description = "Controller URL; omit to enter it interactively." };
+    protected override string Description => "Sign in to a Controller with a personal API key.";
+    private readonly Option<string?> _server = new("--server")
+        { Description = "Controller URL. DMS prompts for it when omitted." };
     protected override IEnumerable<Option> GetCommandOptions() => [_server];
 
     public override Command BuildAsCommand()

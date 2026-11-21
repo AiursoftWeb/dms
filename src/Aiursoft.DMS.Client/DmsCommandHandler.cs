@@ -11,9 +11,12 @@ namespace Aiursoft.DMS.Client;
 
 internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
 {
-    protected readonly Option<string?> _server = new("--server") { Description = "Controller URL; defaults to DMS_SERVER or saved login." };
-    protected readonly Option<string?> _key = new("--api-key") { Description = "Personal API Key; defaults to DMS_API_KEY or saved login." };
-    protected readonly Option<OutputFormat> _format = new("--output-format") { Description = "Output format: table, json, or csv." };
+    protected readonly Option<string?> _server = new("--server")
+        { Description = "Controller URL. Defaults to DMS_SERVER or the saved login." };
+    protected readonly Option<string?> _key = new("--api-key")
+        { Description = "Personal API key. Defaults to DMS_API_KEY or the saved login." };
+    protected readonly Option<OutputFormat> _format = new("--output-format")
+        { Description = "Choose table (default), json, or csv." };
     protected virtual bool Callstack => false;
     protected virtual bool Catalog => false;
     protected virtual bool Audit => false;
