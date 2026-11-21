@@ -9,6 +9,7 @@ public sealed class AgentSession(WebSocket socket, string keyHash) : IDisposable
     private readonly SemaphoreSlim _send = new(1, 1);
     public string KeyHash => keyHash;
     public bool Ready { get; set; }
+    public bool IsOpen => socket.State == WebSocketState.Open;
     public void Abort() => socket.Abort();
     public async Task SendAsync(AgentMessage message, CancellationToken token)
     {

@@ -1,22 +1,18 @@
 # Cluster disk usage
 
-Submit a Safe, read-only operation for a frozen set of machines:
+Print current capacity for all managed machines or a selected set.
 
 ```bash
-dms machine disk-usage --all-machines --reason "Review all machine capacity"
-# Or select specific machines:
-dms machine disk-usage --machine-id MACHINE_ID_1 MACHINE_ID_2 --reason "Review selected capacity"
+dms machine disk-usage --all-machines
+dms machine disk-usage --machine-id MACHINE_ID_1 MACHINE_ID_2 --output-format json
+dms machine disk-usage --all-machines --output-format csv
 ```
 
-The command returns a Lockbox request. The global Safe permissions determine whether it is automatically approved or needs another approver. After approval, use the operation ID returned by `lockbox get`:
+Both this command and `dms machine agent status --all-machines` require **Run open workflows**. A reason is optional. The Controller records and automatically approves a Lockbox for each new request before executing it. The CLI waits for and prints the typed result.
 
-```bash
-dms operation get-workflow --id OPERATION_ID
-dms operation get-callstack --id OPERATION_ID
-dms operation get-trace --id OPERATION_ID
-```
+The disk table shows one row per selected machine, highest usage first, followed by totals for the machines that reported capacity. The JSON result contains `TargetMachines`, `MeasuredMachines`, nullable byte totals, and `Machines` with flat per-machine rows. CSV prints those same machine rows with exact byte values and a status column. It has no separate total row. `UsedPercent` is used bytes divided by reported size, rounded to one decimal place. Byte columns are empty for unmeasured machines.
 
-The result contains `TotalBytes`, `UsedBytes`, `AvailableBytes`, `MachineCount` and a per-machine `Machines` list. Each entry contains its `MachineId` and `Usage`, including the Machine child's full `WorkflowId`, byte counts and filesystem count. That ID opens the child through the same operation commands. Table, JSON and CSV output use the common `--output-format` option.
+Agent status shows current connectivity, live version, active tasks, and pending events. A connected Agent can still time out or fail its probe. Offline or unresponsive Agents have empty live metric fields. Agent JSON is an array and CSV has one row per selected machine.
 
 ## What the numbers mean
 
@@ -32,19 +28,12 @@ This query does not traverse directories, measure individual file sizes, include
 
 ## Failure and scheduling
 
-The first version requires a complete successful result from every selected machine. It does not publish partial totals. A known child failure fails the parent; a started child with an unknown outcome makes the parent need verification. Completed and failed children stay in the call tree for investigation. An offline machine can leave its child queued and its parent waiting. Use the existing approved kill operation if cancellation is needed.
+Both workflows probe connected Agents concurrently, with a shared six-second collection window once the Controller workflow starts. They keep one row per frozen target. An offline Agent with no ready session at the start has no child task. An unanswered probe is marked `TimedOut` if the Agent is still connected at the deadline and `Offline` if it disconnected. `Unavailable` indicates a machine that was disabled or removed after the selection was frozen. Child failures and unknown outcomes are recorded as `Failed` and `NeedsVerification`.
 
-The existing bounded process-output and workflow-result limits still apply. An oversized query or aggregate fails rather than truncating the result or publishing partial totals.
+An incomplete result is a workflow warning. The CLI emits the result on stdout and a warning with the workflow ID on stderr. Only measured rows contribute to capacity totals. When no measurements are available, totals are null. A probe that timed out before receiving permission to start is cancelled. A running probe receives a cancellation request and keeps its own eventual outcome in the call tree. Late reports do not change the completed overview.
 
-Machine membership is frozen when the Lockbox is submitted. Adding a machine while approval is pending does not expand execution. No additional approvals are created for the Machine query or its internal process child.
+Machine membership is frozen when the Lockbox is submitted. Child probes reuse the root's authorization. Select the original Lockbox and follow its workflow ID to investigate the tree and child traces.
 
-## A standard workflow authoring example
+## Implementation and upgrade
 
-The implementation uses the same extension points described in [Adding a standard workflow](authoring-workflows.md):
-
-- Shared typed definitions and results in Contracts.
-- `MachineDiskUsageWorkflow` for filesystem selection, numeric parsing and local aggregation. It is internal and has no direct CLI or public Lockbox entry.
-- `ClusterDiskUsageWorkflow` for a sequential `foreach`, typed `await` and checked sums.
-- One execution-factory registration per workflow, plus the CLI option mapping.
-
-No scheduler algorithm, approval service, database schema, message model or output renderer was extended for this operation. The registry constructor is the only changed part of the existing runtime file. Integration tests exercise the product registrations and actual Agents; they do not replace these implementations with the earlier authoring examples.
+The Open Controller roots call the existing typed disk and Agent status Machine workflows. They require no Agent upgrade or database migration. Deploy the Controller before CLI 1.12.0. A pending Safe disk request from the previous definition must be resubmitted as Open. Historical workflow results remain available through the investigation API.

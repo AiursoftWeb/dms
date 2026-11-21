@@ -145,7 +145,7 @@ Test valid/invalid input, public risk, internal-only access, approved input and 
 
 Run the existing test project, including `WorkflowAuthoringTests`; use the repository's normal build and lint commands. The execution stack belongs to the running process: after a crash, queued work can resume, but started work with unknown results is not automatically replayed.
 
-The [cluster disk usage operation](disk-usage.md) is a product example of the same extension points, with a typed Machine result, a sequential Cluster aggregate and an optional CLI entry.
+The [cluster disk usage operation](disk-usage.md) is a product example of the same extension points, with a typed Machine result, a bounded Cluster aggregate and an optional CLI entry.
 
 ## Discover registered public workflows
 

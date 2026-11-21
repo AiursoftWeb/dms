@@ -63,7 +63,18 @@ public static class DmsOutputWriter
     public static void WriteResult(TextWriter output, object result, OutputFormat format, bool color, int width)
     {
         var data = JToken.FromObject(result);
-        if (format == OutputFormat.Json)
+        if (format == OutputFormat.Table && result is DiskOverviewResult overview)
+            WriteDiskOverview(output, overview, width);
+        else if (format == OutputFormat.Table && result is List<AgentHealthRow> agents)
+            WriteRows(output, ["Machine", "Online", "Status", "Version", "Active tasks", "Pending events"], agents.Select(agent => new[]
+            {
+                TerminalName(agent.Name), agent.Online ? "Yes" : "No", agent.Status, TerminalName(agent.Version),
+                agent.ActiveTasks?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                agent.PendingEvents?.ToString(CultureInfo.InvariantCulture) ?? "-"
+            }).ToList(), width, false);
+        else if (format == OutputFormat.Csv && result is DiskOverviewResult disk)
+            WriteCsv(output, JArray.FromObject(disk.Machines), typeof(DiskOverviewRow).GetProperties().Select(property => property.Name));
+        else if (format == OutputFormat.Json)
             output.WriteLine(data.ToString(Formatting.Indented));
         else if (format == OutputFormat.Csv)
         {
@@ -75,6 +86,35 @@ public static class DmsOutputWriter
             WriteCsv(output, data, headers);
         }
         else WriteHuman(output, data, width, color);
+    }
+
+    private static void WriteDiskOverview(TextWriter output, DiskOverviewResult overview, int width)
+    {
+        WriteRows(output, ["Machine", "Status", "Capacity", "Used", "Available", "Used %"], overview.Machines.Select(machine => new[]
+        {
+            TerminalName(machine.Name), machine.Status, HumanBytes(machine.TotalBytes), HumanBytes(machine.UsedBytes),
+            HumanBytes(machine.AvailableBytes), machine.UsedPercent?.ToString("0.0", CultureInfo.InvariantCulture) ?? "-"
+        }).ToList(), width, false);
+        output.WriteLine();
+        if (overview.MeasuredMachines == 0)
+            output.WriteLine($"No capacity data returned from {overview.TargetMachines} selected machine(s).");
+        else
+            output.WriteLine($"Totals for {overview.MeasuredMachines} of {overview.TargetMachines} selected machine(s) — " +
+                $"{HumanBytes(overview.TotalBytes)} capacity, {HumanBytes(overview.UsedBytes)} used, {HumanBytes(overview.AvailableBytes)} available.");
+    }
+
+    private static string HumanBytes(long? bytes)
+    {
+        if (bytes == null) return "-";
+        string[] units = ["B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB"];
+        var amount = (decimal)bytes.Value;
+        var unit = 0;
+        while (Math.Abs(amount) >= 1024 && unit < units.Length - 1)
+        {
+            amount /= 1024;
+            unit++;
+        }
+        return $"{amount.ToString(unit == 0 ? "0" : "0.0", CultureInfo.InvariantCulture)} {units[unit]}";
     }
 
     private static void WriteLockboxStatus(TextWriter output, JObject summary, int width)

@@ -29,9 +29,9 @@ Personal API keys resolve the user's current Identity permissions on each reques
 
 Update the Controller and CLI together (`Aiursoft.DMS.Client` 1.1.0). Agent task/response payloads do not change; existing Agent installations can stay connected and upgrade through DMS. Agent 1.1.0 supplies the scope-free join CLI. See the [inventory upgrade procedure](configuration.md#upgrade-to-instance-wide-inventory) before migrating existing data. Operations still return Lockbox/workflow IDs and use the same `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace` commands.
 
-## Open inventory workflow
+## Open inventory and machine overviews
 
-Deploy the new Controller before using CLI 1.11.0. In the role editor, grant **Run open workflows** to roles that should be able to list the inventory. Existing Safe grants do not grant Open access. The Controller records the Open decision in the normal Lockbox audit and then runs the inventory workflow. See [CLI output and examples](cli-and-agent.md#lockbox-api-and-receipts).
+Deploy the new Controller before using CLI 1.12.0. In the role editor, grant **Run open workflows** to roles that should be able to list the inventory or run live disk and Agent health overviews across the instance. Existing Safe grants do not grant Open access. The Controller records the Open decision in the normal Lockbox audit before executing the requested workflow. See [examples and output fields](disk-usage.md).
 
 ## Compiled machine schedules
 

@@ -549,8 +549,8 @@ Use `dms operation list-definitions` to see the Controller's registered public s
 dotnet ./bin/client/dms.dll machine list
 dotnet ./bin/client/dms.dll machine performance info \
   --machine-id <machine-id> --reason 'Inspect capacity'
-dotnet ./bin/client/dms.dll machine agent status \
-  --machine-id <machine-id> --reason 'Inspect Agent'
+dotnet ./bin/client/dms.dll machine agent status --all-machines
+dotnet ./bin/client/dms.dll machine disk-usage --all-machines
 dotnet ./bin/client/dms.dll machine systemctl status \
   --machine-id <machine-id> \
   --service example.service --reason 'Inspect service'
@@ -572,7 +572,7 @@ Use `--all-machines` instead of `--machine-id` to freeze all currently active ma
 
 `operation kill-workflow --id <workflow-id> --reason 'Stop operation'` creates a new Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation).
 
-Agent status, performance information, `layout lsblk` and `layout df` use the Safe risk policy; `systemctl status` uses Low and restart uses Medium. Service commands require a concrete `.service` name. Status reads fixed systemd properties without reading the journal. Block-device queries exclude loop devices, and capacity queries cover local filesystems. No extra command arguments or shell expressions are accepted.
+Performance information, `layout lsblk` and `layout df` use the Safe risk policy; `systemctl status` uses Low and restart uses Medium. Service commands require a concrete `.service` name. Status reads fixed systemd properties without reading the journal. Block-device queries exclude loop devices, and capacity queries cover local filesystems. No extra command arguments or shell expressions are accepted.
 
 Read-only process results contain `ExitCode`, `Output` and `ErrorOutput`; the output is also available in the workflow trace. Each output stream is limited to 8192 characters, and the serialized result to 24000 characters. Larger queries fail explicitly rather than returning truncated data. A missing tool, failed query or nonexistent service is reported as a failed workflow.
 
@@ -597,7 +597,7 @@ See [typed subworkflows](subworkflows.md) for compiled registration, cross-machi
 
 Standard workflow authors can follow [Adding a standard workflow](authoring-workflows.md), including compiled Machine/Cluster examples and typed SDK submissions.
 
-For a typed aggregate across a frozen set of machines, see [Cluster disk usage](disk-usage.md).
+Disk usage and Agent status are Open workflows and print their result directly. See [command examples and per-machine results](disk-usage.md).
 
 ## Structured investigation history
 

@@ -35,7 +35,7 @@ public static partial class DmsCommandApp
                 "Print the machine inventory. Requires Run open workflows.",
                 ClusterWorkflows.GetMachines, _ => new EmptyInput()),
             StandardCommand("disk-usage",
-                "Summarize filesystem capacity and usage across selected machines.",
+                "Print filesystem capacity and usage per machine, fullest first.",
                 ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             new ActionCommand("add", "Add a machine record to the Controller inventory.", WorkflowNames.AddMachine),
             new Group("docker", "Inspect and control standalone Docker containers.",
@@ -138,8 +138,8 @@ public static partial class DmsCommandApp
             new Group("agent", "Check Agent health or install the Controller-provided release.",
             [
                 StandardCommand("status",
-                    "Check Agent version, connection identity, and pending events.",
-                    MachineWorkflows.AgentStatus, _ => new EmptyInput()),
+                    "Print Agent connectivity, version, active tasks, and pending events for selected machines.",
+                    ClusterWorkflows.AgentHealth, _ => new EmptyInput()),
                 new ActionCommand("upgrade",
                     "Upgrade the Agent and confirm that the new version reconnects.",
                     WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)

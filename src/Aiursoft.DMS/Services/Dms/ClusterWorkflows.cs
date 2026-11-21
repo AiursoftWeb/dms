@@ -87,18 +87,22 @@ public sealed class CancelWorkflow : ClusterWorkflow
             if (count == selected.Count) break;
         }
         foreach (var run in tree.Where(r => selected.Contains(r.Id) && !r.State.Terminal()))
-        {
-            // Start permission is persisted before sending it. An unstarted offer can be
-            // cancelled here even if the Agent never recognized or journaled that offer.
-            if (run.State is RunState.Queued or RunState.WaitingApproval
-                || (run.IsMachineTask && run.StartedAt == null && run.State is RunState.Offered or RunState.CancelRequested))
-            {
-                run.State = RunState.Cancelled; run.FinishedAt = DateTime.UtcNow;
-
-            }
-            else run.State = RunState.CancelRequested;
-        }
+            RequestCancellation(run);
         context.Run.State = tree.Where(r => selected.Contains(r.Id)).All(r => r.State.Terminal()) ? RunState.Succeeded : RunState.Running;
         context.Run.Result = JsonSerializer.Serialize(new { TargetWorkflowId = target.Id, CancellationRequested = true, SideEffectsRolledBack = false });
     }
+
+    internal static void RequestCancellation(WorkflowRun run)
+    {
+        // Start permission is persisted before sending it. An unstarted offer can be
+        // cancelled here even if the Agent never recognized or journaled that offer.
+        if (run.State is RunState.Queued or RunState.WaitingApproval
+            || (run.IsMachineTask && run.StartedAt == null && run.State is RunState.Offered or RunState.CancelRequested))
+        {
+            run.State = RunState.Cancelled;
+            run.FinishedAt = DateTime.UtcNow;
+        }
+        else run.State = RunState.CancelRequested;
+    }
+
 }
