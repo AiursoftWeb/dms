@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Akses Ditolak</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Tambahkan kunci publik SSH</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Administrator</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Peran</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>Kunci publik SSH ditambahkan</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Kunci publik SSH</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Pengguna</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Verifikasi kunci publik SSH Anda</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Riwayat alur kerja</value>
