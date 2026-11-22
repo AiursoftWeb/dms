@@ -96,10 +96,22 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         {
             if (!ModelState.IsValid) return BadRequest();
             var item = await workflows.GetLockboxAsync(Actor, id.Value);
-            return this.StackView(new DmsViewModel
+            var snapshot = LockboxSnapshot.Read(item);
+            var machineNames = await db.Machines.AsNoTracking().Where(machine => snapshot.Targets.Contains(machine.Id))
+                .ToDictionaryAsync(machine => machine.Id, machine => machine.Name);
+            var ownRequest = item.RequesterId == Actor;
+            return this.StackView(new LockboxViewModel
             {
-                Lockbox = item, Notice = TempData["DmsNotice"] as string, InputArtifacts = artifacts.Inputs(item),
-                CanDecide = DmsPermissions.CanDecide(await access.PrincipalAsync(Actor), item.Risk, item.RequesterId == Actor)
+                PageTitle = "Lockbox",
+                Item = item,
+                Status = await workflows.DescribeLockboxAsync(item),
+                Snapshot = snapshot,
+                MachineNames = machineNames,
+                Notice = TempData["DmsNotice"] as string,
+                InputArtifacts = artifacts.Inputs(item),
+                CanWithdraw = item.Decision == DecisionState.Pending && ownRequest,
+                CanDecide = item.Decision == DecisionState.Pending &&
+                            DmsPermissions.CanDecide(await access.PrincipalAsync(Actor), item.Risk, ownRequest)
             });
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }

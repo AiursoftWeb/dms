@@ -236,6 +236,49 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task LockboxPageShowsFrozenTargetsCommandAndLiveApprovers()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High), DmsPermissions.Approve(RiskLevel.High));
+        using var scope = Server!.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var reviewer = new User
+        {
+            UserName = "lockbox-reviewer" + Guid.NewGuid().ToString("N"),
+            DisplayName = "Sam Reviewer",
+            Email = Guid.NewGuid().ToString("N") + "@example.test"
+        };
+        Assert.IsTrue((await users.CreateAsync(reviewer)).Succeeded);
+        Assert.IsTrue((await users.AddClaimAsync(reviewer,
+            new Claim(AppPermissions.Type, DmsPermissions.Approve(RiskLevel.High)))).Succeeded);
+
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var box = await workflows.SubmitAsync(setup.User, MachineWorkflows.PullerForceUpdate.Request(
+            new PullerForceUpdateInput("aiursoft/dms:latest"), "Refresh today's image", allMachines: true));
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        db.Machines.Add(new Machine { Name = "Machine enrolled later" });
+        await db.SaveChangesAsync();
+
+        var page = $"/Dms/Lockbox?id={Uri.EscapeDataString(new LockboxId(box.Id).ToString())}";
+        using (var signedOut = await Http.GetAsync(page))
+            Assert.AreEqual(HttpStatusCode.Found, signedOut.StatusCode);
+        await LoginAsAdmin();
+        var pending = WebUtility.HtmlDecode(await Http.GetStringAsync(page));
+        foreach (var expected in new[] { "Operator", "data-utc-now", "First machine", "Second machine",
+                     "dms machine box puller force-update", "--image 'aiursoft/dms:latest'", "Sam Reviewer",
+                     "action=\"/Dms/Decide\"", "__RequestVerificationToken" })
+            StringAssert.Contains(pending, expected);
+        StringAssert.Contains(pending, "Refresh today'\"'\"'s image");
+        Assert.DoesNotContain("Machine enrolled later", pending);
+        Assert.DoesNotContain("Operator (@", pending[pending.IndexOf("lockbox-people", StringComparison.Ordinal)..]);
+
+        await workflows.DecideAsync(reviewer.Id, box.Id, false, "Reviewed frozen inputs");
+        var decided = WebUtility.HtmlDecode(await Http.GetStringAsync(page));
+        StringAssert.Contains(decided, "Sam Reviewer");
+        StringAssert.Contains(decided, "Reviewed frozen inputs");
+        Assert.DoesNotContain("action=\"/Dms/Decide\"", decided);
+    }
+
+    [TestMethod]
     public async Task LockboxStatusUsesLiveApproverNamesAndSupportsPositionalWorkflowIds()
     {
         var approval = DmsPermissions.Approve(RiskLevel.Safe);
