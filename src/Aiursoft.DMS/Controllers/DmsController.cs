@@ -6,6 +6,7 @@ using Aiursoft.DMS.Models.DmsViewModels;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Services;
 using Aiursoft.UiStack.Navigation;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -16,7 +17,7 @@ namespace Aiursoft.DMS.Controllers;
 [Authorize(Policy = AppPermissionNames.CanReadDmsOperations)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces, WorkflowInvestigation investigation,
-    DmsArtifactAccess artifacts, DmsArtifactStore artifactStore) : Controller
+    DmsArtifactAccess artifacts, DmsArtifactStore artifactStore, LockboxPages lockboxPages) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -81,11 +82,14 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Lockboxes", LinkOrder = 2)]
-    public async Task<IActionResult> Lockboxes(int page = 0)
+    public async Task<IActionResult> Lockboxes(int page = 0, string? scope = null, string? q = null)
     {
-        page = Math.Clamp(page, 0, 100000);
-        var items = await db.Lockboxes.OrderByDescending(l => l.CreatedAt).Skip(page * 50).Take(51).ToListAsync();
-        return this.StackView(new DmsViewModel { Lockboxes = items.Take(50).ToList(), Page = page, HasNextPage = items.Count > 50 });
+        try
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            return this.StackView(await lockboxPages.ListAsync(Actor, ownRequests: false, scope, q, page));
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
 
     [HttpGet("/Dms/Lockbox", Order = 0)]
@@ -95,24 +99,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         try
         {
             if (!ModelState.IsValid) return BadRequest();
-            var item = await workflows.GetLockboxAsync(Actor, id.Value);
-            var snapshot = LockboxSnapshot.Read(item);
-            var machineNames = await db.Machines.AsNoTracking().Where(machine => snapshot.Targets.Contains(machine.Id))
-                .ToDictionaryAsync(machine => machine.Id, machine => machine.Name);
-            var ownRequest = item.RequesterId == Actor;
-            return this.StackView(new LockboxViewModel
-            {
-                PageTitle = "Lockbox",
-                Item = item,
-                Status = await workflows.DescribeLockboxAsync(item),
-                Snapshot = snapshot,
-                MachineNames = machineNames,
-                Notice = TempData["DmsNotice"] as string,
-                InputArtifacts = artifacts.Inputs(item),
-                CanWithdraw = item.Decision == DecisionState.Pending && ownRequest,
-                CanDecide = item.Decision == DecisionState.Pending &&
-                            DmsPermissions.CanDecide(await access.PrincipalAsync(Actor), item.Risk, ownRequest)
-            });
+            return this.StackView(await lockboxPages.DetailAsync(Actor, id, ownRequestView: false, TempData["DmsNotice"] as string));
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
@@ -157,37 +144,78 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Workflow history", LinkOrder = 3)]
-    public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null, bool clusterWorkflowsOnly = false, WorkflowOrigin? origin = null)
+    public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null,
+        bool clusterWorkflowsOnly = false, WorkflowOrigin? origin = null, RunState? state = null, bool rootOnly = false)
     {
+        if (!ModelState.IsValid || (origin.HasValue && !Enum.IsDefined(origin.Value)) ||
+            (state.HasValue && !Enum.IsDefined(state.Value)) || definition?.Length > 200) return BadRequest();
         page = Math.Clamp(page, 0, 100000);
-        if (origin != null && !Enum.IsDefined(origin.Value)) return BadRequest();
-        var query = db.WorkflowRuns.AsQueryable();
-        if (origin != null) query = query.Where(r => r.Origin == origin);
-        if (clusterWorkflowsOnly) query = query.Where(r => r.MachineId == null);
-        if (machineId != null) query = query.Where(r => r.MachineId == machineId);
-        if (!string.IsNullOrWhiteSpace(definition)) query = query.Where(r => r.Definition == definition);
-        var items = await query.OrderByDescending(r => r.CreatedAt).Skip(page * 50).Take(51).ToListAsync();
+        var query = db.WorkflowRuns.AsNoTracking();
+        if (origin != null) query = query.Where(run => run.Origin == origin);
+        if (state != null) query = query.Where(run => run.State == state);
+        if (rootOnly) query = query.Where(run => run.ParentId == null);
+        if (clusterWorkflowsOnly) query = query.Where(run => run.MachineId == null);
+        if (machineId != null) query = query.Where(run => run.MachineId == machineId);
+        if (!string.IsNullOrWhiteSpace(definition))
+        {
+            var matching = db.Lockboxes.Where(box => box.Definition == definition).Select(box => box.Id);
+            query = query.Where(run => run.Definition == definition ||
+                (run.Definition == WorkflowNames.Batch && run.LockboxId.HasValue && matching.Contains(run.LockboxId.Value)));
+        }
+        var items = await query.OrderByDescending(run => run.CreatedAt).ThenBy(run => run.Id)
+            .Skip(page * 50).Take(51).NotCacheable().ToListAsync();
+        var runs = items.Take(50).ToList();
+        var boxIds = runs.Where(run => run.Definition == WorkflowNames.Batch).Select(run => run.LockboxId).OfType<Guid>().Distinct().ToArray();
+        var requested = await db.Lockboxes.AsNoTracking().Where(box => boxIds.Contains(box.Id))
+            .ToDictionaryAsync(box => box.Id, box => box.Definition);
         return this.StackView(new DmsViewModel
         {
-            Origin = origin, Runs = items.Take(50).ToList(), Page = page, HasNextPage = items.Count > 50,
-            MachineId = machineId, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly
+            PageTitle = "Workflow history",
+            Origin = origin, State = state, RootOnly = rootOnly, Runs = runs, Page = page, HasNextPage = items.Count > 50,
+            MachineId = machineId, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly,
+            MachineNames = await MachineNamesAsync(runs.Select(run => run.MachineId).Append(machineId)),
+            RequestedDefinitions = requested
         });
     }
 
-    public async Task<IActionResult> Operation(Guid id)
+    public async Task<IActionResult> Operation(Guid id, int tracePage = 0)
     {
+        if (!ModelState.IsValid) return BadRequest();
+        tracePage = Math.Clamp(tracePage, 0, 100000);
         try
         {
             var runs = await workflows.CallstackAsync(Actor, id);
-            var model = new DmsViewModel { Runs = runs, Run = runs.Single(r => r.Id == id) };
+            var run = runs.Single(item => item.Id == id);
+            var box = run.Definition == WorkflowNames.Batch && run.LockboxId is { } lockboxId
+                ? await db.Lockboxes.AsNoTracking().SingleOrDefaultAsync(item => item.Id == lockboxId)
+                : null;
+            var targets = box == null ? [] : LockboxSnapshot.ReadTargets(box);
+            var model = new OperationViewModel
+            {
+                PageTitle = box?.Definition ?? run.Definition, Run = run, Steps = runs, TracePage = tracePage,
+                RequestedDefinition = box?.Definition, Targets = targets,
+                MachineNames = await MachineNamesAsync(runs.Select(item => item.MachineId).Concat(targets.Select(target => (Guid?)target)))
+            };
             if (traces.Enabled)
             {
-                try { model.Trace = await traces.ReadAsync(id, 0); }
-                catch (Exception) { model.Notice = "The trace archive is temporarily unavailable. Refresh to try again."; }
+                try
+                {
+                    var entries = await traces.ReadAsync([id.ToString()], tracePage * TraceDatabase.PageSize, TraceDatabase.PageSize + 1);
+                    model.HasNextTracePage = entries.Count > TraceDatabase.PageSize;
+                    model.Trace = entries.Take(TraceDatabase.PageSize).ToList();
+                }
+                catch (Exception) { model.TraceUnavailable = true; }
             }
-            else model.Notice = "ClickHouse is not configured. Trace remains in the durable backlog.";
+            else model.TraceUnavailable = true;
             return this.StackView(model);
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
+    }
+
+    private Task<Dictionary<Guid, string>> MachineNamesAsync(IEnumerable<Guid?> machineIds)
+    {
+        var ids = machineIds.OfType<Guid>().Distinct().ToArray();
+        return db.Machines.AsNoTracking().Where(machine => ids.Contains(machine.Id))
+            .ToDictionaryAsync(machine => machine.Id, machine => machine.Name);
     }
 }

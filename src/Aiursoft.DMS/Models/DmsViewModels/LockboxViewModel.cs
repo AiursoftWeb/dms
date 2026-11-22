@@ -16,6 +16,9 @@ public sealed class LockboxViewModel : UiStackLayoutViewModel
     public string? Notice { get; init; }
     public bool CanDecide { get; init; }
     public bool CanWithdraw { get; init; }
+    public bool OwnRequestView { get; init; }
+    public bool CanViewOperations { get; init; }
+    public RunState? ExecutionState { get; init; }
 }
 
 public sealed record LockboxSnapshot(
@@ -23,9 +26,11 @@ public sealed record LockboxSnapshot(
 {
     private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
 
+    internal static Guid[] ReadTargets(LockboxRequest item) => JsonSerializer.Deserialize<Guid[]>(item.TargetMachines) ?? [];
+
     public static LockboxSnapshot Read(LockboxRequest item)
     {
-        var targets = JsonSerializer.Deserialize<Guid[]>(item.TargetMachines) ?? [];
+        var targets = ReadTargets(item);
         using var stored = JsonDocument.Parse(item.Parameters);
         var request = stored.RootElement.Deserialize<OperationRequest>()!;
         LegacyClusterWorkflowInput.Normalize(request, item.Definition);

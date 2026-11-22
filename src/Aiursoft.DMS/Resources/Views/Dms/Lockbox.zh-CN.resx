@@ -1,24 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
+<root xmlns:ns1="urn:schemas-microsoft-com:xml-msdata" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:schema id="root">
+    <xs:element name="root" ns1:IsDataSet="true">
 
-<root>
-    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-        <xsd:element name="root" msdata:IsDataSet="true">
-
-        </xsd:element>
-    </xsd:schema>
-    <resheader name="resmimetype">
-        <value>text/microsoft-resx</value>
-    </resheader>
-    <resheader name="version">
-        <value>1.3</value>
-    </resheader>
-    <resheader name="reader">
-        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-    <resheader name="writer">
-        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-    </resheader>
-      <data name="All enabled machines at submission" xml:space="preserve">
+        </xs:element>
+  </xs:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="All enabled machines at submission" xml:space="preserve">
     <value>提交时所有已启用的机器</value>
   </data>
   <data name="All Lockboxes" xml:space="preserve">
@@ -29,9 +28,6 @@
   </data>
   <data name="Approved" xml:space="preserve">
     <value>已批准</value>
-  </data>
-  <data name="Approved target machines" xml:space="preserve">
-    <value>已批准的目标机器</value>
   </data>
   <data name="Approver ID" xml:space="preserve">
     <value>审批人 ID</value>
@@ -54,9 +50,6 @@
   <data name="Copy" xml:space="preserve">
     <value>复制</value>
   </data>
-  <data name="Created" xml:space="preserve">
-    <value>创建时间</value>
-  </data>
   <data name="Decision" xml:space="preserve">
     <value>决策</value>
   </data>
@@ -69,11 +62,14 @@
   <data name="Deny" xml:space="preserve">
     <value>拒绝</value>
   </data>
-  <data name="Disable SSH access" xml:space="preserve">
-    <value>禁用 SSH 访问</value>
-  </data>
   <data name="Equivalent DMS command" xml:space="preserve">
     <value>等效 DMS 命令</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>执行状态</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>执行状态不可用。</value>
   </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>已冻结的输入文件</value>
@@ -84,20 +80,11 @@
   <data name="Historical approval workflow" xml:space="preserve">
     <value>历史审批工作流</value>
   </data>
-  <data name="ID" xml:space="preserve">
-    <value>ID</value>
-  </data>
   <data name="Image" xml:space="preserve">
     <value>镜像</value>
   </data>
   <data name="Image scope" xml:space="preserve">
     <value>镜像作用域</value>
-  </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>锁箱</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>锁箱调用栈</value>
   </data>
   <data name="Lockbox ID" xml:space="preserve">
     <value>保险箱 ID</value>
@@ -108,20 +95,17 @@
   <data name="Medium risk" xml:space="preserve">
     <value>中等风险</value>
   </data>
+  <data name="My requests" xml:space="preserve">
+    <value>我的请求</value>
+  </data>
   <data name="No eligible approvers right now." xml:space="preserve">
     <value>当前没有符合条件的审批人。</value>
   </data>
   <data name="No machine targets" xml:space="preserve">
     <value>无目标机器</value>
   </data>
-  <data name="Open an SSH lease" xml:space="preserve">
-    <value>打开 SSH 租约</value>
-  </data>
   <data name="Open workflow" xml:space="preserve">
     <value>开放工作流</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>操作</value>
   </data>
   <data name="Parameters" xml:space="preserve">
     <value>参数</value>
@@ -129,14 +113,8 @@
   <data name="Puller" xml:space="preserve">
     <value>Puller</value>
   </data>
-  <data name="Reason" xml:space="preserve">
-    <value>原因</value>
-  </data>
   <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
     <value>根据保存的输入和目标机器重建。</value>
-  </data>
-  <data name="Refresh images with Box Puller" xml:space="preserve">
-    <value>使用 Box Puller 刷新镜像</value>
   </data>
   <data name="Request identifiers and raw payload" xml:space="preserve">
     <value>请求标识符和原始负载</value>
@@ -153,23 +131,11 @@
   <data name="Requested Docker command" xml:space="preserve">
     <value>请求的 Docker 命令</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>申请人</value>
-  </data>
   <data name="Requester ID" xml:space="preserve">
     <value>请求者 ID</value>
   </data>
   <data name="Review the exact contents submitted for execution." xml:space="preserve">
     <value>请查看提交执行的准确内容。</value>
-  </data>
-  <data name="Risk" xml:space="preserve">
-    <value>风险</value>
-  </data>
-  <data name="Run a command in Docker" xml:space="preserve">
-    <value>在 Docker 中运行命令</value>
-  </data>
-  <data name="Run an uploaded script" xml:space="preserve">
-    <value>运行已上传的脚本</value>
   </data>
   <data name="Safe workflow" xml:space="preserve">
     <value>安全的工作流</value>
@@ -182,9 +148,6 @@
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>此工作流无需参数。</value>
-  </data>
-  <data name="Upgrade DMS Agent" xml:space="preserve">
-    <value>升级 DMS 代理</value>
   </data>
   <data name="Use the frozen parameters below to review what was requested." xml:space="preserve">
     <value>使用下方固定的参数来查看所请求的内容。</value>
@@ -201,11 +164,7 @@
   <data name="Withdrawn" xml:space="preserve">
     <value>已撤回</value>
   </data>
-  <data name="Workflow" xml:space="preserve">
-    <value>工作流</value>
-  </data>
   <data name="Workflow version" xml:space="preserve">
     <value>工作流版本</value>
   </data>
-
 </root>

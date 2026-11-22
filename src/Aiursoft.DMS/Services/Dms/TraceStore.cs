@@ -51,9 +51,7 @@ public sealed partial class TraceDatabase(IConfiguration configuration) : Clickh
 
     public const int PageSize = 200;
 
-    public Task<IReadOnlyList<TraceEntry>> ReadAsync(Guid id, int skip) => ReadAsync([id.ToString()], skip);
-
-    public Task<IReadOnlyList<TraceEntry>> ReadAsync(string[] workflowIds, int skip) => QueryAsync(
+    public Task<IReadOnlyList<TraceEntry>> ReadAsync(string[] workflowIds, int skip, int limit = PageSize) => QueryAsync(
         """
         SELECT EventId, WorkflowId, Time, Source, Message, Origin, Trigger, ScheduleId
         FROM DmsWorkflowTrace FINAL
@@ -63,7 +61,7 @@ public sealed partial class TraceDatabase(IConfiguration configuration) : Clickh
         """,
         r => new TraceEntry { EventId = r.GetString(0), WorkflowId = r.GetString(1), Time = r.GetDateTime(2), Source = r.GetString(3), Message = r.GetString(4),
             Origin = Enum.Parse<WorkflowOrigin>(r.GetString(5)), Trigger = Enum.Parse<WorkflowTrigger>(r.GetString(6)), ScheduleId = r.IsDBNull(7) ? null : r.GetString(7) },
-        new Dictionary<string, object?> { ["workflows"] = workflowIds, ["limit"] = PageSize, ["skip"] = skip });
+        new Dictionary<string, object?> { ["workflows"] = workflowIds, ["limit"] = limit, ["skip"] = skip });
 }
 
 public sealed class TraceStore(IConfiguration configuration)

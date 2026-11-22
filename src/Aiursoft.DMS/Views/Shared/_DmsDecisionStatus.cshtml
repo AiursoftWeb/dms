@@ -1,0 +1,12 @@
+@using Aiursoft.DMS.Contracts
+@model DecisionState
+@{
+    var (label, tone) = Model switch
+    {
+        DecisionState.Pending => (@Localizer["Awaiting approval"], "warning"),
+        DecisionState.Approved => (@Localizer["Approved"], "success"),
+        DecisionState.Denied => (@Localizer["Denied"], "danger"),
+        _ => (@Localizer["Withdrawn"], "secondary")
+    };
+}
+<span class="dms-badge text-@(tone)-emphasis bg-@(tone)-subtle" data-decision="@Model">@label</span>

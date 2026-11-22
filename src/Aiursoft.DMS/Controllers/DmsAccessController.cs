@@ -14,7 +14,7 @@ namespace Aiursoft.DMS.Controllers;
 
 [Authorize]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public class DmsAccessController(TemplateDbContext db, AccessService access) : Controller
+public class DmsAccessController(TemplateDbContext db, AccessService access, LockboxPages lockboxPages) : Controller
 {
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
@@ -25,20 +25,31 @@ public class DmsAccessController(TemplateDbContext db, AccessService access) : C
     });
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "My Lockboxes", LinkOrder = 6)]
-    public async Task<IActionResult> MyLockboxes(int page = 0)
+    public async Task<IActionResult> MyLockboxes(int page = 0, string? scope = null, string? q = null)
     {
-        page = Math.Clamp(page, 0, 10000);
-        var items = await db.Lockboxes.AsNoTracking().Where(l => l.RequesterId == Actor)
-            .OrderByDescending(l => l.CreatedAt).ThenBy(l => l.Id).Skip(page * 50).Take(51).ToListAsync();
-        return this.StackView(new DmsViewModel
+        try
         {
-            PageTitle = "My Lockboxes", Lockboxes = items.Take(50).ToList(), Page = page,
-            HasNextPage = items.Count > 50, Notice = TempData["DmsNotice"] as string
-        });
+            if (!ModelState.IsValid) return BadRequest();
+            return this.StackView(await lockboxPages.ListAsync(Actor, ownRequests: true, scope, q, page, TempData["DmsNotice"] as string));
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
+    }
+
+    [HttpGet("/DmsAccess/MyLockbox", Order = 0)]
+    [HttpGet("/DmsAccess/MyLockbox/{id:guid}", Order = 1)]
+    public async Task<IActionResult> MyLockbox(LockboxId id)
+    {
+        try
+        {
+            if (!ModelState.IsValid) return BadRequest();
+            var model = await lockboxPages.DetailAsync(Actor, id, ownRequestView: true, TempData["DmsNotice"] as string);
+            return this.StackView(model, "~/Views/Dms/Lockbox.cshtml");
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Withdraw(LockboxId id, [FromServices] WorkflowService workflows)
+    public async Task<IActionResult> Withdraw(LockboxId id, [FromServices] WorkflowService workflows, bool fromDetail = false)
     {
         if (!ModelState.IsValid) return BadRequest();
         try { await workflows.WithdrawAsync(Actor, id.Value); }
@@ -47,7 +58,7 @@ public class DmsAccessController(TemplateDbContext db, AccessService access) : C
             if (exception.StatusCode != 409) return StatusCode(exception.StatusCode);
             TempData["DmsNotice"] = exception.Message;
         }
-        return RedirectToAction(nameof(MyLockboxes));
+        return fromDetail ? RedirectToAction(nameof(MyLockbox), new { id }) : RedirectToAction(nameof(MyLockboxes));
     }
 
     [HttpPost, ValidateAntiForgeryToken]

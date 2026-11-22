@@ -279,6 +279,53 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task RequesterCanFollowOwnWebExecutionWithoutGlobalReadPermission()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));
+        using var scope = Server!.Services.CreateScope();
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var requester = (await users.FindByIdAsync(setup.User))!;
+        var admin = (await users.FindByEmailAsync("admin@default.com"))!;
+        Assert.IsTrue((await users.AddPasswordAsync(requester, "Operator@123456!")).Succeeded);
+
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var input = new PullerForceUpdateInput("aiursoft/dms:latest");
+        var own = await workflows.SubmitAsync(requester.Id,
+            MachineWorkflows.PullerForceUpdate.Request(input, "Own refresh request", [setup.First]));
+        var foreign = await workflows.SubmitAsync(admin.Id,
+            MachineWorkflows.PullerForceUpdate.Request(input, "Another user's request", [setup.First]));
+        var approved = await workflows.DecideAsync(admin.Id, own.Id, true, "Reviewed for rollout");
+        var workflowId = approved.WorkflowId!.Value;
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var run = await db.WorkflowRuns.SingleAsync(entry => entry.Id == workflowId);
+        run.State = RunState.Failed;
+        run.Result = "Private failure diagnostic";
+        await db.SaveChangesAsync();
+
+        using var login = await PostForm("/Account/Login", new Dictionary<string, string>
+        {
+            ["EmailOrUserName"] = requester.UserName!, ["Password"] = "Operator@123456!"
+        });
+        Assert.AreEqual(HttpStatusCode.Found, login.StatusCode);
+        var ownPage = "/DmsAccess/MyLockbox?id=" + Uri.EscapeDataString(new LockboxId(own.Id).ToString());
+        var foreignPage = "/DmsAccess/MyLockbox?id=" + Uri.EscapeDataString(new LockboxId(foreign.Id).ToString());
+        var list = await Http.GetStringAsync("/DmsAccess/MyLockboxes");
+        StringAssert.Contains(list, "Own refresh request");
+        StringAssert.Contains(list, "data-run-state=\"Failed\"");
+        Assert.DoesNotContain("Another user's request", WebUtility.HtmlDecode(list));
+        var detail = await Http.GetStringAsync(ownPage);
+        StringAssert.Contains(detail, "Reviewed for rollout");
+        StringAssert.Contains(detail, "data-run-state=\"Failed\"");
+        Assert.DoesNotContain("Private failure diagnostic", detail);
+        Assert.DoesNotContain("href=\"/Dms/Operation", detail);
+        using var other = await Http.GetAsync(foreignPage);
+        Assert.AreEqual(HttpStatusCode.NotFound, other.StatusCode);
+        using var execution = await Http.GetAsync("/Dms/Operation/" + workflowId);
+        Assert.AreEqual(HttpStatusCode.Found, execution.StatusCode);
+        StringAssert.Contains(execution.Headers.Location?.OriginalString, "/Error/Code403");
+    }
+
+    [TestMethod]
     public async Task LockboxStatusUsesLiveApproverNamesAndSupportsPositionalWorkflowIds()
     {
         var approval = DmsPermissions.Approve(RiskLevel.Safe);
@@ -683,8 +730,12 @@ public class DmsRolePermissionTests : TestBase
             MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Web permission test", [setup.First]));
         var path = "/Dms/Lockbox/" + request.Id;
         Assert.DoesNotContain("action=\"/Dms/Decide\"", await Http.GetStringAsync(path));
+        const string review = "/Dms/Lockboxes?scope=review&q=Web%20permission%20test";
+        var id = new LockboxId(request.Id).ToString();
+        Assert.DoesNotContain(id, Uri.UnescapeDataString(await Http.GetStringAsync(review)));
         await SetRoleAsync(setup.Role, AppPermissionNames.CanApproveOwnWorkflow, true);
         StringAssert.Contains(await Http.GetStringAsync(path), "action=\"/Dms/Decide\"");
+        StringAssert.Contains(Uri.UnescapeDataString(await Http.GetStringAsync(review)), id);
         await SetRoleAsync(setup.Role, AppPermissionNames.CanReadDmsOperations, false);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync("/Dms")).StatusCode);
     }

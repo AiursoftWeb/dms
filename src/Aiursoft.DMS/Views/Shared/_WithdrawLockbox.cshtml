@@ -1,6 +1,7 @@
 @model Aiursoft.DMS.Entities.LockboxRequest
 @using Aiursoft.DMS.Contracts
 <form asp-controller="DmsAccess" asp-action="Withdraw" method="post">
+    <input type="hidden" name="fromDetail" value="true" />
     <input type="hidden" name="id" value="@(new LockboxId(Model.Id))" />
     <button class="btn btn-outline-danger" type="submit">@Localizer["Withdraw request"]</button>
 </form>

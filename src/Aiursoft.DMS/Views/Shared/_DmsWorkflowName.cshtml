@@ -1,0 +1,17 @@
+@using Aiursoft.DMS.Contracts
+@model string
+@{
+    var label = Model switch
+    {
+        WorkflowNames.PullerForceUpdate => @Localizer["Refresh images with Box Puller"].Value,
+        "machine.security.apply-baseline" => @Localizer["Apply security baseline"].Value,
+        WorkflowNames.AgentUpgrade => @Localizer["Upgrade DMS Agent"].Value,
+        var name when name == MachineWorkflows.DockerExec.Name => @Localizer["Run a command in Docker"].Value,
+        var name when name == OperationsWorkflows.SshCheckLease.Name => @Localizer["Check SSH lease"].Value,
+        var name when name == OperationsWorkflows.SshOpen.Name => @Localizer["Open an SSH lease"].Value,
+        var name when name == OperationsWorkflows.SshDisable.Name => @Localizer["Disable SSH access"].Value,
+        var name when name == OperationsWorkflows.SystemExecuteScript.Name => @Localizer["Run an uploaded script"].Value,
+        _ => Model
+    };
+}
+@label
