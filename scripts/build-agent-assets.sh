@@ -11,6 +11,11 @@ version=$(dotnet msbuild "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
 package_version=$(dotnet msbuild "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" -getProperty:Version)
 [[ "$package_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+tool_command=$(dotnet msbuild "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" -getProperty:ToolCommandName)
+if [[ "$tool_command" != "dms-agent" ]]; then
+    echo "Agent release must provide the dms-agent command required by existing installations." >&2
+    exit 1
+fi
 dotnet pack "$repository/src/Aiursoft.DMS.Agent/Aiursoft.DMS.Agent.csproj" --configuration Release \
     -p:GeneratePackageOnBuild=false --output "$temporary/packages" "${source_args[@]}"
 cp "$temporary/packages/Aiursoft.DMS.Agent.$package_version.nupkg" "$output/agent.nupkg"
