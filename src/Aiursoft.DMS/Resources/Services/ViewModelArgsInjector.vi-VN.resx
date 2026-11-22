@@ -138,14 +138,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Quản lý</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>Yêu cầu {0} của tôi</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>Phê duyệt của tôi</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>Yêu cầu của tôi</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>Phê duyệt của tôi</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Yêu cầu {0} của tôi</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Không tìm thấy</value>

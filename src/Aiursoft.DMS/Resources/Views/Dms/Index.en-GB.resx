@@ -21,8 +21,23 @@
       <data name="Agent version" xml:space="preserve">
     <value>Agent version</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>All states</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Apply filters</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>Connection status</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Disabled</value>
   </data>
   <data name="Last seen" xml:space="preserve">
     <value>Last seen</value>
@@ -30,14 +45,38 @@
   <data name="Machine" xml:space="preserve">
     <value>Machine</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>Machine name</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>Machine pages</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>Machines</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>Never connected</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
   </data>
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>No machines are visible. Configure cluster access, then use the CLI to request machine registration.</value>
   </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>No machines have joined. Use a join key to request Agent registration.</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>No machines match these filters.</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>Online</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>Status</value>

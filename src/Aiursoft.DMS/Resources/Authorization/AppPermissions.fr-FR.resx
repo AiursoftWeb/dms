@@ -25,25 +25,25 @@
     <value>Ajouter de nouveaux utilisateurs</value>
   </data>
   <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
-    <value>Permet d'approuver ou de refuser les demandes {0} de flux de travail à haut risque sur n'importe quel ordinateur.</value>
+    <value>Permet d&apos;approuver ou de refuser les demandes {0} de flux de travail à haut risque sur n&apos;importe quel ordinateur.</value>
   </data>
   <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
-    <value>Permet d'approuver ou de refuser les demandes {0} de flux de travail à faible risque sur n'importe quelle machine.</value>
+    <value>Permet d&apos;approuver ou de refuser les demandes {0} de flux de travail à faible risque sur n&apos;importe quelle machine.</value>
   </data>
   <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
-    <value>Permet d'approuver ou de refuser les demandes {0} de flux de travail à risque modéré sur n'importe quelle machine.</value>
+    <value>Permet d&apos;approuver ou de refuser les demandes {0} de flux de travail à risque modéré sur n&apos;importe quelle machine.</value>
   </data>
   <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
-    <value>Permet d'approuver ou de refuser les demandes {0} de flux de travail sécurisés sur n'importe quelle machine.</value>
+    <value>Permet d&apos;approuver ou de refuser les demandes {0} de flux de travail sécurisés sur n&apos;importe quelle machine.</value>
   </data>
   <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
-    <value>Permet d'approuver ou de refuser les demandes {0} de flux de travail à très haut risque sur n'importe quelle machine.</value>
+    <value>Permet d&apos;approuver ou de refuser les demandes {0} de flux de travail à très haut risque sur n&apos;importe quelle machine.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Permet d&apos;attribuer ou de retirer des rôles à tout utilisateur.</value>
   </data>
   <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Permet de décider de vos propres demandes {0} lorsque vous disposez également de l'autorisation d'approbation pour leur niveau de risque.</value>
+    <value>Permet de décider de vos propres demandes {0} lorsque vous disposez également de l&apos;autorisation d&apos;approbation pour leur niveau de risque.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Permet de modifier les noms des rôles et leurs permissions attribuées.</value>
@@ -67,7 +67,7 @@
     <value>Permet de demander des flux de travail à très haut risque sur n&apos;importe quelle machine.</value>
   </data>
   <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
-    <value>Permet l'exécution des flux de travail ouverts. Leurs demandes {0} sont approuvés automatiquement.</value>
+    <value>Permet l&apos;exécution des flux de travail ouverts. Leurs demandes {0} sont approuvés automatiquement.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Permet la suppression définitive des rôles.</value>
