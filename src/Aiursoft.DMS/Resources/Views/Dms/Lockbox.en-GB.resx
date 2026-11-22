@@ -18,11 +18,35 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="All enabled machines at submission" xml:space="preserve">
+    <value>All enabled machines at submission</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Approve</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Approved</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Approved target machines</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>Approver ID</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Automatic approval</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Awaiting approval</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Command copied</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
   </data>
   <data name="Created" xml:space="preserve">
     <value>Created</value>
@@ -33,11 +57,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Decision reason</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Denied</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Deny</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Docker command in this {0} request</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Equivalent DMS command</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Execution status</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>Execution status is unavailable.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Frozen input files</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>High risk</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Historical approval workflow</value>
@@ -45,14 +87,95 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Image scope</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Low risk</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Medium risk</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>No eligible approvers at the moment.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>No machine targets</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Open workflow</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parameters</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Reconstructed from the saved input and target machines.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Review the exact contents submitted for execution.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
   </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Safe workflow</value>
+  </data>
+  <data name="Saved {0} request" xml:space="preserve">
+    <value>Saved {0} request</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Target machines</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>This workflow takes no parameters.</value>
+  </data>
+  <data name="Use the frozen parameters below to review this {0} request." xml:space="preserve">
+    <value>Use the frozen parameters below to review this {0} request.</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Very high risk</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>View workflow execution</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Who can approve</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Withdrawn</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Workflow</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>Workflow version</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>bytes</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} request identifiers and raw payload</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} request reason</value>
+  </data>
+  <data name="{0} request time" xml:space="preserve">
+    <value>{0} request time</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} requester</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} requester ID</value>
   </data>
 
 </root>
