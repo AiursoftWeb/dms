@@ -42,5 +42,44 @@
   <data name="Status" xml:space="preserve">
     <value>狀態</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>機器名稱</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>連線狀態</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>所有狀態</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>線上</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>離線</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>從未連線</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>已停用</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>套用篩選器</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>清除篩選</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>沒有機器符合這些篩選條件。</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>機器頁面</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>上一頁</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>下一頁</value>
+  </data>
 
 </root>

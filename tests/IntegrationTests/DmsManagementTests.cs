@@ -111,6 +111,64 @@ public class DmsManagementTests : TestBase
     }
 
     [TestMethod]
+    public async Task WebFiltersMachineConnectionsAndShowsOnlyTheLatestScheduledBaselineForTheMachine()
+    {
+        await LoginAsAdmin();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var prefix = $"fléet-{Guid.NewGuid():N}";
+        var now = DateTime.UtcNow;
+        Machine AddMachine(string suffix, DateTime? lastSeen, bool disabled = false)
+        {
+            var machine = new Machine { Name = $"{prefix}-{suffix}", KeyHash = Guid.NewGuid().ToString("N"), LastSeen = lastSeen, Disabled = disabled };
+            db.Machines.Add(machine);
+            return machine;
+        }
+        var online = AddMachine("online", now);
+        var offline = AddMachine("offline", now.AddMinutes(-5));
+        var never = AddMachine("never", null);
+        var disabled = AddMachine("disabled", now, disabled: true);
+
+        WorkflowRun AddRun(Machine machine, DateTime createdAt, RunState state, WorkflowOrigin origin = WorkflowOrigin.Automatic,
+            string definition = WorkflowNames.ApplySecurityBaseline, Guid? parentId = null)
+        {
+            var run = new WorkflowRun { MachineId = machine.Id, Definition = definition, Origin = origin,
+                StartedAt = createdAt, FinishedAt = createdAt.AddSeconds(5), CreatedAt = createdAt, State = state,
+                Result = "{\"Summary\":\"Baseline fixture result\"}", ParentId = parentId };
+            run.RootId = parentId ?? run.Id;
+            db.WorkflowRuns.Add(run);
+            return run;
+        }
+        var previous = AddRun(offline, now.AddHours(-3), RunState.Succeeded);
+        var latest = AddRun(offline, now.AddHours(-2), RunState.Failed);
+        var manual = AddRun(offline, now.AddHours(-1), RunState.Succeeded, WorkflowOrigin.Manual);
+        var child = AddRun(offline, now.AddHours(-1), RunState.Succeeded, parentId: latest.Id);
+        var otherMachine = AddRun(online, now.AddHours(-1), RunState.Succeeded);
+        var otherWorkflow = AddRun(offline, now.AddHours(-1), RunState.Succeeded, definition: WorkflowNames.AgentStatus);
+        await db.SaveChangesAsync();
+
+        foreach (var (connection, expected) in new[] { ("Online", online), ("Offline", offline), ("NeverConnected", never), ("Disabled", disabled) })
+        {
+            var listing = WebUtility.HtmlDecode(await Http.GetStringAsync($"/Dms?q={prefix.ToUpperInvariant()}&connection={connection}"));
+            StringAssert.Contains(listing, expected.Name);
+            StringAssert.Contains(listing, $"data-machine-connection=\"{connection}\"");
+            foreach (var other in new[] { online, offline, never, disabled }.Where(machine => machine != expected))
+                Assert.DoesNotContain(other.Name, listing);
+        }
+        StringAssert.Contains(await Http.GetStringAsync($"/Dms?q={prefix}-unknown"), "No machines match these filters.");
+        Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync("/Dms?connection=123")).StatusCode);
+
+        var detail = WebUtility.HtmlDecode(await Http.GetStringAsync($"/Dms/Machine/{offline.Id}"));
+        StringAssert.Contains(detail, offline.Name);
+        StringAssert.Contains(detail, "Baseline fixture result");
+        StringAssert.Contains(detail, "data-run-state=\"Failed\"");
+        StringAssert.Contains(detail, latest.Id.ToString());
+        foreach (var run in new[] { previous, manual, child, otherMachine, otherWorkflow })
+            Assert.DoesNotContain(run.Id.ToString(), detail);
+        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{never.Id}"), "Not verified yet");
+    }
+
+    [TestMethod]
     public async Task ReadPermissionAndAgentKeysCannotMutateControllerAccess()
     {
         var setup = await ArrangeAsync();

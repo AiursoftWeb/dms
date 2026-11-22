@@ -5,5 +5,7 @@ namespace Aiursoft.DMS.Models.DmsViewModels;
 
 public class DmsMachineViewModel : UiStackLayoutViewModel
 {
-    public required Machine Machine { get; init; }
+    public required DmsMachineRow Machine { get; init; }
+    public WorkflowRun? BaselineRun { get; init; }
+    public string? BaselineSummary => OperationViewModel.ReadSummary(BaselineRun?.Result);
 }

@@ -1,11 +1,91 @@
-@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
-<h1>@Localizer["Machines"]</h1>
-<div class="card"><div class="card-body table-responsive">
-<table class="table"><thead><tr><th>@Localizer["Machine"]</th><th>@Localizer["Agent version"]</th><th>@Localizer["Status"]</th><th>@Localizer["Last seen"]</th></tr></thead><tbody>
-@foreach (var machine in Model.Machines)
-{
-    <tr><td><a asp-action="Machine" asp-route-id="@machine.Id">@machine.Name</a><br /><small>@machine.Id</small></td><td>@machine.AgentVersion</td><td>@(machine.Disabled ? Localizer["Disabled"] : machine.LastSeen > DateTime.UtcNow.AddSeconds(-45) ? Localizer["Online"] : Localizer["Offline"])</td><td>@machine.LastSeen</td></tr>
+@using System.Globalization
+@using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.WebTools
+@model DmsMachinesViewModel
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
 }
-</tbody></table>
-@if (Model.Machines.Count == 0) { <p>@Localizer["No machines have joined. Use a join key to request Agent registration."]</p> }
-</div></div>
+
+<div class="dms-workspace mx-auto">
+    <header class="dms-page-heading">
+        <h1>@Localizer["Machines"]</h1>
+    </header>
+
+    <form class="card dms-filters" method="get" asp-action="Index">
+        <div class="dms-filter-field dms-filter-search">
+            <label for="q" class="form-label">@Localizer["Machine name"]</label>
+            <input type="search" id="q" name="q" class="form-control" value="@Model.Search" maxlength="100" />
+        </div>
+        <div class="dms-filter-field">
+            <label for="connection" class="form-label">@Localizer["Connection status"]</label>
+            <select id="connection" name="connection" class="form-select">
+                <option value="">@Localizer["All states"]</option>
+                <option value="Online" selected="@(Model.Connection == MachineConnection.Online)">@Localizer["Online"]</option>
+                <option value="Offline" selected="@(Model.Connection == MachineConnection.Offline)">@Localizer["Offline"]</option>
+                <option value="NeverConnected" selected="@(Model.Connection == MachineConnection.NeverConnected)">@Localizer["Never connected"]</option>
+                <option value="Disabled" selected="@(Model.Connection == MachineConnection.Disabled)">@Localizer["Disabled"]</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
+        @if (Model.Search.Length > 0 || Model.Connection.HasValue)
+        {
+            <a class="btn btn-outline-secondary" asp-action="Index">@Localizer["Clear filters"]</a>
+        }
+    </form>
+
+    @if (Model.Machines.Count == 0)
+    {
+        <div class="card dms-empty">
+            <i data-lucide="server" aria-hidden="true"></i>
+            <p>@(Model.Search.Length > 0 || Model.Connection.HasValue || Model.Page > 0
+                ? @Localizer["No machines match these filters."]
+                : @Localizer["No machines have joined. Use a join key to request Agent registration."])</p>
+        </div>
+    }
+    else
+    {
+        <ul class="card dms-items list-unstyled">
+            @foreach (var machine in Model.Machines)
+            {
+                <li class="dms-item dms-machine-item d-block">
+                    <div class="dms-item-main">
+                        <div class="dms-item-icon"><i data-lucide="server" aria-hidden="true"></i></div>
+                        <div class="dms-item-content flex-grow-1">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                                <a class="dms-item-title" asp-action="Machine" asp-route-id="@machine.Id">@machine.Name</a>
+                                <partial name="_DmsMachineConnection" model="machine.Connection" />
+                            </div>
+                            <div class="dms-item-meta">
+                                @if (!string.IsNullOrEmpty(machine.AgentVersion))
+                                {
+                                    <span>@Localizer["Agent version"] @machine.AgentVersion</span>
+                                }
+                                @if (machine.LastSeen is { } lastSeen)
+                                {
+                                    var timestamp = lastSeen.ToHtmlDateTime();
+                                    <span><i data-lucide="clock" aria-hidden="true"></i> @Localizer["Last seen"] <time datetime="@timestamp" data-utc-time="@timestamp">@lastSeen.ToString("u", CultureInfo.InvariantCulture)</time></span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Model.Page > 0 || Model.HasNextPage)
+    {
+        <nav class="d-flex gap-2" aria-label="@Localizer["Machine pages"]">
+            @if (Model.Page > 0)
+            {
+                <a class="btn btn-outline-secondary" asp-action="Index" asp-route-q="@Model.Search" asp-route-connection="@Model.Connection" asp-route-page="@(Model.Page - 1)">@Localizer["Previous"]</a>
+            }
+            @if (Model.HasNextPage)
+            {
+                <a class="btn btn-outline-secondary" asp-action="Index" asp-route-q="@Model.Search" asp-route-connection="@Model.Connection" asp-route-page="@(Model.Page + 1)">@Localizer["Next"]</a>
+            }
+        </nav>
+    }
+</div>

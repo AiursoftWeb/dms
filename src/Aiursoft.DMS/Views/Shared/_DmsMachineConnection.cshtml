@@ -1,0 +1,12 @@
+@using Aiursoft.DMS.Models.DmsViewModels
+@model MachineConnection
+@{
+    var (label, tone) = Model switch
+    {
+        MachineConnection.Online => (@Localizer["Online"], "success"),
+        MachineConnection.Offline => (@Localizer["Offline"], "warning"),
+        MachineConnection.NeverConnected => (@Localizer["Never connected"], "secondary"),
+        _ => (@Localizer["Disabled"], "secondary")
+    };
+}
+<span class="dms-badge text-@(tone)-emphasis bg-@(tone)-subtle" data-machine-connection="@Model">@label</span>
