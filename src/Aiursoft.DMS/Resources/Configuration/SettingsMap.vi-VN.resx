@@ -45,6 +45,9 @@
   <data name="Dummy Number" xml:space="preserve">
     <value>Số giả mạo</value>
   </data>
+  <data name="Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists." xml:space="preserve">
+    <value>Nhập chính sách JSON với phiên bản và các ID máy mà nó cần chạy hàng ngày. Khi áp dụng, SSH sẽ bị đóng nếu không có thuê bao hoạt động nào tồn tại.</value>
+  </data>
   <data name="ICP Number" xml:space="preserve">
     <value>Số đăng ký ICP</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Project Name" xml:space="preserve">
     <value>Tên dự án</value>
+  </data>
+  <data name="Scheduled Security Baseline" xml:space="preserve">
+    <value>Đường cơ sở bảo mật theo lịch trình</value>
   </data>
   <data name="The ICP license number for China mainland users. Leave empty to hide." xml:space="preserve">
     <value>Số giấy phép ICP cho người dùng tại Trung Quốc đại lục. Để trống để ẩn.</value>

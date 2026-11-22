@@ -45,6 +45,9 @@
   <data name="Dummy Number" xml:space="preserve">
     <value>Numéro fictif</value>
   </data>
+  <data name="Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists." xml:space="preserve">
+    <value>Saisissez une stratégie JSON avec une version et les identifiants des machines sur lesquelles elle doit s&apos;exécuter quotidiennement. Son application ferme SSH lorsqu&apos;aucune location active n&apos;existe.</value>
+  </data>
   <data name="ICP Number" xml:space="preserve">
     <value>Numéro ICP</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Project Name" xml:space="preserve">
     <value>Nom du projet</value>
+  </data>
+  <data name="Scheduled Security Baseline" xml:space="preserve">
+    <value>Référence de sécurité planifiée</value>
   </data>
   <data name="The ICP license number for China mainland users. Leave empty to hide." xml:space="preserve">
     <value>Le numéro de licence ICP pour les utilisateurs du continent chinois. Laissez vide pour masquer.</value>

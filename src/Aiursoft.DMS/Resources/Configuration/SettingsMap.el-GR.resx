@@ -45,6 +45,9 @@
   <data name="Dummy Number" xml:space="preserve">
     <value>Τυχαίος Αριθμός</value>
   </data>
+  <data name="Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists." xml:space="preserve">
+    <value>Εισάγετε μια πολιτική JSON με έκδοση και τα αναγνωριστικά μηχανών όπου πρέπει να εκτελείται καθημερινά. Η εφαρμογή της κλείνει το SSH όταν δεν υπάρχει ενεργό ενοίκιο.</value>
+  </data>
   <data name="ICP Number" xml:space="preserve">
     <value>Αριθμός ΕΙΠ</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Project Name" xml:space="preserve">
     <value>Όνομα Έργου</value>
+  </data>
+  <data name="Scheduled Security Baseline" xml:space="preserve">
+    <value>Προγραμματισμένη Βασική Γραμμή Ασφάλειας</value>
   </data>
   <data name="The ICP license number for China mainland users. Leave empty to hide." xml:space="preserve">
     <value>Ο αριθμός άδειας ICP για χρήστες της κυρίως Κίνας. Αφήστε κενό για να κρυφτεί.</value>
