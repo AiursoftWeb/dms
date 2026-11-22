@@ -9,22 +9,23 @@ public class DmsViewModel : UiStackLayoutViewModel
 {
     public DmsViewModel() { PageTitle = "DMS"; }
     public List<Machine> Machines { get; set; } = [];
-    public List<LockboxRequest> Lockboxes { get; set; } = [];
     public List<WorkflowRun> Runs { get; set; } = [];
     public List<PersonalApiKey> Keys { get; set; } = [];
-    public WorkflowRun? Run { get; set; }
     public WorkflowCatalogResult? Catalog { get; set; }
     public StoredDmsArtifact? Artifact { get; set; }
     public string? ArtifactText { get; set; }
     public WorkflowAuditQuery AuditQuery { get; set; } = new();
     public WorkflowAuditPage? AuditPage { get; set; }
     public int AuditError { get; set; }
-    public IReadOnlyList<TraceEntry> Trace { get; set; } = [];
     public string? Notice { get; set; }
     public string? NewKey { get; set; }
     public int Page { get; set; }
     public bool HasNextPage { get; set; }
     public WorkflowOrigin? Origin { get; set; }
+    public RunState? State { get; set; }
+    public IReadOnlyDictionary<Guid, string> MachineNames { get; set; } = new Dictionary<Guid, string>();
+    public bool RootOnly { get; set; }
+    public IReadOnlyDictionary<Guid, string> RequestedDefinitions { get; set; } = new Dictionary<Guid, string>();
     public bool ClusterWorkflowsOnly { get; set; }
     public Guid? MachineId { get; set; }
     public string? Definition { get; set; }

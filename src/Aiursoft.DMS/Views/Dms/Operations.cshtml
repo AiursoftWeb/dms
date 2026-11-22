@@ -1,27 +1,138 @@
-@using Aiursoft.WebTools
-@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
-@using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.DMS.Contracts
-<h1>@Localizer["Workflow history"]</h1>
-<form method="get" class="mb-3">
-    <input name="machineId" type="hidden" value="@Model.MachineId" />
-    <label for="definition" class="form-label">@Localizer["Workflow type"]</label>
-    <input id="definition" name="definition" class="form-control mb-2" value="@Model.Definition" />
-    <div class="form-check mb-2">
-        <input id="clusterWorkflowsOnly" name="clusterWorkflowsOnly" type="checkbox" value="true" checked="@Model.ClusterWorkflowsOnly" class="form-check-input" />
-        <label for="clusterWorkflowsOnly" class="form-check-label">@Localizer["Cluster workflows only"]</label>
-    </div>
-    <label for="origin" class="form-label">@Localizer["Origin"]</label>
-    <select id="origin" name="origin" class="form-select mb-2"><option value="">@Localizer["All origins"]</option>
-        @foreach (var origin in Enum.GetValues<WorkflowOrigin>()) { <option value="@origin" selected="@(Model.Origin == origin)">@Localizer[origin.ToString()]</option> }
-    </select>
-    <button class="btn btn-primary">@Localizer["Filter"]</button>
-</form>
-<div class="card"><div class="card-body table-responsive"><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["State"]</th><th>@Localizer["Origin"]</th><th>@Localizer["Machine"]</th><th>@Localizer["Created"]</th></tr></thead><tbody>
-@foreach (var run in Model.Runs)
-{
-    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td><td>@Localizer[run.Origin.ToString()]</td><td>@run.MachineId</td><td><span data-utc-time="@run.CreatedAt.ToHtmlDateTime()"></span></td></tr>
+@using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.WebTools
+@model DmsViewModel
+@{
+    var routes = new Dictionary<string, string?>
+    {
+        ["machineId"] = Model.MachineId?.ToString(), ["definition"] = Model.Definition,
+        ["clusterWorkflowsOnly"] = Model.ClusterWorkflowsOnly ? "true" : null,
+        ["origin"] = Model.Origin?.ToString(), ["state"] = Model.State?.ToString(),
+        ["rootOnly"] = Model.RootOnly ? "true" : null
+    };
 }
-</tbody></table></div></div>
-@if (Model.Page > 0) { <a class="btn btn-secondary" asp-route-page="@(Model.Page - 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly" asp-route-origin="@Model.Origin">@Localizer["Previous"]</a> }
-@if (Model.HasNextPage) { <a class="btn btn-secondary" asp-route-page="@(Model.Page + 1)" asp-route-machineId="@Model.MachineId" asp-route-definition="@Model.Definition" asp-route-clusterWorkflowsOnly="@Model.ClusterWorkflowsOnly" asp-route-origin="@Model.Origin">@Localizer["Next"]</a> }
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
+}
+
+<div class="dms-workspace mx-auto">
+    <header class="dms-page-heading">
+        <div>
+            <h1>@Localizer["Workflow history"]</h1>
+            @if (Model.MachineId is { } machineId)
+            {
+                <a asp-action="Machine" asp-route-id="@machineId"><i data-lucide="server" aria-hidden="true"></i> @Model.MachineNames.GetValueOrDefault(machineId, machineId.ToString())</a>
+            }
+        </div>
+        @if (routes.Values.Any(value => !string.IsNullOrEmpty(value)))
+        {
+            <a class="btn btn-outline-secondary" asp-action="Operations">@Localizer["Clear filters"]</a>
+        }
+    </header>
+
+    <form class="card dms-filters dms-history-filters" method="get" asp-action="Operations">
+        <input name="machineId" type="hidden" value="@Model.MachineId" />
+        <div class="dms-filter-field dms-filter-search">
+            <label for="definition" class="form-label">@Localizer["Workflow type"]</label>
+            <input type="search" id="definition" name="definition" class="form-control" maxlength="200" value="@Model.Definition" />
+        </div>
+        <div class="dms-filter-field">
+            <label for="state" class="form-label">@Localizer["Execution state"]</label>
+            <select id="state" name="state" class="form-select">
+                <option value="">@Localizer["All states"]</option>
+                <option value="Failed" selected="@(Model.State == RunState.Failed)">@Localizer["Failed"]</option>
+                <option value="NeedsVerification" selected="@(Model.State == RunState.NeedsVerification)">@Localizer["Needs verification"]</option>
+                <option value="Warning" selected="@(Model.State == RunState.Warning)">@Localizer["Completed with warnings"]</option>
+                <option value="Running" selected="@(Model.State == RunState.Running)">@Localizer["Running"]</option>
+                <option value="Queued" selected="@(Model.State == RunState.Queued)">@Localizer["Queued"]</option>
+                <option value="Succeeded" selected="@(Model.State == RunState.Succeeded)">@Localizer["Succeeded"]</option>
+                <option value="Cancelled" selected="@(Model.State == RunState.Cancelled)">@Localizer["Cancelled"]</option>
+                @if (Model.State is RunState.WaitingApproval or RunState.Offered or RunState.Accepted or RunState.Denied or RunState.CancelRequested)
+                {
+                    <option value="@Model.State" selected>@Model.State</option>
+                }
+            </select>
+        </div>
+        <div class="dms-filter-field">
+            <label for="origin" class="form-label">@Localizer["Origin"]</label>
+            <select id="origin" name="origin" class="form-select">
+                <option value="">@Localizer["All origins"]</option>
+                <option value="Manual" selected="@(Model.Origin == WorkflowOrigin.Manual)">@Localizer["Manual"]</option>
+                <option value="Automatic" selected="@(Model.Origin == WorkflowOrigin.Automatic)">@Localizer["Automatic"]</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
+        <div class="dms-filter-options">
+            <div class="form-check">
+                <input id="rootOnly" name="rootOnly" type="checkbox" value="true" checked="@Model.RootOnly" class="form-check-input" />
+                <label for="rootOnly" class="form-check-label">@Localizer["Root executions only"]</label>
+            </div>
+            <div class="form-check">
+                <input id="clusterWorkflowsOnly" name="clusterWorkflowsOnly" type="checkbox" value="true" checked="@Model.ClusterWorkflowsOnly" class="form-check-input" />
+                <label for="clusterWorkflowsOnly" class="form-check-label">@Localizer["Cluster workflows only"]</label>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Runs.Count == 0)
+    {
+        <div class="card dms-empty"><i data-lucide="inbox" aria-hidden="true"></i><p>@Localizer["No executions match these filters."]</p></div>
+    }
+    else
+    {
+        <ul class="card dms-items list-unstyled">
+            @foreach (var run in Model.Runs)
+            {
+                var definition = run.Definition == WorkflowNames.Batch && run.LockboxId is { } boxId
+                    ? Model.RequestedDefinitions.GetValueOrDefault(boxId, run.Definition)
+                    : run.Definition;
+                <li class="dms-item">
+                    <div class="dms-item-main">
+                        <div class="dms-item-icon"><i data-lucide="activity" aria-hidden="true"></i></div>
+                        <div class="dms-item-content">
+                            <a class="dms-item-title" asp-action="Operation" asp-route-id="@run.Id">
+                                <partial name="_DmsWorkflowName" model="definition" />
+                            </a>
+                            <div class="dms-item-meta">
+                                @if (run.MachineId is { } id)
+                                {
+                                    <a asp-action="Operations" asp-route-machineId="@id"><i data-lucide="server" aria-hidden="true"></i> @Model.MachineNames.GetValueOrDefault(id, id.ToString())</a>
+                                }
+                                else
+                                {
+                                    <span>@Localizer["Controller"]</span>
+                                }
+                                <span><i data-lucide="clock" aria-hidden="true"></i> <span data-utc-time="@run.CreatedAt.ToHtmlDateTime()"></span></span>
+                                <span>@(run.Origin == WorkflowOrigin.Automatic ? @Localizer["Automatic"] : @Localizer["Manual"])</span>
+                                @if (run.ParentId != null)
+                                {
+                                    <a asp-action="Operation" asp-route-id="@run.ParentId">@Localizer["Parent workflow"]</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dms-item-status"><partial name="_DmsRunStatus" model="run.State" /></div>
+                    <div class="dms-item-action"><a class="btn btn-outline-secondary" asp-action="Operation" asp-route-id="@run.Id">@Localizer["View execution"]</a></div>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Model.Page > 0 || Model.HasNextPage)
+    {
+        <nav class="d-flex gap-2" aria-label="@Localizer["Execution pages"]">
+            @if (Model.Page > 0)
+            {
+                routes["page"] = (Model.Page - 1).ToString();
+                <a class="btn btn-outline-secondary" asp-action="Operations" asp-all-route-data="routes">@Localizer["Previous"]</a>
+            }
+            @if (Model.HasNextPage)
+            {
+                routes["page"] = (Model.Page + 1).ToString();
+                <a class="btn btn-outline-secondary" asp-action="Operations" asp-all-route-data="routes">@Localizer["Next"]</a>
+            }
+        </nav>
+    }
+</div>

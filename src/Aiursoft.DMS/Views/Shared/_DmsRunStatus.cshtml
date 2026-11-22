@@ -1,0 +1,22 @@
+@using Aiursoft.DMS.Contracts
+@using Aiursoft.DMS.Models.DmsViewModels
+@model RunState
+@{
+    var label = Model switch
+    {
+        RunState.Queued => @Localizer["Queued"],
+        RunState.Offered => @Localizer["Offered to Agent"],
+        RunState.Accepted => @Localizer["Accepted by Agent"],
+        RunState.Running => @Localizer["Running"],
+        RunState.Succeeded => @Localizer["Succeeded"],
+        RunState.Warning => @Localizer["Completed with warnings"],
+        RunState.Failed => @Localizer["Failed"],
+        RunState.CancelRequested => @Localizer["Cancellation requested"],
+        RunState.Cancelled => @Localizer["Cancelled"],
+        RunState.NeedsVerification => @Localizer["Needs verification"],
+        RunState.Denied => @Localizer["Denied"],
+        _ => @Localizer["Awaiting approval"]
+    };
+    var tone = DmsViewModel.Color(Model);
+}
+<span class="dms-badge text-@(tone)-emphasis bg-@(tone)-subtle" data-run-state="@Model">@label</span>

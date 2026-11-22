@@ -234,11 +234,20 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         }
     }
 
-    public Task<LockboxRequest> GetLockboxAsync(string user, Guid id) => gate.RunAsync(async () =>
+    public Task<LockboxRequest> GetLockboxAsync(string user, Guid id) => ReadLockboxAsync(user, id, ownRequestOnly: false);
+
+    internal Task<LockboxRequest> GetOwnedLockboxAsync(string user, Guid id) => ReadLockboxAsync(user, id, ownRequestOnly: true);
+
+    private Task<LockboxRequest> ReadLockboxAsync(string user, Guid id, bool ownRequestOnly) => gate.RunAsync(async () =>
     {
-        var item = await db.Lockboxes.AsNoTracking().SingleOrDefaultAsync(l => l.Id == id) ?? throw new DmsException(404, "Lockbox not found.");
-        await access.RequireViewAsync(user);
-        access.Audit(user, "lockbox.get", id); await db.SaveChangesAsync(); return item;
+        if (ownRequestOnly) await access.PrincipalAsync(user);
+        else await access.RequireViewAsync(user);
+        var item = await db.Lockboxes.AsNoTracking().NotCacheable()
+            .SingleOrDefaultAsync(box => box.Id == id && (!ownRequestOnly || box.RequesterId == user))
+            ?? throw new DmsException(404, "Lockbox not found.");
+        access.Audit(user, "lockbox.get", id);
+        await db.SaveChangesAsync();
+        return item;
     });
 
     public Task<LockboxStatus> GetLockboxStatusAsync(string user, Guid id) => gate.RunAsync(async () =>

@@ -1,0 +1,153 @@
+@using Aiursoft.DMS.Contracts
+@using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.WebTools
+@model LockboxQueueViewModel
+@{
+    var controller = Model.OwnRequests ? "DmsAccess" : "Dms";
+    var indexAction = Model.OwnRequests ? "MyLockboxes" : "Lockboxes";
+    var detailAction = Model.OwnRequests ? "MyLockbox" : "Lockbox";
+    var defaultScope = Model.OwnRequests ? "all" : Model.CanReview ? "review" : "pending";
+}
+<div class="dms-workspace mx-auto">
+    <header class="dms-page-heading">
+        <div>
+            @if (Model.OwnRequests)
+            {
+                <h1>@Localizer["My requests"]</h1>
+            }
+            else
+            {
+                <h1>@Localizer["Approvals"]</h1>
+            }
+        </div>
+        @if (!Model.OwnRequests)
+        {
+            <a class="btn btn-outline-primary" asp-controller="DmsAccess" asp-action="MyLockboxes">@Localizer["My requests"]</a>
+        }
+    </header>
+
+    @if (Model.Notice != null)
+    {
+        <div class="alert alert-warning" role="alert"><div class="alert-message">@Model.Notice</div></div>
+    }
+
+    <form class="card dms-filters" method="get" asp-controller="@controller" asp-action="@indexAction">
+        <div class="dms-filter-field">
+            <label for="scope" class="form-label">@Localizer["Show"]</label>
+            <select id="scope" name="scope" class="form-select">
+                @if (Model.CanReview)
+                {
+                    <option value="review" selected="@(Model.Scope == "review")">@Localizer["Ready for my review"]</option>
+                }
+                <option value="pending" selected="@(Model.Scope == "pending")">@Localizer["Awaiting approval"]</option>
+                <option value="approved" selected="@(Model.Scope == "approved")">@Localizer["Approved"]</option>
+                <option value="denied" selected="@(Model.Scope == "denied")">@Localizer["Denied"]</option>
+                <option value="withdrawn" selected="@(Model.Scope == "withdrawn")">@Localizer["Withdrawn"]</option>
+                <option value="all" selected="@(Model.Scope == "all")">@Localizer["All requests"]</option>
+            </select>
+        </div>
+        <div class="dms-filter-field dms-filter-search">
+            <label for="q" class="form-label">@Localizer["Search requests"]</label>
+            <input type="search" id="q" name="q" class="form-control" maxlength="200" value="@Model.Search"
+                   placeholder="@Localizer["Workflow, requester, reason, or Lockbox ID"]" />
+        </div>
+        <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
+        @if (Model.Search.Length != 0 || Model.Scope != defaultScope)
+        {
+            <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction">@Localizer["Clear"]</a>
+        }
+    </form>
+
+    @if (Model.Entries.Count == 0)
+    {
+        <div class="card dms-empty">
+            <i data-lucide="inbox" aria-hidden="true"></i>
+            @if (Model.Scope == "review" && Model.Search.Length == 0)
+            {
+                <p>@Localizer["No requests are waiting for your review."]</p>
+                <a asp-controller="@controller" asp-action="@indexAction" asp-route-scope="pending">@Localizer["See all pending requests"]</a>
+            }
+            else
+            {
+                <p>@Localizer["No requests match these filters."]</p>
+            }
+        </div>
+    }
+    else
+    {
+        <ul class="card dms-items list-unstyled">
+            @foreach (var row in Model.Entries)
+            {
+                var item = row.Item;
+                var risk = item.Risk switch
+                {
+                    RiskLevel.Open => @Localizer["Open workflow"],
+                    RiskLevel.Safe => @Localizer["Safe workflow"],
+                    RiskLevel.Low => @Localizer["Low risk"],
+                    RiskLevel.Medium => @Localizer["Medium risk"],
+                    RiskLevel.High => @Localizer["High risk"],
+                    _ => @Localizer["Very high risk"]
+                };
+                var riskTone = item.Risk is RiskLevel.High or RiskLevel.VeryHigh ? "danger" :
+                    item.Risk == RiskLevel.Medium ? "warning" : "secondary";
+                <li class="dms-item">
+                    <div class="dms-item-main">
+                        <div class="dms-item-icon"><i data-lucide="workflow" aria-hidden="true"></i></div>
+                        <div class="dms-item-content">
+                            <a class="dms-item-title" asp-controller="@controller" asp-action="@detailAction" asp-route-id="@(new LockboxId(item.Id))">
+                                <partial name="_DmsWorkflowName" model="item.Definition" />
+                            </a>
+                            <div class="dms-item-meta">
+                                @if (!Model.OwnRequests)
+                                {
+                                    <span><i data-lucide="user" aria-hidden="true"></i> @row.Requester</span>
+                                }
+                                @if (row.TargetCount > 0)
+                                {
+                                    <span><i data-lucide="server" aria-hidden="true"></i> @string.Join(", ", row.TargetNames) @if (row.TargetCount > row.TargetNames.Count) { <small>+@(row.TargetCount - row.TargetNames.Count)</small> }</span>
+                                }
+                                <span><i data-lucide="clock" aria-hidden="true"></i> <span data-utc-time="@item.CreatedAt.ToHtmlDateTime()"></span></span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(item.Reason))
+                            {
+                                <p class="dms-item-reason">@item.Reason</p>
+                            }
+                        </div>
+                    </div>
+                    <div class="dms-item-status">
+                        <partial name="_DmsDecisionStatus" model="item.Decision" />
+                        <span class="dms-badge text-@(riskTone)-emphasis bg-@(riskTone)-subtle">@risk</span>
+                        @if (row.ExecutionState is { } state)
+                        {
+                            <div class="dms-item-execution">
+                                <span class="small text-body-secondary">@Localizer["Execution status"]</span>
+                                <partial name="_DmsRunStatus" model="state" />
+                            </div>
+                        }
+                    </div>
+                    <div class="dms-item-action">
+                        <a class="btn @(row.CanDecide ? "btn-primary" : "btn-outline-secondary")" asp-controller="@controller" asp-action="@detailAction" asp-route-id="@(new LockboxId(item.Id))">
+                            @(row.CanDecide ? @Localizer["Review"] : @Localizer["View request"])
+                        </a>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (Model.Page > 0 || Model.HasNextPage)
+    {
+        <nav class="d-flex gap-2" aria-label="@Localizer["Request pages"]">
+            @if (Model.Page > 0)
+            {
+                <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction" asp-route-page="@(Model.Page - 1)"
+                   asp-route-scope="@Model.Scope" asp-route-q="@Model.Search">@Localizer["Previous"]</a>
+            }
+            @if (Model.HasNextPage)
+            {
+                <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction" asp-route-page="@(Model.Page + 1)"
+                   asp-route-scope="@Model.Scope" asp-route-q="@Model.Search">@Localizer["Next"]</a>
+            }
+        </nav>
+    }
+</div>

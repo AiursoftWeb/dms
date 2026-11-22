@@ -8,16 +8,6 @@
     var status = Model.Status;
     var snapshot = Model.Snapshot;
     var pending = status.Decision == DecisionState.Pending;
-    var title = item.Definition switch
-    {
-        WorkflowNames.PullerForceUpdate => @Localizer["Refresh images with Box Puller"].Value,
-        WorkflowNames.AgentUpgrade => @Localizer["Upgrade DMS Agent"].Value,
-        var name when name == MachineWorkflows.DockerExec.Name => @Localizer["Run a command in Docker"].Value,
-        var name when name == OperationsWorkflows.SshOpen.Name => @Localizer["Open an SSH lease"].Value,
-        var name when name == OperationsWorkflows.SshDisable.Name => @Localizer["Disable SSH access"].Value,
-        var name when name == OperationsWorkflows.SystemExecuteScript.Name => @Localizer["Run an uploaded script"].Value,
-        _ => item.Definition
-    };
     var decision = status.Decision switch
     {
         DecisionState.Pending => @Localizer["Awaiting approval"],
@@ -57,10 +47,18 @@
 @* ReSharper disable once Razor.SectionNotResolved *@
 @section styles {
     <link rel="stylesheet" href="~/styles/lockbox.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
 }
 
 <div class="lockbox-review mx-auto">
-    <a class="lockbox-back" asp-action="Lockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["All Lockboxes"]</a>
+    @if (Model.OwnRequestView)
+    {
+        <a class="lockbox-back" asp-controller="DmsAccess" asp-action="MyLockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["My requests"]</a>
+    }
+    else
+    {
+        <a class="lockbox-back" asp-controller="Dms" asp-action="Lockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["All Lockboxes"]</a>
+    }
 
     @if (Model.Notice != null)
     {
@@ -72,11 +70,8 @@
             <div class="lockbox-heading">
                 <div class="lockbox-mark"><i data-lucide="workflow" aria-hidden="true"></i></div>
                 <div>
-                    <h1>@title</h1>
-                    @if (title != item.Definition)
-                    {
-                        <code class="lockbox-definition">@item.Definition</code>
-                    }
+                    <h1><partial name="_DmsWorkflowName" model="item.Definition" /></h1>
+                    <code class="lockbox-definition">@item.Definition</code>
                 </div>
                 <div class="lockbox-badges">
                     <span class="lockbox-badge text-@(decisionTone)-emphasis bg-@(decisionTone)-subtle"><span class="lockbox-dot"></span>@decision</span>
@@ -112,7 +107,14 @@
                                     <li>
                                         @if (Model.MachineNames.TryGetValue(id, out var name))
                                         {
-                                            <a asp-action="Machine" asp-route-id="@id" title="@id">@name</a>
+                                            @if (Model.CanViewOperations)
+                                            {
+                                                <a asp-controller="Dms" asp-action="Machine" asp-route-id="@id" title="@id">@name</a>
+                                            }
+                                            else
+                                            {
+                                                <span>@name</span>
+                                            }
                                         }
                                         else
                                         {
@@ -166,7 +168,7 @@
                         <p class="text-body-secondary mb-2">@Localizer["Review the exact contents submitted for execution."]</p>
                         @foreach (var artifact in Model.InputArtifacts)
                         {
-                            <a class="lockbox-artifact-command" asp-action="Artifact" asp-route-id="@artifact.Id">
+                            <a class="lockbox-artifact-command" asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">
                                 <i data-lucide="file-code" aria-hidden="true"></i>@artifact.Name
                             </a>
                         }
@@ -219,7 +221,7 @@ Workflow: @item.Definition</code></pre>
                             @foreach (var artifact in Model.InputArtifacts)
                             {
                                 <li>
-                                    <a asp-action="Artifact" asp-route-id="@artifact.Id">@artifact.Name</a>
+                                    <a asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">@artifact.Name</a>
                                     <small>(@artifact.Length @Localizer["bytes"])</small>
                                     <code class="d-block small">SHA256 @artifact.Sha256</code>
                                 </li>
@@ -250,7 +252,7 @@ Workflow: @item.Definition</code></pre>
                     }
                     @if (Model.CanDecide)
                     {
-                        <form asp-action="Decide" method="post" class="lockbox-decision-form">
+                        <form asp-controller="Dms" asp-action="Decide" method="post" class="lockbox-decision-form">
                             <input type="hidden" name="id" value="@status.LockboxId" />
                             <label class="form-label" for="reason">@Localizer["Decision reason"]</label>
                             <textarea id="reason" class="form-control" name="reason" maxlength="2000" rows="3"></textarea>
@@ -279,11 +281,27 @@ Workflow: @item.Definition</code></pre>
                         <p class="lockbox-decision-reason mb-0">@item.DecisionReason</p>
                     }
                 }
-                @if (status.WorkflowId != null)
+                @if (status.Decision == DecisionState.Approved)
                 {
-                    <a class="lockbox-execution" asp-action="Operation" asp-route-id="@status.WorkflowId">
-                        <i data-lucide="activity" aria-hidden="true"></i>@Localizer["View workflow execution"]
-                    </a>
+                    <div class="lockbox-decision-form">
+                        <h3 class="lockbox-label">@Localizer["Execution status"]</h3>
+                        @if (Model.ExecutionState is { } state)
+                        {
+                            <partial name="_DmsRunStatus" model="state" />
+                        }
+                        else
+                        {
+                            <p class="text-body-secondary mb-0">@Localizer["Execution status is unavailable."]</p>
+                        }
+                        @if (Model.CanViewOperations && status.WorkflowId != null)
+                        {
+                            <div class="mt-2">
+                                <a asp-controller="Dms" asp-action="Operation" asp-route-id="@status.WorkflowId">
+                                    <i data-lucide="activity" aria-hidden="true"></i>@Localizer["View workflow execution"]
+                                </a>
+                            </div>
+                        }
+                    </div>
                 }
             </div>
         </section>
@@ -294,7 +312,7 @@ Workflow: @item.Definition</code></pre>
                 <dl class="lockbox-parameters">
                     <div><dt>@Localizer["Lockbox ID"]</dt><dd><code>@status.LockboxId</code></dd></div>
                     <div><dt>@Localizer["Requester ID"]</dt><dd><code>@item.RequesterId</code></dd></div>
-                    @if (item.ApproverId != null)
+                    @if (Model.CanViewOperations && item.ApproverId != null)
                     {
                         <div><dt>@Localizer["Approver ID"]</dt><dd><code>@item.ApproverId</code></dd></div>
                     }
@@ -305,9 +323,9 @@ Workflow: @item.Definition</code></pre>
                     }
                 </dl>
                 <pre class="lockbox-json">@snapshot.RequestJson</pre>
-                @if (item.LegacyApprovalWorkflowId != null)
+                @if (Model.CanViewOperations && item.LegacyApprovalWorkflowId != null)
                 {
-                    <a asp-action="Operation" asp-route-id="@item.LegacyApprovalWorkflowId">@Localizer["Historical approval workflow"]</a>
+                    <a asp-controller="Dms" asp-action="Operation" asp-route-id="@item.LegacyApprovalWorkflowId">@Localizer["Historical approval workflow"]</a>
                 }
             </div>
         </details>

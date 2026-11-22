@@ -1,25 +1,235 @@
-@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
+@using Aiursoft.DMS.Contracts
 @using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.WebTools
-<h1>@Model.Run!.Definition</h1><p>@Model.Run.Id <span class="badge bg-@DmsViewModel.Color(Model.Run.State)">@Model.Run.State</span></p>
-<p>@Localizer["Origin"]: @Localizer[Model.Run.Origin.ToString()] · @Localizer["Trigger"]: @Model.Run.Trigger</p>
-@if (Model.Run.LockboxId is { } lockboxId)
-{
-    <a asp-action="Lockbox" asp-route-id="@(new Aiursoft.DMS.Contracts.LockboxId(lockboxId))">@Localizer["Approval context"]</a>
+@model OperationViewModel
+@{
+    var run = Model.Run;
+    var machine = Model.MachineName(run.MachineId);
+    var definition = Model.RequestedDefinition ?? run.Definition;
+    var elapsed = run.StartedAt is { } start && run.FinishedAt is { } end && end >= start ? end - start : (TimeSpan?)null;
+    var failed = Model.Steps.Where(step => step.Id != run.Id && step.State is RunState.Failed or RunState.NeedsVerification).ToList();
 }
-@if (Model.Run.ScheduleId != null)
-{
-    <p>@Localizer["System schedule"]: @Model.Run.ScheduleId · @Model.Run.ScheduleExpression · <span data-utc-time="@Model.Run.ScheduledAt?.ToHtmlDateTime()"></span></p>
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
 }
-<div class="card mt-3"><div class="card-body table-responsive"><h2>@Localizer["Callstack"]</h2><table class="table"><thead><tr><th>@Localizer["Workflow"]</th><th>@Localizer["Parent"]</th><th>@Localizer["State"]</th></tr></thead><tbody>
-@foreach (var run in Model.Runs)
-{
-    <tr><td><a asp-action="Operation" asp-route-id="@run.Id">@run.Definition</a><br /><small>@run.Id</small></td><td>@run.ParentId</td><td><span class="badge bg-@DmsViewModel.Color(run.State)">@run.State</span></td></tr>
-}
-</tbody></table></div></div>
-<div class="card"><div class="card-body"><h2>@Localizer["Result"]</h2><pre>@Model.Run.Result</pre></div></div>
-<h2>@Localizer["Trace"]</h2>
-@if (Model.Notice != null) { <div class="alert alert-warning"><div class="alert-message">@Model.Notice</div></div> }
-<div class="card"><div class="card-body">
-@foreach (var entry in Model.Trace) { <div><small><span data-utc-time="@entry.Time.ToHtmlDateTime()"></span> [@entry.Source]</small><pre>@entry.Message</pre></div> }
-</div></div>
+
+<div class="dms-workspace mx-auto">
+    <nav class="dms-path" aria-label="@Localizer["Execution navigation"]">
+        <a asp-action="Operations"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["Workflow history"]</a>
+        @if (run.ParentId is { } parentId)
+        {
+            <a asp-action="Operation" asp-route-id="@parentId">@Localizer["Parent workflow"]</a>
+        }
+        @if (run.ParentId != null && run.ParentId != run.RootId && run.RootId != Guid.Empty)
+        {
+            <a asp-action="Operation" asp-route-id="@run.RootId">@Localizer["Root workflow"]</a>
+        }
+        @if (run.LockboxId is { } lockboxId)
+        {
+            <a asp-action="Lockbox" asp-route-id="@(new LockboxId(lockboxId))">@Localizer["Approval request"]</a>
+        }
+    </nav>
+
+    <header class="card dms-run-summary">
+        <div class="card-body">
+            <div class="dms-page-heading">
+                <div>
+                    <h1><partial name="_DmsWorkflowName" model="definition" /></h1>
+                    <div class="dms-item-meta">
+                        <code class="text-body-secondary">@definition</code>
+                        @if (run.Origin == WorkflowOrigin.Automatic)
+                        {
+                            <span><i data-lucide="timer" aria-hidden="true"></i> @Localizer["Automatic"]</span>
+                        }
+                    </div>
+                </div>
+                <partial name="_DmsRunStatus" model="run.State" />
+            </div>
+            <dl class="dms-run-facts">
+                <div>
+                    <dt>@(Model.Targets.Count != 0 ? @Localizer["Target machines"] : @Localizer["Machine"])</dt>
+                    <dd>
+                        @if (Model.Targets.Count != 0)
+                        {
+                            foreach (var target in Model.Targets.Take(3))
+                            {
+                                <span class="d-block">@Model.MachineName(target)</span>
+                            }
+                            if (Model.Targets.Count > 3)
+                            {
+                                <a href="#steps">+@(Model.Targets.Count - 3)</a>
+                            }
+                        }
+                        else if (machine != null)
+                        {
+                            <a asp-action="Machine" asp-route-id="@run.MachineId">@machine</a>
+                        }
+                        else
+                        {
+                            @Localizer["Controller"]
+                        }
+                    </dd>
+                </div>
+                <div>
+                    <dt>@Localizer["Started"]</dt>
+                    <dd>
+                        @if (run.StartedAt.HasValue)
+                        {
+                            <span data-utc-time="@run.StartedAt.Value.ToHtmlDateTime()"></span>
+                        }
+                        else
+                        {
+                            <span class="text-body-secondary">@Localizer["Not started"]</span>
+                        }
+                    </dd>
+                </div>
+                <div>
+                    <dt>@Localizer["Finished"]</dt>
+                    <dd>
+                        @if (run.FinishedAt.HasValue)
+                        {
+                            <span data-utc-time="@run.FinishedAt.Value.ToHtmlDateTime()"></span>
+                        }
+                        else
+                        {
+                            <span class="text-body-secondary">—</span>
+                        }
+                    </dd>
+                </div>
+                <div>
+                    <dt>@Localizer["Duration"]</dt>
+                    <dd>@(elapsed is { } duration ? duration.ToString(duration.Days > 0 ? @"d\.hh\:mm\:ss" : @"hh\:mm\:ss") : "—")</dd>
+                </div>
+            </dl>
+
+            @if (Model.ResultSummary is { } result)
+            {
+                var tone = run.State == RunState.Failed ? "danger" : run.State is RunState.Warning or RunState.NeedsVerification ? "warning" : "secondary";
+                <div class="dms-run-message bg-@(tone)-subtle text-@(tone)-emphasis">
+                    <i data-lucide="@(tone == "secondary" ? "info" : "circle-alert")" aria-hidden="true"></i>
+                    <p>@result</p>
+                </div>
+            }
+            @if (failed.Count != 0)
+            {
+                <div class="dms-run-attention">
+                    <h2>@Localizer["Steps that need attention"]</h2>
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var step in failed.Take(3))
+                        {
+                            <li>
+                                <a asp-action="Operation" asp-route-id="@step.Id"><partial name="_DmsWorkflowName" model="step.Definition" /></a>
+                                @if (Model.MachineName(step.MachineId) is { } target)
+                                {
+                                    <span class="text-body-secondary">@target</span>
+                                }
+                                <partial name="_DmsRunStatus" model="step.State" />
+                            </li>
+                        }
+                    </ul>
+                    @if (failed.Count > 3)
+                    {
+                        <a href="#steps">@Localizer["See all execution steps"]</a>
+                    }
+                </div>
+            }
+        </div>
+    </header>
+
+    <section class="card dms-detail-card" id="steps" aria-labelledby="steps-heading">
+        <div class="card-body">
+            <h2 id="steps-heading"><i data-lucide="git-branch" aria-hidden="true"></i> @Localizer["Execution steps"]</h2>
+            <ol class="dms-tree list-unstyled mb-0">
+                @foreach (var (step, depth) in Model.OrderedSteps())
+                {
+                    <li class="dms-step" style="--step-depth: @Math.Min(depth, 3)">
+                        <div>
+                            @if (step.Id == run.Id)
+                            {
+                                <span class="fw-semibold" aria-current="step"><partial name="_DmsWorkflowName" model="definition" /></span>
+                            }
+                            else
+                            {
+                                <a class="fw-semibold" asp-action="Operation" asp-route-id="@step.Id"><partial name="_DmsWorkflowName" model="step.Definition" /></a>
+                            }
+                            <div class="dms-item-meta">
+                                @if (Model.MachineName(step.MachineId) is { } target)
+                                {
+                                    <span>@target</span>
+                                }
+                                @if (step.StartedAt is { } started)
+                                {
+                                    <span data-utc-time="@started.ToHtmlDateTime()"></span>
+                                }
+                            </div>
+                        </div>
+                        <partial name="_DmsRunStatus" model="step.State" />
+                    </li>
+                }
+            </ol>
+        </div>
+    </section>
+
+    @if (!string.IsNullOrWhiteSpace(run.Result))
+    {
+        <details class="card dms-details">
+            <summary>@Localizer["Raw execution result"]</summary>
+            <pre class="dms-payload" tabindex="0">@run.Result</pre>
+        </details>
+    }
+    <section id="trace" class="card dms-detail-card" aria-labelledby="trace-heading">
+        <div class="card-body">
+            <h2 id="trace-heading"><i data-lucide="activity" aria-hidden="true"></i> @Localizer["Execution log"]</h2>
+            @if (Model.TraceUnavailable)
+            {
+                <div class="alert alert-warning mb-0" role="status"><div class="alert-message">@Localizer["The execution log is unavailable. Pending events remain stored."]</div></div>
+            }
+            else if (Model.Trace.Count == 0)
+            {
+                <p class="text-body-secondary mb-0">@Localizer["There are no archived events on this page."]</p>
+            }
+            else
+            {
+                <ol class="dms-events list-unstyled mb-0">
+                    @foreach (var entry in Model.Trace)
+                    {
+                        <li>
+                            <div class="dms-item-meta"><span data-utc-time="@entry.Time.ToHtmlDateTime()"></span><span>@entry.Source</span></div>
+                            <pre>@entry.Message</pre>
+                        </li>
+                    }
+                </ol>
+            }
+            @if (!Model.TraceUnavailable && (Model.TracePage > 0 || Model.HasNextTracePage))
+            {
+                <nav class="d-flex gap-2 mt-3" aria-label="@Localizer["Execution log pages"]">
+                    @if (Model.TracePage > 0)
+                    {
+                        <a class="btn btn-outline-secondary" asp-action="Operation" asp-route-id="@run.Id" asp-route-tracePage="@(Model.TracePage - 1)" asp-fragment="trace">@Localizer["Previous"]</a>
+                    }
+                    @if (Model.HasNextTracePage)
+                    {
+                        <a class="btn btn-outline-secondary" asp-action="Operation" asp-route-id="@run.Id" asp-route-tracePage="@(Model.TracePage + 1)" asp-fragment="trace">@Localizer["Next"]</a>
+                    }
+                </nav>
+            }
+        </div>
+    </section>
+
+    <details class="card dms-details">
+        <summary>@Localizer["Execution identifiers and trigger"]</summary>
+        <dl class="dms-run-facts">
+            <div><dt>@Localizer["Workflow ID"]</dt><dd><code>@run.Id</code></dd></div>
+            <div><dt>@Localizer["Origin"]</dt><dd>@run.Origin · @run.Trigger</dd></div>
+            @if (run.ScheduleId != null)
+            {
+                <div>
+                    <dt>@Localizer["System schedule"]</dt>
+                    <dd>@run.ScheduleId · @run.ScheduleExpression<br /><span data-utc-time="@run.ScheduledAt?.ToHtmlDateTime()"></span></dd>
+                </div>
+            }
+        </dl>
+    </details>
+</div>
