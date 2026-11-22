@@ -45,6 +45,9 @@
   <data name="Dummy Number" xml:space="preserve">
     <value>Număr dummy</value>
   </data>
+  <data name="Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists." xml:space="preserve">
+    <value>Introduceți o politică JSON cu o versiune și ID-urile mașinilor pe care ar trebui să ruleze zilnic. Aplicarea acesteia închide SSH atunci când nu există o chirie activă.</value>
+  </data>
   <data name="ICP Number" xml:space="preserve">
     <value>Număr ICP</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Project Name" xml:space="preserve">
     <value>Numele proiectului</value>
+  </data>
+  <data name="Scheduled Security Baseline" xml:space="preserve">
+    <value>Linia de bază de securitate programată</value>
   </data>
   <data name="The ICP license number for China mainland users. Leave empty to hide." xml:space="preserve">
     <value>Numărul de înregistrare ICP pentru utilizatorii din China continentală. Lăsați gol pentru a ascunde.</value>

@@ -57,6 +57,9 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>未註冊任何公開的標準工作流。</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>開放</value>
+  </data>
   <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
     <value>權限適用於所選叢集及各工作流的風險等級。自動核准需要請求權限。核准自己的請求也需要自我核准權限。</value>
   </data>

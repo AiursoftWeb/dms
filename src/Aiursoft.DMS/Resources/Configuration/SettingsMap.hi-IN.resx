@@ -45,6 +45,9 @@
   <data name="Dummy Number" xml:space="preserve">
     <value>डमी नंबर</value>
   </data>
+  <data name="Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists." xml:space="preserve">
+    <value>एक JSON नीति दर्ज करें जिसमें संस्करण और मशीन ID शामिल हों, जहाँ इसे दैनिक रूप से चलाया जाना चाहिए। इसे लागू करने से, जब कोई सक्रिय लीज़ मौजूद नहीं होता, SSH बंद हो जाता है।</value>
+  </data>
   <data name="ICP Number" xml:space="preserve">
     <value>ICP संख्या</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Project Name" xml:space="preserve">
     <value>प्रोजेक्ट नाम</value>
+  </data>
+  <data name="Scheduled Security Baseline" xml:space="preserve">
+    <value>नियोजित सुरक्षा आधार रेखा</value>
   </data>
   <data name="The ICP license number for China mainland users. Leave empty to hide." xml:space="preserve">
     <value>चीन मुख्यभूमि के उपयोगकर्ताओं के लिए ICP लाइसेंस संख्या। छिपाने के लिए खाली छोड़ दें।</value>
