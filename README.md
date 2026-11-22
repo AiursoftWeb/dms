@@ -346,6 +346,7 @@ See [configuration and persistence](https://github.com/aiursoftweb/dms/blob/mast
 - [Issue tracker](https://github.com/AiursoftWeb/dms/issues)
 - [CLI, authentication and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md)
 - [Configuration, persistence, recovery and cancellation](https://github.com/aiursoftweb/dms/blob/master/docs/configuration.md)
+- [All Workflows](https://github.com/aiursoftweb/dms/blob/master/docs/all-workflows.md)
 - [Available workflows and role permissions](https://github.com/aiursoftweb/dms/blob/master/docs/workflow-discovery.md)
 - [Workflow authoring](https://github.com/aiursoftweb/dms/blob/master/docs/authoring-workflows.md)
 

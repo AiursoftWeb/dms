@@ -1,6 +1,6 @@
 # Discover standard workflows
 
-[CLI setup](cli-and-agent.md) · [Authoring workflows](authoring-workflows.md)
+[All Workflows](all-workflows.md) · [CLI setup](cli-and-agent.md) · [Authoring workflows](authoring-workflows.md)
 
 ```sh
 dms operation list-definitions
@@ -16,6 +16,6 @@ Table output shows metadata and readable risk/location names. JSON preserves the
 
 Open **Standard workflows** in the web UI to inspect the same catalog and permissions across the instance. Workflow names link to that definition's history across all machines.
 
-Internal helpers are excluded, even if you can request every risk level. A definition without a registered execution factory is also excluded. Special control operations such as machine registration and workflow cancellation are separate existing commands and are not standard definitions in this catalog. This list does not guarantee an Agent is online or has the required version. Actual submission and approval recheck permissions and definitions; the catalog is a snapshot, not authorization to execute.
+The catalog includes public Controller workflows such as adding a machine and requesting workflow cancellation. See [All Workflows](all-workflows.md) for scheduled entries, internal helpers, and Controller dispatch. Actual submission and approval recheck permissions and definitions. Execution on a machine requires a reachable Agent that supports the selected definition version.
 
 The SDK provides `DmsApiClient.ListDefinitionsAsync()`. Its HTTP endpoint is `GET /api/v1/dms/workflow-definitions`, using the same personal API Key and AiurProtocol envelope as other management queries. Input schemas and generated CLI commands are not provided by this endpoint.
