@@ -158,7 +158,7 @@ public class DmsManagementTests : TestBase
         StringAssert.Contains(await Http.GetStringAsync($"/Dms?q={prefix}-unknown"), "No machines match these filters.");
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync("/Dms?connection=123")).StatusCode);
 
-        var detail = await Http.GetStringAsync($"/Dms/Machine/{offline.Id}");
+        var detail = WebUtility.HtmlDecode(await Http.GetStringAsync($"/Dms/Machine/{offline.Id}"));
         StringAssert.Contains(detail, offline.Name);
         StringAssert.Contains(detail, "Baseline fixture result");
         StringAssert.Contains(detail, "data-run-state=\"Failed\"");
