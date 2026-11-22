@@ -138,7 +138,7 @@ public class WorkflowDiscoveryTests : TestBase
         Assert.AreEqual(HttpStatusCode.OK, page.StatusCode);
         var html = await page.Content.ReadAsStringAsync();
         StringAssert.Contains(html, "example.total"); StringAssert.Contains(html, "repeat-1");
-        StringAssert.Contains(html, "May approve own requests"); StringAssert.Contains(html, "Cluster");
+        StringAssert.Contains(html, "May approve own Lockbox requests"); StringAssert.Contains(html, "Cluster");
         StringAssert.Contains(html, "definition=example.total");
         Assert.DoesNotContain("name=\"clusterId\"", html);
         Assert.DoesNotContain("example.unit", html);
