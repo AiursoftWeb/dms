@@ -8,7 +8,6 @@ namespace Aiursoft.DMS.Models.DmsViewModels;
 public class DmsViewModel : UiStackLayoutViewModel
 {
     public DmsViewModel() { PageTitle = "DMS"; }
-    public List<Machine> Machines { get; set; } = [];
     public List<WorkflowRun> Runs { get; set; } = [];
     public List<PersonalApiKey> Keys { get; set; } = [];
     public WorkflowCatalogResult? Catalog { get; set; }

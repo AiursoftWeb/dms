@@ -15,6 +15,7 @@ public static class WorkflowNames
     public const string AgentUpgrade = "machine.agent.upgrade";
     public const string PullerForceUpdate = "machine.box.puller.force-update";
     public const string AgentStatus = "machine.agent.status";
+    public const string ApplySecurityBaseline = "machine.security.apply-baseline";
     public const string ServiceStatus = "machine.systemctl.status";
     public const string ListBlockDevices = "machine.layout.lsblk";
     public const string DiskFree = "machine.layout.df";

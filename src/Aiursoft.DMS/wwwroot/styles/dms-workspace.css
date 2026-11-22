@@ -131,6 +131,23 @@
     gap: .45rem;
 }
 
+.dms-machine-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .7rem 1.4rem;
+    margin: 0;
+}
+
+.dms-machine-facts dt {
+    color: var(--bs-secondary-color);
+    font-size: .82rem;
+}
+
+.dms-machine-facts dd {
+    margin: .25rem 0 0;
+    font-weight: 600;
+}
+
 .dms-badge {
     display: inline-block;
     border-radius: 2rem;

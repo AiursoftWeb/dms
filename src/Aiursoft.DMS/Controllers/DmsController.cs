@@ -29,23 +29,56 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Machines", LinkOrder = 1)]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? q = null, MachineConnection? connection = null, int page = 0)
     {
-        return this.StackView(new DmsViewModel
+        if (!ModelState.IsValid || (connection.HasValue && !Enum.IsDefined(connection.Value)) || q?.Length > 100)
+            return BadRequest();
+        const int pageSize = 50;
+        page = Math.Clamp(page, 0, 100000);
+        var search = q?.Trim() ?? string.Empty;
+        var machines = MachineRows();
+        if (connection != null) machines = machines.Where(machine => machine.Connection == connection);
+
+        var ordered = machines.OrderBy(machine => machine.Name).ThenBy(machine => machine.Id).NotCacheable();
+        var skip = page * pageSize;
+        var rows = search.Length == 0
+            ? await ordered.Skip(skip).Take(pageSize + 1).ToListAsync(HttpContext.RequestAborted)
+            : await ordered.AsAsyncEnumerable()
+                .Where(machine => machine.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+                .Skip(skip).Take(pageSize + 1).ToListAsync(HttpContext.RequestAborted);
+        return this.StackView(new DmsMachinesViewModel
         {
-            Machines = await db.Machines.OrderBy(m => m.Name).Take(1000).ToListAsync()
+            PageTitle = "Machines", Machines = rows.Take(pageSize).ToList(), Search = search,
+            Connection = connection, Page = page, HasNextPage = rows.Count > pageSize
         });
     }
 
     [HttpGet]
     public async Task<IActionResult> Machine(Guid id)
     {
-        var machine = await db.Machines.AsNoTracking().SingleOrDefaultAsync(m => m.Id == id);
+        var machine = await MachineRows().NotCacheable().SingleOrDefaultAsync(m => m.Id == id);
         if (machine == null) return NotFound();
+        var baseline = await db.WorkflowRuns.AsNoTracking()
+            .Where(run => run.MachineId == id && run.Definition == WorkflowNames.ApplySecurityBaseline &&
+                run.ParentId == null && run.Origin == WorkflowOrigin.Automatic)
+            .OrderByDescending(run => run.CreatedAt).ThenByDescending(run => run.Id)
+            .NotCacheable().FirstOrDefaultAsync();
         return this.StackView(new DmsMachineViewModel
         {
-            Machine = machine,
+            Machine = machine, BaselineRun = baseline,
             PageTitle = machine.Name
+        });
+    }
+
+    private IQueryable<DmsMachineRow> MachineRows()
+    {
+        var onlineAfter = DateTime.UtcNow.AddSeconds(-45);
+        return db.Machines.AsNoTracking().Select(machine => new DmsMachineRow
+        {
+            Id = machine.Id, Name = machine.Name, AgentVersion = machine.AgentVersion, LastSeen = machine.LastSeen,
+            Connection = machine.Disabled ? MachineConnection.Disabled
+                : machine.LastSeen == null ? MachineConnection.NeverConnected
+                : machine.LastSeen > onlineAfter ? MachineConnection.Online : MachineConnection.Offline
         });
     }
 

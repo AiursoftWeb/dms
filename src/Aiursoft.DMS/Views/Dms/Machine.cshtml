@@ -1,42 +1,96 @@
 @using System.Globalization
+@using Aiursoft.DMS.Contracts
+@using Aiursoft.WebTools
 @model Aiursoft.DMS.Models.DmsViewModels.DmsMachineViewModel
 @{
     var machine = Model.Machine;
 }
 
-<div class="row">
-    <div class="col-xl-9">
-        <a asp-action="Index" class="d-inline-block mb-3">@Localizer["Back to machines"]</a>
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-            <h1 class="mb-0 text-break">@machine.Name</h1>
-            <a asp-action="Operations" asp-route-machineId="@machine.Id" class="btn btn-outline-primary">@Localizer["Workflow history"]</a>
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
+}
+
+<div class="dms-workspace mx-auto">
+    <nav class="dms-path" aria-label="@Localizer["Machines"]">
+        <a asp-action="Index"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["Back to machines"]</a>
+    </nav>
+    <header class="dms-page-heading">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <h1 class="mb-0">@machine.Name</h1>
+            <partial name="_DmsMachineConnection" model="machine.Connection" />
         </div>
-        <div class="card">
-            <div class="card-body p-4">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">@Localizer["Connection status"]</dt>
-                    <dd class="col-sm-8">
-                        @if (machine.Disabled)
-                        {
-                            <span class="badge bg-secondary">@Localizer["Disabled"]</span>
-                        }
-                        else if (machine.LastSeen > DateTime.UtcNow.AddSeconds(-45))
-                        {
-                            <span class="badge bg-success">@Localizer["Online"]</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">@Localizer["Offline"]</span>
-                        }
-                    </dd>
-                    <dt class="col-sm-4">Agent @Localizer["Version"]</dt>
-                    <dd class="col-sm-8">@(string.IsNullOrEmpty(machine.AgentVersion) ? "—" : machine.AgentVersion)</dd>
-                    <dt class="col-sm-4">@Localizer["Last seen"]</dt>
-                    <dd class="col-sm-8">@(machine.LastSeen?.ToString("u", CultureInfo.InvariantCulture) ?? "—")</dd>
-                    <dt class="col-sm-4">@Localizer["Machine ID"]</dt>
-                    <dd class="col-sm-8 mb-0 text-break"><code>@machine.Id</code></dd>
-                </dl>
+        <a asp-action="Operations" asp-route-machineId="@machine.Id" class="btn btn-outline-secondary"><i data-lucide="history" aria-hidden="true"></i> @Localizer["Workflow history"]</a>
+    </header>
+
+    <div class="row g-3 mb-3">
+        <section class="col-lg-5" aria-labelledby="connection-heading">
+            <div class="card dms-detail-card h-100 mb-0">
+                <div class="card-body">
+                    <h2 id="connection-heading"><i data-lucide="activity" aria-hidden="true"></i> @Localizer["Agent connection"]</h2>
+                    <dl class="dms-machine-facts">
+                        <div>
+                            <dt>@Localizer["Last seen"]</dt>
+                            <dd>
+                                @if (machine.LastSeen is { } lastSeen)
+                                {
+                                    var timestamp = lastSeen.ToHtmlDateTime();
+                                    <time datetime="@timestamp" data-utc-time="@timestamp">@lastSeen.ToString("u", CultureInfo.InvariantCulture)</time>
+                                }
+                                else
+                                {
+                                    <span>@Localizer["No heartbeat received"]</span>
+                                }
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>@Localizer["Agent version"]</dt>
+                            <dd>@(string.IsNullOrEmpty(machine.AgentVersion) ? "—" : machine.AgentVersion)</dd>
+                        </div>
+                    </dl>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <section class="col-lg-7" aria-labelledby="baseline-heading">
+            <div class="card dms-detail-card h-100 mb-0">
+                <div class="card-body">
+                    <h2 id="baseline-heading"><i data-lucide="shield-check" aria-hidden="true"></i> @Localizer["Scheduled security baseline"]</h2>
+                    @if (Model.BaselineRun is { } run)
+                    {
+                        var runTime = run.FinishedAt ?? run.StartedAt ?? run.CreatedAt;
+                        var timestamp = runTime.ToHtmlDateTime();
+                        <dl class="dms-machine-facts">
+                            <div>
+                                <dt>@Localizer["Latest execution"]</dt>
+                                <dd><partial name="_DmsRunStatus" model="run.State" /></dd>
+                            </div>
+                            <div>
+                                <dt>@(run.FinishedAt.HasValue ? @Localizer["Finished"] : run.StartedAt.HasValue ? @Localizer["Started"] : @Localizer["Created"])</dt>
+                                <dd><time datetime="@timestamp" data-utc-time="@timestamp">@runTime.ToString("u", CultureInfo.InvariantCulture)</time></dd>
+                            </div>
+                        </dl>
+                        @if (Model.BaselineSummary is { } summary)
+                        {
+                            <p class="text-body-secondary mt-3 mb-0">@summary</p>
+                        }
+                        <div class="d-flex flex-wrap gap-3 mt-3">
+                            <a asp-action="Operation" asp-route-id="@run.Id" class="fw-semibold">@Localizer["View execution"]</a>
+                            <a asp-action="Operations" asp-route-machineId="@machine.Id" asp-route-definition="@WorkflowNames.ApplySecurityBaseline" asp-route-origin="@WorkflowOrigin.Automatic" asp-route-rootOnly="true">@Localizer["Baseline history"]</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="dms-badge bg-secondary-subtle text-secondary-emphasis">@Localizer["Not verified yet"]</span>
+                        <p class="text-body-secondary mt-2 mb-0">@Localizer["No scheduled baseline execution is recorded for this machine."]</p>
+                    }
+                </div>
+            </div>
+        </section>
     </div>
+
+    <details class="card dms-details">
+        <summary>@Localizer["Machine ID"]</summary>
+        <div class="px-3 pb-3"><code>@machine.Id</code></div>
+    </details>
 </div>

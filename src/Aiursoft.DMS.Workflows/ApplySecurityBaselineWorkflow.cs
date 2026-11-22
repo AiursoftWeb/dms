@@ -8,7 +8,7 @@ namespace Aiursoft.DMS.Workflows;
 [RunCron("0 3 * * *", ReconcileAfterInterruption = true)]
 public sealed class ApplySecurityBaselineWorkflow : MachineWorkflow
 {
-    public override string Name => "machine.security.apply-baseline";
+    public override string Name => WorkflowNames.ApplySecurityBaseline;
     public override string Version => "1";
 
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)

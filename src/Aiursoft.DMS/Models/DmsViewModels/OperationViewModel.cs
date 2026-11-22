@@ -34,7 +34,7 @@ public sealed class OperationViewModel : UiStackLayoutViewModel
         }
     }
 
-    private static string? ReadSummary(string? result)
+    internal static string? ReadSummary(string? result)
     {
         if (string.IsNullOrWhiteSpace(result)) return null;
         try
