@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Herhangi bir makinede çok yüksek riskli iş akışları talep etmeye izin verir.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Açık iş akışlarının çalıştırılmasına izin verir. Kilit Kutuları otomatik olarak onaylanır.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Rollerin kalıcı olarak silinmesine izin verir.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Çok yüksek riskli iş akışları iste</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Açık iş akışlarını çalıştır</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Arka Plan İşlerini Görüntüle</value>

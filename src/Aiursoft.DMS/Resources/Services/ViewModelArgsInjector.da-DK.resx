@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Adgang nægtet</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Tilføj en SSH offentlig nøgle</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Administrator</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Roller</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>SSH offentlig nøgle tilføjet</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH-øffentlige nøgler</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Brugere</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Bekræft din SSH-offentlige nøgle</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Workflowhistorik</value>
