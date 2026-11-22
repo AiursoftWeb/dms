@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Dostęp zabroniony</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Dodaj klucz publiczny SSH</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Administrator</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Role</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>Dodano publiczny klucz SSH</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Klucze publiczne SSH</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Użytkownicy</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Zweryfikuj swój publiczny klucz SSH</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Historia workflow</value>

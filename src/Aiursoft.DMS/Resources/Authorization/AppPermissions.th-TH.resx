@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>อนุญาตให้ขอเวิร์กโฟลว์ที่มีความเสี่ยงสูงมากบนเครื่องใดก็ได้</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>อนุญาตให้รันเวิร์กโฟลว์แบบเปิด ล็อกบ็อกซ์ของเวิร์กโฟลว์เหล่านี้จะถูกอนุมัติโดยอัตโนมัติ</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>อนุญาตให้ลบบทบาทออกอย่างถาวร</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>ขอใช้งานเวิร์กโฟลว์ที่มีความเสี่ยงสูงมาก</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>ทำงานโฟลว์เปิด</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>ดูงานเบื้องหลัง</value>

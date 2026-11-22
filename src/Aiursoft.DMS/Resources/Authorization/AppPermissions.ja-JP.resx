@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>任意のマシンで、非常に高リスクのワークフローのリクエストを許可します。</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Open ワークフローの実行を許可します。その Lockbox は自動的に承認されます。</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>ロールの完全な削除を許可します。</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>超高リスクワークフローを申請する</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>オープンワークフローの実行</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>バックグラウンドジョブの表示</value>

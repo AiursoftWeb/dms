@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Доступ заборонено</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Додати публічний ключ SSH</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Адмін</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Ролі</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>Публічний ключ SSH додано</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Публічні ключі SSH</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Користувачі</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Перевірте ваш публічний ключ SSH</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Історія робочого процесу</value>

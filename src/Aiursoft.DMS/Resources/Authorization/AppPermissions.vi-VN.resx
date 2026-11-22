@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Cho phép yêu cầu các quy trình làm việc có rủi ro rất cao trên bất kỳ máy nào.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Cho phép chạy các quy trình mở. Hộp khóa của chúng được phê duyệt tự động.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Cho phép xóa vĩnh viễn các vai trò.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Yêu cầu các luồng làm việc rủi ro rất cao</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Chạy các quy trình mở</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Xem các nhiệm vụ nền</value>

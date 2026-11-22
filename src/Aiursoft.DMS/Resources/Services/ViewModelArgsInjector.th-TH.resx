@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>การตั้งค่าบัญชี</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>เพิ่มคีย์ SSH สาธารณะ</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>ผู้ดูแลระบบ</value>
   </data>
@@ -171,6 +174,9 @@
   <data name="Roles" xml:space="preserve">
     <value>บทบาท</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>เพิ่มคีย์สาธารณะ SSH แล้ว</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>คีย์สาธารณะ SSH</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>ผู้ใช้</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>ตรวจสอบคีย์สาธารณะ SSH ของคุณ</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>ประวัติการไหลงาน</value>

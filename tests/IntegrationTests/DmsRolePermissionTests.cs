@@ -118,6 +118,16 @@ public class DmsRolePermissionTests : TestBase
 
         var resultPath = $"/api/v1/dms/lockboxes/{new LockboxId(box.Id)}/result";
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
+        Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync("/api/v1/dms/access")).StatusCode);
+        await SetRoleAsync(setup.Role, AppPermissionNames.CanManageDmsAccess, true);
+        using (var access = await Http.GetAsync("/api/v1/dms/access"))
+        {
+            Assert.AreEqual(HttpStatusCode.OK, access.StatusCode);
+            var data = JObject.Parse(await access.Content.ReadAsStringAsync())["Data"]!;
+            CollectionAssert.AreEqual(machines.Select(m => new AccessMachine(m.Id, m.Name, m.Disabled)).ToList(),
+                data.ToObject<AccessSnapshot>()!.Machines);
+            Assert.DoesNotContain("AgentVersion", data.ToString());
+        }
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync($"/api/v1/dms/operations/{workflow.Id}")).StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.PostAsJsonAsync("/api/v1/dms/lockboxes",
             MachineWorkflows.AgentStatus.Request(new EmptyInput(), "", [setup.First]))).StatusCode);
@@ -130,6 +140,50 @@ public class DmsRolePermissionTests : TestBase
         Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync(resultPath)).StatusCode);
         Assert.AreEqual(1, (await ListAsync("json")).ProgramReturn);
+    }
+
+    [TestMethod]
+    [DataRow(null, RunState.Succeeded, "json")]
+    [DataRow("", RunState.Succeeded, "table")]
+    [DataRow("null", RunState.Warning, "csv")]
+    public async Task OpenWorkflowWithoutResultPrintsCompletionInTheSelectedFormat(string? payload, RunState state, string format)
+    {
+        var setup = await ArrangeAsync(AppPermissionNames.CanRequestOpenRiskWorkflow);
+        var request = ClusterWorkflows.GetMachines.Request(new EmptyInput(), "");
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var box = new LockboxRequest
+        {
+            RequesterId = setup.User, ClientRequestId = request.RequestId, Definition = request.Workflow,
+            Risk = RiskLevel.Open, Decision = DecisionState.Approved, Automatic = true,
+            Parameters = System.Text.Json.JsonSerializer.Serialize(request)
+        };
+        var run = new WorkflowRun { LockboxId = box.Id, Definition = box.Definition, State = state, Result = payload ?? "" };
+        run.RootId = run.Id;
+        box.WorkflowId = run.Id;
+        db.AddRange(box, run);
+        await db.SaveChangesAsync();
+
+        var result = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "list",
+            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--request-id", request.RequestId.ToString(),
+            "--output-format", format]);
+        Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+        if (format == "json")
+        {
+            var completion = JObject.Parse(result.StdOut);
+            Assert.AreEqual(2, completion.Count);
+            Assert.AreEqual(run.Id, completion["WorkflowId"]!.ToObject<Guid>());
+            Assert.AreEqual(state.ToString(), completion["State"]!.ToObject<string>());
+        }
+        else
+        {
+            StringAssert.Contains(result.StdOut, run.Id.ToString());
+            StringAssert.Contains(result.StdOut, state.ToString());
+            if (format == "csv") StringAssert.StartsWith(result.StdOut, "State,WorkflowId");
+        }
+        if (state == RunState.Warning) StringAssert.Contains(result.StdErr, "reported warnings.");
+        else Assert.AreEqual("", result.StdErr);
+        Assert.AreEqual(1, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
     }
 
     [TestMethod]

@@ -6,6 +6,7 @@ namespace Aiursoft.DMS.Contracts;
 
 public enum WorkflowLocation { Cluster, Machine }
 public sealed record EmptyInput;
+public sealed record EmptyResult;
 public sealed record ProcessInput(string Executable, IReadOnlyList<string> Arguments, bool CaptureOutput);
 public sealed partial record ServiceInput(string Service)
 {
@@ -136,4 +137,34 @@ public static class ClusterWorkflows
     public static readonly ClusterWorkflowDefinition<EmptyInput, ClusterDiskUsageResult> DiskUsage = new("cluster.disk-usage", WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(DiskUsage)), "1", SelectMachines: true, PublicEntry: true);
     [WorkflowRisk(RiskLevel.Open)]
     public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines, WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(GetMachines)), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly ClusterWorkflowDefinition<AddMachineInput, AddMachineResult> AddMachine =
+        new(WorkflowNames.AddMachine, WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(AddMachine)),
+            ValidateInput: input => input.Validate(), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly ClusterWorkflowDefinition<CancelWorkflowInput, CancelWorkflowResult> Cancel =
+        new(WorkflowNames.Kill, WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(Cancel)),
+            ValidateInput: input => input.Validate(), PublicEntry: true);
 }
+
+public sealed record AddMachineInput(string Name)
+{
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Name) || Name.Length > 100)
+            throw new ArgumentException("Machine name must contain 1 to 100 characters.");
+    }
+}
+
+public sealed record AddMachineResult(Guid Id, string Name);
+
+public sealed record CancelWorkflowInput(Guid TargetWorkflowId)
+{
+    public void Validate()
+    {
+        if (TargetWorkflowId == Guid.Empty)
+            throw new ArgumentException("A target workflow ID is required.");
+    }
+}
+
+public sealed record CancelWorkflowResult(Guid TargetWorkflowId, bool CancellationRequested, bool SideEffectsRolledBack);

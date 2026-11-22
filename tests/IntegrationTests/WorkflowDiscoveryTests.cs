@@ -60,7 +60,14 @@ public class WorkflowDiscoveryTests : TestBase
         Assert.IsFalse(first.CanApproveOwnRequests);
         Assert.AreEqual(first.Definitions.Count, first.Definitions.Select(d => d.Name).Distinct().Count());
         CollectionAssert.AreEqual(first.Definitions.Select(d => d.Name).Order(StringComparer.Ordinal).ToList(), first.Definitions.Select(d => d.Name).ToList());
-        Assert.IsFalse(first.Definitions.Any(d => d.Name is "internal.process" or "example.unit" or "machine.filesystem.disk-usage" or WorkflowNames.AddMachine or WorkflowNames.Kill));
+        Assert.IsFalse(first.Definitions.Any(d => d.Name is "internal.process" or "example.unit" or "machine.filesystem.disk-usage"));
+        foreach (var name in new[] { ClusterWorkflows.AddMachine.Name, ClusterWorkflows.Cancel.Name })
+        {
+            var control = first.Definitions.Single(d => d.Name == name);
+            Assert.AreEqual(WorkflowLocation.Cluster, control.Location);
+            Assert.AreEqual(RiskLevel.Medium, control.Risk);
+            Assert.IsFalse(control.RequiresTargets);
+        }
         var machine = first.Definitions.Single(d => d.Name == AuthoringExamples.Repeat.Name);
         Assert.AreEqual("repeat-1", machine.Version); Assert.AreEqual(WorkflowLocation.Machine, machine.Location);
         Assert.IsTrue(machine.RequiresTargets && machine.CanRequest); Assert.IsFalse(machine.AutoApprove || machine.CanApprove);

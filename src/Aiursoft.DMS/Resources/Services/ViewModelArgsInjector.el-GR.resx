@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Πρόσβαση απαγορευμένη</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Προσθήκη δημόσιου κλειδιού SSH</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Διαχειριστής</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Ρόλοι</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>Προστέθηκε δημόσιο κλειδί SSH</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Δημόσια κλειδιά SSH</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Χρήστες</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Επαληθεύστε το δημόσιο κλειδί SSH σας</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Ιστορικό ροής εργασιών</value>

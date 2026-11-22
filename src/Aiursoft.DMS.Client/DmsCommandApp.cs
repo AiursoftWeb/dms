@@ -37,7 +37,7 @@ public static partial class DmsCommandApp
             StandardCommand("disk-usage",
                 "Summarize filesystem capacity and usage across selected machines.",
                 ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
-            new ActionCommand("add", "Add a machine record to the Controller inventory.", WorkflowNames.AddMachine),
+            AddMachineCommand(),
             new Group("docker", "Inspect and control standalone Docker containers.",
             [
                 DockerPsCommand(),
@@ -274,8 +274,17 @@ public static partial class DmsCommandApp
             new ActionCommand("get-trace", "Read archived trace entries for a workflow and its descendants.", "trace"),
             new ActionCommand("kill-workflow",
                 "Request cancellation of a workflow and its descendants.",
-                WorkflowNames.Kill)
+                ClusterWorkflows.Cancel.Name, ClusterWorkflows.Cancel,
+                inputFromWorkflowId: id => ClusterWorkflows.Cancel.Serialize(new CancelWorkflowInput(id)))
         ]));
+
+    private static ActionCommand AddMachineCommand()
+    {
+        var name = new Option<string>("--name")
+            { Required = true, Description = "Name to give the new machine in the Controller inventory." };
+        return StandardCommand("add", "Add a machine record to the Controller inventory.",
+            ClusterWorkflows.AddMachine, p => new AddMachineInput(p.GetValue(name)!), name);
+    }
 
     private static ActionCommand StandardCommand<TInput, TResult>(string name,
         string description,
@@ -483,7 +492,8 @@ public static partial class DmsCommandApp
         Argument? argument = null,
         Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null,
         bool positionalOnly = false,
-        Func<string, object>? readResult = null) : DmsCommandHandler
+        Func<string, object>? readResult = null,
+        Func<Guid, string>? inputFromWorkflowId = null) : DmsCommandHandler
     {
         public string[] CommandAliases { private get; set; } = [];
         protected override string[] Alias => CommandAliases;
@@ -503,8 +513,8 @@ public static partial class DmsCommandApp
         }
 
         private bool UsesLockboxId => action is "lockbox-status" or "get" or "approve" or "deny" or "withdraw";
-        private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" or WorkflowNames.Kill;
-        private bool IsSubmission => definition != null || action is WorkflowNames.AddMachine or WorkflowNames.Kill;
+        private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" || inputFromWorkflowId != null;
+        private bool IsSubmission => definition != null;
         protected override string Name => name;
 
         protected override string Description => description;
@@ -529,8 +539,6 @@ public static partial class DmsCommandApp
             { Description = "Print the Lockbox and workflow IDs immediately after submission." };
 
         private readonly Option<string> _reason = new("--reason");
-        private readonly Option<string> _machineName = new("--name")
-            { Description = "Name to give the new machine in the Controller inventory." };
         private readonly Option<int> _skip = new("--skip")
             { Description = "Skip this many trace entries before returning the next page." };
         private readonly Option<bool> _recursive = new("--recursive")
@@ -632,13 +640,7 @@ public static partial class DmsCommandApp
                 foreach (var option in options ??
                          [
                          ]) yield return option;
-                if (action == WorkflowNames.AddMachine)
-                {
-                    _machineName.Required = true;
-                    yield return _machineName;
-                }
-
-                if (action == WorkflowNames.Kill) yield return _id;
+                if (inputFromWorkflowId != null) yield return _id;
             }
             else if (action == "audit")
             {
@@ -701,9 +703,7 @@ public static partial class DmsCommandApp
                             new AgentUpgradeInput((await client.AgentReleasesAsync()).Data))
                         : preparedInput != null
                             ? await preparedInput(client, context, requestId)
-                            : input?.Invoke(context) ?? "{}",
-                    MachineName = context.GetValue(_machineName) ?? string.Empty,
-                    TargetWorkflowId = action == WorkflowNames.Kill ? id : null
+                            : inputFromWorkflowId?.Invoke(id) ?? input?.Invoke(context) ?? "{}"
                 });
                 if (ShouldWaitForOpenResult(context))
                     response = await ReadOpenResultAsync(client, response, requestId, context);
@@ -764,12 +764,15 @@ public static partial class DmsCommandApp
                 var run = (reply.Data as JObject)?.ToObject<OpenWorkflowResult>();
                 if (run == null || run.WorkflowId != workflowId)
                     throw new ArgumentException("The Controller returned an unexpected workflow result.");
-                if (run.State is RunState.Succeeded or RunState.Warning && run.Result != null)
+                if (run.State is RunState.Succeeded or RunState.Warning)
                 {
-                    var result = readResult!(run.Result);
+                    var payload = run.Result?.Trim();
+                    var result = payload is null or "" or "null" ? null : readResult!(payload);
                     if (run.State == RunState.Warning)
                         context.InvocationConfiguration.Error.WriteLine($"Warning: Workflow {workflowId} reported warnings.");
-                    reply.Data = result;
+                    reply.Data = result is null or EmptyResult
+                        ? new { run.WorkflowId, State = run.State.ToString() }
+                        : result;
                     return reply;
                 }
 

@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Giver tilladelse til at anmode om meget højriskoprocesstrømme på enhver computer.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Tillader at køre åbne workflows. Deres låseskuffer godkendes automatisk.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Tillader den permanente sletning af roller.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Anmod workflows med meget høj risiko</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Kør åbne workflows</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Vis baggrundsjob</value>

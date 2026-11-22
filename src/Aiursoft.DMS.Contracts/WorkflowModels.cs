@@ -20,9 +20,7 @@ public static class WorkflowNames
     public const string DiskFree = "machine.layout.df";
     public const string Process = "internal.process";
     public const string ListMachines = "cluster.get-machines";
-    [WorkflowRisk(RiskLevel.Medium)]
     public const string AddMachine = "cluster.add-machine";
-    [WorkflowRisk(RiskLevel.Medium)]
     public const string Kill = "operation.kill-workflow";
     public const string Version = "2";
 

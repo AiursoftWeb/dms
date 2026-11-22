@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Acces respins</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Adăugați o cheie publică SSH</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Administrator</value>
   </data>
@@ -168,6 +171,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Roluri</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>Cheia publică SSH a fost adăugată</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Chei publice SSH</value>
   </data>
@@ -197,6 +203,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Utilizatori</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Verifica cheia publică SSH</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Istoricul fluxului de lucru</value>
