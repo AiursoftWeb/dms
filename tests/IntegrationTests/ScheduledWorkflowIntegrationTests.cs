@@ -1,7 +1,11 @@
+using System.Net;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
 using Aiursoft.DMS.Agent;
+using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
+using Aiursoft.DMS.Services;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Workflows;
@@ -18,6 +22,54 @@ public class ScheduledWorkflowIntegrationTests : TestBase
             using var scope = Server.Services.CreateScope();
             return await action(scope.ServiceProvider.GetRequiredService<TemplateDbContext>());
         });
+
+    [TestMethod]
+    public async Task AgentCanReadOnlyItsCurrentScheduledBaselineAndRevocationTakesEffectImmediately()
+    {
+        var setups = await DatabaseAsync(async db =>
+        {
+            var result = Enumerable.Range(0, 2).Select(i =>
+            {
+                var key = DmsKeyAuthenticationHandler.CreateKey(true);
+                var machine = new Machine { Name = $"baseline-scope-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) };
+                db.Machines.Add(machine);
+                return (machine.Id, Key: key);
+            }).ToArray();
+            await db.SaveChangesAsync();
+            return result;
+        });
+
+        async Task<HttpResponseMessage> FetchAsync(string? machineKey)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/agent/security-baseline");
+            if (machineKey != null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", machineKey);
+            return await Http.SendAsync(request);
+        }
+
+        using var scope = Server!.Services.CreateScope();
+        var settings = scope.ServiceProvider.GetRequiredService<GlobalSettingsService>();
+        var policy = new SecurityBaselinePolicy("integration-v1", RequireFail2ban: true, UfwEnabled: false);
+        try
+        {
+            await settings.UpdateSettingAsync(SettingsMap.ScheduledSecurityBaseline,
+                System.Text.Json.JsonSerializer.Serialize(new ScheduledSecurityBaselineSettings([setups[0].Id], policy)));
+            using var anonymous = await FetchAsync(null);
+            Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+            using var selected = await FetchAsync(setups[0].Key);
+            Assert.AreEqual(HttpStatusCode.OK, selected.StatusCode);
+            Assert.AreEqual(policy, await selected.Content.ReadFromJsonAsync<SecurityBaselinePolicy>());
+            using var excluded = await FetchAsync(setups[1].Key);
+            Assert.AreEqual(HttpStatusCode.NoContent, excluded.StatusCode);
+
+            await settings.UpdateSettingAsync(SettingsMap.ScheduledSecurityBaseline, "");
+            using var removed = await FetchAsync(setups[0].Key);
+            Assert.AreEqual(HttpStatusCode.NoContent, removed.StatusCode);
+        }
+        finally
+        {
+            await settings.UpdateSettingAsync(SettingsMap.ScheduledSecurityBaseline, "");
+        }
+    }
 
     [WorkflowRisk(RiskLevel.Safe), RunCron("0 0 1 1 *")]
     public sealed class OfflineProbeWorkflow : MachineWorkflow

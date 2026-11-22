@@ -10,6 +10,7 @@ public class SettingsMap
     public const string ProjectLogo = "ProjectLogo";
     public const string AllowUserAdjustNickname = "Allow_User_Adjust_Nickname";
     public const string Icp = "Icp";
+    public const string ScheduledSecurityBaseline = "ScheduledSecurityBaseline";
     public const string DummyNumber = "DummyNumber";
     public const string DummyChoice = "DummyChoice";
 
@@ -70,6 +71,14 @@ public class SettingsMap
             Key = Icp,
             Name = Localizer["ICP Number"],
             Description = Localizer["The ICP license number for China mainland users. Leave empty to hide."],
+            Type = SettingType.Text,
+            DefaultValue = ""
+        },
+        new GlobalSettingDefinition
+        {
+            Key = ScheduledSecurityBaseline,
+            Name = Localizer["Scheduled Security Baseline"],
+            Description = Localizer["Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists."],
             Type = SettingType.Text,
             DefaultValue = ""
         },

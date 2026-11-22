@@ -37,6 +37,58 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             await context.TraceAsync($"SSH recovery skipped. Lease {expectedLeaseId} is no longer due for recovery.");
             return new OperationResult("The expected SSH lease no longer requires recovery.");
         }
+        return await RevokeLockedAsync(context, host, store, state, token);
+    }
+
+    internal static async Task<SshLeaseCheckResult> CheckLeaseAsync(MachineWorkflowContext context, AgentEnvironment environment,
+        bool closeSshWhenNoLease, CancellationToken token)
+    {
+        var host = OperationOutput.Host(environment);
+        var store = new SshLeaseStore(host);
+        if (!closeSshWhenNoLease && store.ReadState()?.Lease == null)
+            return new SshLeaseCheckResult("No SSH lease needs recovery.", SshClosed: null);
+
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(TimeSpan.FromMinutes(3));
+        token = deadline.Token;
+        await RequireRootAsync(host, token);
+        await using var guard = await store.LockAsync(token);
+
+        var state = store.ReadState();
+        if (state?.Lease is { } lease)
+        {
+            lease.Validate();
+            if (!await SshLeaseStore.ShouldRecoverAsync(host, state, lease, token))
+            {
+                await context.TraceAsync($"Preserving SSH lease {lease.Id} until {lease.ExpiresAtUtc:u}.");
+                return new SshLeaseCheckResult("The SSH lease remains active.", SshClosed: false);
+            }
+            await context.TraceAsync($"Reconciling SSH lease {lease.Id}. Healthy={state.Healthy}, expires_at={lease.ExpiresAtUtc:u}.");
+        }
+        else if (!closeSshWhenNoLease)
+        {
+            return new SshLeaseCheckResult("No SSH lease needs recovery.", SshClosed: null);
+        }
+        else if (state is { Healthy: true } && await UnitsMaskedAndStoppedAsync(host, token) &&
+                 !await HasOpenSshConnectionsAsync(host, token))
+        {
+            return new SshLeaseCheckResult("SSH is already closed.", SshClosed: true);
+        }
+
+        var previous = store.ReadRevocation(context.Id);
+        if (previous is { Complete: true })
+            return new SshLeaseCheckResult("The recorded SSH closure no longer matches the current state.", SshClosed: null);
+        if (previous != null)
+            throw new WorkflowNeedsVerificationException(context.Id);
+
+        var result = await RevokeLockedAsync(context, host, store, state, token);
+        return new SshLeaseCheckResult(result.Summary, SshClosed: true);
+    }
+
+    private static async Task<OperationResult> RevokeLockedAsync(MachineWorkflowContext context, OperationHost host, SshLeaseStore store,
+        SshLeaseState? state, CancellationToken token)
+    {
+        var lease = state?.Lease;
         var revocation = new SshRevocation(lease?.Id, Complete: false);
         store.SaveRevocation(context.Id, revocation);
         store.SaveState(new SshLeaseState(lease, Healthy: false));
@@ -113,6 +165,12 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
 
     internal static async Task VerifyUnitsAsync(OperationHost host, CancellationToken token)
     {
+        if (!await UnitsMaskedAndStoppedAsync(host, token))
+            throw new IOException("The SSH service and socket are not both masked and stopped.");
+    }
+
+    private static async Task<bool> UnitsMaskedAndStoppedAsync(OperationHost host, CancellationToken token)
+    {
         foreach (var unit in SshUnits)
         {
             var state = await RunAsync(host, "systemctl",
@@ -120,11 +178,18 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             var properties = state.Output.Split('\n', StringSplitOptions.TrimEntries);
             if (!properties.Contains("LoadState=masked") ||
                 (!properties.Contains("ActiveState=inactive") && !properties.Contains("ActiveState=failed")))
-                throw new IOException($"{unit} is not masked and stopped. {state.Output.Trim()}");
+                return false;
         }
+        return true;
     }
 
     internal static async Task VerifyConnectionsAsync(OperationHost host, CancellationToken token)
+    {
+        if (await HasOpenSshConnectionsAsync(host, token))
+            throw new IOException("An OpenSSH listener or established connection remains.");
+    }
+
+    private static async Task<bool> HasOpenSshConnectionsAsync(OperationHost host, CancellationToken token)
     {
         foreach (var args in new[] { new[] { "-Hltnp" }, ["-Htnp", "state", "established"] })
         {
@@ -132,8 +197,9 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             if (sockets.Output.Contains("(\"sshd\",", StringComparison.Ordinal) ||
                 sockets.Output.Contains("(\"sshd-session\",", StringComparison.Ordinal) ||
                 sockets.Output.Contains("(\"sshd-auth\",", StringComparison.Ordinal))
-                throw new IOException("An OpenSSH listener or established connection remains.");
+                return true;
         }
+        return false;
     }
 
     private static async Task<bool> VerifyAccountAsync(OperationHost host, SshLease lease, CancellationToken token)

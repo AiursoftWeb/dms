@@ -1,5 +1,8 @@
 using Aiursoft.Scanner.Abstractions;
 using Aiursoft.DMS.Configuration;
+using Aiursoft.DMS.Contracts;
+using EFCoreSecondLevelCacheInterceptor;
+using System.Text.Json;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models;
 using Aiursoft.DMS.Services.FileStorage;
@@ -27,7 +30,8 @@ public class GlobalSettingsService(
     public async Task<string> GetSettingValueAsync(string key)
     {
         var cacheKey = GetCacheKey(key);
-        if (cache.TryGetValue(cacheKey, out string? cachedValue) && cachedValue != null)
+        var cacheable = key != SettingsMap.ScheduledSecurityBaseline;
+        if (cacheable && cache.TryGetValue(cacheKey, out string? cachedValue) && cachedValue != null)
         {
             return cachedValue;
         }
@@ -40,7 +44,9 @@ public class GlobalSettingsService(
         }
 
         // 2. Check database
-        var dbSetting = await dbContext.GlobalSettings.AsNoTracking().FirstOrDefaultAsync(s => s.Key == key);
+        var query = dbContext.GlobalSettings.AsNoTracking();
+        if (!cacheable) query = query.NotCacheable();
+        var dbSetting = await query.FirstOrDefaultAsync(s => s.Key == key);
         var definition = SettingsMap.Definitions.FirstOrDefault(d => d.Key == key);
         string result;
         if (dbSetting != null && dbSetting.Value != null)
@@ -55,7 +61,7 @@ public class GlobalSettingsService(
             result = definition?.DefaultValue ?? string.Empty;
         }
 
-        cache.Set(cacheKey, result, TimeSpan.FromHours(2));
+        if (cacheable) cache.Set(cacheKey, result, TimeSpan.FromHours(2));
         return result;
     }
 
@@ -134,6 +140,15 @@ public class GlobalSettingsService(
                 break;
         }
 
+        if (key == SettingsMap.ScheduledSecurityBaseline)
+        {
+            try { ScheduledSecurityBaselineSettings.Parse(value); }
+            catch (Exception error) when (error is ArgumentException or JsonException)
+            {
+                throw new InvalidOperationException("Invalid scheduled security baseline configuration.", error);
+            }
+        }
+
         var storedValue = ProtectSecretIfNeeded(definition, value);
         var dbSetting = await dbContext.GlobalSettings.FirstOrDefaultAsync(s => s.Key == key);
         if (dbSetting == null)
@@ -158,7 +173,7 @@ public class GlobalSettingsService(
             if (!exists)
             {
                 // Configuration overrides are read directly and must not be copied into the database.
-                var initialValue = definition.Type == SettingType.Secret
+                var initialValue = definition.Type == SettingType.Secret || definition.Key == SettingsMap.ScheduledSecurityBaseline
                     ? definition.DefaultValue
                     : configuration[$"GlobalSettings:{definition.Key}"]
                       ?? configuration[definition.Key]
