@@ -138,14 +138,14 @@
   <data name="Manage" xml:space="preserve">
     <value>จัดการ</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>คำขอ {0} ของฉัน</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>การอนุมัติของฉัน</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>คำขอของฉัน</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>การอนุมัติของฉัน</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>คำขอ {0} ของฉัน</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>ไม่พบ</value>

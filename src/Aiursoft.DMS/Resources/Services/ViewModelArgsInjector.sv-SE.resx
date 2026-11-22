@@ -135,14 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Hantera</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>Mina {0}-förfrågningar</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>Mina godkännanden</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>Mina förfrågningar</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>Mina godkännanden</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Mina {0}-förfrågningar</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Inte hittat</value>

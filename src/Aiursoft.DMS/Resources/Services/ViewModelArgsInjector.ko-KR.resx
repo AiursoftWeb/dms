@@ -138,14 +138,14 @@
   <data name="Manage" xml:space="preserve">
     <value>관리</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>내 {0} 요청</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>내 승인</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>내 요청</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>내 승인</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>내 {0} 요청</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>찾을 수 없음</value>

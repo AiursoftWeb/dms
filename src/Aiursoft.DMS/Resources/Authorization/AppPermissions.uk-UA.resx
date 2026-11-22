@@ -25,19 +25,19 @@
     <value>Додати нових користувачів</value>
   </data>
   <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
-    <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси високого ризику на будь-якому комп'ютері.</value>
+    <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси високого ризику на будь-якому комп&apos;ютері.</value>
   </data>
   <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
     <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси низького ризику на будь-якому пристрої.</value>
   </data>
   <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
-    <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси середнього ризику на будь-якому комп'ютері.</value>
+    <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси середнього ризику на будь-якому комп&apos;ютері.</value>
   </data>
   <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
-    <value>Дозволяє затверджувати або відхиляти запити {0} на безпечні робочі процеси на будь-якому комп'ютері.</value>
+    <value>Дозволяє затверджувати або відхиляти запити {0} на безпечні робочі процеси на будь-якому комп&apos;ютері.</value>
   </data>
   <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
-    <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси з дуже високим рівнем ризику на будь-якому комп'ютері.</value>
+    <value>Дозволяє затверджувати або відхиляти запити {0} на робочі процеси з дуже високим рівнем ризику на будь-якому комп&apos;ютері.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Дозволяє призначати або знімати ролі для будь-кого користувача.</value>

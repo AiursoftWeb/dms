@@ -135,14 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Kelola</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>Permintaan {0} saya</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>Persetujuan saya</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>Permintaan saya</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>Persetujuan saya</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Permintaan {0} saya</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Tidak Ditemukan</value>

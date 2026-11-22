@@ -135,14 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Hallinnoi</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>Omat {0}-pyynnöt</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>Omat hyväksynnät</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>Omat pyynnöt</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>Omat hyväksynnät</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Omat {0}-pyynnöt</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Ei löytynyt</value>

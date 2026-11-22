@@ -135,14 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Yönet</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>{0} isteklerim</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>Onaylarım</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>İsteklerim</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>Onaylarım</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>{0} isteklerim</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Bulunamadı</value>

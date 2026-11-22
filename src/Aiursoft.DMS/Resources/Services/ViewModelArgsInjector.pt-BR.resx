@@ -135,14 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Gerenciar</value>
   </data>
-  <data name="My {0} requests" xml:space="preserve">
-    <value>Minhas solicitações do {0}</value>
+  <data name="My approvals" xml:space="preserve">
+    <value>Minhas aprovações</value>
   </data>
   <data name="My requests" xml:space="preserve">
     <value>Minhas solicitações</value>
   </data>
-  <data name="My approvals" xml:space="preserve">
-    <value>Minhas aprovações</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Minhas solicitações do {0}</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Não Encontrado</value>
