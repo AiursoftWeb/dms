@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>Paramètres du compte</value>
   </data>
+  <data name="Add an SSH public key" xml:space="preserve">
+    <value>Ajouter une clé publique SSH</value>
+  </data>
   <data name="Admin" xml:space="preserve">
     <value>Administrateur</value>
   </data>
@@ -171,6 +174,9 @@
   <data name="Roles" xml:space="preserve">
     <value>Rôles</value>
   </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>Clé publique SSH ajoutée</value>
+  </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Clés publiques SSH</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="Users" xml:space="preserve">
     <value>Utilisateurs</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Vérifiez votre clé publique SSH</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
     <value>Historique des flux de travail</value>

@@ -97,6 +97,10 @@ public class ViewModelArgsInjector(
     
         _ = localizer["My Lockboxes"];
         _ = localizer["SSH public keys"];
+    
+        _ = localizer["Add an SSH public key"];
+        _ = localizer["SSH public key added"];
+        _ = localizer["Verify your SSH public key"];
     }
 
     public void InjectSimple(

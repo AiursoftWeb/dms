@@ -36,6 +36,9 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Retained for approval audit" xml:space="preserve">
+    <value>保留用于审批审计</value>
+  </data>
   <data name="Retention" xml:space="preserve">
     <value>保留策略</value>
   </data>

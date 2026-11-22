@@ -622,7 +622,7 @@ Each operational command creates a Lockbox before execution. A Lockbox is a sepa
 
 Use `--all-machines` instead of `--machine-id` to freeze all currently active machines into a request. Use `--request-id` when retrying the same submission and `--output-format json` for automation.
 
-`operation kill-workflow --id <workflow-id> --reason 'Stop operation'` creates a new Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation).
+`operation kill-workflow --id <workflow-id> --reason 'Stop operation'` creates a Medium-risk Lockbox. Cancellation requests cooperative termination; it does not roll back completed side effects. See [recovery and cancellation](./configuration.md#recovery-and-cancellation). With the updated Controller and CLI, both `machine add` and `operation kill-workflow` submit typed inputs. Existing clients and pending requests using the previous top-level machine name or workflow ID remain supported.
 
 Agent status, performance information, `layout lsblk` and `layout df` use the Safe risk policy; `systemctl status` uses Low and restart uses Medium. Service commands require a concrete `.service` name. Status reads fixed systemd properties without reading the journal. Block-device queries exclude loop devices, and capacity queries cover local filesystems. No extra command arguments or shell expressions are accepted.
 
@@ -666,6 +666,8 @@ dms machine list --output-format csv
 ```
 
 The reason is optional for Open. The CLI prints only the result on stdout. JSON is an array, CSV has one row per machine, and an empty list retains the CSV header. When waiting times out, the CLI prints the Workflow ID, Lockbox ID and reusable request ID on stderr and exits nonzero. Reuse the same input and request ID to check the original run. The submission API continues to return the receipt described below. SDK callers can use `WaitForOpenResultAsync` with that Lockbox ID to wait for their own result.
+
+An Open workflow that finishes successfully with only logs prints its `WorkflowId` and `State` in the requested format. Workflow authors can use `EmptyResult` to declare this explicitly. Use `dms workflow trace "$WORKFLOW_ID"` with Read DMS operations permission to inspect its archived logs. `Warning` remains a successful CLI exit with a warning on stderr.
 
 `POST /api/v1/dms/lockboxes` returns only these business fields inside the usual AiurProtocol `Data` envelope:
 

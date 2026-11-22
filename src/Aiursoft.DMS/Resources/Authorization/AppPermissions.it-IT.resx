@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Consente di richiedere flussi di lavoro a rischio molto elevato su qualsiasi macchina.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Consente l&apos;esecuzione di workflow aperti. I loro Lockbox vengono approvati automaticamente.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Consente l&apos;eliminazione permanente dei ruoli.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Richiedi flussi di lavoro a rischio molto elevato</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Esegui flussi di lavoro aperti</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Visualizza i processi in background</value>

@@ -57,6 +57,9 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>No public standard workflows are registered.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
   <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
     <value>Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self-approval permission.</value>
   </data>

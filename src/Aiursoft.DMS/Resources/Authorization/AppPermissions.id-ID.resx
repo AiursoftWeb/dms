@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Mengizinkan permintaan alur kerja berisiko sangat tinggi di mesin mana pun.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Memungkinkan menjalankan alur kerja Open. Lockboxes mereka disetujui secara otomatis.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Memungkinkan penghapusan permanen peran.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Minta alur kerja berisiko sangat tinggi</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Jalankan alur kerja terbuka</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Lihat Pekerjaan Latar Belakang</value>

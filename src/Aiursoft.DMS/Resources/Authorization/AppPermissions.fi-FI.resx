@@ -66,6 +66,9 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Sallii erittäin korkean riskin työvuojojen pyytämisen missä tahansa koneessa.</value>
   </data>
+  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
+    <value>Sallii avointen työvirtausten suorittamisen. Niiden lukkotilat hyväksytään automaattisesti.</value>
+  </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Sallii roolien pysyvän poistamisen.</value>
   </data>
@@ -206,6 +209,9 @@
   </data>
   <data name="Request very-high-risk workflows" xml:space="preserve">
     <value>Pyydä erittäin korkean riskin työvirtauksia</value>
+  </data>
+  <data name="Run open workflows" xml:space="preserve">
+    <value>Suorita avoimet työvireet</value>
   </data>
   <data name="View Background Jobs" xml:space="preserve">
     <value>Näytä taustatehtävät</value>
