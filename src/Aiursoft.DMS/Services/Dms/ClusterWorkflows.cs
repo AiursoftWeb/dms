@@ -28,6 +28,39 @@ public abstract class ClusterWorkflow
     public abstract Task ExecuteAsync(ClusterWorkflowContext context);
 }
 
+// The scheduler persists these inventory changes together with the workflow state and result.
+public abstract class TransactionalClusterWorkflow<TInput, TResult>(ClusterWorkflowDefinition<TInput, TResult> definition) : ClusterWorkflow
+{
+    public sealed override async Task ExecuteAsync(ClusterWorkflowContext context)
+    {
+        var request = context.Parameters;
+        LegacyClusterWorkflowInput.Normalize(request, definition.Name);
+        context.Run.Result = JsonSerializer.Serialize(await ExecuteAsync(context, definition.ReadInput(request.Input)));
+        if (context.Run.State is RunState.Queued or RunState.WaitingApproval) context.Run.State = RunState.Succeeded;
+    }
+
+    protected abstract Task<TResult> ExecuteAsync(ClusterWorkflowContext context, TInput input);
+}
+
+internal static class LegacyClusterWorkflowInput
+{
+    // Earlier clients and saved approvals used top-level fields as the source of truth.
+    // Normalize a copy for execution and idempotency checks without rewriting frozen history.
+    public static void Normalize(OperationRequest request, string workflow)
+    {
+        if (workflow == WorkflowNames.AddMachine && !string.IsNullOrEmpty(request.MachineName))
+        {
+            request.Input = JsonSerializer.Serialize(new AddMachineInput(request.MachineName));
+            request.MachineName = string.Empty;
+        }
+        else if (workflow == WorkflowNames.Kill && request.TargetWorkflowId is { } target)
+        {
+            request.Input = JsonSerializer.Serialize(new CancelWorkflowInput(target));
+            request.TargetWorkflowId = null;
+        }
+    }
+}
+
 public sealed class MachineBatchWorkflow : ClusterWorkflow
 {
     public override async Task ExecuteAsync(ClusterWorkflowContext context)
@@ -48,14 +81,12 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
 public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<MachineSummary>>
 {
     public override Task<List<MachineSummary>> ExecuteAsync(WorkflowExecutionContext context, EmptyInput input, CancellationToken token) =>
-        context.WithInventoryAsync(db => db.Machines.AsNoTracking()
-            .OrderBy(m => m.Name).ThenBy(m => m.Id)
-            .Select(m => new MachineSummary(m.Id, m.Name, m.AgentVersion, m.LastSeen, m.Disabled)).ToListAsync(token), token);
+        context.WithInventoryAsync(db => MachineInventory.ReadAsync(db, token), token);
 }
 
-public sealed class AddMachineWorkflow : ClusterWorkflow
+public sealed class AddMachineWorkflow() : TransactionalClusterWorkflow<AddMachineInput, AddMachineResult>(ClusterWorkflows.AddMachine)
 {
-    public override async Task ExecuteAsync(ClusterWorkflowContext context)
+    protected override async Task<AddMachineResult> ExecuteAsync(ClusterWorkflowContext context, AddMachineInput input)
     {
         var enrollment = context.Launch.EnrollmentId is { } id
             ? await context.Inventory.AgentEnrollments.Include(e => e.JoinKey).SingleOrDefaultAsync(e => e.Id == id)
@@ -64,20 +95,19 @@ public sealed class AddMachineWorkflow : ClusterWorkflow
         if (enrollment != null && (enrollment.JoinKey.Revoked || enrollment.JoinKey.ExpiresAt <= DateTime.UtcNow
             || await context.Inventory.Machines.AnyAsync(m => m.InstallationId == enrollment.InstallationId)))
             throw new InvalidOperationException("Enrollment is unavailable or this installation has already joined.");
-        var machine = new Machine { Name = context.Parameters.MachineName,
+        var machine = new Machine { Name = input.Name,
             KeyHash = enrollment?.AgentKeyHash ?? DmsKeyAuthenticationHandler.Hash(DmsKeyAuthenticationHandler.CreateKey(true)), InstallationId = enrollment?.InstallationId };
         context.Inventory.Machines.Add(machine);
         if (enrollment != null) enrollment.MachineId = machine.Id;
-        context.Run.Result = JsonSerializer.Serialize(new { machine.Id, machine.Name });
-        context.Run.State = RunState.Succeeded;
+        return new AddMachineResult(machine.Id, machine.Name);
     }
 }
 
-public sealed class CancelWorkflow : ClusterWorkflow
+public sealed class CancelWorkflow() : TransactionalClusterWorkflow<CancelWorkflowInput, CancelWorkflowResult>(ClusterWorkflows.Cancel)
 {
-    public override async Task ExecuteAsync(ClusterWorkflowContext context)
+    protected override async Task<CancelWorkflowResult> ExecuteAsync(ClusterWorkflowContext context, CancelWorkflowInput input)
     {
-        var target = await context.Inventory.WorkflowRuns.SingleAsync(r => r.Id == context.Parameters.TargetWorkflowId);
+        var target = await context.Inventory.WorkflowRuns.SingleAsync(r => r.Id == input.TargetWorkflowId);
         var tree = await context.Inventory.WorkflowRuns.Where(r => r.RootId == target.RootId).ToListAsync();
         var selected = new HashSet<Guid> { target.Id };
         while (true)
@@ -99,6 +129,6 @@ public sealed class CancelWorkflow : ClusterWorkflow
             else run.State = RunState.CancelRequested;
         }
         context.Run.State = tree.Where(r => selected.Contains(r.Id)).All(r => r.State.Terminal()) ? RunState.Succeeded : RunState.Running;
-        context.Run.Result = JsonSerializer.Serialize(new { TargetWorkflowId = target.Id, CancellationRequested = true, SideEffectsRolledBack = false });
+        return new CancelWorkflowResult(target.Id, CancellationRequested: true, SideEffectsRolledBack: false);
     }
 }

@@ -129,8 +129,10 @@ public class DmsWorkflowTests : TestBase
             var task = await db.WorkflowRuns.SingleAsync(r => r.Id == machine.Id, timeout.Token);
             task.State = initial; task.StartedAt = startedAt;
             await db.SaveChangesAsync(timeout.Token);
-            cancellation = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User,
-                new OperationRequest { Workflow = WorkflowNames.Kill, TargetWorkflowId = machine.Id, Reason = "Cancel the original approved task" });
+            const string reason = "Cancel the original approved task";
+            var request = started ? ClusterWorkflows.Cancel.Request(new CancelWorkflowInput(machine.Id), reason)
+                : new OperationRequest { Workflow = WorkflowNames.Kill, TargetWorkflowId = machine.Id, Reason = reason };
+            cancellation = await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(setup.User, request);
         }
         while (true)
         {
@@ -649,6 +651,91 @@ await db.SaveChangesAsync();
         var fact = (await db.WorkflowAuditOutbox.ToListAsync()).Select(e => e.Read()).Single(e => e.LockboxId == box.Id && e.Kind == WorkflowAuditKind.LockboxWithdrawn);
         Assert.AreEqual(setup.User, fact.RequesterId); Assert.IsNull(fact.AutomaticApproval); Assert.IsNull(fact.WorkflowId);
         Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, box.Id, true, "Late approval"))).StatusCode);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task TypedCliRetriesAndExecutesAlreadyPendingLegacyControls(bool cancel)
+    {
+        var setup = await ArrangeAsync();
+        var key = DmsKeyAuthenticationHandler.CreateKey(false);
+        var name = "Legacy machine " + Guid.NewGuid().ToString("N");
+        var target = new WorkflowRun { Definition = WorkflowNames.ListMachines };
+        target.RootId = target.Id;
+        const string reason = "Review the legacy request";
+        var request = new OperationRequest
+        {
+            Workflow = cancel ? WorkflowNames.Kill : WorkflowNames.AddMachine,
+            Reason = reason, TargetWorkflowId = cancel ? target.Id : null,
+            MachineName = cancel ? "" : name
+        };
+        var original = JsonSerializer.Serialize(request);
+        var box = new LockboxRequest
+        {
+            Definition = request.Workflow, RequesterId = setup.User, ClientRequestId = request.RequestId,
+            Risk = RiskLevel.Medium, Parameters = original, Reason = reason
+        };
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Legacy control test",
+                KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+            if (cancel) db.WorkflowRuns.Add(target);
+            db.Lockboxes.Add(box);
+            await db.SaveChangesAsync();
+        }
+
+        string[] command = cancel ? ["operation", "kill-workflow", "--id", target.Id.ToString()] : ["machine", "add", "--name", name];
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--server", Http.BaseAddress!.ToString(),
+            "--api-key", key, "--reason", reason, "--request-id", request.RequestId.ToString(), "--output-format", "json"]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        var receipt = Newtonsoft.Json.Linq.JObject.Parse(cli.StdOut)["Data"]!.ToObject<LockboxReceipt>()!;
+        Assert.AreEqual(box.Id, receipt.LockboxId.Value);
+        Assert.IsNull(receipt.WorkflowId);
+
+        Guid id;
+        using (var scope = Server.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            Assert.IsFalse(await db.WorkflowRuns.AnyAsync(r => r.LockboxId == box.Id));
+            var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var approved = await workflows.DecideAsync(setup.Approver, box.Id, true, reason);
+            Assert.AreEqual(original, approved.Parameters);
+            id = approved.WorkflowId!.Value;
+        }
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        while (true)
+        {
+            using var scope = Server.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var run = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == id, timeout.Token);
+            if (!run.State.Terminal())
+            {
+                await Task.Delay(50, timeout.Token);
+                continue;
+            }
+            Assert.AreEqual(RunState.Succeeded, run.State, run.Result);
+            if (cancel)
+            {
+                Assert.AreEqual(new CancelWorkflowInput(target.Id), ClusterWorkflows.Cancel.ReadInput(run.Input));
+                var result = ClusterWorkflows.Cancel.ReadResult(run.Result);
+                Assert.AreEqual(target.Id, result.TargetWorkflowId);
+                Assert.IsTrue(result.CancellationRequested);
+                Assert.IsFalse(result.SideEffectsRolledBack);
+                Assert.AreEqual(RunState.Cancelled, (await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == target.Id, timeout.Token)).State);
+            }
+            else
+            {
+                Assert.AreEqual(new AddMachineInput(name), ClusterWorkflows.AddMachine.ReadInput(run.Input));
+                var machine = await db.Machines.AsNoTracking().SingleAsync(m => m.Name == name, timeout.Token);
+                var result = ClusterWorkflows.AddMachine.ReadResult(run.Result);
+                Assert.AreEqual(machine.Id, result.Id);
+                Assert.AreEqual(name, result.Name);
+            }
+            break;
+        }
     }
 
     [TestMethod]

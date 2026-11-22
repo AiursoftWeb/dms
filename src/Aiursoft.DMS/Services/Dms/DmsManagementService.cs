@@ -11,8 +11,8 @@ public sealed class DmsManagementService(TemplateDbContext db, AccessService acc
 {
     public Task<AccessSnapshot> SnapshotAsync(string actor) => gate.RunAsync(async () =>
     {
-        var result = new AccessSnapshot(
-            await db.Machines.AsNoTracking().NotCacheable().OrderBy(m => m.Name).Select(m => new AccessMachine(m.Id, m.Name, m.Disabled)).ToListAsync());
+        var machines = await MachineInventory.ReadAsync(db);
+        var result = new AccessSnapshot(machines.Select(m => new AccessMachine(m.Id, m.Name, m.Disabled)).ToList());
         access.Audit(actor, "access.inspect"); await db.SaveChangesAsync(); return result;
     });
 
