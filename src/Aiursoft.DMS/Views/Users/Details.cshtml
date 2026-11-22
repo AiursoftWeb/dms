@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.DMS.Authorization
 @using Aiursoft.DMS.Services.FileStorage
 @using Aiursoft.WebTools
@@ -85,8 +86,8 @@
                     @foreach (var permission in Model.Permissions)
                     {
                         <div class="list-group-item">
-                            <strong>@PermissionLocalizer[permission.Name]</strong>
-                            <p class="text-muted mb-0">@PermissionLocalizer[permission.Description]</p>
+                            <strong>@PermissionLocalizer[permission.Name, LockboxText.Name]</strong>
+                            <p class="text-muted mb-0">@PermissionLocalizer[permission.Description, LockboxText.Name]</p>
                         </div>
                     }
                 }

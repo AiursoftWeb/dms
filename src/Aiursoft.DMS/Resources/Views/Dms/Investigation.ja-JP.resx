@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>承認モードを指定しない</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>承認コンテキスト</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} リクエスト</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>承認者</value>
@@ -63,8 +63,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>調査</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>ロックボックスID</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>マシン</value>
@@ -105,17 +105,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>記録終了時刻（非包含、UTC）</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>要求済み</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>要求済み ({0} リクエスト)</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>リクエストされたワークフロータイプ</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>リクエストされたワークフロータイプ ({0} リクエスト)</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>申請者</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>申請者 ({0} リクエスト)</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>申請者ID</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>申請者ID ({0} リクエスト)</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>ルートワークフローID</value>

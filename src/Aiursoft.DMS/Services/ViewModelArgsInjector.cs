@@ -3,6 +3,7 @@ using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Controllers;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
+using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Services.FileStorage;
 using Aiursoft.UiStack.Layout;
 using Aiursoft.UiStack.Navigation;
@@ -87,7 +88,6 @@ public class ViewModelArgsInjector(
         _ = localizer["API Keys"];
         _ = localizer["Cluster access"];
         _ = localizer["DMS"];
-        _ = localizer["Lockboxes"];
         _ = localizer["Machines"];
         _ = localizer["Operations"];
         _ = localizer["Workflow history"];
@@ -95,7 +95,7 @@ public class ViewModelArgsInjector(
     
         _ = localizer["Artifact"];
     
-        _ = localizer["My Lockboxes"];
+        _ = localizer["My {0} requests"];
         _ = localizer["SSH public keys"];
     
         _ = localizer["Add an SSH public key"];
@@ -107,7 +107,7 @@ public class ViewModelArgsInjector(
         HttpContext context,
         UiStackLayoutViewModel toInject)
     {
-        toInject.PageTitle = localizer[toInject.PageTitle ?? "View"];
+        toInject.PageTitle = LocalizeChromeText(toInject.PageTitle ?? "View");
         toInject.AppName = globalSettingsService.GetSettingValueAsync(SettingsMap.ProjectName).GetAwaiter().GetResult();
         toInject.Theme = UiTheme.Light;
         toInject.SidebarTheme = UiSidebarTheme.Default;
@@ -123,7 +123,7 @@ public class ViewModelArgsInjector(
         var projectName = globalSettingsService.GetSettingValueAsync(SettingsMap.ProjectName).GetAwaiter().GetResult();
         var brandName = globalSettingsService.GetSettingValueAsync(SettingsMap.BrandName).GetAwaiter().GetResult();
         var brandHomeUrl = globalSettingsService.GetSettingValueAsync(SettingsMap.BrandHomeUrl).GetAwaiter().GetResult();
-        toInject.PageTitle = localizer[toInject.PageTitle ?? "View"];
+        toInject.PageTitle = LocalizeChromeText(toInject.PageTitle ?? "View");
         toInject.AppName = projectName;
         toInject.Theme = preferDarkTheme ? UiTheme.Dark : UiTheme.Light;
         toInject.SidebarTheme = preferDarkTheme ? UiSidebarTheme.Dark : UiSidebarTheme.Default;
@@ -169,7 +169,7 @@ public class ViewModelArgsInjector(
                         linksForView.Add(new CascadedLink
                         {
                             Href = linkDef.Href,
-                            Text = localizer[linkDef.Text]
+                            Text = LocalizeChromeText(linkDef.Text)
                         });
                     }
                 }
@@ -312,6 +312,13 @@ public class ViewModelArgsInjector(
         }
     }
 
+
+    private string LocalizeChromeText(string text) => text switch
+    {
+        LockboxText.Name => LockboxText.Name,
+        LockboxText.MyRequests => LockboxText.Format(localizer[text].Value),
+        _ => localizer[text].Value
+    };
 
     private async Task<string> GetLogoUrl(HttpContext context)
     {

@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Будь-який режим затвердження</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>Контекст затвердження</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>Запит {0}</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>Затверджувач</value>
@@ -60,8 +60,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>Дослідження</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>Ідентифікатор сейфа</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>Ідентифікатор {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Машині</value>
@@ -102,17 +102,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Записано до (не включно, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>Запитуваний</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Запитуваний (запити {0})</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>Запитаний тип робочого процесу</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Запитаний тип робочого процесу (запити {0})</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Заявник</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Заявник (запити {0})</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>ID запитувача</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID запитувача (запити {0})</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Ідентифікатор кореневого робочого процесу</value>

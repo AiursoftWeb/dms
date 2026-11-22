@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>Låseboks</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>Lockbox-kaldestak</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>Operation</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametre</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>Begrundelse</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Anmoder</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>

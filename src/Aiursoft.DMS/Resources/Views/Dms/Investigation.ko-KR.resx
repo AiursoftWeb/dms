@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>모든 승인 모드</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>승인 컨텍스트</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} 요청</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>승인자</value>
@@ -63,8 +63,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>조사</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>락박스 ID</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>머신</value>
@@ -105,17 +105,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>기록된 시간까지 (미포함, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>요청됨</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>요청됨 ({0} 요청)</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>요청된 워크플로 유형</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>요청된 워크플로 유형 ({0} 요청)</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>요청자</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>요청자 ({0} 요청)</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>요청자 ID</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>요청자 ID ({0} 요청)</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>루트 워크플로 ID</value>

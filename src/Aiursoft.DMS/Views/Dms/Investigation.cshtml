@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using System.Globalization
 @using Aiursoft.DMS.Contracts
@@ -21,9 +22,9 @@
         <div class="col-md-4"><label for="From" class="form-label">@Localizer["Recorded from (inclusive, UTC)"]</label><input id="From" name="From" value="@query.From?.ToString("O", CultureInfo.InvariantCulture)" placeholder="2026-11-14T00:00:00Z" class="form-control" /></div>
         <div class="col-md-4"><label for="Until" class="form-label">@Localizer["Recorded until (exclusive, UTC)"]</label><input id="Until" name="Until" value="@query.Until?.ToString("O", CultureInfo.InvariantCulture)" placeholder="2026-11-15T00:00:00Z" class="form-control" /></div>
         <div class="col-md-4"><label for="MachineId" class="form-label">@Localizer["Machine ID"]</label><input id="MachineId" name="MachineId" value="@query.MachineId" class="form-control" /></div>
-        <div class="col-md-4"><label for="RequesterId" class="form-label">@Localizer["Requester ID"]</label><input id="RequesterId" name="RequesterId" value="@query.RequesterId" maxlength="200" class="form-control" /></div>
+        <div class="col-md-4"><label for="RequesterId" class="form-label">@LockboxText.Format(@Localizer["{0} requester ID"].Value)</label><input id="RequesterId" name="RequesterId" value="@query.RequesterId" maxlength="200" class="form-control" /></div>
         <div class="col-md-4"><label for="ApproverId" class="form-label">@Localizer["Approver ID"]</label><input id="ApproverId" name="ApproverId" value="@query.ApproverId" maxlength="200" class="form-control" /></div>
-        <div class="col-md-4"><label for="RequestedDefinition" class="form-label">@Localizer["Requested workflow type"]</label><input id="RequestedDefinition" name="RequestedDefinition" value="@query.RequestedDefinition" maxlength="200" class="form-control" /></div>
+        <div class="col-md-4"><label for="RequestedDefinition" class="form-label">@LockboxText.Format(@Localizer["Workflow type in the {0} request"].Value)</label><input id="RequestedDefinition" name="RequestedDefinition" value="@query.RequestedDefinition" maxlength="200" class="form-control" /></div>
         <div class="col-md-4"><label for="Definition" class="form-label">@Localizer["Instance workflow type"]</label><input id="Definition" name="Definition" value="@query.Definition" maxlength="200" class="form-control" /></div>
         <div class="col-md-4"><label for="State" class="form-label">@Localizer["Event state"]</label><select id="State" name="State" class="form-select"><option value="">@Localizer["All states"]</option>
             @foreach (var state in Enum.GetValues<RunState>()) { <option value="@state" selected="@(query.State == state)">@state</option> }
@@ -35,7 +36,7 @@
     <details class="mt-3"><summary>@Localizer["More filters"]</summary><div class="row g-3 mt-1">
         <div class="col-md-4"><label for="WorkflowId" class="form-label">@Localizer["Workflow ID"]</label><input id="WorkflowId" name="WorkflowId" value="@query.WorkflowId" class="form-control" /></div>
         <div class="col-md-4"><label for="RootWorkflowId" class="form-label">@Localizer["Root workflow ID"]</label><input id="RootWorkflowId" name="RootWorkflowId" value="@query.RootWorkflowId" class="form-control" /></div>
-        <div class="col-md-4"><label for="LockboxId" class="form-label">@Localizer["Lockbox ID"]</label><input id="LockboxId" name="LockboxId" value="@query.LockboxId" class="form-control" /></div>
+        <div class="col-md-4"><label for="LockboxId" class="form-label">@LockboxText.Format(@Localizer["{0} ID"].Value)</label><input id="LockboxId" name="LockboxId" value="@query.LockboxId" class="form-control" /></div>
         <div class="col-md-4"><label for="Kind" class="form-label">@Localizer["Event kind"]</label><select id="Kind" name="Kind" class="form-select"><option value="">@Localizer["All kinds"]</option>
             @foreach (var kind in Enum.GetValues<WorkflowAuditKind>()) { <option value="@kind" selected="@(query.Kind == kind)">@kind</option> }
         </select></div>
@@ -69,13 +70,13 @@ else if (Model.AuditPage != null)
             <td>
                 @if (fact.WorkflowId != null) { <a asp-action="Operation" asp-route-id="@fact.WorkflowId">@fact.Definition</a><br /><small>@fact.WorkflowId</small> }
                 else { @fact.Definition }
-                <div>@Localizer["Requested"]: @fact.RequestedDefinition @fact.RequestedVersion</div>
-                @if (fact.LockboxId != null) { <a asp-action="Lockbox" asp-route-id="@fact.LockboxId">@Localizer["Approval context"]</a> }
+                <div>@LockboxText.Format(@Localizer["Workflow in the {0} request"].Value): @fact.RequestedDefinition @fact.RequestedVersion</div>
+                @if (fact.LockboxId != null) { <a asp-action="Lockbox" asp-route-id="@fact.LockboxId">@LockboxText.Format(@Localizer["{0} request"].Value)</a> }
                 <div>@Localizer[fact.Origin.ToString()] · @fact.Trigger</div>
             </td>
             <td><a asp-action="Operations" asp-route-machineId="@fact.MachineId">@fact.MachineId</a><br /><small>@fact.InstallationId</small></td>
             <td>@if (fact.Origin == WorkflowOrigin.Automatic) { <div>@Localizer["System schedule"]: @fact.ScheduleId</div> }
-                @Localizer["Requester"]: @fact.RequesterId<br />@Localizer["Approver"]: @fact.ApproverId
+                @LockboxText.Format(@Localizer["{0} requester"].Value): @fact.RequesterId<br />@Localizer["Approver"]: @fact.ApproverId
                 @if (fact.AutomaticApproval == true) { <div>@Localizer["Automatic approval"]</div> }
                 <div>@fact.RequestedRisk @fact.Decision</div>
             </td>

@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>สามารถอนุมัติได้</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>สามารถอนุมัติคำขอของตัวเองได้</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>สามารถอนุมัติคำขอ {0}ของตัวเองได้</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>อาจร้องขอ</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>ยังไม่มีเวิร์กโฟลว์มาตรฐานสาธารณะที่ลงทะเบียนอยู่</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>สิทธิ์การใช้งานจะบังคับใช้กับคลัสเตอร์ที่เลือกและระดับความเสี่ยงของแต่ละเวิร์กโฟลว์ การอนุมัติโดยอัตโนมัติต้องได้รับสิทธิ์ในการขอ และ การอนุมัติคำขอของคุณเองต้องได้รับสิทธิ์ในการอนุมัติตนเองด้วย</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>ต้องระบุเป้าหมายของเครื่อง</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>ความเสี่ยง</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>สิทธิ์ของบทบาทใช้กับทุกเครื่องในอินสแตนซ์ DMS นี้และระดับความเสี่ยงของแต่ละเวิร์กโฟลว์ การอนุมัติอัตโนมัติต้องการสิทธิ์ในการขอ  การอนุมัติคำขอของตัวเองยังต้องการสิทธิ์การอนุมัติตนเองด้วย</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>สิทธิ์ของบทบาทใช้กับทุกเครื่องในอินสแตนซ์ DMS นี้และระดับความเสี่ยงของแต่ละเวิร์กโฟลว์ การอนุมัติอัตโนมัติต้องการสิทธิ์ในการขอ  การอนุมัติคำขอ {0}ของตัวเองยังต้องการสิทธิ์การอนุมัติตนเองด้วย</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>ปลอดภัย</value>

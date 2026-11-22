@@ -24,7 +24,7 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Loc
         Keys = await db.PersonalApiKeys.Where(k => k.UserId == Actor).ToListAsync(), NewKey = TempData["DmsNewKey"] as string
     });
 
-    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "My Lockboxes", LinkOrder = 6)]
+    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = LockboxText.MyRequests, LinkOrder = 6)]
     public async Task<IActionResult> MyLockboxes(int page = 0, string? scope = null, string? q = null)
     {
         try

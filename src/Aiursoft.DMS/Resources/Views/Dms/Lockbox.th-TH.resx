@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>รหัสประจำตัว</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>กล่องล็อก</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>คอลสตาคของล็อกบ็อกซ์</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>การดำเนินงาน</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>พารามิเตอร์</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>เหตุผล</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>ผู้ขอ</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>ความเสี่ยง</value>

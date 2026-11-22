@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>Karar</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Kilitli kutular</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Sonraki</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Önceki</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Talep</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>

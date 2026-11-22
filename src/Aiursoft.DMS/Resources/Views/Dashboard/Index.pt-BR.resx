@@ -120,9 +120,6 @@
   <data name="Integrated File Management" xml:space="preserve">
     <value>Gerenciamento Integrado de Arquivos</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Cofres</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>Máquinas</value>
   </data>
@@ -150,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Design Responsivo</value>
   </data>
-  <data name="Review requests" xml:space="preserve">
-    <value>Revisar solicitações</value>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Revisar solicitações do {0}</value>
   </data>
-  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
-    <value>Revise a operação solicitada, os parâmetros e os destinos fixos.</value>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>Revise a operação solicitada, os parâmetros e os destinos fixos. (solicitações do {0})</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Testes de Integração Robustos</value>

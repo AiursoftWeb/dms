@@ -57,7 +57,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
 
         return new LockboxQueueViewModel
         {
-            PageTitle = ownRequests ? "My Lockboxes" : "Lockboxes",
+            PageTitle = ownRequests ? LockboxText.MyRequests : LockboxText.Name,
             Entries = visible.Select(row => new LockboxQueueEntry(row.Item,
                 names.GetValueOrDefault(row.Item.RequesterId, "Unknown user"),
                 row.Targets.Take(3).Select(id => machines.GetValueOrDefault(id, id.ToString())).ToList(),
@@ -80,7 +80,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var snapshot = LockboxSnapshot.Read(item);
         return new LockboxViewModel
         {
-            PageTitle = "Lockbox",
+            PageTitle = LockboxText.Name,
             Item = item,
             Status = await workflows.DescribeLockboxAsync(item),
             Snapshot = snapshot,

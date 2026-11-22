@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lint Check</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Lockbox 會記錄操作請求者、目標以及核准決定。</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} 記錄操作的請求人、目標及核准結果。</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT 授權</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>維持高品質程式碼</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>以工作流管理伺服器，適用於人類與 AI。審閱請求、核准其範圍，並追蹤每一項操作。</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>以供人員和 AI 使用的工作流程管理伺服器。審核 {0} 請求，核准其範圍，並追蹤每項操作。</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>管理儀表板</value>

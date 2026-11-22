@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Nieuwe gebruikers toevoegen</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Staat het goedkeuren of afwijzen van hoogrisicowerkstromaanvragen op elk apparaat toe.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Staat het goedkeuren of afwijzen van hoogrisicowerkstromaanvragen op elk apparaat toe. ({0}-verzoeken)</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Staat goedkeuring of afkeuring van laagrisicoworkflowverzoeken op elk apparaat toe.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Staat goedkeuring of afkeuring van laagrisicoworkflowverzoeken op elk apparaat toe. ({0}-verzoeken)</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Staat het goedkeuren of afwijzen van verzoek voor workflows met gemiddeld risico op elke machine toe.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Staat het goedkeuren of afwijzen van {0}-verzoek voor workflows met gemiddeld risico op elke machine toe.</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Staat goedkeuring of afkeuring van verzoeken voor veilige workflows toe op elke machine.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Staat goedkeuring of afkeuring van {0}-verzoeken voor veilige workflows toe op elke machine.</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Staat het goedkeuren of afwijzen van workflowverzoeken met zeer hoog risico op elke machine toe.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Staat het goedkeuren of afwijzen van {0}-verzoeken met zeer hoog risico op elke machine toe.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Stelt in staat om rollen toe te wijzen of te verwijderen voor elke gebruiker.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Staat het bepalen van uw eigen verzoeken toe wanneer u ook de goedkeuringsmachtiging heeft voor het risiconiveau ervan.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Staat het bepalen van uw eigen {0}-verzoeken toe wanneer u ook de goedkeuringsmachtiging heeft voor het risiconiveau ervan.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Staat aanpassing van rolnamen en hun toegewezen machtigingen toe.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Staat het aanvragen van workflows met zeer hoog risico op elke machine toe.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Staat het uitvoeren van Open-workflows toe. Hun Lockboxes worden automatisch goedgekeurd.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Staat het uitvoeren van Open-workflows toe. Hun {0}-verzoeken worden automatisch goedgekeurd.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Staat het permanent verwijderen van rollen toe.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Staats het bekijken en wijzigen van globale toepassingsinstellingen toe.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Staattoe te kijken naar machines, workflowgeschiedenis, Lockboxes, traces en onderzoeksrecords.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Staattoe te kijken naar machines, workflowgeschiedenis, {0}-verzoeken, traces en onderzoeksrecords.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Staat het bekijken van systeeminformatie en -instellingen toe.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Midderniveau-risicoworkflows goedkeuren</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Eigene workflowverzoeken goedkeuren</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Eigene {0}-verzoeken goedkeuren</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Veilige workflows goedkeuren</value>

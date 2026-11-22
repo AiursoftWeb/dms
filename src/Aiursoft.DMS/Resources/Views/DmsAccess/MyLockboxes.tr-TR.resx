@@ -24,9 +24,6 @@
   <data name="Decision" xml:space="preserve">
     <value>Karar</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Kilit Kutularım</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Sonraki</value>
   </data>
@@ -35,9 +32,6 @@
   </data>
   <data name="Reason" xml:space="preserve">
     <value>Sebep</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>İstek</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>İş Akışı</value>

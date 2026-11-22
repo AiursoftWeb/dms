@@ -1,3 +1,5 @@
+@using Aiursoft.DMS.Services.Dms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Aiursoft.DMS.Services.ViewModelArgsInjector> NavigationText
 @using Aiursoft.DMS.Contracts
 @using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.WebTools
@@ -13,16 +15,16 @@
         <div>
             @if (Model.OwnRequests)
             {
-                <h1>@Localizer["My requests"]</h1>
+                <h1>@LockboxText.Format(NavigationText[LockboxText.MyRequests].Value)</h1>
             }
             else
             {
-                <h1>@Localizer["Approvals"]</h1>
+                <h1>@LockboxText.Name</h1>
             }
         </div>
         @if (!Model.OwnRequests)
         {
-            <a class="btn btn-outline-primary" asp-controller="DmsAccess" asp-action="MyLockboxes">@Localizer["My requests"]</a>
+            <a class="btn btn-outline-primary" asp-controller="DmsAccess" asp-action="MyLockboxes">@LockboxText.Format(NavigationText[LockboxText.MyRequests].Value)</a>
         }
     </header>
 
@@ -43,13 +45,13 @@
                 <option value="approved" selected="@(Model.Scope == "approved")">@Localizer["Approved"]</option>
                 <option value="denied" selected="@(Model.Scope == "denied")">@Localizer["Denied"]</option>
                 <option value="withdrawn" selected="@(Model.Scope == "withdrawn")">@Localizer["Withdrawn"]</option>
-                <option value="all" selected="@(Model.Scope == "all")">@Localizer["All requests"]</option>
+                <option value="all" selected="@(Model.Scope == "all")">@LockboxText.Format(@Localizer["All {0} requests"].Value)</option>
             </select>
         </div>
         <div class="dms-filter-field dms-filter-search">
-            <label for="q" class="form-label">@Localizer["Search requests"]</label>
+            <label for="q" class="form-label">@LockboxText.Format(@Localizer["Search {0} requests"].Value)</label>
             <input type="search" id="q" name="q" class="form-control" maxlength="200" value="@Model.Search"
-                   placeholder="@Localizer["Workflow, requester, reason, or Lockbox ID"]" />
+                   placeholder="@(LockboxText.Format(@Localizer["Workflow, requester, reason, or {0} ID"].Value))" />
         </div>
         <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
         @if (Model.Search.Length != 0 || Model.Scope != defaultScope)
@@ -64,12 +66,12 @@
             <i data-lucide="inbox" aria-hidden="true"></i>
             @if (Model.Scope == "review" && Model.Search.Length == 0)
             {
-                <p>@Localizer["No requests are waiting for your review."]</p>
-                <a asp-controller="@controller" asp-action="@indexAction" asp-route-scope="pending">@Localizer["See all pending requests"]</a>
+                <p>@LockboxText.Format(@Localizer["No {0} requests are waiting for your review."].Value)</p>
+                <a asp-controller="@controller" asp-action="@indexAction" asp-route-scope="pending">@LockboxText.Format(@Localizer["See all pending {0} requests"].Value)</a>
             }
             else
             {
-                <p>@Localizer["No requests match these filters."]</p>
+                <p>@LockboxText.Format(@Localizer["No {0} requests match these filters."].Value)</p>
             }
         </div>
     }
@@ -127,7 +129,7 @@
                     </div>
                     <div class="dms-item-action">
                         <a class="btn @(row.CanDecide ? "btn-primary" : "btn-outline-secondary")" asp-controller="@controller" asp-action="@detailAction" asp-route-id="@(new LockboxId(item.Id))">
-                            @(row.CanDecide ? @Localizer["Review"] : @Localizer["View request"])
+                            @(row.CanDecide ? @Localizer["Review"].Value : LockboxText.Format(@Localizer["View {0} request"].Value))
                         </a>
                     </div>
                 </li>
@@ -137,7 +139,7 @@
 
     @if (Model.Page > 0 || Model.HasNextPage)
     {
-        <nav class="d-flex gap-2" aria-label="@Localizer["Request pages"]">
+        <nav class="d-flex gap-2" aria-label="@LockboxText.Format(@Localizer["{0} request pages"].Value)">
             @if (Model.Page > 0)
             {
                 <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction" asp-route-page="@(Model.Page - 1)"

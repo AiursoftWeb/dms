@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Peut approuver</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Peut approuver ses propres demandes</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Peut approuver ses propres demandes {0}</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Peut demander</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Aucun flux de travail standard public n&apos;est enregistré.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Les autorisations s&apos;appliquent au cluster sélectionné et au niveau de risque de chaque workflow. L&apos;approbation automatique nécessite l&apos;autorisation de demande. L&apos;approbation de votre propre demande nécessite également l&apos;autorisation d&apos;auto-approbation.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Nécessite des cibles machine</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risque</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Les autorisations de rôle s&apos;appliquent à chaque machine de cette instance DMS et au niveau de risque de chaque flux de travail. L&apos;approbation automatique nécessite l&apos;autorisation de faire une demande. L&apos;approbation de votre propre demande nécessite également l&apos;autorisation d&apos;auto-approbation.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Les autorisations de rôle s'appliquent à chaque machine de cette instance DMS et au niveau de risque de chaque flux de travail. L'approbation automatique nécessite l'autorisation de faire une demande {0}. L'approbation de votre propre demande nécessite également l'autorisation d'auto-approbation.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Sûr</value>

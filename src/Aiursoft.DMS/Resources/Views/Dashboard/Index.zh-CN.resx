@@ -120,9 +120,6 @@
   <data name="Integrated File Management" xml:space="preserve">
     <value>集成文件管理</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>保险库</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>机器</value>
   </data>
@@ -150,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>响应式设计</value>
   </data>
-  <data name="Review requests" xml:space="preserve">
-    <value>审核请求</value>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>审核 {0} 请求</value>
   </data>
-  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
-    <value>查看所请求的操作、参数和固定目标。</value>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>查看每份 {0} 请求的操作、参数和固定目标机器。</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>强大的集成测试</value>

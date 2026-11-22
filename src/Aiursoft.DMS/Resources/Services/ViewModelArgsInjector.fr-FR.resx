@@ -123,9 +123,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>Investigation</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Coffres-forts</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Verrouillage</value>
   </data>
@@ -141,8 +138,8 @@
   <data name="Manage" xml:space="preserve">
     <value>Gérer</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Mes coffres-forts</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Mes demandes {0}</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Non trouvé</value>

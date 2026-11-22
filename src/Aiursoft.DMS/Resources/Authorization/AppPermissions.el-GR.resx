@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Προσθήκη Νέων Χρηστών</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων ροών εργασίας υψηλού κινδύνου σε οποιαδήποτε συσκευή.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων {0} ροών εργασίας υψηλού κινδύνου σε οποιαδήποτε συσκευή.</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων ροών εργασίας χαμηλού κινδύνου σε οποιαδήποτε συσκευή.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων {0} ροών εργασίας χαμηλού κινδύνου σε οποιαδήποτε συσκευή.</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων ροών εργασίας μετρίου κινδύνου σε οποιονδήποτε υπολογιστή.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων {0} ροών εργασίας μετρίου κινδύνου σε οποιονδήποτε υπολογιστή.</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων ασφαλών ροών εργασίας σε οποιοδήποτε μηχάνημα.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων {0} ασφαλών ροών εργασίας σε οποιοδήποτε μηχάνημα.</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων ροών εργασίας πολύ υψηλού κινδύνου σε οποιοδήποτε μηχάνημα.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Επιτρέπει την έγκριση ή απόρριψη αιτημάτων {0} ροών εργασίας πολύ υψηλού κινδύνου σε οποιοδήποτε μηχάνημα.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Επιτρέπει την ανάθεση ή την κατάργηση ρόλων για οποιονδήποτε χρήστη.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Επιτρέπει την απόφαση για τα δικά σας αιτήματα όταν έχετε επίσης άδεια έγκρισης για το επίπεδο κινδύνου τους.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Επιτρέπει την απόφαση για τα δικά σας αιτήματα {0} όταν έχετε επίσης άδεια έγκρισης για το επίπεδο κινδύνου τους.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Επιτρέπει την τροποποίηση των ονομάτων ρόλων και των αντιστοιχισμένων δικαιωμάτων πρόσβασης.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Επιτρέπει την αίτηση ροών εργασίας πολύ υψηλού κινδύνου σε οποιονδήποτε υπολογιστή.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Επιτρέπει την εκτέλεση ανοιχτών ροών εργασίας. Τα Lockboxes τους εγκρίνονται αυτόματα.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Επιτρέπει την εκτέλεση ανοιχτών ροών εργασίας. Τα αιτήματα {0} τους εγκρίνονται αυτόματα.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Επιτρέπει την μόνιμη διαγραφή ρόλων.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Επιτρέπει την προβολή και την τροποποίηση των γενικών ρυθμίσεων της εφαρμογής.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Επιτρέπει την προβολή μηχανών, ιστορικού ροής εργασιών, Lockboxes, ιχνηλατήσεων και εγγραφών έρευνας.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Επιτρέπει την προβολή μηχανών, ιστορικού ροής εργασιών, αιτήματα {0}, ιχνηλατήσεων και εγγραφών έρευνας.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Επιτρέπει την προβολή πληροφοριών και ρυθμίσεων σε επίπεδο συστήματος.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Έγκριση ροών εργασίας μεσαίου κινδύνου</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Ενέκριση δικών σας αιτήσεων ροής εργασιών</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Ενέκριση δικών σας αιτήσεων {0} ροής εργασιών</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Ενέκριση ασφαλών ροών εργασιών</value>

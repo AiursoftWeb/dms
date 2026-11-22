@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>โหมดการอนุมัติใดๆ</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>บริบทการอนุมัติ</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>คำขอ {0}</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>ผู้อนุมัติ</value>
@@ -63,8 +63,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>การตรวจสอบ</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>รหัส Lockbox</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>รหัส {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>เครื่อง</value>
@@ -105,17 +105,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>บันทึกถึง (ไม่รวม, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>ที่ร้องขอ</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>ที่ร้องขอ (คำขอ {0})</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>ประเภทเวิร์กโฟลว์ที่ขอ</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>ประเภทเวิร์กโฟลว์ที่ขอ (คำขอ {0})</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>ผู้ขอ</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>ผู้ขอ (คำขอ {0})</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>ID ผู้ร้องขอ</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID ผู้ร้องขอ (คำขอ {0})</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>ID การทำงานหลัก</value>

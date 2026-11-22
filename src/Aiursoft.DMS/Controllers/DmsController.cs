@@ -81,7 +81,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
 
-    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Lockboxes", LinkOrder = 2)]
+    [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = LockboxText.Name, LinkOrder = 2)]
     public async Task<IActionResult> Lockboxes(int page = 0, string? scope = null, string? q = null)
     {
         try

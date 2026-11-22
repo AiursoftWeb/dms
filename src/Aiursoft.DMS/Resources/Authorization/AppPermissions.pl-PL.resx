@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Dodawanie nowych użytkowników</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Umożliwia zatwierdzanie lub odrzucanie żądań procesów o wysokim ryzyku na dowolnym komputerze.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Umożliwia zatwierdzanie lub odrzucanie żądań procesów o wysokim ryzyku na dowolnym komputerze. (wnioski {0})</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Umożliwia zatwierdzanie lub odrzucanie żądań workflow o niskim ryzyku na dowolnym komputerze.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Umożliwia zatwierdzanie lub odrzucanie żądań workflow o niskim ryzyku na dowolnym komputerze. (wnioski {0})</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Umożliwia zatwierdzanie lub odrzucanie żądań dotyczących procesów o średnim ryzyku na dowolnym komputerze.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Umożliwia zatwierdzanie lub odrzucanie żądań dotyczących procesów o średnim ryzyku na dowolnym komputerze. (wnioski {0})</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Umożliwia zatwierdzanie lub odrzucanie żądań bezpiecznych procesów pracy na dowolnym komputerze.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Umożliwia zatwierdzanie lub odrzucanie żądań bezpiecznych procesów pracy na dowolnym komputerze. (wnioski {0})</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Umożliwia zatwierdzanie lub odrzucanie żądań procesów o bardzo wysokim ryzyku na dowolnym komputerze.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Umożliwia zatwierdzanie lub odrzucanie żądań procesów o bardzo wysokim ryzyku na dowolnym komputerze. (wnioski {0})</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Pozwala na przypisywanie lub usuwanie ról dla dowolnego użytkownika.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Umożliwia podejmowanie decyzji dotyczących własnych żądań, jeśli również dysponujesz uprawnieniem do zatwierdzania dla danego poziomu ryzyka.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Umożliwia podejmowanie decyzji dotyczących własnych żądań, jeśli również dysponujesz uprawnieniem do zatwierdzania dla danego poziomu ryzyka. (wnioski {0})</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Pozwala na modyfikację nazw ról i przypisanych im uprawnień.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Umożliwia żądanie procesów o bardzo wysokim ryzyku na dowolnym komputerze.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Umożliwia uruchamianie otwartych workflow. Ich skrzynki są zatwierdzane automatycznie.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Umożliwia uruchamianie otwartych workflow. Ich wnioski {0} są zatwierdzane automatycznie.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Pozwala na trwałe usunięcie ról.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Umożliwia przeglądanie i modyfikowanie globalnych ustawień aplikacji.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Umożliwia przeglądanie maszyn, historii przepływów pracy, skrzynek, śladów i rekordów śledczych.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Umożliwia przeglądanie maszyn, historii przepływów pracy, wnioski {0}, śladów i rekordów śledczych.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Pozwala na przeglądanie informacji i ustawień na poziomie systemu.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Zatwierdzaj workflow o średnim ryzyku</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Aprobuj własne żądania przepływów pracy</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Aprobuj własne żądania {0} przepływów pracy</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Akceptuj bezpieczne przepływy pracy</value>

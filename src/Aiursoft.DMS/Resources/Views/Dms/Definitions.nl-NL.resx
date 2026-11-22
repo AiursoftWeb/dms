@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Mag goedkeuren</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Mag eigen verzoeken goedkeuren</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Mag eigen {0}-verzoeken goedkeuren</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Mag aanvragen</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Er zijn geen openbare standaardworkflows geregistreerd.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Machtigingen gelden voor het geselecteerde cluster en het risiconiveau van elke workflow. Voor automatische goedkeuring is de machtiging nodig om aanvragen in te dienen. Om je eigen aanvraag goed te keuren, is ook de machtiging voor zelfgoedkeuring vereist.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Vereist machinedoelen</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risico</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Rolverechten gelden voor elke machine in dit DMS-exemplaar en voor het risiconiveau van elke workflow. Automatische goedkeuring vereist de machtiging om te verzoeken. Het goedkeuren van je eigen verzoek vereist ook de machtiging voor zelfgoedkeuring.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Rolverechten gelden voor elke machine in dit DMS-exemplaar en voor het risiconiveau van elke workflow. Automatische goedkeuring vereist de machtiging om te {0}-verzoeken. Het goedkeuren van je eigen verzoek vereist ook de machtiging voor zelfgoedkeuring.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Veilig</value>

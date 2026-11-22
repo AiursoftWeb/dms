@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>May approve</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>May approve own requests</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>May approve own {0} requests</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>May request</value>
@@ -60,17 +60,14 @@
   <data name="Open" xml:space="preserve">
     <value>Open</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self-approval permission.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Requires machine targets</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self-approval permission.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self-approval permission.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Safe</value>

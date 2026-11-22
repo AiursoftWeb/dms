@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Może zatwierdzać</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Może zatwierdzać własne wnioski</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Może zatwierdzać własne wnioski {0}</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Może wnioskować</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Nie zarejestrowano żadnych publicznych standardowych przepływów pracy.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Uprawnienia dotyczą wybranego klastra i poziomu ryzyka każdego przepływu pracy. Automatyczne zatwierdzanie wymaga uprawnienia do składania wniosków. Zatwierdzenie własnego wniosku wymaga również uprawnienia do samodzielnego zatwierdzania.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Wymaga wskazania maszyn docelowych</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Ryzyko</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Uprawnienia ról dotyczą każdego komputera w tej instancji DMS oraz poziomu ryzyka każdego workflow. Automatyczne zatwierdzanie wymaga uprawnienia do składania wniosków. Zatwierdzanie własnego wniosku wymaga również uprawnienia do samodzielnego zatwierdzania.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Uprawnienia ról dotyczą każdego komputera w tej instancji DMS oraz poziomu ryzyka każdego workflow. Automatyczne zatwierdzanie wymaga uprawnienia do składania wniosków {0}. Zatwierdzanie własnego wniosku wymaga również uprawnienia do samodzielnego zatwierdzania.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Bezpieczny</value>

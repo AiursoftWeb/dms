@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>Decyzja</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Skrytki</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Dalej</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Poprzednia</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Wniosek</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Ryzyko</value>

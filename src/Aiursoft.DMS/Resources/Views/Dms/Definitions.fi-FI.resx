@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Saa hyväksyä</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Voi hyväksyä omat pyynnöt</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Voi hyväksyä omat {0}-pyynnöt</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Saa pyytää</value>
@@ -63,8 +63,8 @@
   <data name="Risk" xml:space="preserve">
     <value>Riski</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Roolioikeudet koskevat kaikkia koneita tässä DMS-instanssissa ja kunkin työvirran riskitasoa. Automaatisti hyväksyminen vaatii pyytämisoikeuden. Oman pyynnön hyväksyminen vaatii myös itsensä hyväksymisen oikeuden.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Roolioikeudet koskevat kaikkia koneita tässä DMS-instanssissa ja kunkin työvirran riskitasoa. Automaatisti hyväksyminen vaatii pyytämisoikeuden. Oman {0}-pyynnön hyväksyminen vaatii myös itsensä hyväksymisen oikeuden.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Turvallinen</value>

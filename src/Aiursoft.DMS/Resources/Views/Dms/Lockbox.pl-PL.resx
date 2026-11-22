@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>Identyfikator</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>Sejf</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>Stos wywołań skrytki</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>Operacja</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametry</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>Powód</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Osoba zgłaszająca</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Ryzyko</value>

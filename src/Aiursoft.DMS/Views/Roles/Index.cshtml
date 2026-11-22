@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.DMS.Authorization
 @using Microsoft.Extensions.Localization
 @model Aiursoft.DMS.Models.RolesViewModels.IndexViewModel
@@ -52,8 +53,8 @@
                         {
                             const int maxPermissionsToShow = 3;
                             var displayPermissions = item.PermissionNames.Count > maxPermissionsToShow
-                                ? string.Join(", ", item.PermissionNames.Take(maxPermissionsToShow).Select(n => PermissionLocalizer[n].Value)) + "..."
-                                : string.Join(", ", item.PermissionNames.Select(n => PermissionLocalizer[n].Value));
+                                ? string.Join(", ", item.PermissionNames.Take(maxPermissionsToShow).Select(n => PermissionLocalizer[n, LockboxText.Name].Value)) + "..."
+                                : string.Join(", ", item.PermissionNames.Select(n => PermissionLocalizer[n, LockboxText.Name].Value));
                             
                             <span>@displayPermissions (@item.PermissionCount)</span>
                         }

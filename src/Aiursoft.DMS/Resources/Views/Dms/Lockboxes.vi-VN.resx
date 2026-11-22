@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>Quyết định</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Hộp khóa</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Tiếp theo</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Trước</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Yêu cầu</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Rủi ro</value>

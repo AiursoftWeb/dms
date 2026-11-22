@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>Kimlik</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>Güvenli Kasa</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>Kilitli kasa çağrı yığını</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>İşlem</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametreler</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>Gerekçe</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Talep Eden</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>

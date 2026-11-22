@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>أي وضع للموافقة</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>سياق الموافقة</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>طلب {0}</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>المعتمِد</value>
@@ -63,8 +63,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>التحقيق</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>معرّف صندوق الأمانات</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>معرّف {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>آلة</value>
@@ -105,17 +105,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>مسجَّل حتى (غير شامل، بالتوقيت العالمي المنسق UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>مطلوب</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>مطلوب (طلبات {0})</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>نوع سير العمل المطلوب</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>نوع سير العمل المطلوب (طلبات {0})</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>مقدِّم الطلب</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>مقدِّم الطلب (طلبات {0})</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>معرّف مقدّم الطلب</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>معرّف مقدّم الطلب (طلبات {0})</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>معرّف سير العمل الجذر</value>

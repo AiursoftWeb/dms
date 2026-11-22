@@ -24,9 +24,6 @@
   <data name="Decision" xml:space="preserve">
     <value>Decisão</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>As Minhas Caixas de Segurança</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Seguinte</value>
   </data>
@@ -35,9 +32,6 @@
   </data>
   <data name="Reason" xml:space="preserve">
     <value>Motivo</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Pedido</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Fluxo de trabalho</value>

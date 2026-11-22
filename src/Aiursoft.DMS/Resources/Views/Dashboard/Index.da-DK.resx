@@ -120,9 +120,6 @@
   <data name="Integrated File Management" xml:space="preserve">
     <value>Integreret Filhåndtering</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Låsebokse</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>Maskiner</value>
   </data>
@@ -150,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Responsivt Design</value>
   </data>
-  <data name="Review requests" xml:space="preserve">
-    <value>Gennemgå anmodninger</value>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Gennemgå {0}-anmodninger</value>
   </data>
-  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
-    <value>Gennemgå den anmodede handling, parametrene og de fastlagte mål.</value>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>Gennemgå den anmodede handling, parametrene og de fastlagte mål. ({0}-anmodninger)</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Robust integrationstest</value>

@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Vérification de lint</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Lockbox enregistre qui a demandé une opération, ses cibles et la décision d&apos;approbation.</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} enregistre qui a demandé une opération, ses cibles et la décision d'approbation.</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Licence MIT</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>Maintenir une haute qualité du code</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>Gérez vos serveurs à l&apos;aide de flux de travail conçus pour les humains et l&apos;IA. Examinez la demande, approuvez son périmètre et suivez chaque opération.</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>Gérez vos serveurs à l'aide de flux de travail conçus pour les humains et l'IA. Examinez la demande {0}, approuvez son périmètre et suivez chaque opération.</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>Tableau de bord de gestion</value>

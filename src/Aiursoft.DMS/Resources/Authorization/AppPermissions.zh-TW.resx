@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>新增使用者</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>允許在任何機器上核准或拒絕高風險工作流請求。</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>允許在任意機器上核准或拒絕高風險 {0} 請求。</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>允許在任何機器上核准或拒絕低風險工作流程請求。</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>允許在任意機器上核准或拒絕低風險 {0} 請求。</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>允許在任何機器上核准或拒絕中風險工作流請求。</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>允許在任意機器上核准或拒絕中風險 {0} 請求。</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>允許在任何機器上核准或拒絕安全工作流程請求。</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>允許在任意機器上核准或拒絕安全等級 {0} 請求。</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>允許核准或拒絕任何機器上的極高風險工作流要求。</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>允許在任意機器上核准或拒絕極高風險 {0} 請求。</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>允許對任何使用者指派或移除角色。</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>允許在您同時具有對應風險層級的核准權限時，核准或駁回自己的請求。</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>若也具有相應風險等級的審核權限，即可核准或拒絕自己的 {0} 請求。</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>允許修改角色名稱及其分配的權限。</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>允許在任何機器上請求極高風險工作流。</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>允許執行開放式工作流。其保險箱會自動核准。</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>允許執行開放式工作流程。這些流程的 {0} 請求會自動核准。</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>允許永久刪除角色。</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>允許檢視和修改全域應用程式設定。</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>允許檢視機器、工作流歷史、Lockboxes、追蹤與調查記錄。</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>允許檢視機器、工作流程歷史、{0} 請求、追蹤和調查記錄。</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>允許檢視系統層級的資訊與設定。</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>核准中等風險工作流</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>核准自己的工作流程請求</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>核准自己的 {0} 請求</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>核准安全工作流</value>

@@ -120,9 +120,6 @@
   <data name="Integrated File Management" xml:space="preserve">
     <value>Geïntegreerd Bestandsbeheer</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Kluizen</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>Machines</value>
   </data>
@@ -150,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Responsief Ontwerp</value>
   </data>
-  <data name="Review requests" xml:space="preserve">
-    <value>Aanvragen beoordelen</value>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>{0}-Aanvragen beoordelen</value>
   </data>
-  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
-    <value>Controleer de aangevraagde bewerking, parameters en vaste doelen.</value>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>Controleer de aangevraagde bewerking, parameters en vaste doelen. ({0}-verzoeken)</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Robuuste integratietests</value>

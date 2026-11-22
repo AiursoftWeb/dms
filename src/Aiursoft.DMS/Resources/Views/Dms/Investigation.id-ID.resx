@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Mode persetujuan apa pun</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>Konteks persetujuan</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>Permintaan {0}</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>Persetuju</value>
@@ -60,8 +60,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>Investigasi</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>ID Lockbox</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>ID {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Mesin</value>
@@ -102,17 +102,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Direkam hingga (eksklusif, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>Diminta</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Diminta (permintaan {0})</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>Jenis alur kerja yang diminta</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Jenis alur kerja yang diminta (permintaan {0})</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Pemohon</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Pemohon (permintaan {0})</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>ID Pemohon</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID Pemohon (permintaan {0})</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>ID alur kerja akar</value>

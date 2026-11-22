@@ -120,9 +120,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>Undersökning</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Låseskåp</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Låst ut</value>
   </data>
@@ -138,8 +135,8 @@
   <data name="Manage" xml:space="preserve">
     <value>Hantera</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Mina lådkistor</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Mina {0}-förfrågningar</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Inte hittat</value>

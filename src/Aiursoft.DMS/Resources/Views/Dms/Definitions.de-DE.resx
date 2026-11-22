@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Darf genehmigen</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Eigene Anfragen genehmigen</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Eigene {0}-Anfragen genehmigen</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Anfragen erlaubt</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Es sind keine öffentlichen Standard-Workflows registriert.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Berechtigungen gelten für den ausgewählten Cluster und das Risikoniveau jedes Workflows. Die automatische Genehmigung erfordert die Berechtigung zum Anfordern. Die Genehmigung eigener Anfragen erfordert zusätzlich die Berechtigung zur Selbstgenehmigung.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Erfordert Maschinenziele</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Rollenberechtigungen gelten für jeden Computer in dieser DMS-Instanz und für jedes Risikoniveau der Workflows. Automatische Freigabe erfordert die Berechtigung zum Anfordern. Die Freigabe der eigenen Anfrage erfordert zusätzlich die Berechtigung zur Selbstfreigabe.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Rollenberechtigungen gelten für jeden Computer in dieser DMS-Instanz und für jedes Risikoniveau der Workflows. Automatische Freigabe erfordert die Berechtigung zum Anfordern. Die Freigabe der eigenen {0}-Anfrage erfordert zusätzlich die Berechtigung zur Selbstfreigabe.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Sicher</value>

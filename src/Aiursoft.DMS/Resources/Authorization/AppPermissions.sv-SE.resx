@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Lägg till nya användare</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Tillåter godkännande eller avvisande av arbetsflödesansökningar med hög risk på valfri maskin.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avvisande av {0}-ansökningar med hög risk på valfri maskin.</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Tillåter godkännande eller avslag av lågriskarbetsflödesansökningar på valfri enhet.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avslag av lågriskarbetsflödesansökningar på valfri enhet. ({0}-förfrågningar)</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Tillåter godkännande eller avvisande av arbetsflödesansökningar med medelrisk på valfri maskin.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avvisande av {0}-ansökningar med medelrisk på valfri maskin.</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Tillåter godkännande eller avslag av säkra arbetsflödesbegäran på valfri maskin.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avslag av säkra {0}-begäran på valfri maskin.</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Tillåter godkännande eller avvisande av arbetsflödesbegäranden med mycket hög risk på valfri enhet.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Tillåter godkännande eller avvisande av arbetsflödesbegäranden med mycket hög risk på valfri enhet. ({0}-förfrågningar)</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Tillåter att tilldela eller ta bort roller för alla användare.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Tillåter att du fattar beslut om egna begäranden när du också har godkännandehandling för deras risknivå.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Tillåter att du fattar beslut om egna begäranden när du också har godkännandehandling för deras risknivå. ({0}-förfrågningar)</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Tillåter modifiering av rollnamn och deras tilldelade behörigheter.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Tillåter att begära arbetsflöden med mycket hög risk på valfri maskin.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Tillåter att köra öppna arbetsflöden. Deras lådor godkänns automatiskt.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Tillåter att köra öppna arbetsflöden. Deras {0}-förfrågningar godkänns automatiskt.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Tillåter permanent borttagning av roller.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Tillåter visning och ändring av globala programinställningar.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Tillåter visning av maskiner, arbetsflödeshistorik, lådor, spårar och undersökningsregister.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Tillåter visning av maskiner, arbetsflödeshistorik, {0}-förfrågningar, spårar och undersökningsregister.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Ger tillgång att visa systemnivåinformation och inställningar.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Godkänn arbetsflöden med medelrisk</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Godkänn egna arbetsflödesbegäran</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Godkänn egna {0}-begäran</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Godkänn säkra arbetsflöden</value>

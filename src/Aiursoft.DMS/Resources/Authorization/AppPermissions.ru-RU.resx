@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Добавление новых пользователей</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Позволяет одобрять или отклонять запросы рабочих процессов высокого риска на любом компьютере.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Позволяет одобрять или отклонять запросы {0} рабочих процессов высокого риска на любом компьютере.</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Позволяет одобрять или отклонять запросы рабочих процессов низкого риска на любом компьютере.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Позволяет одобрять или отклонять запросы {0} рабочих процессов низкого риска на любом компьютере.</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Позволяет одобрять или отклонять запросы рабочих процессов со средним уровнем риска на любом компьютере.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Позволяет одобрять или отклонять запросы {0} рабочих процессов со средним уровнем риска на любом компьютере.</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Позволяет одобрять или отклонять запросы на безопасные рабочие процессы на любом компьютере.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Позволяет одобрять или отклонять запросы {0} на безопасные рабочие процессы на любом компьютере.</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Позволяет одобрять или отклонять запросы рабочих процессов с очень высоким уровнем риска на любом компьютере.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Позволяет одобрять или отклонять запросы {0} рабочих процессов с очень высоким уровнем риска на любом компьютере.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Разрешает назначение или снятие ролей для любого пользователя.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Позволяет принимать решения по собственным запросам при наличии разрешения на одобрение для соответствующего уровня риска.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Позволяет принимать решения по собственным запросам {0} при наличии разрешения на одобрение для соответствующего уровня риска.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Разрешает изменение названий ролей и их назначенных разрешений.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Позволяет запрашивать рабочие процессы с очень высоким уровнем риска на любом компьютере.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Позволяет запускать открытые рабочие процессы. Их Lockboxes утверждаются автоматически.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Позволяет запускать открытые рабочие процессы. Их запросы {0} утверждаются автоматически.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Разрешает окончательное удаление ролей.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Позволяет просматривать и изменять глобальные параметры приложения.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Позволяет просматривать машины, историю рабочих процессов, Lockboxes, трассировки и записи расследований.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Позволяет просматривать машины, историю рабочих процессов, запросы {0}, трассировки и записи расследований.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Разрешает просмотр системной информации и настроек.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Одобрение рабочих процессов со средним уровнем риска</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Одобрение собственных запросов рабочих процессов</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Одобрение собственных запросов {0} рабочих процессов</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Одобрение безопасных рабочих процессов</value>

@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.DMS.Authorization
 @using Microsoft.Extensions.Localization
 @model Aiursoft.DMS.Models.PermissionsViewModels.DetailsViewModel
@@ -25,7 +26,7 @@
 @* Permission Information Card *@
 <div class="card mb-3">
     <div class="card-header">
-        <h5 class="card-title">@PermissionLocalizer[Model.Permission.Name]</h5>
+        <h5 class="card-title">@PermissionLocalizer[Model.Permission.Name, LockboxText.Name]</h5>
         <h6 class="card-subtitle text-muted">@Localizer["Permission Information"]</h6>
     </div>
     <div class="card-body">
@@ -34,10 +35,10 @@
             <dd class="col-sm-9"><code>@Model.Permission.Key</code></dd>
 
             <dt class="col-sm-3">@Localizer["Permission Name"]</dt>
-            <dd class="col-sm-9">@PermissionLocalizer[Model.Permission.Name]</dd>
+            <dd class="col-sm-9">@PermissionLocalizer[Model.Permission.Name, LockboxText.Name]</dd>
 
             <dt class="col-sm-3">@Localizer["Description"]</dt>
-            <dd class="col-sm-9">@PermissionLocalizer[Model.Permission.Description]</dd>
+            <dd class="col-sm-9">@PermissionLocalizer[Model.Permission.Description, LockboxText.Name]</dd>
         </dl>
     </div>
 </div>

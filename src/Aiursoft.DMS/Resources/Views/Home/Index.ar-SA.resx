@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>فحص اللينت</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>يسجّل لوك بوكس من طلب إجراءً، والأهداف التي يشملها، وقرار الموافقة.</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>يسجّل {0} من طلب إجراءً، والأهداف التي يشملها، وقرار الموافقة.</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>رخصة MIT</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>الحفاظ على جودة الرمز العالي</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>أدِر الخوادم باستخدام سير عمل للأشخاص والذكاء الاصطناعي. راجع الطلب، ووافق على نطاقه، وتابع كل عملية.</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>أدِر الخوادم باستخدام سير عمل للأشخاص والذكاء الاصطناعي. راجع الطلب {0}، ووافق على نطاقه، وتابع كل عملية.</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>لوحة تحكم الإدارة</value>

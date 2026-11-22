@@ -120,9 +120,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>الاستقصاء</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>الصناديق الآمنة</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>حظر الحساب</value>
   </data>
@@ -138,8 +135,8 @@
   <data name="Manage" xml:space="preserve">
     <value>إدارة</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>صناديق القفل الخاصة بي</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>طلباتي في {0}</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>غير موجود</value>

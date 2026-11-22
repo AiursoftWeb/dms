@@ -120,9 +120,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>Undersøgelse</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Låseskabe</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Låst ud</value>
   </data>
@@ -138,8 +135,8 @@
   <data name="Manage" xml:space="preserve">
     <value>Administrer</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Mine låsebokse</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Mine {0}-anmodninger</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Ikke fundet</value>

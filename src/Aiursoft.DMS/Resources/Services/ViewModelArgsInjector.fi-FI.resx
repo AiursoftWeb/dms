@@ -120,9 +120,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>Tutkinta</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Lukkot</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Lukitus</value>
   </data>
@@ -138,8 +135,8 @@
   <data name="Manage" xml:space="preserve">
     <value>Hallinnoi</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Oma lukkotila</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Omat {0}-pyynnöt</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Ei löytynyt</value>

@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>新規ユーザーの追加</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>任意のマシンで、高リスクのワークフロー要求を承認または拒否できます。</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>任意のマシンで、高リスクのワークフロー{0} 要求を承認または拒否できます。</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>すべてのマシンで、低リスクのワークフロー要求の承認または拒否を許可します。</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>すべてのマシンで、低リスクのワークフロー{0} 要求の承認または拒否を許可します。</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>すべてのマシンで中リスクのワークフロー要求を承認または拒否できます。</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>すべてのマシンで中リスクのワークフロー{0} 要求を承認または拒否できます。</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>すべてのマシンで、安全なワークフロー要求の承認または拒否を許可します。</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>すべてのマシンで、安全なワークフロー{0} 要求の承認または拒否を許可します。</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>任意のデバイスで、非常に高リスクのワークフロー要求を承認または拒否できます。</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>任意のデバイスで、非常に高リスクのワークフロー{0} 要求を承認または拒否できます。</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>任意のユーザーに対してロールの割り当てまたは削除を許可します。</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>該当するリスクレベルの承認権限を保有している場合、自身のワークフローリクエストを承認または拒否できます。</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>該当するリスクレベルの承認権限を保有している場合、自身のワークフロー{0} リクエストを承認または拒否できます。</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>ロール名とその割り当てられた権限の変更を許可します。</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>任意のマシンで、非常に高リスクのワークフローのリクエストを許可します。</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Open ワークフローの実行を許可します。その Lockbox は自動的に承認されます。</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Open ワークフローの実行を許可します。その {0} リクエスト は自動的に承認されます。</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>ロールの完全な削除を許可します。</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>グローバルなアプリケーション設定の表示および編集を許可します。</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>マシン、ワークフロー履歴、Lockboxes、トレース、調査記録の閲覧を許可します。</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>マシン、ワークフロー履歴、{0} リクエスト、トレース、調査記録の閲覧を許可します。</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>システムレベルの情報と設定の表示を許可します。</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>中リスクワークフローの承認</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>自分のワークフロー要求を承認する</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>自分のワークフロー{0} 要求を承認する</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>安全なワークフローの承認</value>

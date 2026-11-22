@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>Keputusan</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Kotak Kunci</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Berikutnya</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Sebelumnya</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Permintaan</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>

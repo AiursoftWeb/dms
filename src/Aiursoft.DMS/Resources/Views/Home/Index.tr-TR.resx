@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lint Kontrolü</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Lockbox, bir işlemi kimin talep ettiğini, hedeflerini ve onay kararını kaydeder.</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0}, bir işlemi kimin talep ettiğini, hedeflerini ve onay kararını kaydeder.</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT Lisansı</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>Yüksek Kod Kalitesini Koruyun</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>İnsanlar ve yapay zekâ için iş akışlarıyla sunucuları yönetin. İsteği inceleyin, kapsamını onaylayın ve her işlemi takip edin.</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>İnsanlar ve yapay zekâ için iş akışlarıyla sunucuları yönetin. {0} İsteği inceleyin, kapsamını onaylayın ve her işlemi takip edin.</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>Yönetim Paneli</value>
