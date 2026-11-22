@@ -11,12 +11,9 @@ public class DmsViewModel : UiStackLayoutViewModel
     public List<Machine> Machines { get; set; } = [];
     public List<LockboxRequest> Lockboxes { get; set; } = [];
     public List<WorkflowRun> Runs { get; set; } = [];
-    public bool CanDecide { get; set; }
     public List<PersonalApiKey> Keys { get; set; } = [];
-    public LockboxRequest? Lockbox { get; set; }
     public WorkflowRun? Run { get; set; }
     public WorkflowCatalogResult? Catalog { get; set; }
-    public IReadOnlyList<ArtifactReference> InputArtifacts { get; set; } = [];
     public StoredDmsArtifact? Artifact { get; set; }
     public string? ArtifactText { get; set; }
     public WorkflowAuditQuery AuditQuery { get; set; } = new();

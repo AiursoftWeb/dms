@@ -248,6 +248,14 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (item.RequesterId == user) await access.PrincipalAsync(user);
         else await access.RequireViewAsync(user);
 
+        var status = await DescribeLockboxAsync(item);
+        access.Audit(user, "lockbox.get", id);
+        await db.SaveChangesAsync();
+        return status;
+    });
+
+    internal async Task<LockboxStatus> DescribeLockboxAsync(LockboxRequest item)
+    {
         var people = await db.Users.AsNoTracking()
             .Where(person => person.Id == item.RequesterId || person.Id == item.ApproverId)
             .Select(person => new { person.Id, person.DisplayName, person.UserName })
@@ -256,12 +264,10 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var decidedBy = item.Decision == DecisionState.Withdrawn ? requester :
             item.ApproverId == null ? null : people.GetValueOrDefault(item.ApproverId, "Unknown user");
         var approvers = await access.EligibleApproversAsync(item.Risk, item.RequesterId);
-        access.Audit(user, "lockbox.get", id);
-        await db.SaveChangesAsync();
         return new LockboxStatus(item.Id, requester, DateTime.SpecifyKind(item.CreatedAt, DateTimeKind.Utc), item.Decision,
             item.DecidedAt is { } decidedAt ? DateTime.SpecifyKind(decidedAt, DateTimeKind.Utc) : null,
             decidedBy, item.Automatic, approvers, item.WorkflowId);
-    });
+    }
 
     public async Task<OpenWorkflowResult> WaitForOpenResultAsync(string user, Guid id, CancellationToken token)
     {
