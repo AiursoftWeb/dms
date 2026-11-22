@@ -535,6 +535,9 @@ public static partial class DmsCommandApp
         private readonly Option<Guid> _request = new("--request-id")
             { Description = "Reuse this ID only to retry the same submission." };
 
+        private readonly Option<bool> _showLockboxId = new("--show-lockbox-id")
+            { Description = "Print the Lockbox and workflow IDs immediately after submission." };
+
         private readonly Option<string> _reason = new("--reason");
         private readonly Option<int> _skip = new("--skip")
             { Description = "Skip this many trace entries before returning the next page." };
@@ -622,6 +625,7 @@ public static partial class DmsCommandApp
                     : "Optional reason for the automatically approved Lockbox.";
                 yield return _request;
                 yield return _reason;
+                if (readResult != null) yield return _showLockboxId;
                 if (definition?.RequiresTargets == true)
                 {
                     if (definition.SingleMachineOnly)
@@ -701,7 +705,7 @@ public static partial class DmsCommandApp
                             ? await preparedInput(client, context, requestId)
                             : inputFromWorkflowId?.Invoke(id) ?? input?.Invoke(context) ?? "{}"
                 });
-                if (readResult != null)
+                if (ShouldWaitForOpenResult(context))
                     response = await ReadOpenResultAsync(client, response, requestId, context);
             }
             else
@@ -736,10 +740,15 @@ public static partial class DmsCommandApp
             return response;
         }
 
-        protected override void WriteResponse(TextWriter output, DmsResponse response, OutputFormat format, bool color, int width)
+        private bool ShouldWaitForOpenResult(ParseResult context) =>
+            readResult != null && !context.GetValue(_showLockboxId);
+
+        protected override void WriteResponse(ParseResult context, DmsResponse response, OutputFormat format, bool color, int width)
         {
-            if (readResult == null) base.WriteResponse(output, response, format, color, width);
-            else DmsOutputWriter.WriteResult(output, response.Data!, format, color, width);
+            if (ShouldWaitForOpenResult(context))
+                DmsOutputWriter.WriteResult(context.InvocationConfiguration.Output, response.Data!, format, color, width);
+            else
+                base.WriteResponse(context, response, format, color, width);
         }
 
         private async Task<DmsResponse> ReadOpenResultAsync(DmsApiClient client, DmsResponse response, Guid requestId,

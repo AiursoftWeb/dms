@@ -60,15 +60,24 @@ public class DmsRolePermissionTests : TestBase
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe), DmsPermissions.AutoApprove(RiskLevel.Safe));
         var requestId = Guid.NewGuid();
-        async Task<Aiursoft.CommandFramework.Models.TestResult> ListAsync(string format) =>
+        async Task<Aiursoft.CommandFramework.Models.TestResult> ListAsync(string format, params string[] options) =>
             await Client.DmsCommandApp.Create().TestRunAsync(["machine", "list",
                 "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key,
-                "--request-id", requestId.ToString(), "--output-format", format]);
+                "--request-id", requestId.ToString(), "--output-format", format, ..options]);
 
         var denied = await ListAsync("json");
         Assert.AreEqual(1, denied.ProgramReturn);
         Assert.AreEqual(string.Empty, denied.StdOut);
         StringAssert.Contains(denied.StdErr, "Run open workflows permission is required.");
+        var deniedReceipt = await ListAsync("json", "--show-lockbox-id");
+        Assert.AreEqual(1, deniedReceipt.ProgramReturn);
+        Assert.AreEqual(string.Empty, deniedReceipt.StdOut);
+        StringAssert.Contains(deniedReceipt.StdErr, "Run open workflows permission is required.");
+
+        var unsupported = await Client.DmsCommandApp.Create().TestRunAsync(
+            ["machine", "layout", "df", "--show-lockbox-id", "--reason", "Safe command"]);
+        Assert.AreNotEqual(0, unsupported.ProgramReturn);
+        StringAssert.Contains(unsupported.StdErr, "--show-lockbox-id");
 
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
@@ -178,7 +187,7 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
-    public async Task OpenMachineListFailureKeepsApprovedLockboxAndPrintsRecoveryIds()
+    public async Task OpenMachineListReceiptReturnsEvenWhenTheWorkflowResultFails()
     {
         var setup = await ArrangeAsync(AppPermissionNames.CanRequestOpenRiskWorkflow);
         var request = ClusterWorkflows.GetMachines.Request(new EmptyInput(), "");
@@ -196,9 +205,27 @@ public class DmsRolePermissionTests : TestBase
         db.AddRange(box, run);
         await db.SaveChangesAsync();
 
-        var result = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "list",
-            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--request-id", request.RequestId.ToString(),
-            "--output-format", "json"]);
+        string[] args = ["machine", "list", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key,
+            "--request-id", request.RequestId.ToString()];
+        foreach (var format in new[] { "table", "json", "csv" })
+        {
+            var receipt = await Client.DmsCommandApp.Create().TestRunAsync([..args, "--show-lockbox-id", "--output-format", format]);
+            Assert.AreEqual(0, receipt.ProgramReturn, receipt.StdErr);
+            Assert.AreEqual(string.Empty, receipt.StdErr);
+            StringAssert.Contains(receipt.StdOut, new LockboxId(box.Id).ToString());
+            StringAssert.Contains(receipt.StdOut, run.Id.ToString());
+            Assert.DoesNotContain("private diagnostic", receipt.StdOut);
+            if (format == "json")
+            {
+                var data = (JObject)JObject.Parse(receipt.StdOut)["Data"]!;
+                Assert.HasCount(2, data);
+                Assert.AreEqual(new LockboxId(box.Id), LockboxId.Parse(data["LockboxId"]!.Value<string>()!));
+                Assert.AreEqual(run.Id.ToString(), data["WorkflowId"]!.Value<string>());
+            }
+            else if (format == "csv") StringAssert.StartsWith(receipt.StdOut, "LockboxId,WorkflowId");
+        }
+
+        var result = await Client.DmsCommandApp.Create().TestRunAsync([..args, "--output-format", "json"]);
         Assert.AreEqual(1, result.ProgramReturn);
         Assert.AreEqual(string.Empty, result.StdOut);
         StringAssert.Contains(result.StdErr, "Workflow state is Failed.");
