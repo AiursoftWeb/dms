@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Mikä tahansa hyväksymistapa</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>Hyväksymiskonteksti</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0}-pyyntö</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>Hyväksyjä</value>
@@ -60,8 +60,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>Tutkinta</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>Lukkotilan ID</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0}-tunniste</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Kone</value>
@@ -102,17 +102,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Kirjattu asti (ei sisälly, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>Pyydetty</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Pyydetty ({0}-pyyntöjen)</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>Pyydetty työvirran tyyppi</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Pyydetty työvirran tyyppi ({0}-pyyntöjen)</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Pyytöjä tekevä</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Pyytöjä tekevä ({0}-pyyntöjen)</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>Pyyntötekijän ID</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>Pyyntötekijän ID ({0}-pyyntöjen)</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Työvirran juuri-ID</value>

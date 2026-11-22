@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Herhangi bir onay modu</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>Onay bağlamı</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} isteği</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>Onaylayan</value>
@@ -63,8 +63,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>İnceleme</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>Lockbox Kimliği</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} Kimliği</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Makine</value>
@@ -105,17 +105,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Kayıt bitişi (hariç, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>Talep Edildi</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Talep Edildi ({0} istekleri)</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>Talep edilen iş akışı türü</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Talep edilen iş akışı türü ({0} istekleri)</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Talep eden</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Talep eden ({0} istekleri)</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>Talep Eden Kimliği</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>Talep Eden Kimliği ({0} istekleri)</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Kök iş akışı kimliği</value>

@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>يحق له الموافقة</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>يُسمح بالموافقة على الطلبات الخاصة</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>يُسمح بالموافقة على الطلبات {0} الخاصة</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>يمكنه تقديم طلب</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>لا توجد إجراءات عمل قياسية عامة مسجّلة.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>تسري الأذونات على العنقود المحدد ومستوى المخاطر لكل سير عمل. تتطلب الموافقة التلقائية إذنًا لتقديم الطلب. وتتطلب الموافقة على طلبك أيضًا إذن الموافقة الذاتية.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>يتطلب استهداف أجهزة</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>المخاطر</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>تنطبق أذونات الأدوار على كل جهاز في هذا مثيل DMS وعلى مستوى المخاطر الخاص بكل سير عمل. تتطلب الموافقة التلقائية إذنًا للطلب. كما يتطلب موافقة طلبك الخاص إذن الموافقة الذاتية.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>تنطبق أذونات الأدوار على كل جهاز في هذا مثيل DMS وعلى مستوى المخاطر الخاص بكل سير عمل. تتطلب الموافقة التلقائية إذنًا للطلب. كما يتطلب موافقة طلبك الخاص إذن الموافقة الذاتية. (طلبات {0})</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>آمن</value>

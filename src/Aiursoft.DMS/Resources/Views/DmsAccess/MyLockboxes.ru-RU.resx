@@ -24,9 +24,6 @@
   <data name="Decision" xml:space="preserve">
     <value>Решение</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Мои сейфы</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Далее</value>
   </data>
@@ -35,9 +32,6 @@
   </data>
   <data name="Reason" xml:space="preserve">
     <value>Причина</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Заявка</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Процесс</value>

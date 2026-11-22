@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Tambahkan Pengguna Baru</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Memungkinkan persetujuan atau penolakan permintaan alur kerja berisiko tinggi di mesin mana pun.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Memungkinkan persetujuan atau penolakan permintaan {0} alur kerja berisiko tinggi di mesin mana pun.</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Memungkinkan persetujuan atau penolakan permintaan alur kerja berisiko rendah di mesin mana pun.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Memungkinkan persetujuan atau penolakan permintaan {0} alur kerja berisiko rendah di mesin mana pun.</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Memungkinkan persetujuan atau penolakan permintaan alur kerja berisiko sedang di mesin mana pun.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Memungkinkan persetujuan atau penolakan permintaan {0} alur kerja berisiko sedang di mesin mana pun.</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Mengizinkan persetujuan atau penolakan permintaan alur kerja aman di mesin mana pun.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Mengizinkan persetujuan atau penolakan permintaan {0} alur kerja aman di mesin mana pun.</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Memungkinkan persetujuan atau penolakan permintaan alur kerja berisiko sangat tinggi di mesin mana pun.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Memungkinkan persetujuan atau penolakan permintaan {0} alur kerja berisiko sangat tinggi di mesin mana pun.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Memungkinkan menetapkan atau mencabut peran untuk pengguna mana pun.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Memungkinkan Anda memutuskan permintaan Anda sendiri ketika Anda juga memiliki izin persetujuan untuk tingkat risiko mereka.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Memungkinkan Anda memutuskan permintaan {0} Anda sendiri ketika Anda juga memiliki izin persetujuan untuk tingkat risiko mereka.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Memungkinkan modifikasi nama peran dan izin yang ditetapkan padanya.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Mengizinkan permintaan alur kerja berisiko sangat tinggi di mesin mana pun.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Memungkinkan menjalankan alur kerja Open. Lockboxes mereka disetujui secara otomatis.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Memungkinkan menjalankan alur kerja Open. permintaan {0} mereka disetujui secara otomatis.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Memungkinkan penghapusan permanen peran.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Memungkinkan melihat dan mengubah pengaturan aplikasi global.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Memungkinkan penelusuran mesin, riwayat alur kerja, Lockboxes, jejak, dan catatan investigasi.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Memungkinkan penelusuran mesin, riwayat alur kerja, permintaan {0}, jejak, dan catatan investigasi.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Memungkinkan melihat informasi dan pengaturan tingkat sistem.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Setujui alur kerja berisiko menengah</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Setujui permintaan alur kerja sendiri</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Setujui permintaan {0} alur kerja sendiri</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Setujui alur kerja aman</value>

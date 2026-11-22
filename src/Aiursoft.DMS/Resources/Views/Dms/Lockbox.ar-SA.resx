@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>المعرّف</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>صندوق الأمانات</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>تسلسل استدعاءات صندوق الإيداع الآمن</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>العملية</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>المعلمات</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>السبب</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>مقدّم الطلب</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>المخاطر</value>

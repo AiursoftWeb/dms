@@ -3,6 +3,7 @@ using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Controllers;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
+using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Services.FileStorage;
 using Aiursoft.UiStack.Layout;
 using Aiursoft.UiStack.Navigation;
@@ -18,6 +19,7 @@ using Aiursoft.UiStack.Views.Shared.Components.UserDropdown;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
@@ -87,7 +89,6 @@ public class ViewModelArgsInjector(
         _ = localizer["API Keys"];
         _ = localizer["Cluster access"];
         _ = localizer["DMS"];
-        _ = localizer["Lockboxes"];
         _ = localizer["Machines"];
         _ = localizer["Operations"];
         _ = localizer["Workflow history"];
@@ -95,7 +96,9 @@ public class ViewModelArgsInjector(
     
         _ = localizer["Artifact"];
     
-        _ = localizer["My Lockboxes"];
+        _ = localizer["My {0} requests"];
+        _ = localizer["My requests"];
+        _ = localizer["My approvals"];
         _ = localizer["SSH public keys"];
     
         _ = localizer["Add an SSH public key"];
@@ -107,7 +110,7 @@ public class ViewModelArgsInjector(
         HttpContext context,
         UiStackLayoutViewModel toInject)
     {
-        toInject.PageTitle = localizer[toInject.PageTitle ?? "View"];
+        toInject.PageTitle = LocalizeChromeText(toInject.PageTitle ?? "View");
         toInject.AppName = globalSettingsService.GetSettingValueAsync(SettingsMap.ProjectName).GetAwaiter().GetResult();
         toInject.Theme = UiTheme.Light;
         toInject.SidebarTheme = UiSidebarTheme.Default;
@@ -123,7 +126,7 @@ public class ViewModelArgsInjector(
         var projectName = globalSettingsService.GetSettingValueAsync(SettingsMap.ProjectName).GetAwaiter().GetResult();
         var brandName = globalSettingsService.GetSettingValueAsync(SettingsMap.BrandName).GetAwaiter().GetResult();
         var brandHomeUrl = globalSettingsService.GetSettingValueAsync(SettingsMap.BrandHomeUrl).GetAwaiter().GetResult();
-        toInject.PageTitle = localizer[toInject.PageTitle ?? "View"];
+        toInject.PageTitle = LocalizeChromeText(toInject.PageTitle ?? "View");
         toInject.AppName = projectName;
         toInject.Theme = preferDarkTheme ? UiTheme.Dark : UiTheme.Light;
         toInject.SidebarTheme = preferDarkTheme ? UiSidebarTheme.Dark : UiSidebarTheme.Default;
@@ -142,7 +145,14 @@ public class ViewModelArgsInjector(
             ThemeSwitchApiCallEndpoint = "/api/switch-theme"
         };
 
-        var currentViewingController = context.GetRouteValue("controller")?.ToString();
+        var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+        var currentViewingController = action?.ControllerName ?? context.GetRouteValue("controller")?.ToString();
+        var activeLockboxLink = (currentViewingController, action?.ActionName) switch
+        {
+            ("Dms", nameof(DmsController.Lockboxes) or nameof(DmsController.Lockbox)) => "/Dms/Lockboxes",
+            ("DmsAccess", nameof(DmsAccessController.MyLockboxes) or nameof(DmsAccessController.MyLockbox)) => "/DmsAccess/MyLockboxes",
+            _ => null
+        };
         var navGroupsForView = new List<NavGroup>();
 
         foreach (var groupDef in navigationState.NavMap)
@@ -169,7 +179,8 @@ public class ViewModelArgsInjector(
                         linksForView.Add(new CascadedLink
                         {
                             Href = linkDef.Href,
-                            Text = localizer[linkDef.Text]
+                            Text = LocalizeChromeText(linkDef.Text),
+                            IsActive = linkDef.Href == activeLockboxLink
                         });
                     }
                 }
@@ -179,15 +190,12 @@ public class ViewModelArgsInjector(
                     itemsForView.Add(new CascadedSideBarItem
                     {
                         UniqueId = itemDef.UniqueId,
-                        Text = localizer[itemDef.Text],
+                        Text = LocalizeChromeText(itemDef.Text),
                         LucideIcon = itemDef.Icon,
-                        IsActive = linksForView.Any(l =>
-                        {
-                            // Extract controller name from href (e.g., "/Manage/Index" -> "Manage")
-                            var hrefController = l.Href.TrimStart('/').Split('/').FirstOrDefault();
-                            // Exact match to avoid false positives like "Manage" matching "ManagePayroll"
-                            return string.Equals(hrefController, currentViewingController, StringComparison.OrdinalIgnoreCase);
-                        }),
+                        IsActive = itemDef.Text == LockboxText.Name
+                            ? linksForView.Any(link => link.IsActive)
+                            : activeLockboxLink == null && linksForView.Any(link =>
+                                string.Equals(link.Href.TrimStart('/').Split('/')[0], currentViewingController, StringComparison.OrdinalIgnoreCase)),
                         Links = linksForView
                     });
                 }
@@ -197,7 +205,7 @@ public class ViewModelArgsInjector(
             {
                 navGroupsForView.Add(new NavGroup
                 {
-                    Name = localizer[groupDef.Name],
+                    Name = LocalizeChromeText(groupDef.Name),
                     Items = itemsForView.Select(t => (SideBarItem)t).ToList()
                 });
             }
@@ -312,6 +320,13 @@ public class ViewModelArgsInjector(
         }
     }
 
+
+    private string LocalizeChromeText(string text) => text switch
+    {
+        LockboxText.Name => LockboxText.Name,
+        LockboxText.MyRequests => LockboxText.Format(localizer[text].Value),
+        _ => localizer[text].Value
+    };
 
     private async Task<string> GetLogoUrl(HttpContext context)
     {

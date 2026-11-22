@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>Απόφαση</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Κασσέτες κλειδώματος</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Επόμενο</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Προηγούμενο</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Αίτημα</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Κίνδυνος</value>

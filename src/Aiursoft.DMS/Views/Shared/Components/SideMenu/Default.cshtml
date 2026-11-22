@@ -1,0 +1,24 @@
+@model Aiursoft.UiStack.Views.Shared.Components.SideMenu.SideMenuViewModel
+
+<ul class="sidebar-nav">
+    @foreach (var group in Model.Groups)
+    {
+        @if (group.Items is [var standalone] && standalone.Text == group.Name)
+        {
+            <li class="mt-3">
+                <ul class="list-unstyled mb-0" aria-label="@group.Name">
+                    @* ReSharper disable once Mvc.PartialViewNotResolved *@
+                    @await Html.PartialAsync("Components/SideMenu/_SideBarItem", standalone)
+                </ul>
+            </li>
+            continue;
+        }
+        <li class="sidebar-header">@group.Name</li>
+        @foreach (var item in group.Items)
+        {
+            @* UiStack supplies this compiled partial. *@
+            @* ReSharper disable once Mvc.PartialViewNotResolved *@
+            @await Html.PartialAsync("Components/SideMenu/_SideBarItem", item)
+        }
+    }
+</ul>

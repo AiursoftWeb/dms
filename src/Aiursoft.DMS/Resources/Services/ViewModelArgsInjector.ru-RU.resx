@@ -120,9 +120,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>Расследование</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Замок-хранилища</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Блокировка</value>
   </data>
@@ -138,8 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Управление</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Мои сейфы</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Мои запросы {0}</value>
+  </data>
+  <data name="My requests" xml:space="preserve">
+    <value>Мои запросы</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>Мои согласования</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Не найдено</value>

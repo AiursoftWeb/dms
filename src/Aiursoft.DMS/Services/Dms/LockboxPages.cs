@@ -16,7 +16,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var risks = Enum.GetValues<RiskLevel>().Where(risk => DmsPermissions.CanDecide(principal, risk, ownRequest: false)).ToArray();
         var canReview = !ownRequests && risks.Length != 0;
         var selfApproval = DmsPermissions.CanApproveOwn(principal);
-        scope ??= ownRequests ? "all" : canReview ? "review" : "pending";
+        scope ??= ownRequests ? "all" : "review";
         page = Math.Clamp(page, 0, 100_000);
         var search = query?.Trim() ?? "";
         if (search.Length > 200) throw new DmsException(400, "Search is limited to 200 characters.");
@@ -26,8 +26,10 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         requests = scope switch
         {
             "all" => requests,
-            "review" when canReview => requests.Where(box => box.Decision == DecisionState.Pending &&
-                risks.Contains(box.Risk) && (selfApproval || box.RequesterId != actor)),
+            "review" when !ownRequests => canReview
+                ? requests.Where(box => box.Decision == DecisionState.Pending &&
+                    risks.Contains(box.Risk) && (selfApproval || box.RequesterId != actor))
+                : requests.Where(_ => false),
             "pending" => requests.Where(box => box.Decision == DecisionState.Pending),
             "approved" => requests.Where(box => box.Decision == DecisionState.Approved),
             "denied" => requests.Where(box => box.Decision == DecisionState.Denied),
@@ -57,14 +59,14 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
 
         return new LockboxQueueViewModel
         {
-            PageTitle = ownRequests ? "My Lockboxes" : "Lockboxes",
+            PageTitle = ownRequests ? LockboxText.MyRequests : LockboxText.Name,
             Entries = visible.Select(row => new LockboxQueueEntry(row.Item,
                 names.GetValueOrDefault(row.Item.RequesterId, "Unknown user"),
                 row.Targets.Take(3).Select(id => machines.GetValueOrDefault(id, id.ToString())).ToList(),
                 row.Targets.Length, canReview && row.Item.Decision == DecisionState.Pending &&
                     DmsPermissions.CanDecide(principal, row.Item.Risk, row.Item.RequesterId == actor),
                 executions.GetValueOrDefault(row.Item.Id))).ToList(),
-            OwnRequests = ownRequests, CanReview = canReview, Scope = scope, Search = search,
+            OwnRequests = ownRequests, Scope = scope, Search = search,
             Page = page, HasNextPage = rows.Count > pageSize, Notice = notice
         };
     }
@@ -80,7 +82,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var snapshot = LockboxSnapshot.Read(item);
         return new LockboxViewModel
         {
-            PageTitle = "Lockbox",
+            PageTitle = LockboxText.Name,
             Item = item,
             Status = await workflows.DescribeLockboxAsync(item),
             Snapshot = snapshot,

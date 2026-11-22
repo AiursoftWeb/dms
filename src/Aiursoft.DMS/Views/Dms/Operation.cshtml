@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.DMS.Contracts
 @using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.WebTools
@@ -29,7 +30,7 @@
         }
         @if (run.LockboxId is { } lockboxId)
         {
-            <a asp-action="Lockbox" asp-route-id="@(new LockboxId(lockboxId))">@Localizer["Approval request"]</a>
+            <a asp-action="Lockbox" asp-route-id="@(new LockboxId(lockboxId))">@LockboxText.Format(@Localizer["{0} request"].Value)</a>
         }
     </nav>
 

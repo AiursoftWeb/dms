@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Får godkänna</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Får godkänna egna förfrågningar</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Får godkänna egna {0}-förfrågningar</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Får begära</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Inga offentliga standardarbetsflöden har registrerats.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Behörigheterna gäller för det valda klustret och varje arbetsflödes risknivå. Automatisk godkänning kräver behörighet att skicka begäranden. För att godkänna en egen begäran krävs även behörighet för egen godkänning.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Kräver maskinmål</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Rollbehörigheter gäller för varje maskin i denna DMS-instans och varje arbetsflödes risknivå. Automatisk godkännande kräver behörighet att begära. Att godkänna din egen begäran kräver också självgodkännandebehörighet.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Rollbehörigheter gäller för varje maskin i denna DMS-instans och varje arbetsflödes risknivå. Automatisk godkännande kräver behörighet att begära. Att godkänna din egen {0}-begäran kräver också självgodkännandebehörighet.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Säker</value>

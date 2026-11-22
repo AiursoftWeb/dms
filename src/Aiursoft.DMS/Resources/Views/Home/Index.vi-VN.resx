@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Kiểm tra Lint</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Lockbox ghi lại ai đã yêu cầu một thao tác, các mục tiêu của nó và quyết định phê duyệt.</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} ghi lại ai đã yêu cầu một thao tác, các mục tiêu của nó và quyết định phê duyệt.</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Giấy phép MIT</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>Duy trì chất lượng mã nguồn cao</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>Quản lý máy chủ với các quy trình làm việc cho con người và AI. Xem xét yêu cầu, phê duyệt phạm vi của nó và theo dõi mọi hoạt động.</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>Quản lý máy chủ với các quy trình làm việc cho con người và AI. Xem xét yêu cầu {0}, phê duyệt phạm vi của nó và theo dõi mọi hoạt động.</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>Bảng Điều Khiển Quản Lý</value>

@@ -24,9 +24,6 @@
   <data name="Decision" xml:space="preserve">
     <value>Päätös</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Oma lukkotila</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Seuraava</value>
   </data>
@@ -35,9 +32,6 @@
   </data>
   <data name="Reason" xml:space="preserve">
     <value>Syy</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Pyyntö</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Työvirta</value>

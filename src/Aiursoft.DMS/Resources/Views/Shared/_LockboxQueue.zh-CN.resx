@@ -17,14 +17,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="All requests" xml:space="preserve">
-    <value>所有请求</value>
+  <data name="All {0} requests" xml:space="preserve">
+    <value>所有 {0} 请求</value>
   </data>
   <data name="Apply filters" xml:space="preserve">
     <value>应用筛选</value>
-  </data>
-  <data name="Approvals" xml:space="preserve">
-    <value>审批</value>
   </data>
   <data name="Approved" xml:space="preserve">
     <value>已批准</value>
@@ -47,17 +44,14 @@
   <data name="Medium risk" xml:space="preserve">
     <value>中等风险</value>
   </data>
-  <data name="My requests" xml:space="preserve">
-    <value>我的请求</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>下一页</value>
   </data>
-  <data name="No requests are waiting for your review." xml:space="preserve">
-    <value>没有请求等待您的审核。</value>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>没有等待你审核的 {0} 请求。</value>
   </data>
-  <data name="No requests match these filters." xml:space="preserve">
-    <value>没有请求符合这些筛选条件。</value>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>没有符合筛选条件的 {0} 请求。</value>
   </data>
   <data name="Open workflow" xml:space="preserve">
     <value>开放工作流</value>
@@ -68,8 +62,8 @@
   <data name="Ready for my review" xml:space="preserve">
     <value>待我审核</value>
   </data>
-  <data name="Request pages" xml:space="preserve">
-    <value>请求页面</value>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} 请求分页</value>
   </data>
   <data name="Review" xml:space="preserve">
     <value>审核</value>
@@ -77,11 +71,11 @@
   <data name="Safe workflow" xml:space="preserve">
     <value>安全的工作流</value>
   </data>
-  <data name="Search requests" xml:space="preserve">
-    <value>搜索请求</value>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>搜索 {0} 请求</value>
   </data>
-  <data name="See all pending requests" xml:space="preserve">
-    <value>查看所有待处理请求</value>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>查看所有待审批的 {0} 请求</value>
   </data>
   <data name="Show" xml:space="preserve">
     <value>显示</value>
@@ -89,14 +83,14 @@
   <data name="Very high risk" xml:space="preserve">
     <value>极高风险</value>
   </data>
-  <data name="View request" xml:space="preserve">
-    <value>查看请求</value>
+  <data name="View {0} request" xml:space="preserve">
+    <value>查看 {0} 请求</value>
   </data>
   <data name="Withdrawn" xml:space="preserve">
     <value>已撤回</value>
   </data>
-  <data name="Workflow, requester, reason, or Lockbox ID" xml:space="preserve">
-    <value>工作流、请求者、原因或 Lockbox ID</value>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>工作流、请求人、原因或 {0} ID</value>
   </data>
   <data name="Execution status" xml:space="preserve">
     <value>执行状态</value>

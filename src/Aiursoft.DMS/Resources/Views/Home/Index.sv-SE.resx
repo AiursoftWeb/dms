@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lintkontroll</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Lockbox registrerar vem som begärde en åtgärd, dess mål och beslutet om godkännande.</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} registrerar vem som begärde en åtgärd, dess mål och beslutet om godkännande.</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT-licens</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>Behåll hög kodkvalitet</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>Hantera servrar med arbetsflöden för människor och AI. Granska begäran, godkänn dess omfattning och följ varje åtgärd.</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>Hantera servrar med arbetsflöden för människor och AI. Granska {0}-begäran, godkänn dess omfattning och följ varje åtgärd.</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>Administrationspanel</value>

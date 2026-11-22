@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.DMS.Authorization
 @using Aiursoft.DMS.Configuration
 @using Microsoft.Extensions.Localization
@@ -60,10 +61,10 @@
                                     <input asp-for="@Model.Claims[i].IsSelected" class="form-check-input" />
 
                                     <label class="form-check-label" for="@Html.IdFor(m => m.Claims[i].IsSelected)">
-                                        <strong>@PermissionLocalizer[Model.Claims[i].Name]</strong>
+                                        <strong>@PermissionLocalizer[Model.Claims[i].Name, LockboxText.Name]</strong>
                                     </label>
                                     <div class="text-muted ms-4">
-                                        <small>@PermissionLocalizer[Model.Claims[i].Description]</small>
+                                        <small>@PermissionLocalizer[Model.Claims[i].Description, LockboxText.Name]</small>
                                     </div>
                                 </div>
                             </div>

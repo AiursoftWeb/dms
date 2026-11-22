@@ -120,9 +120,6 @@
   <data name="Investigation" xml:space="preserve">
     <value>Investigasi</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Kotak Kunci</value>
-  </data>
   <data name="Lockout" xml:space="preserve">
     <value>Kunci Keluar</value>
   </data>
@@ -138,8 +135,14 @@
   <data name="Manage" xml:space="preserve">
     <value>Kelola</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Kotak Kunci Saya</value>
+  <data name="My {0} requests" xml:space="preserve">
+    <value>Permintaan {0} saya</value>
+  </data>
+  <data name="My requests" xml:space="preserve">
+    <value>Permintaan saya</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>Persetujuan saya</value>
   </data>
   <data name="Not Found" xml:space="preserve">
     <value>Tidak Ditemukan</value>

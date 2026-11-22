@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>Thêm Người Dùng Mới</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc rủi ro cao trên bất kỳ máy nào.</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu {0} quy trình làm việc rủi ro cao trên bất kỳ máy nào.</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc rủi ro thấp trên bất kỳ máy nào.</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu {0} quy trình làm việc rủi ro thấp trên bất kỳ máy nào.</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc có rủi ro trung bình trên bất kỳ máy nào.</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu {0} quy trình làm việc có rủi ro trung bình trên bất kỳ máy nào.</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc an toàn trên bất kỳ máy nào.</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu {0} quy trình làm việc an toàn trên bất kỳ máy nào.</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu quy trình làm việc rủi ro rất cao trên bất kỳ máy nào.</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>Cho phép phê duyệt hoặc từ chối các yêu cầu {0} quy trình làm việc rủi ro rất cao trên bất kỳ máy nào.</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>Cho phép gán hoặc gỡ bỏ vai trò cho bất kỳ người dùng nào.</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>Cho phép quyết định các yêu cầu của chính bạn khi bạn cũng có quyền phê duyệt cho cấp độ rủi ro của chúng.</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>Cho phép quyết định các yêu cầu {0} của chính bạn khi bạn cũng có quyền phê duyệt cho cấp độ rủi ro của chúng.</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>Cho phép sửa đổi tên vai trò và các quyền đã được gán.</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>Cho phép yêu cầu các quy trình làm việc có rủi ro rất cao trên bất kỳ máy nào.</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>Cho phép chạy các quy trình mở. Hộp khóa của chúng được phê duyệt tự động.</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>Cho phép chạy các quy trình mở. yêu cầu {0} của chúng được phê duyệt tự động.</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>Cho phép xóa vĩnh viễn các vai trò.</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>Cho phép xem và chỉnh sửa cài đặt toàn cục của ứng dụng.</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>Cho phép xem các máy, lịch sử quy trình làm việc, Lockboxes, vết theo dõi và hồ sơ điều tra.</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>Cho phép xem các máy, lịch sử quy trình làm việc, yêu cầu {0}, vết theo dõi và hồ sơ điều tra.</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>Cho phép xem thông tin và cài đặt ở cấp hệ thống.</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>Phê duyệt quy trình làm việc rủi ro trung bình</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>Phê duyệt yêu cầu quy trình làm việc của chính mình</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>Phê duyệt yêu cầu {0} quy trình làm việc của chính mình</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>Phê duyệt các quy trình làm việc an toàn</value>

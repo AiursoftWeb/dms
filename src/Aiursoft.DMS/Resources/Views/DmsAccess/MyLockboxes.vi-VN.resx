@@ -24,9 +24,6 @@
   <data name="Decision" xml:space="preserve">
     <value>Quyết định</value>
   </data>
-  <data name="My Lockboxes" xml:space="preserve">
-    <value>Hộp khóa của tôi</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Tiếp theo</value>
   </data>
@@ -35,9 +32,6 @@
   </data>
   <data name="Reason" xml:space="preserve">
     <value>Lý do</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Yêu cầu</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Quy trình</value>

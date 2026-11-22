@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>락박스</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>Lockbox 호출 스택</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>작업</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>매개변수</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>사유</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>요청자</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>위험도</value>

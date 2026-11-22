@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>Identificator</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>Seif</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>Stiva de apeluri a casetei de securitate</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>Operațiune</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametri</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>Motiv</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Solicitant</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risc</value>

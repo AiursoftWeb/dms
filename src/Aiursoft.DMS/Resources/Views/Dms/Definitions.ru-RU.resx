@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Может одобрять</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Может одобрять собственные запросы</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Может одобрять собственные запросы {0}</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Может запрашивать</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Публичные стандартные рабочие процессы не зарегистрированы.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Права применяются к выбранному кластеру и уровню риска каждого рабочего процесса. Автоматическое утверждение требует права на подачу запроса. Утверждение собственного запроса также требует права на самовывод.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Требуется указание машин</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Риск</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Права ролей применяются ко всем машинам в этом экземпляре DMS и к уровню риска каждого рабочего процесса. Для автоматического утверждения требуется разрешение на подачу запроса. Для утверждения собственного запроса также требуется разрешение на самоутверждение.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Права ролей применяются ко всем машинам в этом экземпляре DMS и к уровню риска каждого рабочего процесса. Для автоматического утверждения требуется разрешение на подачу запроса {0}. Для утверждения собственного запроса также требуется разрешение на самоутверждение.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Безопасно</value>

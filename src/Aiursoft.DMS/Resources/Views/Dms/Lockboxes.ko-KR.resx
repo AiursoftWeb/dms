@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>결정</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>잠금 상자</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>다음</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>이전</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>요청</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>위험</value>

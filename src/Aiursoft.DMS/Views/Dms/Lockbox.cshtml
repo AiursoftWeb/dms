@@ -1,3 +1,5 @@
+@using Aiursoft.DMS.Services.Dms
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Aiursoft.DMS.Services.ViewModelArgsInjector> NavigationText
 @using Aiursoft.DMS.Contracts
 @using Aiursoft.DMS.Models.DmsViewModels
 @using System.Globalization
@@ -53,11 +55,11 @@
 <div class="lockbox-review mx-auto">
     @if (Model.OwnRequestView)
     {
-        <a class="lockbox-back" asp-controller="DmsAccess" asp-action="MyLockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["My requests"]</a>
+        <a class="lockbox-back" asp-controller="DmsAccess" asp-action="MyLockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @LockboxText.Format(NavigationText[LockboxText.MyRequests].Value)</a>
     }
     else
     {
-        <a class="lockbox-back" asp-controller="Dms" asp-action="Lockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @Localizer["All Lockboxes"]</a>
+        <a class="lockbox-back" asp-controller="Dms" asp-action="Lockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @LockboxText.Name</a>
     }
 
     @if (Model.Notice != null)
@@ -81,11 +83,11 @@
 
             <dl class="lockbox-context">
                 <div>
-                    <dt><i data-lucide="user" aria-hidden="true"></i>@Localizer["Requested by"]</dt>
+                    <dt><i data-lucide="user" aria-hidden="true"></i>@LockboxText.Format(@Localizer["{0} requester"].Value)</dt>
                     <dd>@status.RequestedBy</dd>
                 </div>
                 <div>
-                    <dt><i data-lucide="clock" aria-hidden="true"></i>@Localizer["Requested at"]</dt>
+                    <dt><i data-lucide="clock" aria-hidden="true"></i>@LockboxText.Format(@Localizer["{0} request time"].Value)</dt>
                     <dd><time datetime="@requestedAt" data-utc-now title="@requestedAt">@status.RequestedAt.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time></dd>
                 </div>
                 <div>
@@ -131,7 +133,7 @@
             @if (!string.IsNullOrWhiteSpace(item.Reason))
             {
                 <div class="lockbox-reason">
-                    <div class="lockbox-label">@Localizer["Request reason"]</div>
+                    <div class="lockbox-label">@LockboxText.Format(@Localizer["{0} request reason"].Value)</div>
                     <p class="mb-0">@item.Reason</p>
                 </div>
             }
@@ -147,7 +149,7 @@
                     {
                         <div class="lockbox-terminal" data-lockbox-terminal>
                             <div class="lockbox-terminal-bar">
-                                <span>@(command.IsEquivalentCli ? @Localizer["Equivalent DMS command"] : @Localizer["Requested Docker command"])</span>
+                                <span>@(command.IsEquivalentCli ? @Localizer["Equivalent DMS command"] : @LockboxText.Format(@Localizer["Docker command in this {0} request"].Value))</span>
                                 <button class="btn btn-sm lockbox-copy" type="button" data-copy-command hidden>
                                     <i data-lucide="copy" aria-hidden="true"></i><span>@Localizer["Copy"]</span>
                                 </button>
@@ -176,11 +178,11 @@
                     else
                     {
                         <div class="lockbox-terminal">
-                            <div class="lockbox-terminal-bar">@Localizer["Saved workflow request"]</div>
+                            <div class="lockbox-terminal-bar">@LockboxText.Format(@Localizer["Saved {0} request"].Value)</div>
                             <pre><code><span>POST /api/v1/dms/lockboxes</span>
 Workflow: @item.Definition</code></pre>
                         </div>
-                        <p class="lockbox-note">@Localizer["Use the frozen parameters below to review what was requested."]</p>
+                        <p class="lockbox-note">@LockboxText.Format(@Localizer["Use the frozen parameters below to review this {0} request."].Value)</p>
                     }
                 </div>
             </section>
@@ -307,11 +309,11 @@ Workflow: @item.Definition</code></pre>
         </section>
 
         <details class="card lockbox-audit">
-            <summary>@Localizer["Request identifiers and raw payload"]</summary>
+            <summary>@LockboxText.Format(@Localizer["{0} request identifiers and raw payload"].Value)</summary>
             <div class="card-body pt-0">
                 <dl class="lockbox-parameters">
-                    <div><dt>@Localizer["Lockbox ID"]</dt><dd><code>@status.LockboxId</code></dd></div>
-                    <div><dt>@Localizer["Requester ID"]</dt><dd><code>@item.RequesterId</code></dd></div>
+                    <div><dt>@LockboxText.Format(@Localizer["{0} ID"].Value)</dt><dd><code>@status.LockboxId</code></dd></div>
+                    <div><dt>@LockboxText.Format(@Localizer["{0} requester ID"].Value)</dt><dd><code>@item.RequesterId</code></dd></div>
                     @if (Model.CanViewOperations && item.ApproverId != null)
                     {
                         <div><dt>@Localizer["Approver ID"]</dt><dd><code>@item.ApproverId</code></dd></div>

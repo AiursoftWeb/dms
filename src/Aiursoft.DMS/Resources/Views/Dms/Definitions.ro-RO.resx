@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Poate aproba</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Poate aproba propriile cereri</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Poate aproba propriile cereri {0}</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Poate solicita</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Nu este înregistrat niciun flux de lucru standard public.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Permisiunile se aplică clusterului selectat și nivelului de risc al fiecărui flux de lucru. Aprobarea automată necesită permisiunea de a trimite solicitări. Aprobarea propriei solicitări necesită, de asemenea, permisiunea de autoaprobare.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Necesită ținte de mașini</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risc</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Permisiunile de rol se aplică tuturor mașinilor din această instanță DMS și nivelului de risc al fiecărui flux de lucru. Aprobarea automată necesită permisiunea de a solicita. Aprobarea propriei cereri necesită, de asemenea, permisiunea de autoaprobare.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Permisiunile de rol se aplică tuturor mașinilor din această instanță DMS și nivelului de risc al fiecărui flux de lucru. Aprobarea automată necesită permisiunea de a solicita. Aprobarea propriei cereri {0} necesită, de asemenea, permisiunea de autoaprobare.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Sigur</value>

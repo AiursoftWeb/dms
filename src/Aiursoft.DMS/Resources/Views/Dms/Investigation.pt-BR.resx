@@ -30,8 +30,8 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Qualquer modo de aprovação</value>
   </data>
-  <data name="Approval context" xml:space="preserve">
-    <value>Contexto de aprovação</value>
+  <data name="{0} request" xml:space="preserve">
+    <value>Solicitação do {0}</value>
   </data>
   <data name="Approver" xml:space="preserve">
     <value>Aprovador</value>
@@ -63,8 +63,8 @@
   <data name="Investigation" xml:space="preserve">
     <value>Investigação</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>ID do cofre</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>ID do {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Máquina</value>
@@ -105,17 +105,17 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Registrado até (exclusivo, UTC)</value>
   </data>
-  <data name="Requested" xml:space="preserve">
-    <value>Solicitado</value>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Solicitado (solicitações do {0})</value>
   </data>
-  <data name="Requested workflow type" xml:space="preserve">
-    <value>Tipo de fluxo de trabalho solicitado</value>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Tipo de fluxo de trabalho solicitado (solicitações do {0})</value>
   </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Solicitante</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Solicitante (solicitações do {0})</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>ID do solicitante</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID do solicitante (solicitações do {0})</value>
   </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>ID do fluxo de trabalho raiz</value>

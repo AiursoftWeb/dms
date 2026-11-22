@@ -120,9 +120,6 @@
   <data name="Integrated File Management" xml:space="preserve">
     <value>Ενσωματωμένη Διαχείριση Αρχείων</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Κασσέτες κλειδιών</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>Μηχανές</value>
   </data>
@@ -150,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Αποκρισιμό Σχεδιασμό</value>
   </data>
-  <data name="Review requests" xml:space="preserve">
-    <value>Εξέταση αιτημάτων</value>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Εξέταση αιτημάτων {0}</value>
   </data>
-  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
-    <value>Εξετάστε την αιτηθείσα λειτουργία, τις παραμέτρους και τους σταθερούς στόχους.</value>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>Εξετάστε την αιτηθείσα λειτουργία, τις παραμέτρους και τους σταθερούς στόχους. (αιτήματα {0})</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Ανθεκτικός Έλεγχος Ενοποίησης</value>

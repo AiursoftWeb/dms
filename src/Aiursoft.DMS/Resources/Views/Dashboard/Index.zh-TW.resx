@@ -120,9 +120,6 @@
   <data name="Integrated File Management" xml:space="preserve">
     <value>整合式檔案管理</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>金庫</value>
-  </data>
   <data name="Machines" xml:space="preserve">
     <value>機器</value>
   </data>
@@ -150,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>響應式設計</value>
   </data>
-  <data name="Review requests" xml:space="preserve">
-    <value>檢視請求</value>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>審核 {0} 請求</value>
   </data>
-  <data name="Review the requested operation, parameters and fixed targets." xml:space="preserve">
-    <value>檢視所要求的操作、參數及固定目標。</value>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>檢視每份 {0} 請求的操作、參數及固定目標。</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>穩健的整合測試</value>

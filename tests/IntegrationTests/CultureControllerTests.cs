@@ -1,10 +1,41 @@
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
 
 [TestClass]
 public class CultureControllerTests : TestBase
 {
+    [TestMethod]
+    [DataRow("en-US")]
+    [DataRow("zh-CN")]
+    [DataRow("zh-TW")]
+    [DataRow("fr-FR")]
+    [DataRow("ja-JP")]
+    [DataRow("ar-SA")]
+    public async Task LockboxProductNameStaysLiteralInNavigationAndHeading(string culture)
+    {
+        await LoginAsAdmin();
+        using var setting = await Http.GetAsync($"/Culture/Set?culture={culture}&returnUrl=/Dms/Lockboxes");
+        Assert.AreEqual(HttpStatusCode.Found, setting.StatusCode);
+        var html = WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes"));
+        StringAssert.Contains(html, "<h1>Lockbox</h1>");
+        StringAssert.Matches(html, new Regex(@"<a data-bs-target=""#lockbox""[^>]*>\s*<i[^>]*></i>\s*<span[^>]*>Lockbox</span>"));
+        var menu = Regex.Match(html, @"<ul id=""lockbox""[^>]*>(.*?)</ul>", RegexOptions.Singleline);
+        Assert.IsTrue(menu.Success);
+        Assert.HasCount(2, Regex.Matches(menu.Value, @"href="));
+        StringAssert.Contains(menu.Value, @"href=""/DmsAccess/MyLockboxes""");
+        StringAssert.Contains(menu.Value, @"href=""/Dms/Lockboxes""");
+        if (culture == "zh-CN")
+        {
+            StringAssert.Contains(menu.Value, "我的请求");
+            StringAssert.Contains(menu.Value, "我的审批");
+        }
+        var mine = WebUtility.HtmlDecode(await Http.GetStringAsync("/DmsAccess/MyLockboxes"));
+        StringAssert.Matches(mine, new Regex(@"<h1>[^<]*Lockbox[^<]*</h1>"));
+        Assert.DoesNotContain("{0}", mine);
+    }
+
     [TestMethod]
     public async Task SetCulture()
     {

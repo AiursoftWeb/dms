@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>निर्णय</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>लॉकबॉक्स</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>अगला</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>पिछला</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>अनुरोध</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>जोखिम</value>

@@ -135,8 +135,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var item = await db.Lockboxes.SingleOrDefaultAsync(l => l.Id == id) ?? throw new DmsException(404, "Lockbox not found.");
         var principal = await access.PrincipalAsync(user);
         if (!DmsPermissions.CanDecide(principal, item.Risk, item.RequesterId == user))
-            throw new DmsException(403, "Approval permission for this risk level is required; your own requests also require self-approval permission.");
-        if (item.Decision != DecisionState.Pending) throw new DmsException(409, "This request has already been decided.");
+            throw new DmsException(403, "Approval permission for this risk level is required; your own Lockbox requests also require self-approval permission.");
+        if (item.Decision != DecisionState.Pending) throw new DmsException(409, "This Lockbox request has already been decided.");
         if (approve) await ApproveAsync(item, user, reason);
         else
         {
@@ -205,7 +205,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         catch (DbUpdateConcurrencyException)
         {
             db.ChangeTracker.Clear();
-            throw new DmsException(409, "This request has already been decided.");
+            throw new DmsException(409, "This Lockbox request has already been decided.");
         }
         catch { db.ChangeTracker.Clear(); throw; }
     }

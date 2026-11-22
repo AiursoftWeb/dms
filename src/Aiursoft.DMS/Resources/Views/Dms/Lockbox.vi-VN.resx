@@ -45,23 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>Hộp khóa</value>
-  </data>
-  <data name="Lockbox callstack" xml:space="preserve">
-    <value>Chuỗi gọi Lockbox</value>
-  </data>
-  <data name="Operation" xml:space="preserve">
-    <value>Thao tác</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Tham số</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>Lý do</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>Người yêu cầu</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Rủi ro</value>

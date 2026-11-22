@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>القرار</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>صناديق الأمانات</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>التالي</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>السابق</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>الطلب</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>المخاطر</value>

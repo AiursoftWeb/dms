@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Можна схвалити</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Можна затверджувати власні запити</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Можна затверджувати власні запити {0}</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Може надсилати запити</value>
@@ -63,8 +63,8 @@
   <data name="Risk" xml:space="preserve">
     <value>Ризик</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Дозволи ролей застосовуються до кожної машини в цій інстанції DMS та до рівня ризику кожного робочого процесу. Автоматичне затвердження вимагає дозволу на подання запиту. Затвердження власного запиту також вимагає дозволу на самозатвердження.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Дозволи ролей застосовуються до кожної машини в цій інстанції DMS та до рівня ризику кожного робочого процесу. Автоматичне затвердження вимагає дозволу на подання запиту {0}. Затвердження власного запиту також вимагає дозволу на самозатвердження.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Безпечний</value>

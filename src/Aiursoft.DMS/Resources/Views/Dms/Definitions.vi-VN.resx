@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Có thể phê duyệt</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Có thể phê duyệt yêu cầu của chính mình</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Có thể phê duyệt yêu cầu {0} của chính mình</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Có thể yêu cầu</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Không có quy trình chuẩn công khai nào được đăng ký.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Quyền áp dụng cho cụm được chọn và mức độ rủi ro của từng quy trình làm việc. Phê duyệt tự động yêu cầu quyền yêu cầu. Phê duyệt yêu cầu của chính bạn cũng yêu cầu quyền phê duyệt bản thân.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Yêu cầu các mục tiêu máy</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Rủi ro</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Quyền phân vai áp dụng cho mọi máy trong instance DMS này và mức độ rủi ro của từng quy trình làm việc. Phê duyệt tự động yêu cầu quyền yêu cầu. Việc phê duyệt yêu cầu của chính bạn cũng yêu cầu quyền tự phê duyệt.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Quyền phân vai áp dụng cho mọi máy trong instance DMS này và mức độ rủi ro của từng quy trình làm việc. Phê duyệt tự động yêu cầu {0} quyền yêu cầu. Việc phê duyệt yêu cầu của chính bạn cũng yêu cầu quyền tự phê duyệt.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>An toàn</value>

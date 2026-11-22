@@ -24,26 +24,26 @@
   <data name="Add New Users" xml:space="preserve">
     <value>เพิ่มผู้ใช้ใหม่</value>
   </data>
-  <data name="Allows approving or denying high-risk workflow requests on any machine." xml:space="preserve">
-    <value>อนุญาตให้อนุมัติหรือปฏิเสธคำขอ workflow ที่มีความเสี่ยงสูงบนเครื่องใดก็ได้</value>
+  <data name="Allows approving or denying high-risk {0} requests on any machine." xml:space="preserve">
+    <value>อนุญาตให้อนุมัติหรือปฏิเสธคำขอ {0} workflow ที่มีความเสี่ยงสูงบนเครื่องใดก็ได้</value>
   </data>
-  <data name="Allows approving or denying low-risk workflow requests on any machine." xml:space="preserve">
-    <value>อนุญาตให้อนุมัติหรือปฏิเสธคำขอเวิร์กโฟลว์ความเสี่ยงต่ำได้บนเครื่องใดก็ได้</value>
+  <data name="Allows approving or denying low-risk {0} requests on any machine." xml:space="preserve">
+    <value>อนุญาตให้อนุมัติหรือปฏิเสธคำขอ {0}เวิร์กโฟลว์ความเสี่ยงต่ำได้บนเครื่องใดก็ได้</value>
   </data>
-  <data name="Allows approving or denying medium-risk workflow requests on any machine." xml:space="preserve">
-    <value>อนุญาตให้อนุมัติหรือปฏิเสธคำขอเวิร์กโฟลว์ระดับความเสี่ยงปานกลางบนเครื่องใดก็ได้</value>
+  <data name="Allows approving or denying medium-risk {0} requests on any machine." xml:space="preserve">
+    <value>อนุญาตให้อนุมัติหรือปฏิเสธคำขอ {0}เวิร์กโฟลว์ระดับความเสี่ยงปานกลางบนเครื่องใดก็ได้</value>
   </data>
-  <data name="Allows approving or denying safe workflow requests on any machine." xml:space="preserve">
-    <value>อนุญาตให้批准หรือปฏิเสธคำขอ workflow ที่ปลอดภัยบนเครื่องใดก็ได้</value>
+  <data name="Allows approving or denying safe {0} requests on any machine." xml:space="preserve">
+    <value>อนุญาตให้批准หรือปฏิเสธคำขอ {0} workflow ที่ปลอดภัยบนเครื่องใดก็ได้</value>
   </data>
-  <data name="Allows approving or denying very-high-risk workflow requests on any machine." xml:space="preserve">
-    <value>อนุญาตให้ยอมรับหรือปฏิเสธคำขอเวิร์กโฟลว์ที่มีความเสี่ยงสูงมากบนเครื่องใดก็ได้</value>
+  <data name="Allows approving or denying very-high-risk {0} requests on any machine." xml:space="preserve">
+    <value>อนุญาตให้ยอมรับหรือปฏิเสธคำขอ {0}เวิร์กโฟลว์ที่มีความเสี่ยงสูงมากบนเครื่องใดก็ได้</value>
   </data>
   <data name="Allows assigning or removing roles for any user." xml:space="preserve">
     <value>อนุญาตให้กำหนดหรือลบบทบาทสำหรับผู้ใช้ใดๆ</value>
   </data>
-  <data name="Allows deciding your own requests when you also have approval permission for their risk level." xml:space="preserve">
-    <value>อนุญาตให้ตัดสินใจเกี่ยวกับคำขอของคุณเองเมื่อคุณมีสิทธิ์อนุมัติในระดับความเสี่ยงของคำขอนั้นด้วย</value>
+  <data name="Allows deciding your own {0} requests when you also have approval permission for their risk level." xml:space="preserve">
+    <value>อนุญาตให้ตัดสินใจเกี่ยวกับคำขอ {0}ของคุณเองเมื่อคุณมีสิทธิ์อนุมัติในระดับความเสี่ยงของคำขอนั้นด้วย</value>
   </data>
   <data name="Allows modification of role names and their assigned permissions." xml:space="preserve">
     <value>อนุญาตให้แก้ไขชื่อบทบาทและสิทธิ์ที่กำหนดให้</value>
@@ -66,8 +66,8 @@
   <data name="Allows requesting very-high-risk workflows on any machine." xml:space="preserve">
     <value>อนุญาตให้ขอเวิร์กโฟลว์ที่มีความเสี่ยงสูงมากบนเครื่องใดก็ได้</value>
   </data>
-  <data name="Allows running Open workflows. Their Lockboxes are approved automatically." xml:space="preserve">
-    <value>อนุญาตให้รันเวิร์กโฟลว์แบบเปิด ล็อกบ็อกซ์ของเวิร์กโฟลว์เหล่านี้จะถูกอนุมัติโดยอัตโนมัติ</value>
+  <data name="Allows running Open workflows. Their {0} requests are approved automatically." xml:space="preserve">
+    <value>อนุญาตให้รันเวิร์กโฟลว์แบบเปิด คำขอ {0}ของเวิร์กโฟลว์เหล่านี้จะถูกอนุมัติโดยอัตโนมัติ</value>
   </data>
   <data name="Allows the permanent deletion of roles." xml:space="preserve">
     <value>อนุญาตให้ลบบทบาทออกอย่างถาวร</value>
@@ -78,8 +78,8 @@
   <data name="Allows viewing and modifying global application settings." xml:space="preserve">
     <value>อนุญาตให้ดูและแก้ไขการตั้งค่าแอปพลิเคชันระดับโลก</value>
   </data>
-  <data name="Allows viewing machines, workflow history, Lockboxes, traces and investigation records." xml:space="preserve">
-    <value>อนุญาตให้ดูเครื่อง ประวัติเวิร์กโฟลว์ Lockboxes เทรซ และบันทึกการตรวจสอบ</value>
+  <data name="Allows viewing machines, workflow history, {0} requests, traces and investigation records." xml:space="preserve">
+    <value>อนุญาตให้ดูเครื่อง ประวัติเวิร์กโฟลว์ คำขอ {0} เทรซ และบันทึกการตรวจสอบ</value>
   </data>
   <data name="Allows viewing system-level information and settings." xml:space="preserve">
     <value>อนุญาตให้ดูข้อมูลและการตั้งค่าระดับระบบ</value>
@@ -105,8 +105,8 @@
   <data name="Approve medium-risk workflows" xml:space="preserve">
     <value>อนุมัติเวิร์กโฟลว์ระดับความเสี่ยงปานกลาง</value>
   </data>
-  <data name="Approve own workflow requests" xml:space="preserve">
-    <value>อนุมัติคำขอเวิร์กโฟลว์ของตนเอง</value>
+  <data name="Approve own {0} requests" xml:space="preserve">
+    <value>อนุมัติคำขอ {0}เวิร์กโฟลว์ของตนเอง</value>
   </data>
   <data name="Approve safe workflows" xml:space="preserve">
     <value>อนุมัติเวิร์กโฟลว์ที่ปลอดภัย</value>

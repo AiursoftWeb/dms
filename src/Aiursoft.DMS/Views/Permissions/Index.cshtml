@@ -1,3 +1,4 @@
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.DMS.Authorization
 @using Microsoft.Extensions.Localization
 @model Aiursoft.DMS.Models.PermissionsViewModels.IndexViewModel
@@ -39,8 +40,8 @@
                 {
                     @* The clickable-row class and data-href attribute are fully preserved. *@
                     <tr class="clickable-row" data-href="@Url.Action("Details", new { key = item.PermissionKey })">
-                        <td>@PermissionLocalizer[item.PermissionName]</td>
-                        <td>@PermissionLocalizer[item.PermissionDescription]</td>
+                        <td>@PermissionLocalizer[item.PermissionName, LockboxText.Name]</td>
+                        <td>@PermissionLocalizer[item.PermissionDescription, LockboxText.Name]</td>
                         <td>
                             @if (item.RoleCount > 0)
                             {

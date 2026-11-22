@@ -486,8 +486,8 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lintチェック</value>
   </data>
-  <data name="Lockbox records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Lockboxは、操作の依頼者、対象、および承認の判断を記録します。</value>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0}は、操作の依頼者、対象、および承認の判断を記録します。</value>
   </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MITライセンス</value>
@@ -498,8 +498,8 @@
   <data name="Maintain High Code Quality" xml:space="preserve">
     <value>高品質なコードを維持する</value>
   </data>
-  <data name="Manage servers with workflows for people and AI. Review the request, approve its scope, and follow every operation." xml:space="preserve">
-    <value>人間とAIのためのワークフローでサーバーを管理します。リクエストを確認し、スコープを承認し、すべての操作を追跡します。</value>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>人間とAIのためのワークフローでサーバーを管理します。{0} リクエストを確認し、スコープを承認し、すべての操作を追跡します。</value>
   </data>
   <data name="Management Dashboard" xml:space="preserve">
     <value>管理ダッシュボード</value>

@@ -20,9 +20,6 @@
   <data name="All enabled machines at submission" xml:space="preserve">
     <value>提交时所有已启用的机器</value>
   </data>
-  <data name="All Lockboxes" xml:space="preserve">
-    <value>所有保险箱</value>
-  </data>
   <data name="Approve" xml:space="preserve">
     <value>批准</value>
   </data>
@@ -86,17 +83,14 @@
   <data name="Image scope" xml:space="preserve">
     <value>镜像作用域</value>
   </data>
-  <data name="Lockbox ID" xml:space="preserve">
-    <value>保险箱 ID</value>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
   </data>
   <data name="Low risk" xml:space="preserve">
     <value>低风险</value>
   </data>
   <data name="Medium risk" xml:space="preserve">
     <value>中等风险</value>
-  </data>
-  <data name="My requests" xml:space="preserve">
-    <value>我的请求</value>
   </data>
   <data name="No eligible approvers right now." xml:space="preserve">
     <value>当前没有符合条件的审批人。</value>
@@ -116,23 +110,23 @@
   <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
     <value>根据保存的输入和目标机器重建。</value>
   </data>
-  <data name="Request identifiers and raw payload" xml:space="preserve">
-    <value>请求标识符和原始负载</value>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} 请求标识和原始数据</value>
   </data>
-  <data name="Request reason" xml:space="preserve">
-    <value>请求原因</value>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} 请求原因</value>
   </data>
-  <data name="Requested at" xml:space="preserve">
-    <value>请求时间</value>
+  <data name="{0} request time" xml:space="preserve">
+    <value>{0} 请求时间</value>
   </data>
-  <data name="Requested by" xml:space="preserve">
-    <value>请求人</value>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} 请求人</value>
   </data>
-  <data name="Requested Docker command" xml:space="preserve">
-    <value>请求的 Docker 命令</value>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>此 {0} 请求中的 Docker 命令</value>
   </data>
-  <data name="Requester ID" xml:space="preserve">
-    <value>请求者 ID</value>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} 请求人 ID</value>
   </data>
   <data name="Review the exact contents submitted for execution." xml:space="preserve">
     <value>请查看提交执行的准确内容。</value>
@@ -140,8 +134,8 @@
   <data name="Safe workflow" xml:space="preserve">
     <value>安全的工作流</value>
   </data>
-  <data name="Saved workflow request" xml:space="preserve">
-    <value>已保存的工作流请求</value>
+  <data name="Saved {0} request" xml:space="preserve">
+    <value>已保存的 {0} 请求</value>
   </data>
   <data name="Target machines" xml:space="preserve">
     <value>目标机器</value>
@@ -149,8 +143,8 @@
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>此工作流无需参数。</value>
   </data>
-  <data name="Use the frozen parameters below to review what was requested." xml:space="preserve">
-    <value>使用下方固定的参数来查看所请求的内容。</value>
+  <data name="Use the frozen parameters below to review this {0} request." xml:space="preserve">
+    <value>使用下方冻结的参数核对这份 {0} 请求。</value>
   </data>
   <data name="Very high risk" xml:space="preserve">
     <value>极高风险</value>

@@ -45,17 +45,8 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
-  <data name="Lockbox" xml:space="preserve">
-    <value>लॉकबॉक्स</value>
-  </data>
   <data name="Parameters" xml:space="preserve">
     <value>पैरामीटर</value>
-  </data>
-  <data name="Reason" xml:space="preserve">
-    <value>कारण</value>
-  </data>
-  <data name="Requester" xml:space="preserve">
-    <value>अनुरोधकर्ता</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>जोखिम</value>

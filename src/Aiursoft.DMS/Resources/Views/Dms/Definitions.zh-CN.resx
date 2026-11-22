@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>可审批</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>可审批自己的请求</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>可审批自己的 {0} 请求</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>可申请</value>
@@ -60,17 +60,14 @@
   <data name="Open" xml:space="preserve">
     <value>放开</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>权限适用于所选集群和每个工作流的风险级别。自动审批需要申请权限。审批自己的申请还需要自我审批权限。</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>需要机器目标</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>风险</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>角色权限适用于此 DMS 实例中的每台机器以及每个工作流的风险级别。自动批准需要请求权限。批准自己的请求还需要自我批准权限。</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>角色权限适用于此 DMS 实例中的每台机器，并按工作流风险等级授予。自动批准需要申请权限。审批自己的 {0} 请求还需要自审批权限。</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>安全</value>

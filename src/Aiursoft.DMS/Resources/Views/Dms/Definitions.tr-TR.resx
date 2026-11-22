@@ -42,8 +42,8 @@
   <data name="May approve" xml:space="preserve">
     <value>Onaylayabilir</value>
   </data>
-  <data name="May approve own requests" xml:space="preserve">
-    <value>Kendi taleplerini onaylayabilir</value>
+  <data name="May approve own {0} requests" xml:space="preserve">
+    <value>Kendi {0} taleplerini onaylayabilir</value>
   </data>
   <data name="May request" xml:space="preserve">
     <value>Talep edebilir</value>
@@ -57,17 +57,14 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Kayıtlı genel kullanıma açık standart iş akışı yok.</value>
   </data>
-  <data name="Permissions apply to the selected cluster and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>İzinler, seçili kümeye ve her iş akışının risk düzeyine uygulanır. Otomatik onay için istekte bulunma izni gerekir. Kendi isteğinizi onaylamak için ayrıca kendi isteğinizi onaylama izni gerekir.</value>
-  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Makine hedefleri gerektirir</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own request also requires self approval permission." xml:space="preserve">
-    <value>Rol izinleri, bu DMS örneğindeki her makineye ve her iş akışının risk düzeyine uygulanır. Otomatik onay, istek izni gerektirir. Kendi isteğinizi onaylamak için ayrıca kendi onayı izni de gereklidir.</value>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+    <value>Rol izinleri, bu DMS örneğindeki her makineye ve her iş akışının risk düzeyine uygulanır. Otomatik onay, {0} istek izni gerektirir. Kendi isteğinizi onaylamak için ayrıca kendi onayı izni de gereklidir.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Güvenli</value>

@@ -24,17 +24,11 @@
   <data name="Decision" xml:space="preserve">
     <value>Päätös</value>
   </data>
-  <data name="Lockboxes" xml:space="preserve">
-    <value>Lukukoteloita</value>
-  </data>
   <data name="Next" xml:space="preserve">
     <value>Seuraava</value>
   </data>
   <data name="Previous" xml:space="preserve">
     <value>Edellinen</value>
-  </data>
-  <data name="Request" xml:space="preserve">
-    <value>Pyyntö</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Riski</value>
