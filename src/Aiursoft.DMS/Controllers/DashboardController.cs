@@ -11,7 +11,7 @@ public class DashboardController : Controller
 {
     [RenderInNavBar(
         NavGroupName = "Features",
-        NavGroupOrder = 1,
+        NavGroupOrder = 2,
         CascadedLinksGroupName = "Home",
         CascadedLinksIcon = "home",
         CascadedLinksOrder = 1,

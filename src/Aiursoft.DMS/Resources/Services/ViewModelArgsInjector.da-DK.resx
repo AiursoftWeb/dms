@@ -138,6 +138,12 @@
   <data name="My {0} requests" xml:space="preserve">
     <value>Mine {0}-anmodninger</value>
   </data>
+  <data name="My requests" xml:space="preserve">
+    <value>Mine anmodninger</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>Mine godkendelser</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>Ikke fundet</value>
   </data>

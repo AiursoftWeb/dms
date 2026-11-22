@@ -8,7 +8,7 @@
     var controller = Model.OwnRequests ? "DmsAccess" : "Dms";
     var indexAction = Model.OwnRequests ? "MyLockboxes" : "Lockboxes";
     var detailAction = Model.OwnRequests ? "MyLockbox" : "Lockbox";
-    var defaultScope = Model.OwnRequests ? "all" : Model.CanReview ? "review" : "pending";
+    var defaultScope = Model.OwnRequests ? "all" : "review";
 }
 <div class="dms-workspace mx-auto">
     <header class="dms-page-heading">
@@ -37,7 +37,7 @@
         <div class="dms-filter-field">
             <label for="scope" class="form-label">@Localizer["Show"]</label>
             <select id="scope" name="scope" class="form-select">
-                @if (Model.CanReview)
+                @if (!Model.OwnRequests)
                 {
                     <option value="review" selected="@(Model.Scope == "review")">@Localizer["Ready for my review"]</option>
                 }

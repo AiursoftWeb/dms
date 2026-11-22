@@ -736,6 +736,11 @@ public class DmsRolePermissionTests : TestBase
         await SetRoleAsync(setup.Role, AppPermissionNames.CanApproveOwnWorkflow, true);
         StringAssert.Contains(await Http.GetStringAsync(path), "action=\"/Dms/Decide\"");
         StringAssert.Contains(Uri.UnescapeDataString(await Http.GetStringAsync(review)), id);
+        await SetRoleAsync(setup.Role, DmsPermissions.Approve(RiskLevel.Safe), false);
+        var myApprovals = await Http.GetStringAsync("/Dms/Lockboxes");
+        Assert.DoesNotContain(id, Uri.UnescapeDataString(myApprovals));
+        var pending = await Http.GetStringAsync("/Dms/Lockboxes?scope=pending&q=Web%20permission%20test");
+        StringAssert.Contains(Uri.UnescapeDataString(pending), id);
         await SetRoleAsync(setup.Role, AppPermissionNames.CanReadDmsOperations, false);
         Assert.AreEqual(HttpStatusCode.Forbidden, (await Http.GetAsync("/Dms")).StatusCode);
     }

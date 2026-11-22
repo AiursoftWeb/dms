@@ -138,6 +138,12 @@
   <data name="My {0} requests" xml:space="preserve">
     <value>Мої запити {0}</value>
   </data>
+  <data name="My requests" xml:space="preserve">
+    <value>Мої запити</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>Мої погодження</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>Не знайдено</value>
   </data>

@@ -138,6 +138,12 @@
   <data name="My {0} requests" xml:space="preserve">
     <value>मेरे {0} अनुरोध</value>
   </data>
+  <data name="My requests" xml:space="preserve">
+    <value>मेरे अनुरोध</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>मेरी स्वीकृतियाँ</value>
+  </data>
   <data name="Not Found" xml:space="preserve">
     <value>नहीं मिला</value>
   </data>
