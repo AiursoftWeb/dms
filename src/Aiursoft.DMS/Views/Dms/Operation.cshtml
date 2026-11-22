@@ -1,6 +1,7 @@
 @using Aiursoft.DMS.Contracts
 @using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.WebTools
+@using System.Globalization
 @model OperationViewModel
 @{
     var run = Model.Run;
@@ -100,7 +101,7 @@
                 </div>
                 <div>
                     <dt>@Localizer["Duration"]</dt>
-                    <dd>@(elapsed is { } duration ? duration.ToString(duration.Days > 0 ? @"d\.hh\:mm\:ss" : @"hh\:mm\:ss") : "—")</dd>
+                    <dd>@(elapsed is { } duration ? duration.ToString(duration.Days > 0 ? @"d\.hh\:mm\:ss" : @"hh\:mm\:ss", CultureInfo.InvariantCulture) : "—")</dd>
                 </div>
             </dl>
 
