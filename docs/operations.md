@@ -16,7 +16,7 @@ dms workflow trace "$WORKFLOW_ID"
 dms operation get-trace --id "$CHILD_WORKFLOW_ID" --recursive false
 ```
 
-Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `get-trace` for observations and command output, and `get-workflow` for the typed result. Investigation commands default to tables and support `--output-format json` or `csv`. Output formatting on a submission changes the receipt only.
+Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `get-trace` for observations and command output, and `get-workflow` for the typed result. Investigation commands support `--output-format Table`, `Json`, and `Csv`. Output formatting on a submission changes the receipt only.
 
 Trace entries include their UTC time, Workflow ID, definition, source and text. Workflow authors use `TraceAsync` for execution context and `WarningAsync` for incomplete observations; native process output is written as `stdout` and `stderr`. Fixed operations report their tool, time limit, elapsed time, exit code and output character counts. Completed `OperationWorkflow` functions also write their result summary. These diagnostics do not dump arguments, standard input or environment variables; operations that suppress raw output retain that choice.
 
@@ -24,10 +24,11 @@ Machine events are persisted in the Agent journal before delivery through its ou
 
 With Client 1.12.0 and an updated Controller, `workflow trace` and `operation get-trace` combine the selected workflow and all its descendants by time. Pass a child ID to read that subtree, or use `--recursive false` to read a single workflow. Each page contains up to 200 archived events. Continue with `--skip 200`, `--skip 400` and so on, keeping the selected ID and recursive option the same. Direct API calls can request the same behavior with `?recursive=true`. The web operation page displays the selected node's first 200 archived entries with links to its children.
 
-Use `--output-format Log` with either trace command to write a plain log file.
+Both trace commands default to plain log output. Use `--output-format Table` to display trace metadata and entries as a table.
 
 ```sh
-dms workflow trace "$WORKFLOW_ID" --output-format Log > a.log
+dms workflow trace "$WORKFLOW_ID" | code -
+dms workflow trace "$WORKFLOW_ID" > a.log
 ```
 
 Each archived event occupies one line in the form `2026-11-23T06:38:42.0000000Z [INFO] Starting operation`.

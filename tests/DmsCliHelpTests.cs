@@ -36,6 +36,16 @@ public class DmsCliHelpTests
     }
 
     [TestMethod]
+    [DataRow("workflow", "trace")]
+    [DataRow("operation", "get-trace")]
+    public async Task TraceHelpShowsLogAsTheDefault(string group, string command)
+    {
+        var result = await DmsCommandApp.Create().TestRunAsync([group, command, "--help"]);
+        Assert.AreEqual(0, result.ProgramReturn);
+        StringAssert.Contains(result.StdOut, "[default: Log]");
+    }
+
+    [TestMethod]
     public void EmptyInventoryCsvRetainsColumnHeaders()
     {
         using var output = new StringWriter();

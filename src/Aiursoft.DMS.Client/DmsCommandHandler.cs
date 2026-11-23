@@ -24,10 +24,14 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
         _format = new Option<OutputFormat>("--output-format")
         {
             Description = supportsLog
-                ? "Choose table (default), json, csv, or log (one entry per line)."
+                ? "Choose log (default), table, json, or csv."
                 : "Choose table (default), json, or csv."
         };
-        if (!supportsLog)
+        if (supportsLog)
+        {
+            _format.DefaultValueFactory = _ => OutputFormat.Log;
+        }
+        else
         {
             _format.CompletionSources.Clear();
             _format.CompletionSources.Add(
