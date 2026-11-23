@@ -67,7 +67,7 @@ public class DisableSshWorkflowTests
         if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
         using var fixture = new Fixture { SshListening = true };
 
-        var periodic = await fixture.CheckAsync(new SshLeaseCheckInput(ReportStatus: true));
+        var periodic = await fixture.CheckAsync(new SshLeaseCheckInput { ReportStatus = true });
         Assert.IsNull(periodic.SshClosed);
         Assert.IsTrue(periodic.Observation?.OrdinaryOpen == true);
         Assert.IsTrue(periodic.Observation?.LeaseKnown == true);
@@ -97,7 +97,7 @@ public class DisableSshWorkflowTests
         var lease = Guid.NewGuid();
         var expiry = DateTimeOffset.UtcNow.AddMinutes(60);
         fixture.SeedLease(lease, expiry);
-        var report = new SshLeaseCheckInput(ReportStatus: true);
+        var report = new SshLeaseCheckInput { ReportStatus = true };
 
         var temporary = (await fixture.CheckAsync(report)).Observation!;
         Assert.AreEqual(false, temporary.OrdinaryOpen);

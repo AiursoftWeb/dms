@@ -48,7 +48,7 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
         if (!input.CloseSshWhenNoLease && store.ReadState()?.Lease == null)
         {
             var observation = input.ReportStatus ? await SshHostStatus.ObserveAsync(host, store, alreadyLocked: false, token) : null;
-            return new SshLeaseCheckResult("No SSH lease needs recovery.", SshClosed: null, observation);
+            return new SshLeaseCheckResult("No SSH lease needs recovery.", SshClosed: null) { Observation = observation };
         }
 
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -64,20 +64,27 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             if (!await SshLeaseStore.ShouldRecoverAsync(host, state, lease, token))
             {
                 await context.TraceAsync($"Preserving SSH lease {lease.Id} until {lease.ExpiresAtUtc:u}.");
-                return new SshLeaseCheckResult("The SSH lease remains active.", SshClosed: false,
-                    input.ReportStatus ? await SshHostStatus.ObserveAsync(host, store, alreadyLocked: true, token) : null);
+                return new SshLeaseCheckResult("The SSH lease remains active.", SshClosed: false)
+                {
+                    Observation = input.ReportStatus ? await SshHostStatus.ObserveAsync(host, store, alreadyLocked: true, token) : null
+                };
             }
             await context.TraceAsync($"Reconciling SSH lease {lease.Id}. Healthy={state.Healthy}, expires_at={lease.ExpiresAtUtc:u}.");
         }
         else if (!input.CloseSshWhenNoLease)
         {
-            return new SshLeaseCheckResult("No SSH lease needs recovery.", SshClosed: null,
-                input.ReportStatus ? await SshHostStatus.ObserveAsync(host, store, alreadyLocked: true, token) : null);
+            return new SshLeaseCheckResult("No SSH lease needs recovery.", SshClosed: null)
+            {
+                Observation = input.ReportStatus ? await SshHostStatus.ObserveAsync(host, store, alreadyLocked: true, token) : null
+            };
         }
         else if (state is { Healthy: true } && await UnitsMaskedAndStoppedAsync(host, token) &&
                  !await HasOpenSshConnectionsAsync(host, token))
         {
-            return new SshLeaseCheckResult("SSH is already closed.", SshClosed: true, input.ReportStatus ? SshHostStatus.Closed() : null);
+            return new SshLeaseCheckResult("SSH is already closed.", SshClosed: true)
+            {
+                Observation = input.ReportStatus ? SshHostStatus.Closed() : null
+            };
         }
 
         var previous = store.ReadRevocation(context.Id);
@@ -87,7 +94,10 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             throw new WorkflowNeedsVerificationException(context.Id);
 
         var result = await RevokeLockedAsync(context, host, store, state, token);
-        return new SshLeaseCheckResult(result.Summary, SshClosed: true, input.ReportStatus ? SshHostStatus.Closed() : null);
+        return new SshLeaseCheckResult(result.Summary, SshClosed: true)
+        {
+            Observation = input.ReportStatus ? SshHostStatus.Closed() : null
+        };
     }
 
     private static async Task<OperationResult> RevokeLockedAsync(MachineWorkflowContext context, OperationHost host, SshLeaseStore store,

@@ -192,7 +192,7 @@ public class DmsManagementTests : TestBase
         void AddObservation(Guid id, string definition, SshHostObservation status, Guid? lockbox = null, Guid? runId = null)
         {
             var result = definition == check
-                ? JsonSerializer.Serialize(new SshLeaseCheckResult("Probe", null, status))
+                ? JsonSerializer.Serialize(new SshLeaseCheckResult("Probe", null) { Observation = status })
                 : JsonSerializer.Serialize(new OperationResult("Change", Facts: JsonSerializer.SerializeToElement(new { SshObservation = status })));
             db.WorkflowRuns.Add(new WorkflowRun
             {
