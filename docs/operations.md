@@ -16,13 +16,25 @@ dms workflow trace "$WORKFLOW_ID"
 dms operation get-trace --id "$CHILD_WORKFLOW_ID" --recursive false
 ```
 
-Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `get-trace` for observations and command output, and `get-workflow` for the typed result. Investigation commands default to tables and support `--output-format json` or `csv`. Output formatting on a submission changes the receipt only.
+Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `get-trace` for observations and command output, and `get-workflow` for the typed result. Investigation commands support `--output-format Table`, `Json`, and `Csv`. Output formatting on a submission changes the receipt only.
 
 Trace entries include their UTC time, Workflow ID, definition, source and text. Workflow authors use `TraceAsync` for execution context and `WarningAsync` for incomplete observations; native process output is written as `stdout` and `stderr`. Fixed operations report their tool, time limit, elapsed time, exit code and output character counts. Completed `OperationWorkflow` functions also write their result summary. These diagnostics do not dump arguments, standard input or environment variables; operations that suppress raw output retain that choice.
 
 Machine events are persisted in the Agent journal before delivery through its outbound WebSocket. The Controller durably spools trace events before acknowledging them and flushes them to ClickHouse `DmsWorkflowTrace`. Unacknowledged events can be retransmitted; event IDs deduplicate archive reads. Workflow metadata and Lockbox decisions remain in the relational database, with structured investigation facts archived separately to `DmsWorkflowAudit`. ClickHouse downtime retains a bounded backlog rather than silently discarding trace. Trace queries can briefly lag execution; `PendingArchiveEvents` reports the Controller-wide backlog, not just the selected workflow.
 
 With Client 1.12.0 and an updated Controller, `workflow trace` and `operation get-trace` combine the selected workflow and all its descendants by time. Pass a child ID to read that subtree, or use `--recursive false` to read a single workflow. Each page contains up to 200 archived events. Continue with `--skip 200`, `--skip 400` and so on, keeping the selected ID and recursive option the same. Direct API calls can request the same behavior with `?recursive=true`. The web operation page displays the selected node's first 200 archived entries with links to its children.
+
+Both trace commands default to plain log output. Use `--output-format Table` to display trace metadata and entries as a table.
+
+```sh
+dms workflow trace "$WORKFLOW_ID" | code -
+dms workflow trace "$WORKFLOW_ID" > a.log
+```
+
+Each archived event occupies one line in the form `2026-11-23T06:38:42.0000000Z [INFO] Starting operation`.
+The severity comes from the trace source. Engine messages and stdout use `INFO`, warnings and stderr use
+`WARN`, and errors use `ERROR`. Embedded line breaks appear as `\n`. Empty pages produce no output.
+Use the same `--skip` and `--recursive` options when exporting additional pages.
 
 For disk investigations, `filesystem du` records the actual path, depth, one-filesystem scope and 60-second limit. Exit code 124 means that limit was reached. An unreadable mount or a file disappearing during a live scan can also fail `du`; earlier byte counts remain partial evidence. `layout df` and `layout inodes` explain that one unreadable mount can fail the entire query even when other filesystem rows are present. Read the native stderr for the affected path. Failed queries stay failed; their trace must not be interpreted as a complete inventory. Several Btrfs subvolume rows can represent the same filesystem and must not be added as independent capacity.
 
