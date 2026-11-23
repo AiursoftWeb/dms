@@ -266,6 +266,98 @@ public class BoxDeployTests
     }
 
     [TestMethod]
+    public async Task InspectionProducesStructuredTotalPartTotalReportWithStagesStacksAndSwarmHealth()
+    {
+        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException();
+        using var box = new Box();
+
+        // Add sample stages and stacks
+        System.IO.Directory.CreateDirectory(box.PathOf("stage0/registry"));
+        System.IO.Directory.CreateDirectory(box.PathOf("stage2/stacks/incoming"));
+        System.IO.Directory.CreateDirectory(box.PathOf("stage3/stacks/authentik"));
+        System.IO.Directory.CreateDirectory(box.PathOf("stage3/stacks/zot"));
+        System.IO.Directory.CreateDirectory(box.PathOf("stage4/stacks/dms"));
+        System.IO.Directory.CreateDirectory(box.PathOf("stage4/stacks/alertcenter"));
+        File.WriteAllText(box.PathOf("stage4/stacks/dms/docker-compose.yml"), "services:\n  web:\n    image: dms\n");
+        box.Git(box.Repository, "add", ".");
+        box.Git(box.Repository, "commit", "-m", "Add stages and stacks");
+
+        // Create mock docker executable
+        var mockDocker = Path.Combine(box.Directory, "mock-docker");
+        File.WriteAllText(mockDocker, """
+            #!/usr/bin/env python3
+            import sys
+            args = sys.argv[1:]
+            if len(args) >= 2 and args[0] == '--host':
+                args = args[2:]
+            if not args:
+                sys.exit(0)
+            cmd = args[0]
+            if cmd == 'info':
+                fmt = ''
+                if '--format' in args:
+                    fmt = args[args.index('--format') + 1]
+                if 'LocalNodeState' in fmt:
+                    print('active')
+                elif 'ControlAvailable' in fmt:
+                    print('manager')
+                elif 'NodeID' in fmt:
+                    print('node-test-123')
+                else:
+                    sys.exit(0)
+            elif cmd == 'node' and len(args) > 1 and args[1] == 'inspect':
+                print('ID=node-test-123 Hostname=global-host Status=ready Availability=active ManagerStatus=Leader')
+            elif cmd == 'stack' and len(args) > 1 and args[1] == 'ls':
+                print("authentik\t1\ndms\t1\nunmanaged_stack\t1")
+            elif cmd == 'service' and len(args) > 1 and args[1] == 'ls':
+                print("s1\tauthentik_server\treplicated\t1/1\tauthentik:latest\ns2\tdms_web\treplicated\t0/1\tdms:latest")
+            elif cmd == 'secret' and len(args) > 1 and args[1] == 'ls':
+                print("db_password\njwt_secret")
+            sys.exit(0)
+            """);
+        File.SetUnixFileMode(mockDocker, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+
+        await box.InspectAsync(mockDocker);
+        var trace = string.Join("\n", box.Events.Where(e => e.IsTrace).Select(e => e.Message));
+
+        // Total - Part - Total verification
+        StringAssert.Contains(trace, "BOX INSPECTION REPORT (SUMMARY)");
+        StringAssert.Contains(trace, "SECTION 1: GIT REPOSITORY & ENVIRONMENT");
+        StringAssert.Contains(trace, "SECTION 2: BOX STAGES & CONFIGURED STACKS (STATIC INVENTORY)");
+        StringAssert.Contains(trace, "SECTION 3: SWARM RUNNING STACKS & CODE ALIGNMENT (DYNAMIC INVENTORY)");
+        StringAssert.Contains(trace, "SECTION 4: SWARM SERVICES & REPLICA HEALTH");
+        StringAssert.Contains(trace, "SECTION 5: SWARM SECRETS & CLUSTER RESOURCES");
+        StringAssert.Contains(trace, "INSPECTION CONCLUSION & NEXT STEPS");
+
+        // Section 2 Static inspection verification
+        StringAssert.Contains(trace, "ConfiguredStagesCount: 4");
+        StringAssert.Contains(trace, "ConfiguredStacksTotal: 6");
+        StringAssert.Contains(trace, "stage0: 1 stack(s) [registry]");
+        StringAssert.Contains(trace, "stage2: 1 stack(s) [incoming]");
+        StringAssert.Contains(trace, "stage3: 2 stack(s) [authentik zot]");
+        StringAssert.Contains(trace, "stage4: 2 stack(s) [alertcenter dms]");
+
+        // Section 3 Swarm Alignment verification
+        StringAssert.Contains(trace, "SwarmStatus: active (Role: manager)");
+        StringAssert.Contains(trace, "SwarmStacksCount: 3");
+        StringAssert.Contains(trace, "ActiveSyncedStacks: 2 [authentik dms]");
+        StringAssert.Contains(trace, "UnmanagedOrphanStacks: 1 [unmanaged_stack]");
+
+        // Section 4 Swarm Services Health verification
+        StringAssert.Contains(trace, "TotalServices: 2");
+        StringAssert.Contains(trace, "HealthyServices: 1");
+        StringAssert.Contains(trace, "DegradedServices: 1");
+        StringAssert.Contains(trace, "dms_web: 0/1");
+
+        // Section 5 Secrets verification
+        StringAssert.Contains(trace, "SecretsCount: 2");
+        StringAssert.Contains(trace, "SecretsList: [db_password jwt_secret]");
+
+        // Conclusion verification
+        StringAssert.Contains(trace, "Evaluation: DEGRADED");
+    }
+
+    [TestMethod]
     public async Task ConfiguredMachineIdentityIsReferencedPrivatelyAndUsedByGitWithoutChangingOrigin()
     {
         if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException();
@@ -395,8 +487,8 @@ public class BoxDeployTests
             return output;
         }
 
-        public Task<string> InspectAsync() => new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })
-            .RunAsync(new BoxInspectWorkflow(Root, Executable), CancellationToken.None);
+        public Task<string> InspectAsync(string? docker = null) => new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })
+            .RunAsync(new BoxInspectWorkflow(Root, Executable, docker ?? "/usr/bin/docker"), CancellationToken.None);
 
         public Task<string> RunAsync(BoxDeployInput input, CancellationToken token = default) =>
             new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })

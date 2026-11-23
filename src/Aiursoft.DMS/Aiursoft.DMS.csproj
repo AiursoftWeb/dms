@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Aiursoft.DMS.Workflows/Aiursoft.DMS.Workflows.csproj" />
+    <Compile Include="../Aiursoft.DMS.Client/MachineWorkflowCli.cs" Link="MachineWorkflowCli.cs" />
   </ItemGroup>
   <Target Name="PrepareFrontendResources" BeforeTargets="AssignTargetPaths" Condition="'$(DesignTimeBuild)' != 'true'">
     <!-- Docker supplies the slimmed assets from its Node build stage. -->

@@ -244,8 +244,9 @@ dms operation get-trace --id "$PROCESS_WORKFLOW_ID"
 ```
 
 Use the callstack to find the inspection's Process child ID. Its trace contains
-the selected repository, branch, commit, tracked/staged-change flags, whether
-`.env.prod` is tracked, and sanitized origin metadata. Raw origin configuration,
+a structured summary report covering the repository, branch, commit, tracked/staged-change
+flags, whether `.env.prod` is tracked, sanitized origin metadata, configured stages and stacks,
+running Swarm stacks alignment, service replica health, and secrets count. Raw origin configuration,
 usernames, passwords, URL queries and fragments are never printed. Unknown hosts
 and repository paths are redacted; `official` reports whether an individual origin
 matches the deploy allowlist. Multiple origins still prevent deployment even if

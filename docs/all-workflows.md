@@ -29,7 +29,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Remove unused APT packages | `machine.apt.autoremove` | `dms machine apt autoremove --plan` (High) | — | Remove the reviewed unused packages. `--purge` also removes their package configuration files. |
 | Configure Box Git access | `machine.box.configure-git` | `dms machine box configure-git` (High) | — | Configures which existing SSH identity file and known-hosts file Box uses for Git pulls. |
 | Deploy a Box | `machine.box.deploy` | `dms machine box deploy` (High) | — | Updates the Box checkout and deploys from the selected stage onward. The service filter can limit the deployment. |
-| Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Safe) | — | Reads the local Box branch, commit, and working-tree state and reports sanitized remote information. |
+| Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Safe) | — | Produces a structured report of Box Git status, stages, stacks, Swarm running stacks, service replica health, and secrets inventory. |
 | Refresh images with Box Puller | `machine.box.puller.force-update` | `dms machine box puller force-update` (High) | — | Refreshes a selected image or the configured image set through the specified Box Puller. |
 | Find a ClickHouse container | `machine.clickhouse.find-container` | `dms machine clickhouse find-container` (Open) | — | Find the unique running ClickHouse server container on the target machine. |
 | List ClickHouse databases | `machine.clickhouse.list-databases` | `dms machine clickhouse list-databases` (Open) | — | List databases visible to the local read account. |
