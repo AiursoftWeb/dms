@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
@@ -166,6 +167,65 @@ public class DmsManagementTests : TestBase
         foreach (var run in new[] { previous, manual, child, otherMachine, otherWorkflow })
             Assert.DoesNotContain(run.Id.ToString(), detail);
         StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{never.Id}"), "Not verified yet");
+    }
+
+    [TestMethod]
+    public async Task MachineSshOverviewKeepsLeaseIdentityFreshAndShowsRenewedEvidence()
+    {
+        Assert.AreEqual(HttpStatusCode.Redirect, (await Http.GetAsync($"/Dms/MachineSshStates?id={Guid.NewGuid()}")).StatusCode);
+        await LoginAsAdmin();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var now = DateTimeOffset.UtcNow;
+        var user = new User { UserName = "operator", DisplayName = "Lease operator" };
+        db.Users.Add(user);
+        var machine = new Machine { Name = "Lease preview", KeyHash = "test-lease-host", LastSeen = now.UtcDateTime };
+        var offline = new Machine { Name = "Offline preview", KeyHash = "test-lease-offline", LastSeen = now.AddMinutes(-1).UtcDateTime };
+        db.Machines.AddRange(machine, offline);
+        var open = OperationsWorkflows.SshOpen.Name;
+        var check = OperationsWorkflows.SshCheckLease.Name;
+        var box = new LockboxRequest { Definition = open, RequesterId = user.Id, ClientRequestId = Guid.NewGuid(), Decision = DecisionState.Approved };
+        db.Lockboxes.Add(box);
+        var leaseId = Guid.NewGuid();
+        var observation = new SshHostObservation(now.AddMinutes(-2), OrdinaryOpen: true, LeaseKnown: true, leaseId, now.AddMinutes(20));
+
+        void AddObservation(Guid id, string definition, SshHostObservation status, Guid? lockbox = null, Guid? runId = null)
+        {
+            var result = definition == check
+                ? JsonSerializer.Serialize(new SshLeaseCheckResult("Probe", null) { Observation = status })
+                : JsonSerializer.Serialize(new OperationResult("Change", Facts: JsonSerializer.SerializeToElement(new { SshObservation = status })));
+            db.WorkflowRuns.Add(new WorkflowRun
+            {
+                Id = runId ?? Guid.NewGuid(), Definition = definition, MachineId = id, LockboxId = lockbox, State = RunState.Succeeded,
+                CreatedAt = status.ObservedAtUtc.UtcDateTime, FinishedAt = now.UtcDateTime, Result = result
+            });
+        }
+
+        AddObservation(machine.Id, open, observation, box.Id, leaseId);
+        AddObservation(offline.Id, check, observation);
+        await db.SaveChangesAsync();
+
+        var page = WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms?q=Lease%20preview"));
+        StringAssert.Contains(page, "Temporary SSH open");
+        StringAssert.Contains(page, "Ordinary SSH open");
+        StringAssert.Contains(page, "Lease operator");
+        StringAssert.Contains(page, box.Id.ToString());
+        StringAssert.Contains(page, "data-utc-now");
+        var pollPath = $"/Dms/MachineSshStates?id={machine.Id}";
+        var off = await Http.GetStringAsync($"/Dms/MachineSshStates?id={offline.Id}");
+        StringAssert.Contains(off, "SSH status unverified");
+        Assert.DoesNotContain("Lease operator", off);
+        Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync("/Dms/MachineSshStates?id=invalid")).StatusCode);
+
+        AddObservation(machine.Id, check, observation with { ObservedAtUtc = now.AddMinutes(-1), ExpiresAtUtc = now.AddSeconds(-10) });
+        await db.SaveChangesAsync();
+        var expired = await Http.GetStringAsync(pollPath);
+        StringAssert.Contains(expired, "data-ssh-after-expiry>SSH lease expired, awaiting confirmation");
+        AddObservation(machine.Id, OperationsWorkflows.SshDisable.Name, new SshHostObservation(now, OrdinaryOpen: false, LeaseKnown: true));
+        await db.SaveChangesAsync();
+        var closed = await Http.GetStringAsync(pollPath);
+        StringAssert.Contains(closed, "SSH closed");
+        Assert.DoesNotContain("Lease operator", closed);
     }
 
     [TestMethod]

@@ -67,8 +67,11 @@ public class DisableSshWorkflowTests
         if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
         using var fixture = new Fixture { SshListening = true };
 
-        var periodic = await fixture.CheckAsync(new SshLeaseCheckInput());
+        var periodic = await fixture.CheckAsync(new SshLeaseCheckInput { ReportStatus = true });
         Assert.IsNull(periodic.SshClosed);
+        Assert.IsTrue(periodic.Observation?.OrdinaryOpen == true);
+        Assert.IsTrue(periodic.Observation?.LeaseKnown == true);
+        Assert.IsNull(periodic.Observation?.LeaseId);
         Assert.IsTrue(fixture.SshListening);
 
         var baseline = await fixture.CheckAsync(new SshLeaseCheckInput(CloseSshWhenNoLease: true));
@@ -84,6 +87,34 @@ public class DisableSshWorkflowTests
         await fixture.CheckAsync(new SshLeaseCheckInput(CloseSshWhenNoLease: true));
         Assert.IsFalse(fixture.SshListening);
         Assert.AreEqual(2, fixture.MaskCount);
+    }
+
+    [TestMethod]
+    public async Task SshObservationDistinguishesLeaseListenerSocketActivationAndMissingListener()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH observation runs on Linux.");
+        using var fixture = new Fixture { SshListening = true, LeasePid = 123 };
+        var lease = Guid.NewGuid();
+        var expiry = DateTimeOffset.UtcNow.AddMinutes(60);
+        fixture.SeedLease(lease, expiry);
+        var report = new SshLeaseCheckInput { ReportStatus = true };
+
+        var temporary = (await fixture.CheckAsync(report)).Observation!;
+        Assert.AreEqual(false, temporary.OrdinaryOpen);
+        Assert.AreEqual(lease, temporary.LeaseId);
+        Assert.AreEqual(expiry, temporary.ExpiresAtUtc);
+
+        fixture.SocketListening = true;
+        var both = (await fixture.CheckAsync(report)).Observation!;
+        Assert.AreEqual(true, both.OrdinaryOpen);
+        Assert.AreEqual(lease, both.LeaseId);
+
+        fixture.SshListening = false;
+        var uncertain = (await fixture.CheckAsync(report)).Observation!;
+        Assert.AreEqual(true, uncertain.OrdinaryOpen);
+        Assert.IsFalse(uncertain.LeaseKnown);
+        Assert.IsNull(uncertain.LeaseId);
+        Assert.AreEqual(0, fixture.MaskCount);
     }
 
     [TestMethod]
@@ -151,6 +182,8 @@ public class DisableSshWorkflowTests
         private int _inMask;
         public int MaskCount { get; private set; }
         public bool SshListening { get; set; }
+        public bool SocketListening { get; set; }
+        public int? LeasePid { get; set; }
         public bool UfwActive { get; private set; }
         public bool BlockPolicyReadAfterUfwChange { get; set; }
         private bool _policyBlocked;
@@ -234,6 +267,10 @@ public class DisableSshWorkflowTests
                     SshListening = false;
                     Interlocked.Decrement(ref _inMask);
                     return new NativeResult(0, "", "");
+                case "systemctl" when command.Arguments.Contains("--property=ActiveState,MainPID"):
+                    return new NativeResult(0, LeasePid is { } pid ? $"ActiveState=active\nMainPID={pid}\n" : "ActiveState=inactive\nMainPID=0\n", "");
+                case "systemctl" when command.Arguments.Contains("--property=ActiveState,SubState"):
+                    return new NativeResult(0, SocketListening ? "ActiveState=active\nSubState=listening\n" : "ActiveState=inactive\nSubState=dead\n", "");
                 case "systemctl":
                     return new NativeResult(0, SshListening
                         ? "LoadState=loaded\nActiveState=active\n"

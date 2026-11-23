@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+  <data name="Temporary SSH open" xml:space="preserve">
+    <value>SSH 暫時開放</value>
+  </data>
+  <data name="SSH lease expired, awaiting confirmation" xml:space="preserve">
+    <value>SSH 租約已到期，待確認關閉</value>
+  </data>
+  <data name="Unknown requester" xml:space="preserve">
+    <value>申請人不明</value>
+  </data>
+  <data name="Requested by {0}" xml:space="preserve">
+    <value>申請人 {0}</value>
+  </data>
+  <data name="Expires" xml:space="preserve">
+    <value>預計到期</value>
+  </data>
+  <data name="{0} min left" xml:space="preserve">
+    <value>剩餘 {0} 分鐘</value>
+  </data>
+  <data name="View Lockbox request" xml:space="preserve">
+    <value>查看 Lockbox 請求</value>
+  </data>
+  <data name="Ordinary SSH open" xml:space="preserve">
+    <value>一般 SSH 已開放</value>
+  </data>
+  <data name="SSH closed" xml:space="preserve">
+    <value>SSH 已關閉</value>
+  </data>
+  <data name="SSH status unverified" xml:space="preserve">
+    <value>SSH 狀態待確認</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>確認時間</value>
+  </data>
+</root>

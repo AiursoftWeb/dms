@@ -294,7 +294,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         return item;
     });
 
-    public Task<LockboxStatus> GetLockboxStatusAsync(string user, Guid id) => gate.RunAsync(async () =>
+    public Task<LockboxStatus> GetLockboxStatusAsync(string user, Guid id, bool includeDefinition = false) => gate.RunAsync(async () =>
     {
         var item = await db.Lockboxes.AsNoTracking().SingleOrDefaultAsync(box => box.Id == id)
             ?? throw new DmsException(404, "Lockbox not found.");
@@ -304,7 +304,11 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var status = await DescribeLockboxAsync(item);
         access.Audit(user, "lockbox.get", id);
         await db.SaveChangesAsync();
-        return status with { EquivalentCommand = LockboxSnapshot.ReadStatusCommand(item) };
+        return status with
+        {
+            Definition = includeDefinition ? item.Definition : null,
+            EquivalentCommand = LockboxSnapshot.ReadStatusCommand(item)
+        };
     });
 
     internal async Task<LockboxStatus> DescribeLockboxAsync(LockboxRequest item)

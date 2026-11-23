@@ -316,6 +316,17 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
         var summary = JObject.Parse(json.StdOut)["Data"]!.ToObject<LockboxStatus>()!;
         Assert.AreEqual(command, summary.EquivalentCommand);
+        Assert.IsNull(summary.Definition);
+
+        using var requestWithDefinition = new HttpRequestMessage(HttpMethod.Get,
+            $"/api/v1/dms/lockboxes/{new LockboxId(original.Id)}/status?includeDefinition=true");
+        requestWithDefinition.Headers.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
+        using var statusWithDefinition = await Http.SendAsync(requestWithDefinition);
+        Assert.AreEqual(HttpStatusCode.OK, statusWithDefinition.StatusCode);
+        var extended = JObject.Parse(await statusWithDefinition.Content.ReadAsStringAsync())["Data"]!
+            .ToObject<LockboxStatus>()!;
+        Assert.AreEqual(MachineWorkflows.AgentStatus.Name, extended.Definition);
+        Assert.AreEqual(command, extended.EquivalentCommand);
 
         var csv = await Client.DmsCommandApp.Create().TestRunAsync([.. statusArgs, "--output-format", "csv"]);
         Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
