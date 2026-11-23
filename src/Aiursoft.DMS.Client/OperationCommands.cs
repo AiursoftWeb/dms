@@ -1,7 +1,9 @@
 using System.CommandLine;
 using System.Text.Json;
+using Aiursoft.AiurProtocol;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
+using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
@@ -942,6 +944,72 @@ public static partial class DmsCommandApp
             OperationsWorkflows.AptUpgrade,
             p => new PackageUpgradeInput(p.GetValue(package)!),
             package);
+    }
+
+    private static ActionCommand NewAptUpdateCommand() =>
+        StandardCommand("update", "Refresh package indexes from the configured APT sources.",
+            OperationsWorkflows.AptUpdate, _ => new EmptyInput());
+
+    private static ActionCommand NewAptMaintenanceCommand(AptMaintenance operation)
+    {
+        var autoremove = operation == AptMaintenance.Autoremove;
+        var definition = autoremove ? OperationsWorkflows.AptAutoremove : OperationsWorkflows.AptUpgradeAll;
+        var preview = new Option<bool>("--dry-run")
+            { Description = "Preview per-machine package changes without applying them (default without --plan)." };
+        var plan = new Option<Guid?>("--plan")
+            { Description = "Workflow ID of a successful preview. Submit its package changes for approval." };
+        var purge = new Option<bool>("--purge")
+            { Description = "Remove the unused packages and their configuration files." };
+
+        return new ActionCommand(autoremove ? "autoremove" : "upgrade-all",
+            autoremove ? "Preview or request removal of unused APT dependencies."
+                : "Preview or request upgrades to each machine's APT candidate versions.",
+            definition.Name, definition, options: autoremove ? [preview, plan, purge] : [preview, plan],
+            selectOperation: parse =>
+            {
+                var planId = parse.GetValue(plan);
+                var purgeFiles = autoremove && parse.GetValue(purge);
+                if (planId == null)
+                    return (OperationsWorkflows.AptPlan.Name,
+                        OperationsWorkflows.AptPlan.Serialize(new AptPlanInput(operation, purgeFiles)));
+                if (parse.GetValue(preview)) throw new ArgumentException("Choose either --dry-run or --plan.");
+                return (definition.Name, definition.Serialize(new AptApplyInput(planId.Value, purgeFiles)));
+            }, targetDescription: "Target machine IDs. With --plan, omit target flags to reuse the preview's targets.");
+    }
+
+    private sealed record AptPlanRow(string Machine, string State, string? Action = null,
+        string? Package = null, string? From = null, string? To = null);
+
+    private static async Task<DmsResponse> ReadAptPlanAsync(DmsApiClient client, Guid previewId)
+    {
+        var response = await client.CallstackAsync(previewId);
+        var nodes = (response.Data as JArray)?.OfType<JObject>()
+            .Where(node => node.Value<string>("ParentId") == previewId.ToString() &&
+                node.Value<string>("Definition") == OperationsWorkflows.AptPlan.Name).ToArray();
+        if (nodes is not { Length: > 0 })
+            throw new ArgumentException("No APT preview results found. Check that you supplied the preview's root workflow ID and it has started.");
+
+        var rows = new List<AptPlanRow>();
+        foreach (var node in nodes.OrderBy(node => node.Value<string>("MachineId"), StringComparer.Ordinal))
+        {
+            var machine = node.Value<string>("MachineId")!;
+            var state = (RunState)node.Value<int>("State");
+            if (state != RunState.Succeeded)
+            {
+                rows.Add(new AptPlanRow(machine, state.ToString()));
+                continue;
+            }
+
+            var plan = OperationsWorkflows.AptPlan.ReadResult(node.Value<string>("Result")!);
+            if (plan.Changes.Length == 0) rows.Add(new AptPlanRow(machine, "No changes planned"));
+            foreach (var change in plan.Changes)
+                rows.Add(new AptPlanRow(machine, "Planned", change.Action.ToString(), change.Package, change.FromVersion, change.ToVersion));
+            foreach (var change in plan.AdditionalUpgradesRequiringReview)
+                rows.Add(new AptPlanRow(machine, "Excluded (removals)", change.Action.ToString(), change.Package, change.FromVersion, change.ToVersion));
+        }
+
+        response.Data = rows;
+        return response;
     }
 
     private static ActionCommand NewSystemRebootCommand()

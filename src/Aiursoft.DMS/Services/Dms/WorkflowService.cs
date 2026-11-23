@@ -104,6 +104,16 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var grant = DmsPermissions.ForRisk(await access.PrincipalAsync(user), risk);
         if (!grant.CanRequest) throw new DmsException(403, risk == RiskLevel.Open
             ? "Run open workflows permission is required." : "You cannot request this risk level.");
+        AptApplyInput? apt = null;
+        IReadOnlyList<Guid>? previewTargets = null;
+        if (AptPlans.IsApply(request.Workflow))
+        {
+            apt = AptPlans.ApplyDefinition(request.Workflow).ReadInput(request.Input);
+            if (apt.Changes != null) throw new DmsException(400, "APT package plans must come from a completed preview.");
+            previewTargets = await AptPlans.SelectPreviewTargetsAsync(db, user, request.Workflow, apt);
+            if (!request.AllMachines && request.MachineIds.Count == 0)
+                request.MachineIds = previewTargets.ToList();
+        }
         var targets = new List<Guid>();
         if (definition.RequiresTargets)
         {
@@ -126,6 +136,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         }
         else if (request.AllMachines || request.MachineIds.Count != 0)
             throw new DmsException(400, "This workflow does not accept machine targets.");
+        if (apt != null) await AptPlans.RequireCompletedTargetsAsync(db, apt.PlanId, previewTargets!, targets);
         if (request.Workflow == WorkflowNames.Kill)
         {
             var target = ClusterWorkflows.Cancel.ReadInput(request.Input).TargetWorkflowId;
@@ -205,6 +216,13 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var input = request.Input;
         if (item.Definition == WorkflowNames.AgentUpgrade)
             releases.RequireCurrent(MachineWorkflows.AgentUpgrade.ReadInput(input));
+        if (AptPlans.IsApply(item.Definition))
+        {
+            var plan = AptPlans.ApplyDefinition(item.Definition).ReadInput(input);
+            var scope = await AptPlans.SelectPreviewTargetsAsync(db, item.RequesterId, item.Definition, plan);
+            var targets = JsonSerializer.Deserialize<Guid[]>(item.TargetMachines)!;
+            await AptPlans.RequireCompletedTargetsAsync(db, plan.PlanId, scope, targets);
+        }
         await RequireArtifactsAsync(definition, input, item.RequesterId);
         item.Decision = DecisionState.Approved; item.ApproverId = user; item.Automatic = user == null;
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;

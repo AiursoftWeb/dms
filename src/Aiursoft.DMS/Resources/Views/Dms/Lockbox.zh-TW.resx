@@ -220,4 +220,28 @@
     <value>{0} 請求者 ID</value>
   </data>
 
+  <data name="APT package plan" xml:space="preserve">
+    <value>APT 套件計畫</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>此機器的預覽無法使用。</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>沒有計畫變更的套件。</value>
+  </data>
+  <data name="Install" xml:space="preserve">
+    <value>安裝</value>
+  </data>
+  <data name="Upgrade" xml:space="preserve">
+    <value>升級</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="Remove package and configuration" xml:space="preserve">
+    <value>移除套件及其設定</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>會移除套件的計畫包含以下額外升級，本次不執行</value>
+  </data>
 </root>

@@ -14,11 +14,11 @@ public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run
     public WorkflowLaunch Launch => launch;
     public OperationRequest Parameters => launch.ReadParameters();
 
-    public void CallMachine(string name, Guid machine) => db.WorkflowRuns.Add(new WorkflowRun
+    public void CallMachine(string name, Guid machine, string? input = null) => db.WorkflowRuns.Add(new WorkflowRun
     {
         RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId,
                 Origin = run.Origin, Trigger = WorkflowTrigger.Subworkflow,
-        MachineId = machine, Definition = name, Input = Parameters.Input,
+        MachineId = machine, Definition = name, Input = input ?? Parameters.Input,
         Version = launch.Version, IsMachineTask = true, State = RunState.Queued
     });
 }
@@ -73,7 +73,20 @@ public sealed class MachineBatchWorkflow : ClusterWorkflow
             if (!await context.Inventory.Machines.AnyAsync(m => m.Id == id && !m.Disabled))
                 throw new InvalidOperationException("An approved machine is no longer available.");
         }
-        foreach (var id in targets) context.CallMachine(context.Launch.Definition, id);
+        if (AptPlans.IsApply(context.Launch.Definition))
+        {
+            var definition = AptPlans.ApplyDefinition(context.Launch.Definition);
+            var input = definition.ReadInput(context.Parameters.Input);
+            var plans = await AptPlans.ReadAsync(context.Inventory, input.PlanId, targets);
+            if (plans.Count != targets.Count)
+                throw new InvalidOperationException("The approved per-machine APT plans are no longer available.");
+            foreach (var id in targets)
+                context.CallMachine(definition.Name, id, definition.Serialize(input with { Changes = plans[id].Changes }));
+        }
+        else
+        {
+            foreach (var id in targets) context.CallMachine(context.Launch.Definition, id);
+        }
         context.Run.State = RunState.Running;
     }
 }

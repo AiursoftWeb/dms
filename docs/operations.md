@@ -6,7 +6,7 @@ Client 1.3.0 and Agent 1.4.0 add 86 public Machine workflows in ten categories. 
 
 ## Submit and investigate
 
-Every command in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root.
+Every request in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root.
 
 ```sh
 dms machine performance processes --machine-id "$MACHINE_ID" --sort memory --reason "Find the largest processes"
@@ -185,7 +185,7 @@ Manager-local operations. Changes require an expected service version and the ex
 | `swarm service update` | High | `--service` required; `--expected-version` required; `--node-id` required; `--image` required; `--timeout-seconds=120` |
 | `swarm service rollback` | High | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
 
-### System, systemd and APT (12)
+### System, systemd and APT (16)
 
 System/clock/boot observations, systemd state/journal/timers, package inspection and approved changes. Agent lifecycle uses its dedicated workflow. Reboot confirmation and arbitrary script execution have the additional rules below.
 
@@ -200,7 +200,10 @@ System/clock/boot observations, systemd state/journal/timers, package inspection
 | `system timers` | Medium | — |
 | `apt inspect` | Low | — |
 | `apt install` | High | `--package` required |
-| `apt upgrade` | High | `--package` required |
+| `apt upgrade` | High | `--package name=version` required |
+| `apt update` | Medium | — |
+| `apt upgrade-all` | Low (preview), High (apply) | `--dry-run` or `--plan <preview-workflow-id>` |
+| `apt autoremove` | Low (preview), High (apply) | `--dry-run` or `--plan <preview-workflow-id>`; `--purge` |
 | `system reboot` | High | `--delay-seconds=15` |
 | `system execute-script` | VeryHigh | `--language` required; `--script-file` required; `--timeout-seconds=60` |
 
@@ -323,6 +326,21 @@ dms machine swarm service update --service example_service --expected-version 12
 Service changes refuse drift in the expected version or active task scope. They add a per-service `aiursoft.dms.service-scope.<service-id>=true` label to approved nodes and a corresponding placement constraint, preserving other labels and constraints. Node labels may have changed if a later step fails. Expanding/changing a previous node scope requires all affected nodes in the new approval. `stop` sets a replicated service to zero and records its previous desired replicas; `start` uses the approved explicit replica count. `rollback` uses the previous specification from the approved version. Global/job modes are rejected.
 
 Convergence checks desired replicas, actual task states, exact image strings/digests and update/rollback state. Running tasks on remote nodes do not independently prove application readiness; inspect their container health or run an explicit approved probe. A timeout after mutation is `NeedsVerification`, with no automatic retry or rollback. Stopping a service uses its configured stop behavior; application connection draining remains an application concern.
+
+For fleet maintenance, refresh the indexes first and wait for the target workflows to complete. Run a preview against the machines you want to maintain. Preview uses each machine's current indexes. Read the per-machine results with `apt plan` and use the same preview workflow ID to submit the exact plan for approval.
+
+```sh
+dms machine apt update --all-machines --reason "Refresh package indexes"
+dms machine apt upgrade-all --all-machines --dry-run --reason "Plan package upgrades"
+dms machine apt plan "$UPGRADE_PREVIEW_ID"
+dms machine apt upgrade-all --plan "$UPGRADE_PREVIEW_ID" --reason "Upgrade reviewed packages"
+
+dms machine apt autoremove --all-machines --purge --dry-run --reason "Preview unused packages and configuration"
+dms machine apt plan "$CLEANUP_PREVIEW_ID"
+dms machine apt autoremove --purge --plan "$CLEANUP_PREVIEW_ID" --reason "Purge reviewed unused packages"
+```
+
+Use the root workflow ID from the approved preview. Omit the target flags when applying to reuse the preview's targets, or use `--machine-id` to select a successfully previewed subset. Pass `--purge` to both commands when you want to remove package configuration. Upgrading allows new dependencies and excludes any transaction that removes packages. Upgrades found only in a plan that would remove packages are listed separately for review. APT holds and phased updates continue to apply. The Lockbox shows the plans for each target. If a target's proposed package actions change, its workflow stops and reports the difference. Other targets use their own plans. The preview reports a workflow size error if a target’s plan exceeds the transport limits.
 
 APT install/upgrade uses the already configured trusted APT sources and simulates the plan before applying it. It refuses removals or additional unapproved package names. Include required dependencies explicitly. Upgrade requires every package as `name=version`; an altered plan is rejected. No package-index refresh or unapproved service deployment is implicit. Package operations can run maintainer scripts and restart services; review their High risk accordingly.
 
