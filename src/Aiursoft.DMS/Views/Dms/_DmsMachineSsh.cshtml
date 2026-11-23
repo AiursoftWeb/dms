@@ -1,0 +1,58 @@
+@using System.Globalization
+@using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.DMS.Services.Dms
+@model DmsMachineSshRow
+
+@{
+    var observation = Model.Observation;
+    var expiresAt = observation?.ExpiresAtUtc;
+    var observedAt = observation?.ObservedAtUtc.ToString("O", CultureInfo.InvariantCulture);
+    var timestamp = expiresAt?.ToString("O", CultureInfo.InvariantCulture);
+    var staleAt = observation?.ObservedAtUtc.Add(MachineSshOverview.Freshness).ToString("O", CultureInfo.InvariantCulture);
+    var expired = expiresAt <= DateTimeOffset.UtcNow;
+    var closed = observation is { OrdinaryOpen: false, LeaseKnown: true, LeaseId: null };
+    var ordinaryOpen = observation?.OrdinaryOpen == true;
+}
+
+<div class="dms-machine-ssh" data-machine-ssh="@Model.MachineId" data-ssh-stale-at="@staleAt">
+    <div class="dms-ssh-line" data-ssh-current hidden="@(observation == null)">
+        @if (expiresAt is { } expiry)
+        {
+            <span class="badge bg-success-subtle text-success-emphasis" data-ssh-before-expiry hidden="@expired">@Localizer["Temporary SSH open"]</span>
+            <span class="badge bg-warning-subtle text-warning-emphasis" data-ssh-after-expiry hidden="@(!expired)">@Localizer["SSH lease expired, awaiting confirmation"]</span>
+            <span class="dms-ssh-details">
+                <span>@Localizer["Requested by {0}", Model.Requester ?? Localizer["Unknown requester"].Value]</span>
+                <span>
+                    @Localizer["Expires"]
+                    <time datetime="@timestamp" data-utc-now title="@timestamp">@expiry.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time>
+                </span>
+                <span class="dms-ssh-countdown" data-ssh-until="@timestamp" data-ssh-minutes="@Localizer["{0} min left"].Value" hidden="@expired"></span>
+                @if (Model.LockboxId is { } lockbox)
+                {
+                    <a asp-action="Lockbox" asp-route-id="@lockbox">@Localizer["View Lockbox request"]</a>
+                }
+            </span>
+        }
+        @if (ordinaryOpen)
+        {
+            <span class="badge bg-warning-subtle text-warning-emphasis">@Localizer["Ordinary SSH open"]</span>
+        }
+        else if (closed)
+        {
+            <span class="badge bg-secondary-subtle text-secondary-emphasis">@Localizer["SSH closed"]</span>
+        }
+        else if (expiresAt == null)
+        {
+            <span class="badge bg-secondary-subtle text-secondary-emphasis">@Localizer["SSH status unverified"]</span>
+        }
+        @if (observation is { } status && expiresAt == null)
+        {
+            <span class="dms-ssh-details">
+                <span>@Localizer["Checked"] <time datetime="@observedAt" data-utc-now title="@observedAt">@status.ObservedAtUtc.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time></span>
+            </span>
+        }
+    </div>
+    <div class="dms-ssh-line" data-ssh-unverified hidden="@(observation != null)">
+        <span class="badge bg-secondary-subtle text-secondary-emphasis">@Localizer["SSH status unverified"]</span>
+    </div>
+</div>

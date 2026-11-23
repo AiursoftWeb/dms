@@ -12,7 +12,7 @@ public sealed class ReconcileSshLeaseWorkflow : MachineWorkflow
 
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
-        var result = await context.CallAsync(OperationsWorkflows.SshCheckLease, new SshLeaseCheckInput(), token);
+        var result = await context.CallAsync(OperationsWorkflows.SshCheckLease, new SshLeaseCheckInput(ReportStatus: true), token);
         return JsonSerializer.Serialize(new OperationResult(result.Summary));
     }
 }
@@ -28,5 +28,5 @@ internal sealed class CheckSshLeaseWorkflow(SshLeaseCheckInput input, AgentEnvir
     : MachineWorkflow<SshLeaseCheckInput, SshLeaseCheckResult>(OperationsWorkflows.SshCheckLease, input)
 {
     public override Task<SshLeaseCheckResult> ExecuteAsync(MachineWorkflowContext context, SshLeaseCheckInput value, CancellationToken token) =>
-        DisableSshWorkflow.CheckLeaseAsync(context, environment, value.CloseSshWhenNoLease, token);
+        DisableSshWorkflow.CheckLeaseAsync(context, environment, value, token);
 }

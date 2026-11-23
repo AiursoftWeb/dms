@@ -24,9 +24,12 @@ public sealed record SshRecoveryInput(Guid ExpectedLeaseId)
     }
 }
 
-public sealed record SshLeaseCheckInput(bool CloseSshWhenNoLease = false);
+public sealed record SshLeaseCheckInput(bool CloseSshWhenNoLease = false, bool ReportStatus = false);
 
-public sealed record SshLeaseCheckResult(string Summary, bool? SshClosed);
+public sealed record SshHostObservation(DateTimeOffset ObservedAtUtc, bool? OrdinaryOpen, bool LeaseKnown,
+    Guid? LeaseId = null, DateTimeOffset? ExpiresAtUtc = null);
+
+public sealed record SshLeaseCheckResult(string Summary, bool? SshClosed, SshHostObservation? Observation = null);
 
 public static class SshPublicKey
 {
