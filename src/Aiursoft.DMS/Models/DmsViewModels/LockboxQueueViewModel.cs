@@ -16,4 +16,4 @@ public sealed class LockboxQueueViewModel : UiStackLayoutViewModel
 }
 
 public sealed record LockboxQueueEntry(LockboxRequest Item, string Requester, IReadOnlyList<string> TargetNames,
-    int TargetCount, bool CanDecide, RunState? ExecutionState);
+    int TargetCount, bool CanDecide, RunState? ExecutionState, bool RequiresResubmission);

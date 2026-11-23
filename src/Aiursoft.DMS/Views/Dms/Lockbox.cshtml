@@ -9,10 +9,21 @@
     var item = Model.Item;
     var status = Model.Status;
     var snapshot = Model.Snapshot;
-    var pending = status.Decision == DecisionState.Pending;
-    var decision = status.Decision switch
+    var upgrade = Model.AgentUpgrade;
+    var needsResubmission = upgrade?.RequiresResubmission == true;
+    var pending = status.Decision == DecisionState.Pending && !needsResubmission;
+    var notice = Model.Notice switch
+    {
+        AgentReleaseStore.PreviewChangedMessage => @Localizer["The current Agent package changed again. Review it before submitting."].Value,
+        AgentReleaseStore.OriginalAvailableMessage => @Localizer["The original Agent package is available again. Review the original request."].Value,
+        AgentReleaseStore.UnavailableMessage => @Localizer["The Agent package is temporarily unavailable. Try again later."].Value,
+        _ => Model.Notice
+    };
+    var decision = needsResubmission ? @Localizer["Needs a new request"] : status.Decision switch
     {
         DecisionState.Pending => @Localizer["Awaiting approval"],
+        DecisionState.Approved when Model.ExecutionState is RunState.Queued or RunState.Offered or RunState.Accepted =>
+            @Localizer["Approved · Waiting to run"],
         DecisionState.Approved => @Localizer["Approved"],
         DecisionState.Denied => @Localizer["Denied"],
         _ => @Localizer["Withdrawn"]
@@ -62,9 +73,9 @@
         <a class="lockbox-back" asp-controller="Dms" asp-action="Lockboxes"><i data-lucide="arrow-left" aria-hidden="true"></i> @LockboxText.Name</a>
     }
 
-    @if (Model.Notice != null)
+    @if (notice != null)
     {
-        <div class="alert alert-warning" role="alert"><div class="alert-message">@Model.Notice</div></div>
+        <div class="alert alert-warning" role="alert"><div class="alert-message">@notice</div></div>
     }
 
     <header class="card lockbox-header">
@@ -72,14 +83,59 @@
             <div class="lockbox-heading">
                 <div class="lockbox-mark"><i data-lucide="workflow" aria-hidden="true"></i></div>
                 <div>
-                    <h1><partial name="_DmsWorkflowName" model="item.Definition" /></h1>
-                    <code class="lockbox-definition">@item.Definition</code>
+                    @if (upgrade != null && snapshot.Targets.Count == 1 && Model.MachineNames.TryGetValue(snapshot.Targets[0], out var targetName))
+                    {
+                        <h1>@string.Format(CultureInfo.CurrentCulture, @Localizer["Upgrade the DMS Agent on {0}"].Value, targetName)</h1>
+                    }
+                    else
+                    {
+                        <h1><partial name="_DmsWorkflowName" model="item.Definition" /></h1>
+                    }
+                    @if (upgrade == null)
+                    {
+                        <code class="lockbox-definition">@item.Definition</code>
+                    }
                 </div>
                 <div class="lockbox-badges">
                     <span class="lockbox-badge text-@(decisionTone)-emphasis bg-@(decisionTone)-subtle"><span class="lockbox-dot"></span>@decision</span>
                     <span class="lockbox-badge text-@(riskTone)-emphasis bg-@(riskTone)-subtle"><i data-lucide="shield" aria-hidden="true"></i>@risk</span>
                 </div>
             </div>
+
+            @if (needsResubmission)
+            {
+                <div class="alert alert-warning mb-0">
+                    <div class="alert-message">
+                        <p class="mb-2" role="status">@Localizer["The selected Agent package has been replaced. The upgrade has not started."]</p>
+                        @if (Model.CanResubmit && upgrade?.Available is { } available)
+                        {
+                            <p class="mb-2">
+                                @Localizer["Currently available Agent package"]
+                                <strong>@string.Join(", ", available.Select(release => release.Version).Distinct())</strong>
+                            </p>
+                            <p class="mb-2">@Localizer["Review the current package and submit a new request for the same machines."]</p>
+                            <form asp-controller="DmsAccess" asp-action="ResubmitAgentUpgrade" method="post">
+                                <input type="hidden" name="id" value="@status.LockboxId" />
+                                <input type="hidden" name="requestId" value="@Guid.NewGuid()" />
+                                <input type="hidden" name="releaseIdentity" value="@AgentReleaseStore.Identity(available)" />
+                                <button class="btn btn-primary" type="submit">@Localizer["Submit a new upgrade request"]</button>
+                            </form>
+                        }
+                        else if (Model.CanWithdraw)
+                        {
+                            <p class="mb-0">@Localizer["Your current role does not allow you to request this upgrade."]</p>
+                        }
+                        else
+                        {
+                            <p class="mb-2">@Localizer["The requester needs to submit a new upgrade request."]</p>
+                            @if (!Model.OwnRequestView)
+                            {
+                                <a class="btn btn-outline-secondary" asp-controller="Dms" asp-action="Lockboxes">@Localizer["Back to approvals"]</a>
+                            }
+                        }
+                    </div>
+                </div>
+            }
 
             <dl class="lockbox-context">
                 <div>
@@ -141,172 +197,202 @@
     </header>
 
     <div class="lockbox-grid">
-        <div class="lockbox-request">
-            <section class="card lockbox-panel" aria-labelledby="lockbox-command-heading">
-                <div class="card-body">
-                    <h2 id="lockbox-command-heading"><i data-lucide="terminal" aria-hidden="true"></i>@Localizer["Command"]</h2>
-                    @if (snapshot.Command is { } command)
-                    {
-                        <div class="lockbox-terminal" data-lockbox-terminal>
-                            <div class="lockbox-terminal-bar">
-                                <span>@(command.IsEquivalentCli ? @Localizer["Equivalent DMS command"] : @LockboxText.Format(@Localizer["Docker command in this {0} request"].Value))</span>
-                                <button class="btn btn-sm lockbox-copy" type="button" data-copy-command hidden>
-                                    <i data-lucide="copy" aria-hidden="true"></i><span>@Localizer["Copy"]</span>
-                                </button>
-                                <span hidden data-key="command-copied">@Localizer["Command copied"]</span>
-                            </div>
-                            <pre tabindex="0"><code data-command><span>@command.Invocation</span>@command.Separator@command.Arguments</code></pre>
-                        </div>
-                        @if (command.IsEquivalentCli)
-                        {
-                            <p class="lockbox-note">@Localizer["Reconstructed from the saved input and target machines."]</p>
-                        }
-                    }
-                    else if (Model.InputArtifacts.Count != 0 &&
-                             (item.Definition == OperationsWorkflows.SystemExecuteScript.Name ||
-                              item.Definition == OperationsWorkflows.DatabaseQuerySql.Name ||
-                              item.Definition == OperationsWorkflows.DatabaseExecuteSql.Name))
-                    {
-                        <p class="text-body-secondary mb-2">@Localizer["Review the exact contents submitted for execution."]</p>
-                        @foreach (var artifact in Model.InputArtifacts)
-                        {
-                            <a class="lockbox-artifact-command" asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">
-                                <i data-lucide="file-code" aria-hidden="true"></i>@artifact.Name
-                            </a>
-                        }
-                    }
-                    else
-                    {
-                        <div class="lockbox-terminal">
-                            <div class="lockbox-terminal-bar">@LockboxText.Format(@Localizer["Saved {0} request"].Value)</div>
-                            <pre><code><span>POST /api/v1/dms/lockboxes</span>
-Workflow: @item.Definition</code></pre>
-                        </div>
-                        <p class="lockbox-note">@LockboxText.Format(@Localizer["Use the frozen parameters below to review this {0} request."].Value)</p>
-                    }
-                </div>
-            </section>
-
-            <section class="card lockbox-panel" aria-labelledby="lockbox-parameters-heading">
-                <div class="card-body">
-                    <h2 id="lockbox-parameters-heading"><i data-lucide="sliders-horizontal" aria-hidden="true"></i>@Localizer["Parameters"]</h2>
-                    @if (parameters.Length != 0)
-                    {
-                        <dl class="lockbox-parameters mb-0">
-                            @foreach (var parameter in parameters)
-                            {
-                                <div>
-                                    <dt>@(item.Definition == WorkflowNames.PullerForceUpdate ? parameter.Name switch
-                                    {
-                                        "Image" => @Localizer["Image"].Value,
-                                        "Puller" => @Localizer["Puller"].Value,
-                                        "ImageScope" => @Localizer["Image scope"].Value,
-                                        _ => parameter.Name
-                                    } : parameter.Name)</dt>
-                                    <dd><code>@LockboxSnapshot.Format(parameter.Value)</code></dd>
-                                </div>
-                            }
-                        </dl>
-                    }
-                    else if (snapshot.Input.ValueKind != JsonValueKind.Object)
-                    {
-                        <pre class="lockbox-json mb-0">@LockboxSnapshot.Format(snapshot.Input)</pre>
-                    }
-                    else
-                    {
-                        <p class="text-body-secondary mb-0">@Localizer["This workflow takes no parameters."]</p>
-                    }
-                    @if (Model.InputArtifacts.Count != 0)
-                    {
-                        <h3 class="lockbox-label mt-4">@Localizer["Frozen input files"]</h3>
-                        <ul class="lockbox-files list-unstyled mb-0">
-                            @foreach (var artifact in Model.InputArtifacts)
-                            {
-                                <li>
-                                    <a asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">@artifact.Name</a>
-                                    <small>(@artifact.Length @Localizer["bytes"])</small>
-                                    <code class="d-block small">SHA256 @artifact.Sha256</code>
-                                </li>
-                            }
-                        </ul>
-                    }
-                </div>
-            </section>
-        </div>
-
-        <section class="card lockbox-panel lockbox-approval" aria-labelledby="lockbox-approval-heading">
-            <div class="card-body">
-                @if (pending)
+        @if (!needsResubmission)
+        {
+            <div class="lockbox-request">
+                @if (upgrade != null)
                 {
-                    <h2 id="lockbox-approval-heading"><i data-lucide="shield-check" aria-hidden="true"></i>@Localizer["Who can approve"]</h2>
-                    @if (status.EligibleApprovers.Count == 0)
-                    {
-                        <p class="text-body-secondary mb-0">@Localizer["No eligible approvers right now."]</p>
-                    }
-                    else
-                    {
-                        <ul class="lockbox-people list-unstyled mb-0">
-                            @foreach (var approver in status.EligibleApprovers)
+                    <section class="card lockbox-panel" aria-labelledby="lockbox-agent-package-heading">
+                        <div class="card-body">
+                            <h2 id="lockbox-agent-package-heading"><i data-lucide="package" aria-hidden="true"></i>
+                                @Localizer["Requested Agent package"]
+                            </h2>
+                            <dl class="lockbox-parameters mb-0">
+                                @foreach (var release in upgrade.Requested)
+                                {
+                                    <div><dt>@release.Architecture</dt><dd>@release.Version</dd></div>
+                                }
+                            </dl>
+                            @if (pending && upgrade.Available == null && Model.Notice != AgentReleaseStore.UnavailableMessage)
                             {
-                                <li><span class="lockbox-person-mark"><i data-lucide="user" aria-hidden="true"></i></span><span>@approver</span></li>
+                                <p class="lockbox-note">@Localizer["The Agent package is temporarily unavailable. Try again later."]</p>
                             }
-                        </ul>
-                    }
-                    @if (Model.CanDecide)
-                    {
-                        <form asp-controller="Dms" asp-action="Decide" method="post" class="lockbox-decision-form">
-                            <input type="hidden" name="id" value="@status.LockboxId" />
-                            <label class="form-label" for="reason">@Localizer["Decision reason"]</label>
-                            <textarea id="reason" class="form-control" name="reason" maxlength="2000" rows="3"></textarea>
-                            <div class="lockbox-actions">
-                                <button class="btn btn-success" type="submit" name="approve" value="true">@Localizer["Approve"]</button>
-                                <button class="btn btn-outline-danger" type="submit" name="approve" value="false">@Localizer["Deny"]</button>
-                            </div>
-                        </form>
-                    }
-                    @if (Model.CanWithdraw)
-                    {
-                        <div class="lockbox-decision-form"><partial name="_WithdrawLockbox" model="item" /></div>
-                    }
+                        </div>
+                    </section>
                 }
                 else
                 {
-                    <h2 id="lockbox-approval-heading"><i data-lucide="shield-check" aria-hidden="true"></i>@Localizer["Decision"]</h2>
-                    <p class="fw-semibold mb-1">@(status.Automatic ? @Localizer["Automatic approval"].Value : status.DecidedBy ?? decision.Value)</p>
-                    @if (status.DecidedAt is { } decidedAt)
-                    {
-                        var decidedTimestamp = decidedAt.ToString(timestampFormat, CultureInfo.InvariantCulture);
-                        <time class="small text-body-secondary" datetime="@decidedTimestamp" data-utc-now title="@decidedTimestamp">@decidedAt.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time>
-                    }
-                    @if (!string.IsNullOrWhiteSpace(item.DecisionReason))
-                    {
-                        <p class="lockbox-decision-reason mb-0">@item.DecisionReason</p>
-                    }
+                    <section class="card lockbox-panel" aria-labelledby="lockbox-command-heading">
+                        <div class="card-body">
+                            <h2 id="lockbox-command-heading"><i data-lucide="terminal" aria-hidden="true"></i>@Localizer["Command"]</h2>
+                            @if (snapshot.Command is { } command)
+                            {
+                                <div class="lockbox-terminal" data-lockbox-terminal>
+                                    <div class="lockbox-terminal-bar">
+                                        <span>@(command.IsEquivalentCli ? @Localizer["Equivalent DMS command"] : @LockboxText.Format(@Localizer["Docker command in this {0} request"].Value))</span>
+                                        <button class="btn btn-sm lockbox-copy" type="button" data-copy-command hidden>
+                                            <i data-lucide="copy" aria-hidden="true"></i><span>@Localizer["Copy"]</span>
+                                        </button>
+                                        <span hidden data-key="command-copied">@Localizer["Command copied"]</span>
+                                    </div>
+                                    <pre tabindex="0"><code data-command><span>@command.Invocation</span>@command.Separator@command.Arguments</code></pre>
+                                </div>
+                                @if (command.IsEquivalentCli)
+                                {
+                                    <p class="lockbox-note">@Localizer["Reconstructed from the saved input and target machines."]</p>
+                                }
+                            }
+                            else if (Model.InputArtifacts.Count != 0 &&
+                                     (item.Definition == OperationsWorkflows.SystemExecuteScript.Name ||
+                                      item.Definition == OperationsWorkflows.DatabaseQuerySql.Name ||
+                                      item.Definition == OperationsWorkflows.DatabaseExecuteSql.Name))
+                            {
+                                <p class="text-body-secondary mb-2">@Localizer["Review the exact contents submitted for execution."]</p>
+                                @foreach (var artifact in Model.InputArtifacts)
+                                {
+                                    <a class="lockbox-artifact-command" asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">
+                                        <i data-lucide="file-code" aria-hidden="true"></i>@artifact.Name
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <div class="lockbox-terminal">
+                                    <div class="lockbox-terminal-bar">@LockboxText.Format(@Localizer["Saved {0} request"].Value)</div>
+                                    <pre><code><span>POST /api/v1/dms/lockboxes</span>
+Workflow: @item.Definition</code></pre>
+                                </div>
+                                <p class="lockbox-note">@LockboxText.Format(@Localizer["Use the frozen parameters below to review this {0} request."].Value)</p>
+                            }
+                        </div>
+                    </section>
+
+                    <section class="card lockbox-panel" aria-labelledby="lockbox-parameters-heading">
+                        <div class="card-body">
+                            <h2 id="lockbox-parameters-heading"><i data-lucide="sliders-horizontal" aria-hidden="true"></i>@Localizer["Parameters"]</h2>
+                            @if (parameters.Length != 0)
+                            {
+                                <dl class="lockbox-parameters mb-0">
+                                    @foreach (var parameter in parameters)
+                                    {
+                                        <div>
+                                            <dt>@(item.Definition == WorkflowNames.PullerForceUpdate ? parameter.Name switch
+                                            {
+                                                "Image" => @Localizer["Image"].Value,
+                                                "Puller" => @Localizer["Puller"].Value,
+                                                "ImageScope" => @Localizer["Image scope"].Value,
+                                                _ => parameter.Name
+                                            } : parameter.Name)</dt>
+                                            <dd><code>@LockboxSnapshot.Format(parameter.Value)</code></dd>
+                                        </div>
+                                    }
+                                </dl>
+                            }
+                            else if (snapshot.Input.ValueKind != JsonValueKind.Object)
+                            {
+                                <pre class="lockbox-json mb-0">@LockboxSnapshot.Format(snapshot.Input)</pre>
+                            }
+                            else
+                            {
+                                <p class="text-body-secondary mb-0">@Localizer["This workflow takes no parameters."]</p>
+                            }
+                            @if (Model.InputArtifacts.Count != 0)
+                            {
+                                <h3 class="lockbox-label mt-4">@Localizer["Frozen input files"]</h3>
+                                <ul class="lockbox-files list-unstyled mb-0">
+                                    @foreach (var artifact in Model.InputArtifacts)
+                                    {
+                                        <li>
+                                            <a asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">@artifact.Name</a>
+                                            <small>(@artifact.Length @Localizer["bytes"])</small>
+                                            <code class="d-block small">SHA256 @artifact.Sha256</code>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </section>
                 }
-                @if (status.Decision == DecisionState.Approved)
-                {
-                    <div class="lockbox-decision-form">
-                        <h3 class="lockbox-label">@Localizer["Execution status"]</h3>
-                        @if (Model.ExecutionState is { } state)
+            </div>
+
+            <section class="card lockbox-panel lockbox-approval" aria-labelledby="lockbox-approval-heading">
+                <div class="card-body">
+                    @if (pending)
+                    {
+                        <h2 id="lockbox-approval-heading"><i data-lucide="shield-check" aria-hidden="true"></i>@Localizer["Who can approve"]</h2>
+                        @if (status.EligibleApprovers.Count == 0)
                         {
-                            <partial name="_DmsRunStatus" model="state" />
+                            <p class="text-body-secondary mb-0">@Localizer["No eligible approvers right now."]</p>
                         }
                         else
                         {
-                            <p class="text-body-secondary mb-0">@Localizer["Execution status is unavailable."]</p>
+                            <ul class="lockbox-people list-unstyled mb-0">
+                                @foreach (var approver in status.EligibleApprovers)
+                                {
+                                    <li><span class="lockbox-person-mark"><i data-lucide="user" aria-hidden="true"></i></span><span>@approver</span></li>
+                                }
+                            </ul>
                         }
-                        @if (Model.CanViewOperations && status.WorkflowId != null)
+                        @if (Model.CanDecide)
                         {
-                            <div class="mt-2">
-                                <a asp-controller="Dms" asp-action="Operation" asp-route-id="@status.WorkflowId">
-                                    <i data-lucide="activity" aria-hidden="true"></i>@Localizer["View workflow execution"]
-                                </a>
-                            </div>
+                            <form asp-controller="Dms" asp-action="Decide" method="post" class="lockbox-decision-form">
+                                <input type="hidden" name="id" value="@status.LockboxId" />
+                                <label class="form-label" for="reason">@Localizer["Decision reason"]</label>
+                                <textarea id="reason" class="form-control" name="reason" maxlength="2000" rows="3"></textarea>
+                                <div class="lockbox-actions">
+                                    <button class="btn btn-success" type="submit" name="approve" value="true">@Localizer["Approve"]</button>
+                                    <button class="btn btn-outline-danger" type="submit" name="approve" value="false">@Localizer["Deny"]</button>
+                                </div>
+                            </form>
                         }
-                    </div>
-                }
-            </div>
-        </section>
+                        @if (Model.CanWithdraw)
+                        {
+                            <div class="lockbox-decision-form"><partial name="_WithdrawLockbox" model="item" /></div>
+                        }
+                    }
+                    else
+                    {
+                        <h2 id="lockbox-approval-heading"><i data-lucide="shield-check" aria-hidden="true"></i>@Localizer["Decision"]</h2>
+                        <p class="fw-semibold mb-1">@(status.Automatic ? @Localizer["Automatic approval"].Value : status.DecidedBy ?? decision.Value)</p>
+                        @if (status.DecidedAt is { } decidedAt)
+                        {
+                            var decidedTimestamp = decidedAt.ToString(timestampFormat, CultureInfo.InvariantCulture);
+                            <time class="small text-body-secondary" datetime="@decidedTimestamp" data-utc-now title="@decidedTimestamp">@decidedAt.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(item.DecisionReason))
+                        {
+                            <p class="lockbox-decision-reason mb-0">@item.DecisionReason</p>
+                        }
+                    }
+                    @if (status.Decision == DecisionState.Approved)
+                    {
+                        <div class="lockbox-decision-form">
+                            <h3 class="lockbox-label">@Localizer["Execution status"]</h3>
+                            @if (Model.ExecutionState is { } state)
+                            {
+                                <partial name="_DmsRunStatus" model="state" />
+                            }
+                            else
+                            {
+                                <p class="text-body-secondary mb-0">@Localizer["Execution status is unavailable."]</p>
+                            }
+                            @if (Model.CanViewOperations && status.WorkflowId != null)
+                            {
+                                <div class="mt-2">
+                                    <a asp-controller="Dms" asp-action="Operation" asp-route-id="@status.WorkflowId">
+                                        <i data-lucide="activity" aria-hidden="true"></i>@Localizer["View workflow execution"]
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+        else if (Model.CanWithdraw)
+        {
+            <div class="lockbox-request"><partial name="_WithdrawLockbox" model="item" /></div>
+        }
 
         <details class="card lockbox-audit">
             <summary>@LockboxText.Format(@Localizer["{0} request identifiers and raw payload"].Value)</summary>
@@ -325,6 +411,11 @@ Workflow: @item.Definition</code></pre>
                     }
                 </dl>
                 <pre class="lockbox-json">@snapshot.RequestJson</pre>
+                @if (needsResubmission)
+                {
+                    <h3 class="lockbox-label">@Localizer["Currently available Agent package"]</h3>
+                    <pre class="lockbox-json">@LockboxSnapshot.Format(JsonSerializer.SerializeToElement(upgrade!.Available))</pre>
+                }
                 @if (Model.CanViewOperations && item.LegacyApprovalWorkflowId != null)
                 {
                     <a asp-controller="Dms" asp-action="Operation" asp-route-id="@item.LegacyApprovalWorkflowId">@Localizer["Historical approval workflow"]</a>

@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class LockboxPages(TemplateDbContext db, AccessService access, WorkflowService workflows, DmsArtifactAccess artifacts)
+public sealed class LockboxPages(TemplateDbContext db, AccessService access, WorkflowService workflows,
+    DmsArtifactAccess artifacts, AgentReleaseStore releases)
 {
     public async Task<LockboxQueueViewModel> ListAsync(string actor, bool ownRequests, string? scope, string? query, int page, string? notice = null)
     {
@@ -48,9 +49,19 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
                     matchingPeople.Contains(box.RequesterId));
             }
         }
+        var current = releases.ReadAvailable();
+        if (current != null && scope is "pending" or "review")
+        {
+            var upgrades = await requests.Where(box => box.Definition == WorkflowNames.AgentUpgrade &&
+                    box.Version == MachineWorkflows.AgentUpgrade.Version)
+                .NotCacheable().ToListAsync();
+            var superseded = upgrades.Where(box => RequiresResubmission(box, current)).Select(box => box.Id).ToArray();
+            if (superseded.Length > 0) requests = requests.Where(box => !superseded.Contains(box.Id));
+        }
         var rows = await requests.OrderByDescending(box => box.CreatedAt).ThenBy(box => box.Id)
             .Skip(page * pageSize).Take(pageSize + 1).NotCacheable().ToListAsync();
-        var visible = rows.Take(pageSize).Select(box => (Item: box, Targets: LockboxSnapshot.ReadTargets(box))).ToList();
+        var visible = rows.Take(pageSize).Select(box => (Item: box, Targets: LockboxSnapshot.ReadTargets(box),
+            RequiresResubmission: RequiresResubmission(box, current))).ToList();
         var people = visible.Select(row => row.Item.RequesterId).Distinct().ToList();
         var names = await db.Users.AsNoTracking().Where(user => people.Contains(user.Id))
             .ToDictionaryAsync(user => user.Id, user => AccessService.PersonName(user.DisplayName, user.UserName));
@@ -63,9 +74,9 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
             Entries = visible.Select(row => new LockboxQueueEntry(row.Item,
                 names.GetValueOrDefault(row.Item.RequesterId, "Unknown user"),
                 row.Targets.Take(3).Select(id => machines.GetValueOrDefault(id, id.ToString())).ToList(),
-                row.Targets.Length, canReview && row.Item.Decision == DecisionState.Pending &&
+                row.Targets.Length, canReview && !row.RequiresResubmission && row.Item.Decision == DecisionState.Pending &&
                     DmsPermissions.CanDecide(principal, row.Item.Risk, row.Item.RequesterId == actor),
-                executions.GetValueOrDefault(row.Item.Id))).ToList(),
+                executions.GetValueOrDefault(row.Item.Id), row.RequiresResubmission)).ToList(),
             OwnRequests = ownRequests, Scope = scope, Search = search,
             Page = page, HasNextPage = rows.Count > pageSize, Notice = notice
         };
@@ -80,6 +91,13 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var canViewOperations = principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations);
         var ownRequest = item.RequesterId == actor;
         var snapshot = LockboxSnapshot.Read(item);
+        var upgrade = IsAgentUpgrade(item)
+            ? new AgentUpgradeReview(WorkflowService.ReadRequestedAgentUpgrade(item).Releases,
+                item.Decision == DecisionState.Pending ? releases.ReadAvailable() : null)
+            : null;
+        var needsResubmission = upgrade?.RequiresResubmission == true;
+        var canDecide = canViewOperations && item.Decision == DecisionState.Pending && !needsResubmission &&
+            DmsPermissions.CanDecide(principal, item.Risk, ownRequest);
         return new LockboxViewModel
         {
             PageTitle = LockboxText.Name,
@@ -87,15 +105,24 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
             Status = await workflows.DescribeLockboxAsync(item),
             Snapshot = snapshot,
             MachineNames = await MachineNamesAsync(snapshot.Targets),
-            Notice = notice,
+            Notice = needsResubmission && notice == AgentReleaseStore.ChangedMessage ? null : notice,
             InputArtifacts = canViewOperations ? artifacts.Inputs(item) : [],
             CanWithdraw = item.Decision == DecisionState.Pending && ownRequest,
-            CanDecide = canViewOperations && item.Decision == DecisionState.Pending && DmsPermissions.CanDecide(principal, item.Risk, ownRequest),
+            CanDecide = canDecide,
+            AgentUpgrade = upgrade,
+            CanResubmit = needsResubmission && ownRequest && DmsPermissions.ForRisk(principal, MachineWorkflows.AgentUpgrade.Risk).CanRequest,
             OwnRequestView = ownRequestView,
             CanViewOperations = canViewOperations,
             ExecutionState = (await ExecutionStatesAsync([item])).GetValueOrDefault(item.Id)
         };
     }
+
+    private static bool IsAgentUpgrade(LockboxRequest item) =>
+        item.Definition == WorkflowNames.AgentUpgrade && item.Version == MachineWorkflows.AgentUpgrade.Version;
+
+    private static bool RequiresResubmission(LockboxRequest box, IReadOnlyList<AgentRelease>? current) =>
+        current != null && box.Decision == DecisionState.Pending && IsAgentUpgrade(box) &&
+        !AgentReleaseStore.Matches(WorkflowService.ReadRequestedAgentUpgrade(box).Releases, current);
 
     private Task<Dictionary<Guid, string>> MachineNamesAsync(IReadOnlyList<Guid> ids) => db.Machines.AsNoTracking()
         .Where(machine => ids.Contains(machine.Id)).ToDictionaryAsync(machine => machine.Id, machine => machine.Name);
