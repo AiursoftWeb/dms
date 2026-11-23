@@ -57,7 +57,7 @@ public sealed class BoxInspectWorkflow(string root = "/swarm-vol", string git = 
                 scheme=scp; host=${BASH_REMATCH[1]}; userinfo=true
             fi
             clean=${value%%[?#]*}
-            if [[ "$clean" =~ [:/]aiursoft/(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive|boxformoog)(\.git)?$ ]]; then name=${BASH_REMATCH[1]}; fi
+            if [[ "$clean" =~ [:/]aiursoft/(boxfor[a-z0-9_-]+)(\.git)?$ ]]; then name=${BASH_REMATCH[1]}; fi
             if [[ "$value" =~ $allowed_pattern ]]; then official=true; official_origin=true; fi
             origin_lines+=("Origin: scheme=$scheme host=$host port=$port repository=$name userInfoPresent=$userinfo official=$official")
         done
