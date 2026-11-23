@@ -112,13 +112,14 @@ public sealed class SshLeaseApprovalTests : TestBase
 
         var machinePage = $"/Dms/Machine/{machine.Id}";
         var approvalPage = $"/Dms/Lockbox/{box.Id}";
-        foreach (var (ready, time, heading) in new[]
-                 {
-                     (Ready: (bool?)false, Time: now, Heading: "This machine needs SSH setup"),
-                     (Ready: (bool?)true, Time: now, Heading: "Temporary SSH is ready to request"),
-                     (Ready: (bool?)null, Time: now, Heading: "Temporary SSH readiness is awaiting confirmation"),
-                     (Ready: (bool?)true, Time: now.AddMinutes(-7), Heading: "Temporary SSH readiness is awaiting confirmation")
-                 })
+        (bool? Ready, DateTimeOffset Time, string Heading)[] cases =
+        [
+            (false, now, "This machine needs SSH setup"),
+            (true, now, "Temporary SSH is ready to request"),
+            (null, now, "Temporary SSH readiness is awaiting confirmation"),
+            (true, now.AddMinutes(-7), "Temporary SSH readiness is awaiting confirmation")
+        ];
+        foreach (var (ready, time, heading) in cases)
         {
             observation.Result = Report(ready, time);
             await db.SaveChangesAsync();
