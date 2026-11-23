@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>라인트 체크</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0}는 작업 요청자, 대상, 승인 결정을 기록합니다.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT 라이선스</value>
   </data>
@@ -842,6 +839,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API 사용 가능</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0}는 작업 요청자, 대상, 승인 결정을 기록합니다.</value>
   </data>
 
 </root>

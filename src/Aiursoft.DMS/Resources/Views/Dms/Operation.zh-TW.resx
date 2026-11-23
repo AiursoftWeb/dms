@@ -21,8 +21,44 @@
       <data name="Approval context" xml:space="preserve">
     <value>核准上下文</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>自動</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>呼叫堆疊</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>控制器</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>持續時間</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>執行識別碼與觸發器</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>執行記錄</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>執行記錄頁面</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>執行導覽</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>執行步驟</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>機器</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>下一頁</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>尚未開始</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>來源</value>
@@ -30,14 +66,44 @@
   <data name="Parent" xml:space="preserve">
     <value>父項</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>父級工作流程</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>上一頁</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>原始執行結果</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>結果</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>根工作流</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>查看所有執行步驟</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>已開始</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>狀態</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>需要關注的步驟</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>系統排程</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>目標機器</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>執行日誌無法使用。待處理事件仍保留儲存。</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>此頁面上沒有已存檔的事件。</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>追蹤</value>
@@ -47,6 +113,15 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流程</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>工作階段 ID</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>工作流歷史</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} 請求</value>
   </data>
 
 </root>

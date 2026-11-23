@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>全部來源</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>所有狀態</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>套用篩選器</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>清除篩選器</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>集群</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>僅限叢集工作流程</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>已完成（有警告）</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>控制器</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>建立時間</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>執行頁面</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>執行狀態</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>失敗</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>篩選</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>機器</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>手動</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>需要核實</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>下一頁</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>沒有執行符合這些篩選器。</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>來源</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>父工作流</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>上一頁</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>已排隊</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>僅顯示根執行</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>執行中</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>狀態</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>檢視執行</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流程</value>
