@@ -66,7 +66,7 @@
   <data name="Risk" xml:space="preserve">
     <value>風險</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>角色權限適用於此 DMS 執行個體中的每台機器，並按工作流程的風險等級授予。自動核准需要申請權限。審核自己的 {0} 請求也需要自我審核權限。</value>
   </data>
   <data name="Safe" xml:space="preserve">

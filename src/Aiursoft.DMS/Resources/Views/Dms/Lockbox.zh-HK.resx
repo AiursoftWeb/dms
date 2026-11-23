@@ -18,14 +18,47 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="All enabled machines at submission" xml:space="preserve">
+    <value>提交時所有已啟用的機器</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>批准</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>已批准</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>已核准的目標機器</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>已批准 · 等待執行</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>審批人 ID</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>自動批准</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>等待審批</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>返回審批</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>指令</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>指令已複製</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>複製</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>建立</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>目前可用的 Agent 套件</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>決定</value>
@@ -33,11 +66,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>決定原因</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>已拒絕</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>拒絕</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>此 {0} 請求中的 Docker 指令</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>等效 DMS 指令</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>執行狀態</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>執行狀態不可用。</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>凍結輸入檔案</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>高風險</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>歷史審批流程</value>
@@ -45,14 +96,128 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>映像</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>映像範圍</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>低風險</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>中等風險</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>需要新的請求</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>目前沒有合資格審批人。</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>無目標機器</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>開放工作流程</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>參數</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>拉取器</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>根據已儲存的輸入及目標機器重新建構。</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>請求的 Agent 套件</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>檢視目前套件，並為相同機器提交新請求。</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>請核對提交執行的確切內容。</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>風險</value>
   </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>安全工作流程</value>
+  </data>
+  <data name="Saved {0} request" xml:space="preserve">
+    <value>已儲存 {0} 請求</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>提交新的升級請求</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>目標機器</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>Agent 套件暫時無法使用。請稍後再試。</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>目前嘅 Agent 套件又改咗，提交前請再檢查。</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>原有 Agent 套件已重新可用。請檢視原有請求。</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>提交者需要提交新的升級請求。</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>已選取的 Agent 套件已被取代。升級尚未開始。</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>此工作流程不需要任何參數。</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>在 {0} 上升級 DMS Agent</value>
+  </data>
+  <data name="Use the frozen parameters below to review this {0} request." xml:space="preserve">
+    <value>使用以下凍結參數來審閱此 {0} 請求。</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>極高风险</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>檢視工作流程執行</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>邊個可以批准</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>已撤回</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流程</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>工作流程版本</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>您目前的角色無法要求此升級。</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>位元組</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} 個請求識別碼及原始有效載荷</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} 請求原因</value>
+  </data>
+  <data name="{0} request time" xml:space="preserve">
+    <value>{0} 請求時間</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} 申請人</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} 申請者 ID</value>
   </data>
 
 </root>

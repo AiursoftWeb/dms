@@ -30,6 +30,9 @@
   <data name="Approved target machines" xml:space="preserve">
     <value>Approved target machines</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Approved · Waiting to run</value>
+  </data>
   <data name="Approver ID" xml:space="preserve">
     <value>Approver ID</value>
   </data>
@@ -38,6 +41,9 @@
   </data>
   <data name="Awaiting approval" xml:space="preserve">
     <value>Awaiting approval</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Back to approvals</value>
   </data>
   <data name="Command" xml:space="preserve">
     <value>Command</value>
@@ -50,6 +56,9 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>Created</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Currently available Agent package</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Decision</value>
@@ -99,6 +108,9 @@
   <data name="Medium risk" xml:space="preserve">
     <value>Medium risk</value>
   </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Needs a new request</value>
+  </data>
   <data name="No eligible approvers right now." xml:space="preserve">
     <value>No eligible approvers at the moment.</value>
   </data>
@@ -117,6 +129,12 @@
   <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
     <value>Reconstructed from the saved input and target machines.</value>
   </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>Requested Agent package</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Review the current package and submit a new request for the same machines.</value>
+  </data>
   <data name="Review the exact contents submitted for execution." xml:space="preserve">
     <value>Review the exact contents submitted for execution.</value>
   </data>
@@ -129,11 +147,32 @@
   <data name="Saved {0} request" xml:space="preserve">
     <value>Saved {0} request</value>
   </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Submit a new upgrade request</value>
+  </data>
   <data name="Target machines" xml:space="preserve">
     <value>Target machines</value>
   </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>The Agent package is temporarily unavailable. Try again later.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>The current Agent package has changed again. Review it before submitting.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>The original Agent package is available again. Review the original request.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>The requester needs to submit a new upgrade request.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>The selected Agent package has been replaced. The upgrade has not started.</value>
+  </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>This workflow takes no parameters.</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>Upgrade the DMS Agent on {0}</value>
   </data>
   <data name="Use the frozen parameters below to review this {0} request." xml:space="preserve">
     <value>Use the frozen parameters below to review this {0} request.</value>
@@ -155,6 +194,9 @@
   </data>
   <data name="Workflow version" xml:space="preserve">
     <value>Workflow version</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Your current role does not allow you to request this upgrade.</value>
   </data>
   <data name="bytes" xml:space="preserve">
     <value>bytes</value>

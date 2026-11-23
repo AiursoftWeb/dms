@@ -57,13 +57,16 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>공개 표준 워크플로가 등록되어 있지 않습니다.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>개방</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>머신 대상 필요</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>위험도</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>역할 권한은 이 DMS 인스턴스의 모든 기계와 각 워크플로의 위험 수준에 적용됩니다. 자동 승인은 {0} 요청 권한이 필요합니다. 자신의 요청을 승인하려면 자체 승인 권한도 필요합니다.</value>
   </data>
   <data name="Safe" xml:space="preserve">
