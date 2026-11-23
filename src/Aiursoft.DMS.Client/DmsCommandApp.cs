@@ -80,6 +80,7 @@ public static partial class DmsCommandApp
                 NewFilesystemExportCommand(),
                 NewFilesystemImportCommand()
             ]),
+            new Group("frps", "Deploy the FRP server on a machine.", [FrpsDeployCommand()]),
             new Group(MachineWorkflowCli.Box, "Inspect or deploy the Box repository on a machine.",
             [
                 StandardCommand("inspect",
@@ -316,6 +317,17 @@ public static partial class DmsCommandApp
         params Option[] options) =>
         new(name, description, definition.Name, definition, context => definition.Serialize(input(context)), options,
             readResult: definition.Risk == RiskLevel.Open ? result => definition.ReadResult(result)! : null);
+
+    private static ActionCommand FrpsDeployCommand()
+    {
+        var token = new Option<string?>("--frps-token")
+        {
+            Arity = ArgumentArity.ZeroOrOne,
+            Description = "Required for a fresh installation. Omit or leave empty to retain existing authentication."
+        };
+        return StandardCommand("deploy", "Install or upgrade the FRP server.",
+            MachineWorkflows.FrpsDeploy, context => new FrpsDeployInput(context.GetValue(token)), token);
+    }
 
     private static ActionCommand BoxDeployCommand()
     {
