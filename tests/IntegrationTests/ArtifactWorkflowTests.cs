@@ -158,7 +158,7 @@ public class ArtifactWorkflowTests : TestBase
                 var requestId = Guid.NewGuid();
                 var submission = SubmitArgs(path, limit, requestId);
                 var receipt = await RunCliAsync(setup.Key, submission);
-                var status = NextCommand(receipt, "Check approval status:");
+                var status = NextCommand(receipt, "dms lockbox status");
                 var waiting = await RunCliAsync(setup.Key, status);
                 StringAssert.Contains(waiting, "Awaiting approval");
                 Assert.DoesNotContain("dms workflow result", waiting);
@@ -220,7 +220,7 @@ public class ArtifactWorkflowTests : TestBase
             Assert.AreEqual(0, failure.ProgramReturn, failure.StdErr);
             StringAssert.Contains(failure.StdOut, "[Failed] no directory result");
 
-            var pending = NextCommand(await RunCliAsync(setup.Key, SubmitArgs(empty, 50, Guid.NewGuid())), "Check approval status:");
+            var pending = NextCommand(await RunCliAsync(setup.Key, SubmitArgs(empty, 50, Guid.NewGuid())), "dms lockbox status");
             await RunCliAsync(setup.ReviewerKey, "lockbox", "deny", "--id", pending[^1]);
             var rejected = await RunCliAsync(setup.Key, pending);
             StringAssert.Contains(rejected, "Rejected");

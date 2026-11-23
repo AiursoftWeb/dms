@@ -289,7 +289,8 @@ public static partial class DmsCommandApp
             { Description = "Skip this many artifacts, ordered newest first." };
         return StandardCommand("ls", """
             List files you uploaded to DMS or exported from a machine. Requires Run open workflows.
-            Example: dms artifact download --id <ArtifactId> --file ./report.tar
+            Download a file using its listed ID.
+              dms artifact download --id <ArtifactId> --file ./report.tar
             """,
             ClusterWorkflows.ListArtifacts, context => new ArtifactListInput(context.GetValue(offset), context.GetValue(limit)), limit, offset);
     }
@@ -784,7 +785,8 @@ public static partial class DmsCommandApp
                 if (workflowId == null)
                 {
                     output.WriteLine();
-                    output.WriteLine($"Check approval status: dms lockbox status {receipt.LockboxId}");
+                    output.WriteLine("Check approval status with this command.");
+                    output.WriteLine($"  dms lockbox status {receipt.LockboxId}");
                     return;
                 }
             }
@@ -797,7 +799,8 @@ public static partial class DmsCommandApp
                 return;
 
             output.WriteLine();
-            output.WriteLine($"View the directory listing (requires Read DMS operations): dms workflow result {workflowId}");
+            output.WriteLine("View the directory listing after execution. Requires Read DMS operations.");
+            output.WriteLine($"  dms workflow result {workflowId}");
         }
 
         private async Task<DmsResponse> ReadOpenResultAsync(DmsApiClient client, DmsResponse response, Guid requestId,
