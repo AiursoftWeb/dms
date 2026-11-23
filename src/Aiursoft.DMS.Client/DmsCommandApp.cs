@@ -165,6 +165,7 @@ public static partial class DmsCommandApp
             new Group("nvidia", "Inspect NVIDIA GPUs, drivers, and workload usage.",
             [
                 NewNvidiaSmiCommand(),
+                NewNvidiaOverviewCommand(),
                 NewNvidiaProcessesCommand(),
                 NewNvidiaSampleCommand(),
                 NewNvidiaErrorsCommand(),

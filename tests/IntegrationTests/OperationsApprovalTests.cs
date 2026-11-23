@@ -82,6 +82,7 @@ public class OperationsApprovalTests : TestBase
             "machine performance pressure");
         yield return (OperationsWorkflows.PerformanceOomHistory, new EventWindowInput(), RiskLevel.Medium,
             "machine performance oom-history");
+        yield return (OperationsWorkflows.NvidiaOverview, new EmptyInput(), RiskLevel.Low, "machine nvidia overview");
         yield return (OperationsWorkflows.NvidiaSmi, new EmptyInput(), RiskLevel.Safe, "machine nvidia smi");
         yield return (OperationsWorkflows.NvidiaProcesses, new EmptyInput(), RiskLevel.Low, "machine nvidia processes");
         yield return (OperationsWorkflows.NvidiaSample, new SampleInput(1), RiskLevel.Low, "machine nvidia sample");
@@ -205,6 +206,29 @@ public class OperationsApprovalTests : TestBase
     }
 
     [TestMethod]
+    public async Task NvidiaOverviewRequiresLowPermissionWhileSmiAcceptsSafePermission()
+    {
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var user = new User { UserName = "nvidia-" + Guid.NewGuid().ToString("N"), DisplayName = "Requester" };
+        var machine = new Machine { Name = "GPU fixture", KeyHash = "fixture" };
+        db.Users.Add(user);
+        db.Machines.Add(machine);
+        DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true);
+        await db.SaveChangesAsync();
+
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var overview = OperationsWorkflows.NvidiaOverview.Request(new EmptyInput(), "GPU details", [machine.Id]);
+        var failure = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(user.Id, overview));
+        Assert.AreEqual(403, failure.StatusCode);
+
+        var smi = OperationsWorkflows.NvidiaSmi.Request(new EmptyInput(), "GPU snapshot", [machine.Id]);
+        var box = await service.SubmitAsync(user.Id, smi);
+        Assert.AreEqual(RiskLevel.Safe, box.Risk);
+        Assert.AreEqual(DecisionState.Pending, box.Decision);
+    }
+
+    [TestMethod]
     public async Task AllOperationsFreezeTheirBusinessInputAndRiskWithoutStartingBeforeApproval()
     {
         using var scope = Server!.Services.CreateScope();
@@ -225,8 +249,8 @@ public class OperationsApprovalTests : TestBase
         await store.AppendUploadAsync(artifact.Id, 0, new MemoryStream(bytes), CancellationToken.None);
         await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
         var cases = Cases(artifact).ToArray();
-        Assert.HasCount(96, cases);
-        Assert.AreEqual(96, cases.Select(c => c.Definition.Name).Distinct().Count());
+        Assert.HasCount(97, cases);
+        Assert.AreEqual(97, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var allMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", allMachines: true);
         var multipleMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", [machine.Id, Guid.NewGuid()]);

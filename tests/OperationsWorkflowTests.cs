@@ -426,6 +426,85 @@ public class OperationsWorkflowTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task NvidiaOverviewReportsDiscreteAndUnifiedMemoryWithDriverProcessesAndTopology(bool unified)
+    {
+        var name = unified ? "NVIDIA GB10" : "NVIDIA RTX 4090";
+        var total = unified ? "N/A" : "24564 MiB";
+        var used = unified ? "N/A" : "5120 MiB";
+        var processMemory = unified ? "N/A" : "4096 MiB";
+        var xml = $"""
+            <nvidia_smi_log>
+              <driver_version>595.99.02</driver_version><cuda_version>13.2</cuda_version>
+              <gpu>
+                <uuid>GPU-fixture</uuid><product_name>{name}</product_name>
+                <fb_memory_usage><total>{total}</total><used>{used}</used></fb_memory_usage>
+                <utilization><gpu_util>50 %</gpu_util><memory_util>20 %</memory_util></utilization>
+                <temperature><gpu_temp>47 C</gpu_temp></temperature>
+                <gpu_power_readings><instant_power_draw>13.10 W</instant_power_draw></gpu_power_readings>
+                <processes><process_info>
+                  <pid>100</pid><type>C+G</type><process_name>fixture-worker</process_name>
+                  <used_memory>{processMemory}</used_memory>
+                </process_info></processes>
+              </gpu>
+            </nvidia_smi_log>
+            """;
+        var directory = Directory.CreateTempSubdirectory("dms-nvidia-overview-");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(directory.FullName, "proc"));
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "proc", "meminfo"),
+                "MemTotal:       128000000 kB\nMemAvailable:    64000000 kB\n");
+            var host = new OperationHost(directory.FullName, (command, _) =>
+            {
+                Assert.AreEqual("nvidia-smi", command.Executable);
+                if (command.Arguments.Contains("--xml-format")) return Task.FromResult(new NativeResult(0, xml, ""));
+                CollectionAssert.AreEqual(new[] { "topo", "--matrix" }, command.Arguments.ToArray());
+                return Task.FromResult(new NativeResult(0, "\t\u001b[4mGPU0\u001b[0m\nGPU0\tX\n", ""));
+            });
+            var result = await RunAsync(OperationsWorkflows.NvidiaOverview, new EmptyInput(), EnvironmentFor(host));
+
+            Assert.IsTrue(result.Result.Complete);
+            var lines = result.Events.Where(item => item.IsTrace).Select(item => item.Message).ToArray();
+            var trace = Trace(result.Events);
+            StringAssert.Contains(trace, $"GPU 0 {name} (GPU-fixture) | GPU utilization 50 %");
+            StringAssert.Contains(trace, "NVIDIA driver 595.99.02 | CUDA compatibility 13.2");
+            StringAssert.Contains(trace, $"framebuffer memory | used {used} | total {total}");
+            StringAssert.Contains(trace, $"PID 100 | type C+G | fixture-worker | GPU context memory {processMemory}");
+            StringAssert.Contains(trace, "temperature 47 C | power 13.10 W");
+            Assert.IsTrue(lines.Contains("        GPU0") && lines.Contains("GPU0    X"));
+            var shared = trace.Contains("Host unified memory shared by CPU and GPU | used (estimated) 61.0 GiB | " +
+                "total 122.1 GiB | available 61.0 GiB (host-wide)", StringComparison.Ordinal);
+            Assert.AreEqual(unified, shared);
+        }
+        finally { directory.Delete(recursive: true); }
+    }
+
+    [TestMethod]
+    [DataRow("", "none reported by the driver")]
+    [DataRow("N/A", "process list unavailable")]
+    public async Task NvidiaOverviewPreservesEvidenceWhenTopologyFails(string processes, string expected)
+    {
+        var xml = $"""
+            <nvidia_smi_log><gpu><product_name>NVIDIA fixture</product_name>
+              <processes>{processes}</processes>
+            </gpu></nvidia_smi_log>
+            """;
+        var host = new OperationHost(native: (command, _) => Task.FromResult(
+            command.Arguments.Contains("--xml-format") ? new NativeResult(0, xml, "") :
+                new NativeResult(1, "", "Topology not supported")));
+        var result = await RunAsync(OperationsWorkflows.NvidiaOverview, new EmptyInput(), EnvironmentFor(host));
+
+        Assert.IsFalse(result.Result.Complete);
+        StringAssert.Contains(Trace(result.Events), "GPU 0 NVIDIA fixture");
+        StringAssert.Contains(Trace(result.Events), expected);
+        Assert.IsTrue(result.Events.Any(item => item.Source == "warning" &&
+            item.Message.StartsWith("GPU topology unavailable:", StringComparison.Ordinal)));
+        Assert.AreEqual(RunState.Warning, result.Events.Last(item => !item.IsTrace).State);
+    }
+
+    [TestMethod]
     public async Task NvidiaWorkflowsKeepUnsupportedFieldsAndHandleGraphicsProcessesWithoutXmlExternalReads()
     {
         const string xml = "<!DOCTYPE nvidia_smi_log SYSTEM 'file:///etc/shadow'><nvidia_smi_log><driver_version>fixture</driver_version><cuda_version>13.0</cuda_version><gpu><uuid>GPU-fixture</uuid><processes><process_info><pid>424242</pid><process_name>graphics fixture</process_name><type>G</type><used_memory>N/A</used_memory></process_info></processes><ecc_errors>N/A</ecc_errors></gpu></nvidia_smi_log>";
