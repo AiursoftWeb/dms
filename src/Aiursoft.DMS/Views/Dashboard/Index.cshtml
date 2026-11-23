@@ -1,8 +1,46 @@
 @using Aiursoft.DMS.Services.Dms
 <h1>@Localizer["DMS"]</h1>
 <p>@Localizer["Manage servers through approved workflows."]</p>
+
+<section class="card border-primary-subtle" aria-labelledby="cli-setup-title">
+    <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h2 id="cli-setup-title" class="h4">@Localizer["Connect DMS CLI to this Controller"]</h2>
+            <p class="mb-0">@Localizer["Install the CLI on your computer and sign in with a personal API key."]</p>
+        </div>
+        <a asp-action="CliSetup" class="btn btn-primary">
+            <i data-lucide="terminal" aria-hidden="true"></i>
+            @Localizer["Set up DMS CLI"]
+        </a>
+    </div>
+</section>
+
 <div class="row">
-<div class="col-md-4"><div class="card"><div class="card-body"><h2>@Localizer["Machines"]</h2><p>@Localizer["View Agent connectivity and machine history."]</p><a asp-controller="Dms" asp-action="Index" class="btn btn-primary">@Localizer["View machines"]</a></div></div></div>
-<div class="col-md-4"><div class="card"><div class="card-body"><h2>@LockboxText.Name</h2><p>@LockboxText.Format(@Localizer["Review the operation, parameters and fixed targets in each {0} request."].Value)</p><a asp-controller="Dms" asp-action="Lockboxes" class="btn btn-primary">@LockboxText.Format(@Localizer["Review {0} requests"].Value)</a></div></div></div>
-<div class="col-md-4"><div class="card"><div class="card-body"><h2>@Localizer["Workflow history"]</h2><p>@Localizer["Follow the callstack and inspect execution traces."]</p><a asp-controller="Dms" asp-action="Operations" class="btn btn-primary">@Localizer["View history"]</a></div></div></div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h2>@Localizer["Machines"]</h2>
+                <p>@Localizer["View Agent connectivity and machine history."]</p>
+                <a asp-controller="Dms" asp-action="Index" class="btn btn-primary">@Localizer["View machines"]</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h2>@LockboxText.Name</h2>
+                <p>@LockboxText.Format(@Localizer["Review the operation, parameters and fixed targets in each {0} request."].Value)</p>
+                <a asp-controller="Dms" asp-action="Lockboxes" class="btn btn-primary">@LockboxText.Format(@Localizer["Review {0} requests"].Value)</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h2>@Localizer["Workflow history"]</h2>
+                <p>@Localizer["Follow the callstack and inspect execution traces."]</p>
+                <a asp-controller="Dms" asp-action="Operations" class="btn btn-primary">@Localizer["View history"]</a>
+            </div>
+        </div>
+    </div>
 </div>

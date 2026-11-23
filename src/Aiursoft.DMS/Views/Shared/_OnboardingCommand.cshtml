@@ -1,0 +1,8 @@
+@model string
+
+<div class="d-flex flex-wrap align-items-center gap-2 bg-body-tertiary border rounded p-3 my-2" data-onboarding-command>
+    <pre class="flex-grow-1 mb-0 text-wrap text-break"><code>@Model</code></pre>
+    <button class="btn btn-sm btn-outline-secondary" type="button" hidden>@Localizer["Copy command"]</button>
+    <span hidden data-copied-message>@Localizer["Command copied"]</span>
+    <span class="visually-hidden" role="status"></span>
+</div>

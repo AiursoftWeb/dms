@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Get a join key" xml:space="preserve">
+    <value>1. 取得加入金鑰</value>
+  </data>
+  <data name="2. Install the Agent on the machine" xml:space="preserve">
+    <value>2. 在機器上安裝 Agent</value>
+  </data>
+  <data name="3. Approve the registration and check the connection" xml:space="preserve">
+    <value>3. 核准註冊並檢查連線</value>
+  </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>新增機器</value>
+  </data>
+  <data name="After approval, the Agent connects automatically. Return to Machines and check that its status is Online." xml:space="preserve">
+    <value>核准後，Agent 會自動連線。請返回「機器」頁面，並確認其狀態為「線上」。</value>
+  </data>
+  <data name="Ask an administrator for a join key for this Controller. Administrators with Manage DMS access and permission to request Medium workflows can create one from their DMS CLI." xml:space="preserve">
+    <value>請向管理員索取此 Controller 的加入金鑰。擁有「管理 DMS」存取權限且具備請求 Medium 工作流權限的管理員，可透過其 DMS CLI 建立金鑰。</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>返回機器</value>
+  </data>
+  <data name="Bash, curl, systemd, and sudo access" xml:space="preserve">
+    <value>Bash、curl、systemd 和 sudo 存取權限</value>
+  </data>
+  <data name="If registration is pending, share its {0} ID with someone who can approve Medium workflows. To approve your own request, you also need self-approval permission." xml:space="preserve">
+    <value>如果註冊處於待處理狀態，請將其 {0} ID 分享給可以核准中等工作流程的人。若要核准您自己的請求，您也需要自我核准權限。</value>
+  </data>
+  <data name="Install a DMS Agent to let this Controller manage a Linux machine." xml:space="preserve">
+    <value>安裝 DMS Agent，讓此 Controller 管理一台 Linux 機器。</value>
+  </data>
+  <data name="Machine requirements" xml:space="preserve">
+    <value>機器需求</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>我的核准</value>
+  </data>
+  <data name="On the machine you want to manage, open Bash, replace the join key placeholder with your key, and run the command." xml:space="preserve">
+    <value>在要管理的機器上，開啟 Bash，將加入金鑰佔位符替換為您的金鑰，然後執行該命令。</value>
+  </data>
+  <data name="Outbound access to this Controller" xml:space="preserve">
+    <value>可連線至此控制器的出站存取</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>設定 DMS CLI</value>
+  </data>
+  <data name="The .NET 10 SDK, or an APT source that provides dotnet10" xml:space="preserve">
+    <value>.NET 10 SDK，或提供 dotnet10 的 APT 來源</value>
+  </data>
+  <data name="The installer downloads the Agent from this Controller, starts it as a systemd service, and prints the {0} ID for registration." xml:space="preserve">
+    <value>安裝程式會從此 Controller 下載 Agent，將其啟動為 systemd 服務，並列印 {0} ID 以供註冊。</value>
+  </data>
+  <data name="Ubuntu or AnduinOS on x64 or arm64" xml:space="preserve">
+    <value>Ubuntu 或 AnduinOS，支援 x64 或 arm64</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>檢視機器</value>
+  </data>
+
+</root>
