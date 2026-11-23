@@ -304,15 +304,20 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
 
     private static async Task<byte[]> DownloadReleaseAsync(CancellationToken token)
     {
-        var (architecture, hash) = RuntimeInformation.OSArchitecture switch
+        var (architecture, asset, hash) = RuntimeInformation.OSArchitecture switch
         {
-            Architecture.X64 => ("amd64", "daf719b32ca2778770bb92955e231a07414d754378b9af328aa2642862479804"),
-            Architecture.Arm64 => ("arm64", "02180b857480302fd934e9ddbd50fe2f73229f99062f88756abc6de9df5e95cf"),
+            Architecture.X64 => ("amd64", 710291514, "daf719b32ca2778770bb92955e231a07414d754378b9af328aa2642862479804"),
+            Architecture.Arm64 => ("arm64", 710291691, "02180b857480302fd934e9ddbd50fe2f73229f99062f88756abc6de9df5e95cf"),
             _ => throw new PlatformNotSupportedException("DMS provides FRPS releases for Linux x64 and ARM64.")
         };
         var name = $"frp_{Release}_linux_{architecture}";
-        using var response = await Http.GetAsync($"https://github.com/fatedier/frp/releases/download/v{Release}/{name}.tar.gz",
-            HttpCompletionOption.ResponseHeadersRead, token);
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(TimeSpan.FromMinutes(5));
+        token = deadline.Token;
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/fatedier/frp/releases/assets/{asset}");
+        request.Headers.Accept.ParseAdd("application/octet-stream");
+        request.Headers.UserAgent.ParseAdd("Aiursoft-DMS");
+        using var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
         response.EnsureSuccessStatusCode();
         using var content = await response.Content.ReadAsStreamAsync(token);
         using var archive = new MemoryStream();
