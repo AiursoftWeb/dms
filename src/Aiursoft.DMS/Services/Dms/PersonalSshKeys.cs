@@ -47,8 +47,10 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
     public static string SignWithAgentCommand(Guid id, string publicKey) =>
         $"printf '%s' '{Challenge(id)}' | ssh-keygen -Y sign -n {SignatureNamespace} -f <(ssh-add -L | grep '{SshAgentGrepPattern(publicKey)}')";
 
-    public Task<List<PersonalSshKey>> ListAsync(string user) => db.PersonalSshKeys.AsNoTracking()
-        .Where(k => k.UserId == user && k.Slot > 0).OrderBy(k => k.Slot).ToListAsync();
+    public Task<List<PersonalSshKey>> ListAsync(string user) => VerifiedKeys(user).OrderBy(k => k.Slot).ToListAsync();
+
+    private IQueryable<PersonalSshKey> VerifiedKeys(string user) => db.PersonalSshKeys.AsNoTracking()
+        .Where(k => k.UserId == user && k.Slot > 0 && k.VerifiedAt != null && k.RevokedAt == null);
 
     public Task<PersonalSshKey?> GetPendingAsync(string user, Guid? id = null, CancellationToken token = default)
     {
@@ -168,8 +170,7 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
 
     public async Task<PersonalSshKey> RequireVerifiedAsync(string user, Guid id, string? fingerprint, CancellationToken token)
     {
-        var key = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.UserId == user &&
-            k.Id == id && k.Slot > 0 && k.VerifiedAt != null && k.RevokedAt == null, token);
+        var key = await VerifiedKeys(user).SingleOrDefaultAsync(k => k.Id == id, token);
         if (key == null || (fingerprint != null && !string.Equals(key.Fingerprint, fingerprint, StringComparison.Ordinal)))
             throw new DmsException(409, "The selected key is unavailable. Submit a new request.");
         return key;

@@ -319,20 +319,23 @@ Open the target's details from **DMS → Machines** to check its temporary SSH
 readiness. If the machine needs setup or its readiness is unknown, ask the
 machine administrator to confirm the SSH setup. The administrator can use the
 approved disable workflow to establish the managed closed state.
-Verify a personal key on **SSH public keys**, copy its ID, and submit a
+Verify at least one personal key on **SSH public keys**, then submit a
 very-high-risk request for one machine.
 
 ```sh
-dms machine ssh temp-allow-ssh --machine-id "$MACHINE_ID" --key-id "$KEY_ID" \
+dms machine ssh temp-allow-ssh --machine-id "$MACHINE_ID" \
   --minutes 30 --reason "Temporary maintenance access"
 ```
 
-The approval records the selected key fingerprint, target, duration and
-sudo choice. The Agent rechecks the selected key with the Controller at
-execution. A revoked key requires a new request. The lease accepts only the
-selected public key for the temporary account. Use `--sudo` only when the
-approved request needs passwordless sudo. The default duration is 30 minutes,
-with a supported range of 30 to 270 minutes.
+By default, the request includes all of your verified, unrevoked keys at the
+time of submission. Add `--key-id "$KEY_ID"` to select one verified key.
+The Lockbox records the key fingerprints, target, duration and sudo choice.
+The Agent rechecks every frozen key with the Controller at execution. A key
+registered later cannot enter that lease, and revoking a selected key before
+execution requires a new request. The temporary account accepts the frozen
+public keys. Use `--sudo` only when the approved request needs passwordless sudo.
+The default duration is 30 minutes, with a supported range of 30 to 270 minutes.
+Update the Controller and Agent before using the default key selection.
 
 Get the connection username, port and UTC deadline from the machine
 workflow's result or trace. The network and firewall must already permit
@@ -621,7 +624,7 @@ dms machine agent upgrade \
   --reason "Install the Controller's Agent release"
 ```
 
-This creates a **High** risk Lockbox. It freezes the selected machines and both architectures' exact release versions, archive digests and Agent assembly digests. Review and approve that Lockbox through the usual commands. The permission to approve your own request remains separate. If the Controller's release changes before approval, submit a new request; the approved operation never silently changes to a newer payload.
+This creates a **Medium** risk Lockbox. The role must grant Medium request permission. It can run automatically with Medium auto-approval permission, or wait for a reviewer with Medium approval permission. Self-approval also requires its separate permission. The Lockbox freezes the selected machines, versions and digests. Submit a new request when the Controller release changes before approval or when replacing a pending High-risk request.
 
 The installed Agent downloads its architecture-specific upgrade bundle from its registered Controller, verifies the approved identity, pauses new task starts and waits up to one minute for running work to finish. Uncertain tasks must be reconciled first. The bundle includes an independent native helper, the Tool package and its package/assembly digests, all covered by the approved archive digest. A one-shot systemd unit installs the Tool from that local package, verifies the installed assembly, switches the service executable and restarts `dms-agent.service`. The machine keeps its installation identity, credential and task journal. Existing native services migrate through the same approved workflow; if they lack the .NET 10 SDK, the helper prepares `dotnet10` through APT before stopping the old service. Later Tool upgrades use only the Controller and the installed SDK, with no inbound SSH or public NuGet connection.
 

@@ -59,7 +59,7 @@ public class AgentUpgradeSchedulingTests : TestBase
 
                 var machine = new Machine { Name = "Drain node", KeyHash = DmsKeyAuthenticationHandler.Hash(key) }; machineId = machine.Id;
                 db.Users.Add(user); db.Machines.Add(machine);
-                foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.High })
+                foreach (var risk in new[] { RiskLevel.Safe, RiskLevel.Medium })
                     DmsTestPermissions.Risk(db, user.Id, risk, request: true, automatic: true, approve: false);
                 await db.SaveChangesAsync();
                 await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(userId, hold.Request(new EmptyInput(), "Hold an existing task", [machineId]));

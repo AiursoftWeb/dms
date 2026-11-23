@@ -137,7 +137,7 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> ListBlockDevices = new(WorkflowNames.ListBlockDevices, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(ListBlockDevices)), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DiskFree = new(WorkflowNames.DiskFree, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DiskFree)), PublicEntry: true);
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<AgentUpgradeInput, AgentUpgradeResult> AgentUpgrade = new(WorkflowNames.AgentUpgrade, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(AgentUpgrade)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.VeryHigh)]
     public static readonly MachineWorkflowDefinition<FrpsDeployInput, FrpsDeployResult> FrpsDeploy =
