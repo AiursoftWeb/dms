@@ -1,8 +1,13 @@
-@model string
+@using Aiursoft.DMS.Models.DmsViewModels
+@model DmsSshLeaseFailure
 <div class="alert alert-warning mb-0">
     <div class="alert-message">
-        <strong>@Localizer["{0} is not ready for temporary SSH", Model]</strong>
+        <strong>@Localizer["{0} is not ready for temporary SSH", Model.MachineName]</strong>
         <p class="mb-0">@Localizer["The request was approved, and execution stopped before creating a lease."]</p>
-        <p class="mb-0">@Localizer["Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready."]</p>
+        <p class="mb-0">@Localizer["DMS must verify the SSH baseline before it can issue a temporary lease."]</p>
+        @if (Model.MachineId is { } id)
+        {
+            <a asp-controller="Dms" asp-action="Machine" asp-route-id="@id" asp-fragment="ssh-management">@Localizer["Open SSH management"]</a>
+        }
     </div>
 </div>

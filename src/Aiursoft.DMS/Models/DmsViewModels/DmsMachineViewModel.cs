@@ -7,7 +7,11 @@ public class DmsMachineViewModel : UiStackLayoutViewModel
 {
     public required DmsMachineRow Machine { get; init; }
     public WorkflowRun? BaselineRun { get; init; }
+    public required DmsMachineSshRow SshAccess { get; init; }
     public SshLeaseReadiness SshLeaseReadiness { get; init; }
+    public bool? ScheduledSshEnabled { get; init; }
+    public bool CanRequestSshDisable { get; init; }
+    public bool SshStateChanged { get; init; }
     public bool CanRequestSshLease { get; init; }
     public string? BaselineSummary => OperationViewModel.ReadSummary(BaselineRun?.Result);
 }

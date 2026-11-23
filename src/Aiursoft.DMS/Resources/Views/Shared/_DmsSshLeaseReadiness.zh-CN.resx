@@ -40,4 +40,28 @@
     <value>请等当前租约结束后再申请。</value>
   </data>
 
+  <data name="Check the SSH lease history and the Agent version in DMS." xml:space="preserve">
+    <value>请在 DMS 中检查 SSH 租约历史和 Agent 版本。</value>
+  </data>
+  <data name="DMS can check SSH when the Agent reconnects." xml:space="preserve">
+    <value>当 Agent 重新连接时，DMS 可以检查 SSH。</value>
+  </data>
+  <data name="DMS has no recent SSH observation" xml:space="preserve">
+    <value>DMS 没有最近的 SSH 观察记录</value>
+  </data>
+  <data name="DMS has not verified SSH shutdown" xml:space="preserve">
+    <value>DMS 尚未验证 SSH 已关闭</value>
+  </data>
+  <data name="Ordinary SSH is still listening" xml:space="preserve">
+    <value>常规 SSH 仍在监听</value>
+  </data>
+  <data name="Review the Disable SSH workflow result in DMS before requesting another lease." xml:space="preserve">
+    <value>在申请另一个租约之前，请先在 DMS 中查看“禁用 SSH”工作流的结果。</value>
+  </data>
+  <data name="The Agent is disconnected" xml:space="preserve">
+    <value>代理已断开连接</value>
+  </data>
+  <data name="To switch this machine to temporary SSH, run Disable SSH in DMS first." xml:space="preserve">
+    <value>要将此机器切换到临时 SSH，请先在 DMS 中运行“禁用 SSH”。</value>
+  </data>
 </root>

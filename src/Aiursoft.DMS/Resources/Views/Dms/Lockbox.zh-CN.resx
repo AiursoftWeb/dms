@@ -232,4 +232,7 @@
   <data name="SSH key fingerprints" xml:space="preserve">
     <value>SSH 密钥指纹</value>
   </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>打开 SSH 管理</value>
+  </data>
 </root>

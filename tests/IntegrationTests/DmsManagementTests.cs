@@ -166,7 +166,7 @@ public class DmsManagementTests : TestBase
         StringAssert.Contains(detail, latest.Id.ToString());
         foreach (var run in new[] { previous, manual, child, otherMachine, otherWorkflow })
             Assert.DoesNotContain(run.Id.ToString(), detail);
-        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{never.Id}"), "Not verified yet");
+        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{never.Id}"), "No scheduled baseline execution is recorded for this machine.");
     }
 
     [TestMethod]
