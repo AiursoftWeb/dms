@@ -493,7 +493,7 @@ public static partial class DmsCommandApp
         Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null,
         bool positionalOnly = false,
         Func<string, object>? readResult = null,
-        Func<Guid, string>? inputFromWorkflowId = null) : DmsCommandHandler
+        Func<Guid, string>? inputFromWorkflowId = null) : DmsCommandHandler(supportsLog: action == "trace")
     {
         public string[] CommandAliases { private get; set; } = [];
         protected override string[] Alias => CommandAliases;

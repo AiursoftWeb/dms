@@ -15,8 +15,26 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
         { Description = "Controller URL. Defaults to DMS_SERVER or the saved login." };
     protected readonly Option<string?> _key = new("--api-key")
         { Description = "Personal API key. Defaults to DMS_API_KEY or the saved login." };
-    protected readonly Option<OutputFormat> _format = new("--output-format")
-        { Description = "Choose table (default), json, or csv." };
+    private readonly Option<OutputFormat> _format;
+    private readonly bool _supportsLog;
+
+    protected DmsCommandHandler(bool supportsLog = false)
+    {
+        _supportsLog = supportsLog;
+        _format = new Option<OutputFormat>("--output-format")
+        {
+            Description = supportsLog
+                ? "Choose table (default), json, csv, or log (one entry per line)."
+                : "Choose table (default), json, or csv."
+        };
+        if (!supportsLog)
+        {
+            _format.CompletionSources.Clear();
+            _format.CompletionSources.Add(
+                nameof(OutputFormat.Table), nameof(OutputFormat.Json), nameof(OutputFormat.Csv));
+        }
+    }
+
     protected virtual bool Callstack => false;
     protected virtual bool Catalog => false;
     protected virtual bool Audit => false;
@@ -69,7 +87,10 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
     private async Task ExecuteAsync(ParseResult context, DmsCredentials credentials)
     {
         var format = context.GetValue(_format);
-        if (!Enum.IsDefined(format)) throw new ArgumentException("Output format must be table, json, or csv.");
+        if (!Enum.IsDefined(format) || (format == OutputFormat.Log && !_supportsLog))
+            throw new ArgumentException(_supportsLog
+                ? "Output format must be table, json, csv, or log."
+                : "Output format must be table, json, or csv.");
         using var provider = CreateProvider();
         var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), credentials.Endpoint, credentials.ApiKey);
         var response = await RequestAsync(client, context);

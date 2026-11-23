@@ -24,6 +24,17 @@ Machine events are persisted in the Agent journal before delivery through its ou
 
 With Client 1.12.0 and an updated Controller, `workflow trace` and `operation get-trace` combine the selected workflow and all its descendants by time. Pass a child ID to read that subtree, or use `--recursive false` to read a single workflow. Each page contains up to 200 archived events. Continue with `--skip 200`, `--skip 400` and so on, keeping the selected ID and recursive option the same. Direct API calls can request the same behavior with `?recursive=true`. The web operation page displays the selected node's first 200 archived entries with links to its children.
 
+Use `--output-format Log` with either trace command to write a plain log file.
+
+```sh
+dms workflow trace "$WORKFLOW_ID" --output-format Log > a.log
+```
+
+Each archived event occupies one line in the form `2026-11-23T06:38:42.0000000Z [INFO] Starting operation`.
+The severity comes from the trace source. Engine messages and stdout use `INFO`, warnings and stderr use
+`WARN`, and errors use `ERROR`. Embedded line breaks appear as `\n`. Empty pages produce no output.
+Use the same `--skip` and `--recursive` options when exporting additional pages.
+
 For disk investigations, `filesystem du` records the actual path, depth, one-filesystem scope and 60-second limit. Exit code 124 means that limit was reached. An unreadable mount or a file disappearing during a live scan can also fail `du`; earlier byte counts remain partial evidence. `layout df` and `layout inodes` explain that one unreadable mount can fail the entire query even when other filesystem rows are present. Read the native stderr for the affected path. Failed queries stay failed; their trace must not be interpreted as a complete inventory. Several Btrfs subvolume rows can represent the same filesystem and must not be added as independent capacity.
 
 Use `--request-id` when retrying exactly the same request. Script/SQL uploads also reuse their frozen artifact identity for the same request ID and file bytes. Changed input is rejected for that ID. A started mutation with an unknown outcome is `NeedsVerification`; it is never automatically replayed. Cancellation does not roll back completed effects.
