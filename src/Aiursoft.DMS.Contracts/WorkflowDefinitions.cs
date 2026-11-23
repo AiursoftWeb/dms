@@ -115,6 +115,18 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DockerDiskUsage = new("machine.docker.system.df", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerDiskUsage)), "1", PublicEntry: true);
     [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<BoxDeployInput, BoxDeployResult> BoxDeploy = new("machine.box.deploy", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxDeploy)), "1", input => input.Validate(), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.Low)]
+    public static readonly MachineWorkflowDefinition<EmptyInput, BoxSecretsResult> BoxListSecret =
+        new("machine.box.list-secret", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxListSecret)), "1", PublicEntry: true) { SingleMachineOnly = true };
+    [WorkflowRisk(RiskLevel.Low)]
+    public static readonly MachineWorkflowDefinition<BoxSecretInput, BoxSecretSummary> BoxGetSecretSummary =
+        new("machine.box.get-secret-summary", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxGetSecretSummary)), "1", input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<BoxSecretInput, BoxSecretResult> BoxSetSecret =
+        new("machine.box.set-secret", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxSetSecret)), "1", input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<BoxSecretInput, BoxSecretResult> BoxGetSecretRaw =
+        new("machine.box.get-secret-raw", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxGetSecretRaw)), "1", input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, PerformanceResult> Performance = new(WorkflowNames.Performance, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(Performance)), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Medium)]

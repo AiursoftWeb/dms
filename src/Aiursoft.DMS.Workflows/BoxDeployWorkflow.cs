@@ -12,7 +12,7 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
     // GitLab advertises this SSH endpoint; retain the existing HTTPS and SCP forms.
     internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxfor[a-zA-Z0-9_-]+)(\.git)?$";
 
-    private const string Preflight = """
+    internal const string Preflight = """
         set -euo pipefail
         repository=$1
         git=$2
@@ -108,7 +108,7 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         return candidates[0];
     }
 
-    private static FileStream AcquireLock(string directory)
+    internal static FileStream AcquireLock(string directory)
     {
         try { return new FileStream(Path.Combine(directory, ".dms-box-deploy.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
         catch (IOException exception) { throw new InvalidOperationException("Cannot acquire the machine deployment lock. Another deployment or a filesystem error prevents this request. No update or deployment was started.", exception); }

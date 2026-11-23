@@ -68,6 +68,16 @@ public static class FilesystemOperations
         }
         return await OperationOutput.ReportAsync(context, $"Listed {rows.Count} entries; complete={complete}.", rows, complete);
     }
+    private const string BoxSecretPathPattern = "/swarm-vol/boxfor*/.env.prod";
+    private const string BoxSecretStagePattern = "/swarm-vol/boxfor*/.git/.dms-env-prod-*";
+
+    private static void RequirePublicContentPath(string path)
+    {
+        if (System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(BoxSecretPathPattern, path, ignoreCase: true) ||
+            System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(BoxSecretStagePattern, path, ignoreCase: true))
+            throw new IOException("Use the Box secret workflows to access .env.prod.");
+    }
+
     public static async Task<OperationResult> StatAsync(MachineWorkflowContext context, PathInput input, AgentEnvironment agent, CancellationToken token)
     {
         token.ThrowIfCancellationRequested(); input.Validate(); SafeOperationPaths.Check(input.Path, leafMayBeLink: true);
@@ -78,7 +88,7 @@ public static class FilesystemOperations
     public static Task<OperationResult> TailAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, true, token);
     private static async Task<OperationResult> TextAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, bool tail, CancellationToken token)
     {
-        input.Validate(); SafeOperationPaths.Check(input.Path);
+        input.Validate(); RequirePublicContentPath(input.Path); SafeOperationPaths.Check(input.Path);
         if (Directory.Exists(input.Path)) throw new IOException("Reading a directory requires export with explicit recursion.");
         var arguments = tail ? new[] { "--lines=" + input.Lines, "--bytes=" + input.MaxBytes, "--", input.Path }
             : new[] { "--bytes=" + input.MaxBytes, "--", input.Path };
@@ -133,6 +143,7 @@ public static class FilesystemOperations
     private static async Task<OperationResult> CopyAsync(MachineWorkflowContext context, CopyPathInput input, AgentEnvironment agent, bool move, CancellationToken token)
     {
         input.Validate(); SafeOperationPaths.Check(input.Source); SafeOperationPaths.Check(input.Destination);
+        RequirePublicContentPath(input.Destination);
         var directory = Directory.Exists(input.Source);
         if (directory && !input.Recursive) throw new IOException("Directory operations require explicit recursive approval.");
         if (!input.Overwrite && (Directory.Exists(input.Destination) || File.Exists(input.Destination))) throw new IOException("The destination exists; overwrite was not approved.");
@@ -149,10 +160,11 @@ public static class FilesystemOperations
     public static async Task ValidateTransferTreeAsync(MachineWorkflowContext context, string path, AgentEnvironment agent, CancellationToken token)
     {
         SafeOperationPaths.Check(path);
+        RequirePublicContentPath(path);
         if (Directory.Exists(path) && MountPoints().Any(mount => mount != path && mount.StartsWith(path.TrimEnd('/') + "/", StringComparison.Ordinal)))
             throw new IOException("Directory transfers refuse nested mounts; approve each mounted source separately.");
-        var result = await OperationOutput.CommandAsync(context, agent, "find", [path, "-xdev", "(", "-type", "l", "-o", "-type", "b", "-o", "-type", "c", "-o", "-type", "p", "-o", "-type", "s", ")", "-print", "-quit"], token, traceOutput: false);
-        if (!string.IsNullOrWhiteSpace(result.Output)) throw new IOException("File transfer accepts regular files and directories; links and special files are refused.");
+        var result = await OperationOutput.CommandAsync(context, agent, "find", [path, "-xdev", "(", "-type", "l", "-o", "-type", "b", "-o", "-type", "c", "-o", "-type", "p", "-o", "-type", "s", "-o", "-ipath", BoxSecretPathPattern, "-o", "-ipath", BoxSecretStagePattern, ")", "-print", "-quit"], token, traceOutput: false);
+        if (!string.IsNullOrWhiteSpace(result.Output)) throw new IOException("File transfer requires regular files or directories and excludes Box secrets, links and special files.");
     }
 
     public static async Task<OperationResult> ExportAsync(MachineWorkflowContext context, ExportPathInput input, AgentEnvironment agent, CancellationToken token)
@@ -248,6 +260,7 @@ public static class FilesystemOperations
             {
                 token.ThrowIfCancellationRequested();
                 if (++entries > 10000 || mounts.Contains(path)) throw new IOException("Export refuses nested mounts or more than 10000 entries.");
+                RequirePublicContentPath(path);
                 SafeOperationPaths.Check(path);
                 var relative = Path.GetRelativePath(source, path);
                 if (Directory.Exists(path))

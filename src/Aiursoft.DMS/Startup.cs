@@ -72,6 +72,7 @@ public class Startup : IWebStartup
         services.AddScoped<Services.Dms.EnrollmentService>();
         services.AddScoped<Services.Dms.WorkflowService>();
         services.AddSingleton<Services.Dms.AgentReleaseStore>();
+        services.AddSingleton<Services.Dms.BoxSecretTransfers>();
         services.AddSingleton<Services.Dms.WorkflowCatalog>();
         services.AddScoped<Services.Dms.AgentEvents>();
         services.AddScoped<Services.Dms.TraceDatabase>();

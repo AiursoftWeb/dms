@@ -75,7 +75,8 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
                 names.GetValueOrDefault(row.Item.RequesterId, "Unknown user"),
                 row.Targets.Take(3).Select(id => machines.GetValueOrDefault(id, id.ToString())).ToList(),
                 row.Targets.Length, canReview && !row.RequiresResubmission && row.Item.Decision == DecisionState.Pending &&
-                    DmsPermissions.CanDecide(principal, row.Item.Risk, row.Item.RequesterId == actor),
+                    DmsPermissions.CanDecide(principal, row.Item.Risk, row.Item.RequesterId == actor) &&
+                        !(row.Item.RequesterId == actor && BoxSecretTransfers.RequiresIndependentApproval(row.Item.Definition)),
                 executions.GetValueOrDefault(row.Item.Id), row.RequiresResubmission)).ToList(),
             OwnRequests = ownRequests, Scope = scope, Search = search,
             Page = page, HasNextPage = rows.Count > pageSize, Notice = notice
@@ -103,7 +104,8 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var needsResubmission = upgrade?.RequiresResubmission == true;
         var aptPlanUnavailable = aptPlans != null && aptPlans.Count != snapshot.Targets.Count;
         var canDecide = canViewOperations && item.Decision == DecisionState.Pending && !needsResubmission && !aptPlanUnavailable &&
-            DmsPermissions.CanDecide(principal, item.Risk, ownRequest);
+            DmsPermissions.CanDecide(principal, item.Risk, ownRequest) &&
+            !(ownRequest && BoxSecretTransfers.RequiresIndependentApproval(item.Definition));
         var names = await MachineNamesAsync(snapshot.Targets);
         SshLeaseReadiness? sshReadiness = null;
         string? sshBaselineFailure = null;

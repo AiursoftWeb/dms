@@ -11,6 +11,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Cronos" Version="0.13.0" />
+    <InternalsVisibleTo Include="Aiursoft.DMS.Tests" />
     <ProjectReference Include="../Aiursoft.DMS.Contracts/Aiursoft.DMS.Contracts.csproj" />
   </ItemGroup>
 </Project>
