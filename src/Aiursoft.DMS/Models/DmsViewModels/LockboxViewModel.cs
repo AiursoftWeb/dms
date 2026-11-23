@@ -20,6 +20,7 @@ public sealed class LockboxViewModel : UiStackLayoutViewModel
     public bool CanViewOperations { get; init; }
     public RunState? ExecutionState { get; init; }
     public AgentUpgradeReview? AgentUpgrade { get; init; }
+    public IReadOnlyDictionary<Guid, AptPlanResult>? AptPlans { get; init; }
     public bool CanResubmit { get; init; }
 }
 

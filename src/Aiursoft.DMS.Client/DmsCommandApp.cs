@@ -196,11 +196,15 @@ public static partial class DmsCommandApp
                 NewSystemExecuteScriptCommand(),
                 KernelEventsCommand()
             ]),
-            new Group("apt", "Inspect, install, or upgrade APT packages.",
+            new Group("apt", "Inspect, refresh, upgrade, or clean up APT packages.",
             [
                 NewAptInspectCommand(),
                 NewAptInstallCommand(),
-                NewAptUpgradeCommand()
+                NewAptUpgradeCommand(),
+                NewAptUpdateCommand(),
+                new ActionCommand("plan", "Show the package changes from an APT preview workflow.", "apt-plan", positionalOnly: true),
+                NewAptMaintenanceCommand(AptMaintenance.UpgradeAll),
+                NewAptMaintenanceCommand(AptMaintenance.Autoremove)
             ]),
             new Group("database", "Inspect and query configured database connections on a machine.",
             [
@@ -506,7 +510,9 @@ public static partial class DmsCommandApp
         Func<DmsApiClient, ParseResult, Guid, Task<string>>? preparedInput = null,
         bool positionalOnly = false,
         Func<string, object>? readResult = null,
-        Func<Guid, string>? inputFromWorkflowId = null) : DmsCommandHandler(supportsLog: action == "trace")
+        Func<Guid, string>? inputFromWorkflowId = null,
+        Func<ParseResult, (string Workflow, string Input)>? selectOperation = null,
+        string? targetDescription = null) : DmsCommandHandler(supportsLog: action == "trace")
     {
         public string[] CommandAliases { private get; set; } = [];
         protected override string[] Alias => CommandAliases;
@@ -526,7 +532,9 @@ public static partial class DmsCommandApp
         }
 
         private bool UsesLockboxId => action is "lockbox-status" or "get" or "approve" or "deny" or "withdraw";
-        private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" or "filesystem-result" || inputFromWorkflowId != null;
+        private bool UsesId => UsesLockboxId ||
+            action is "workflow" or "callstack" or "trace" or "apt-plan" or "filesystem-result" ||
+            inputFromWorkflowId != null;
         private bool IsSubmission => definition != null;
         protected override string Name => name;
 
@@ -646,6 +654,7 @@ public static partial class DmsCommandApp
                         _machines.AllowMultipleArgumentsPerToken = false;
                         _machines.Description = "Target machine ID. Omit when exactly one machine is enabled.";
                     }
+                    if (targetDescription != null) _machines.Description = targetDescription;
                     yield return _machines;
                     if (!definition.SingleMachineOnly) yield return _all;
                 }
@@ -704,19 +713,20 @@ public static partial class DmsCommandApp
             {
                 var requestId = context.GetValue(_request);
                 if (requestId == Guid.Empty) requestId = Guid.NewGuid();
+                var selected = selectOperation?.Invoke(context);
                 response = await client.SubmitAsync(new OperationRequest
                 {
                     RequestId = requestId,
-                    Workflow = action, MachineIds = (context.GetValue(_machines) ??
+                    Workflow = selected?.Workflow ?? action, MachineIds = (context.GetValue(_machines) ??
                     [
                     ]).ToList(),
                     AllMachines = context.GetValue(_all), Reason = context.GetValue(_reason) ?? string.Empty,
-                    Input = action == WorkflowNames.AgentUpgrade
+                    Input = selected?.Input ?? (action == WorkflowNames.AgentUpgrade
                         ? MachineWorkflows.AgentUpgrade.Serialize(
                             new AgentUpgradeInput((await client.AgentReleasesAsync()).Data))
                         : preparedInput != null
                             ? await preparedInput(client, context, requestId)
-                            : inputFromWorkflowId?.Invoke(id) ?? input?.Invoke(context) ?? "{}"
+                            : inputFromWorkflowId?.Invoke(id) ?? input?.Invoke(context) ?? "{}")
                 });
                 if (ShouldWaitForOpenResult(context))
                     response = await ReadOpenResultAsync(client, response, requestId, context);
@@ -746,6 +756,7 @@ public static partial class DmsCommandApp
                         context.GetValue(_reason) ?? string.Empty),
                     "workflow" => await client.GetWorkflowAsync(id),
                     "callstack" => await client.CallstackAsync(id),
+                    "apt-plan" => await ReadAptPlanAsync(client, id),
                     "filesystem-result" => await client.FilesystemResultAsync(id),
                     "trace" => await client.TraceAsync(id, context.GetValue(_skip), context.GetValue(_recursive)),
                     _ => throw new InvalidOperationException("Unsupported command.")
@@ -759,7 +770,7 @@ public static partial class DmsCommandApp
 
         protected override void WriteResponse(ParseResult context, DmsResponse response, OutputFormat format, bool color, int width)
         {
-            if (ShouldWaitForOpenResult(context))
+            if (ShouldWaitForOpenResult(context) || action == "apt-plan")
                 DmsOutputWriter.WriteResult(context.InvocationConfiguration.Output, response.Data!, format, color, width);
             else if (action == "filesystem-result")
                 DmsOutputWriter.WriteFilesystemResult(context.InvocationConfiguration.Output, context.InvocationConfiguration.Error,
