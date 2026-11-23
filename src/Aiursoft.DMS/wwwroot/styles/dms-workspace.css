@@ -324,12 +324,35 @@
 
 .dms-definitions-table th:first-child {
     inline-size: 32%;
-    min-inline-size: min(43vw, 13rem);
+    min-inline-size: 13rem;
+}
+
+.dms-definitions-table thead th {
+    white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+    .dms-definitions-table th:first-child {
+        --dms-definition-name-width: min(48vw, 12rem);
+        inline-size: var(--dms-definition-name-width);
+        min-inline-size: var(--dms-definition-name-width);
+        max-inline-size: 12rem;
+    }
+}
+
+.dms-risk-medium {
+    color: #604100;
+    background-color: #fff0b3;
 }
 
 .dms-risk-high {
     color: #7c2d12;
-    background-color: #ffedd5;
+    background-color: #ffdbc2;
+}
+
+[data-bs-theme="dark"] .dms-risk-medium {
+    color: #ffe08a;
+    background-color: #453500;
 }
 
 [data-bs-theme="dark"] .dms-risk-high {
