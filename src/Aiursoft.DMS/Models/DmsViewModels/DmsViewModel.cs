@@ -10,7 +10,6 @@ public class DmsViewModel : UiStackLayoutViewModel
     public DmsViewModel() { PageTitle = "DMS"; }
     public List<WorkflowRun> Runs { get; set; } = [];
     public List<PersonalApiKey> Keys { get; set; } = [];
-    public WorkflowCatalogResult? Catalog { get; set; }
     public StoredDmsArtifact? Artifact { get; set; }
     public string? ArtifactText { get; set; }
     public WorkflowAuditQuery AuditQuery { get; set; } = new();

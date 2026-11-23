@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>關於這些權限</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>套用</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>自動核准</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>叢集</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>執行位置</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>高</value>
@@ -66,7 +72,13 @@
   <data name="Risk" xml:space="preserve">
     <value>風險</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>風險（由高至低）</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>風險（最低優先）</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>角色權限適用於此 DMS 執行個體中的每台機器，並按工作流程的風險等級授予。自動核准需要申請權限。審核自己的 {0} 請求也需要自我審核權限。</value>
   </data>
   <data name="Safe" xml:space="preserve">
@@ -75,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>顯示工作流程</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>排序方式</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>標準工作流</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>此目錄列出 Controller 上可用的公開標準工作流程。執行期間會檢查 Agent 的可用狀態與支援版本。特殊控制操作和內部子工作流程不會列於此處。</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>未知</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>版本</value>
@@ -89,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流程</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>工作流名稱（A–Z）</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>工作流名稱（Z–A）</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>是</value>

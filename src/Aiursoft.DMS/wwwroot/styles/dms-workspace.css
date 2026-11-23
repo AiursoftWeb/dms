@@ -317,3 +317,45 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+.dms-definitions-table > :not(caption) > * > * {
+    padding: .625rem .875rem;
+}
+
+.dms-definitions-table th:first-child {
+    inline-size: 32%;
+    min-inline-size: 13rem;
+}
+
+.dms-definitions-table thead th {
+    white-space: nowrap;
+}
+
+@media (max-width: 575.98px) {
+    .dms-definitions-table th:first-child {
+        --dms-definition-name-width: min(48vw, 12rem);
+        inline-size: var(--dms-definition-name-width);
+        min-inline-size: var(--dms-definition-name-width);
+        max-inline-size: var(--dms-definition-name-width);
+    }
+}
+
+.dms-risk-medium {
+    color: #604100;
+    background-color: #fff0b3;
+}
+
+.dms-risk-high {
+    color: #7c2d12;
+    background-color: #ffdbc2;
+}
+
+[data-bs-theme="dark"] .dms-risk-medium {
+    color: #ffe08a;
+    background-color: #453500;
+}
+
+[data-bs-theme="dark"] .dms-risk-high {
+    color: #fed7aa;
+    background-color: #431407;
+}

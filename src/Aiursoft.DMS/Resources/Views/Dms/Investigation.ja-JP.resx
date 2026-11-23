@@ -30,9 +30,6 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>承認モードを指定しない</value>
   </data>
-  <data name="{0} request" xml:space="preserve">
-    <value>{0} リクエスト</value>
-  </data>
   <data name="Approver" xml:space="preserve">
     <value>承認者</value>
   </data>
@@ -62,9 +59,6 @@
   </data>
   <data name="Investigation" xml:space="preserve">
     <value>調査</value>
-  </data>
-  <data name="{0} ID" xml:space="preserve">
-    <value>{0} ID</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>マシン</value>
@@ -105,18 +99,6 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>記録終了時刻（非包含、UTC）</value>
   </data>
-  <data name="Workflow in the {0} request" xml:space="preserve">
-    <value>要求済み ({0} リクエスト)</value>
-  </data>
-  <data name="Workflow type in the {0} request" xml:space="preserve">
-    <value>リクエストされたワークフロータイプ ({0} リクエスト)</value>
-  </data>
-  <data name="{0} requester" xml:space="preserve">
-    <value>申請者 ({0} リクエスト)</value>
-  </data>
-  <data name="{0} requester ID" xml:space="preserve">
-    <value>申請者ID ({0} リクエスト)</value>
-  </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>ルートワークフローID</value>
   </data>
@@ -141,11 +123,29 @@
   <data name="Workflow ID" xml:space="preserve">
     <value>ワークフローID</value>
   </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>要求済み ({0} リクエスト)</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>リクエストされたワークフロータイプ ({0} リクエスト)</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>はい</value>
   </data>
   <data name="You do not have access to any clusters." xml:space="preserve">
     <value>どのクラスターにもアクセスする権限がありません。</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} リクエスト</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>申請者 ({0} リクエスト)</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>申請者ID ({0} リクエスト)</value>
   </data>
 
 </root>

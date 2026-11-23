@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>すべての{0}リクエスト</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>フィルターを適用</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>承認済み</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>承認待ち</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>クリア</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>却下</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>実行状態</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>高リスク</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>低リスク</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>中程度のリスク</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>新しいリクエストが必要です</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>次へ</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>{0} のリクエストがあなたのレビューを待っています。</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>これらのフィルターに一致する{0}リクエストはありません。</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>オープンワークフロー</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>前へ</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>私のレビュー待ち</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>レビュー</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>安全なワークフロー</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>{0} リクエストを検索</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>保留中の{0}リクエストをすべて表示</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>表示</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>非常に高いリスク</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>{0} 件のリクエストを表示</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>取り下げ済み</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>ワークフロー、申請者、理由、または {0} ID</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} 件のリクエストページ</value>
+  </data>
+
+</root>
