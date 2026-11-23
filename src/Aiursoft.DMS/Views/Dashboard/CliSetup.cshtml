@@ -1,0 +1,72 @@
+@using Microsoft.AspNetCore.Http.Extensions
+@{
+    var controller = UriHelper.BuildAbsolute(Context.Request.Scheme, Context.Request.Host);
+    var loginCommand = $"dms login --server '{controller.Replace("'", "'\\''", StringComparison.Ordinal)}'";
+}
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-onboarding.css" asp-append-version="true" />
+}
+
+<a asp-action="Index" class="d-inline-block mb-3">@Localizer["Back to DMS"]</a>
+<h1 class="h3">@Localizer["Set up DMS CLI"]</h1>
+<p>@Localizer["Run these commands on your computer to connect to this DMS Controller."]</p>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <h2 class="h5 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-blue" aria-hidden="true"><i data-lucide="package"></i></span>
+                    <span>@Localizer["1. Install the CLI"]</span>
+                </h2>
+                <p>@Localizer["Install the .NET 10 SDK first, then run this in your terminal."]</p>
+                <partial name="_OnboardingCommand" model='"dotnet tool install --global Aiursoft.DMS.Client"' />
+                <p class="small text-body-secondary">@Localizer["If the CLI is already installed, update it with the command below."]</p>
+                <partial name="_OnboardingCommand" model='"dotnet tool update --global Aiursoft.DMS.Client"' />
+
+                <h2 class="h5 mt-4 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-amber" aria-hidden="true"><i data-lucide="key-round"></i></span>
+                    <span>@Localizer["2. Create a personal API key"]</span>
+                </h2>
+                <p>@Localizer["Give the key a name and copy it as soon as it appears. DMS displays it only once."]</p>
+                <a asp-controller="DmsAccess" asp-action="Keys" class="btn btn-outline-primary">@Localizer["Open API Keys"]</a>
+
+                <h2 class="h5 mt-4 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-violet" aria-hidden="true"><i data-lucide="terminal"></i></span>
+                    <span>@Localizer["3. Sign in to this Controller"]</span>
+                </h2>
+                <p>@Localizer["Run the login command, paste the personal API key at the hidden prompt, and press Enter."]</p>
+                <partial name="_OnboardingCommand" model="loginCommand" />
+
+                <h2 class="h5 mt-4 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-green" aria-hidden="true"><i data-lucide="circle-check"></i></span>
+                    <span>@Localizer["4. Verify the connection"]</span>
+                </h2>
+                <p>@Localizer["Check which account and permissions the CLI is using."]</p>
+                <partial name="_OnboardingCommand" model='"dms access whoami"' />
+                <p class="mb-0">@Localizer["If you have permission to run Open workflows, try listing the machines with the CLI."]</p>
+                <partial name="_OnboardingCommand" model='"dms machine list"' />
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <aside class="card">
+            <div class="card-body p-4">
+                <h2 class="h5 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-blue" aria-hidden="true"><i data-lucide="network"></i></span>
+                    <span>@Localizer["This Controller"]</span>
+                </h2>
+                <p class="text-break"><code>@controller</code></p>
+                <p>@Localizer["The CLI saves this address and your personal API key on your computer."]</p>
+                <p class="mb-0">@Localizer["Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings."]</p>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section scripts {
+    <script src="~/scripts/copy-onboarding-command.js" asp-append-version="true" defer></script>
+}

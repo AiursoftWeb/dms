@@ -121,6 +121,10 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     [HttpGet("operations/{id:guid}")]
     public Task<IActionResult> Workflow(Guid id) => Handle(async () => await workflows.GetWorkflowAsync(Actor, id));
 
+    [HttpGet("operations/{id:guid}/result")]
+    public Task<IActionResult> WorkflowResult(Guid id, [FromServices] FilesystemListResults results, CancellationToken token) =>
+        Handle(async () => await results.ReadAsync(Actor, id, token));
+
     [HttpGet("operations/{id:guid}/callstack")]
     public Task<IActionResult> Callstack(Guid id) => Handle(async () => (await workflows.CallstackAsync(Actor, id)).Select(run => new
     {

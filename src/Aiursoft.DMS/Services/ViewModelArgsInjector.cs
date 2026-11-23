@@ -90,6 +90,8 @@ public class ViewModelArgsInjector(
         _ = localizer["Cluster access"];
         _ = localizer["DMS"];
         _ = localizer["Machines"];
+        _ = localizer["Add a machine"];
+        _ = localizer["Set up DMS CLI"];
         _ = localizer["Operations"];
         _ = localizer["Workflow history"];
     

@@ -13,8 +13,9 @@ public static partial class DmsCommandApp
 {
     public static NestedCommandApp Create() => new DmsNavigationApp()
         .WithFeature(new LoginCommand())
-        .WithFeature(new Group("artifact", "Upload, inspect, and download files used by workflows.",
+        .WithFeature(new Group("artifact", "List, upload, inspect, and download files used by workflows.",
         [
+            ArtifactListCommand(),
             new ArtifactCommand("upload"),
             new ArtifactCommand("get"),
             new ArtifactCommand("download")
@@ -261,6 +262,8 @@ public static partial class DmsCommandApp
             new ActionCommand("callstack",
                 "Show a workflow and its descendants as a tree.",
                 "callstack", positionalOnly: true),
+            new ActionCommand("result", "List directory entries by machine for a filesystem ls workflow.",
+                "filesystem-result", positionalOnly: true),
             new ActionCommand("trace", "Read archived trace entries for a workflow and its descendants.", "trace", positionalOnly: true)
         ]))
         .WithFeature(new Group("operation", "Browse the workflow catalog, search audit history, or request cancellation.",
@@ -277,6 +280,16 @@ public static partial class DmsCommandApp
                 ClusterWorkflows.Cancel.Name, ClusterWorkflows.Cancel,
                 inputFromWorkflowId: id => ClusterWorkflows.Cancel.Serialize(new CancelWorkflowInput(id)))
         ]));
+
+    private static ActionCommand ArtifactListCommand()
+    {
+        var limit = new Option<int>("--limit")
+            { DefaultValueFactory = _ => new ArtifactListInput().Limit, Description = "Number of artifacts to return, from 1 to 20." };
+        var offset = new Option<int>("--offset")
+            { Description = "Skip this many artifacts, ordered newest first." };
+        return StandardCommand("ls", "List your available artifacts. Requires Run open workflows.",
+            ClusterWorkflows.ListArtifacts, context => new ArtifactListInput(context.GetValue(offset), context.GetValue(limit)), limit, offset);
+    }
 
     private static ActionCommand AddMachineCommand()
     {
@@ -514,7 +527,7 @@ public static partial class DmsCommandApp
         }
 
         private bool UsesLockboxId => action is "lockbox-status" or "get" or "approve" or "deny" or "withdraw";
-        private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" || inputFromWorkflowId != null;
+        private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" or "filesystem-result" || inputFromWorkflowId != null;
         private bool IsSubmission => definition != null;
         protected override string Name => name;
 
@@ -734,6 +747,7 @@ public static partial class DmsCommandApp
                         context.GetValue(_reason) ?? string.Empty),
                     "workflow" => await client.GetWorkflowAsync(id),
                     "callstack" => await client.CallstackAsync(id),
+                    "filesystem-result" => await client.FilesystemResultAsync(id),
                     "trace" => await client.TraceAsync(id, context.GetValue(_skip), context.GetValue(_recursive)),
                     _ => throw new InvalidOperationException("Unsupported command.")
                 };
@@ -748,6 +762,9 @@ public static partial class DmsCommandApp
         {
             if (ShouldWaitForOpenResult(context))
                 DmsOutputWriter.WriteResult(context.InvocationConfiguration.Output, response.Data!, format, color, width);
+            else if (action == "filesystem-result")
+                DmsOutputWriter.WriteFilesystemResult(context.InvocationConfiguration.Output, context.InvocationConfiguration.Error,
+                    ((JObject)response.Data!).ToObject<FilesystemListResult>()!, format, color, width);
             else
                 base.WriteResponse(context, response, format, color, width);
         }

@@ -342,7 +342,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         access.Audit(user, "operation.get", id);
         await db.SaveChangesAsync();
         return new WorkflowDetails(run.Id, run.RootId, run.ParentId, run.LockboxId,
-            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, run.Result,
+            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, InvestigationResult(run),
             run.Origin, run.ParentId == null ? run.Trigger : WorkflowTrigger.Subworkflow,
             run.ScheduleId, run.ScheduleExpression, run.ScheduledAt);
     });
@@ -351,11 +351,17 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
         await access.RequireViewAsync(user);
-        var all = await db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == run.RootId).OrderBy(r => r.CreatedAt).ToListAsync();
+        var all = await db.WorkflowRuns.AsNoTracking().NotCacheable().Where(r => r.RootId == run.RootId).OrderBy(r => r.CreatedAt).ToListAsync();
         var selected = SubtreeIds(id, all.Select(r => (r.Id, r.ParentId)));
         access.Audit(user, "operation.callstack", id); await db.SaveChangesAsync();
-        return all.Where(r => selected.Contains(r.Id)).ToList();
+        var tree = all.Where(r => selected.Contains(r.Id)).ToList();
+        foreach (var item in tree) item.Result = InvestigationResult(item);
+        return tree;
     });
+
+    // The owner's Open Lockbox result endpoint is the only reader of this private payload.
+    private static string InvestigationResult(WorkflowRun run) =>
+        run.Definition == WorkflowNames.ListArtifacts ? string.Empty : run.Result;
 
     public async Task<IReadOnlyDictionary<string, string>> TraceScopeAsync(string user, Guid id, bool recursive)
     {

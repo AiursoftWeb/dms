@@ -6,18 +6,184 @@ using Aiursoft.AiurProtocol;
 using Aiursoft.AiurProtocol.Exceptions;
 using Aiursoft.AiurProtocol.Services;
 using Aiursoft.DMS.Agent;
+using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.SDK;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
 
 [TestClass]
 public class ArtifactWorkflowTests : TestBase
 {
+    [TestMethod]
+    public async Task ArtifactListIsOpenAndReturnsOnlyTheOwnersPublishedUnexpiredMetadata()
+    {
+        var setup = await SetupAsync();
+        var store = Server!.Services.GetRequiredService<DmsArtifactStore>();
+        var configuration = Server.Services.GetRequiredService<IConfiguration>();
+        var hash = Convert.ToHexStringLower(SHA256.HashData(Array.Empty<byte>()));
+        async Task<Guid> PublishAsync(string owner, string name, bool complete = true)
+        {
+            var reference = new ArtifactReference(Guid.NewGuid(), hash, 0, Name: name);
+            await store.BeginUploadAsync(reference, owner, null, CancellationToken.None);
+            if (complete) await store.CompleteUploadAsync(reference.Id, CancellationToken.None);
+            return reference.Id;
+        }
+
+        var older = await PublishAsync(setup.User, "older.txt");
+        var latest = await PublishAsync(setup.User, "latest.txt");
+        await PublishAsync(setup.Reviewer, "reviewer-private.txt");
+        await PublishAsync(setup.User, "unfinished.txt", complete: false);
+        var expired = await PublishAsync(setup.User, "expired.txt");
+        var manifest = Path.Combine(configuration["Dms:StatePath"]!, "artifacts", expired.ToString("N"), "artifact.json");
+        await File.WriteAllTextAsync(manifest, JsonSerializer.Serialize(store.Get(expired) with { ExpiresAt = DateTime.UtcNow.AddDays(-1) }));
+
+        await DatabaseAsync(async db =>
+        {
+            DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanReadDmsOperations, false);
+            return await db.SaveChangesAsync();
+        });
+
+        var requestId = Guid.NewGuid();
+        string[] args = ["artifact", "ls", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
+        var first = await Client.DmsCommandApp.Create().TestRunAsync([..args, "--limit", "1",
+            "--output-format", "json", "--request-id", requestId.ToString()]);
+        Assert.AreEqual(0, first.ProgramReturn, first.StdErr);
+        var row = JArray.Parse(first.StdOut).Single();
+        var artifact = row.ToObject<ArtifactListItem>()!;
+        Assert.AreEqual(latest, artifact.Id);
+        Assert.AreEqual("latest.txt", artifact.Name);
+        Assert.AreEqual(0L, artifact.Bytes);
+        Assert.IsTrue(artifact.ExpiresAt > DateTime.UtcNow);
+        Assert.IsNull(row["Sha256"]);
+        var box = await DatabaseAsync(db => db.Lockboxes.SingleAsync(item => item.ClientRequestId == requestId));
+        Assert.AreEqual(RiskLevel.Open, box.Risk);
+        Assert.AreEqual(DecisionState.Approved, box.Decision);
+        Assert.IsTrue(box.Automatic);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.StrangerKey);
+        foreach (var suffix in new[] { "", "/callstack" })
+        {
+            using var investigation = await Http.GetAsync($"/api/v1/dms/operations/{box.WorkflowId}{suffix}");
+            Assert.AreEqual(HttpStatusCode.OK, investigation.StatusCode);
+            Assert.DoesNotContain("latest.txt", await investigation.Content.ReadAsStringAsync());
+        }
+        using var otherResult = await Http.GetAsync($"/api/v1/dms/lockboxes/{new LockboxId(box.Id)}/result");
+        Assert.AreEqual(HttpStatusCode.NotFound, otherResult.StatusCode);
+        var second = await Client.DmsCommandApp.Create().TestRunAsync([..args, "--limit", "1", "--offset", "1", "--output-format", "csv"]);
+        Assert.AreEqual(0, second.ProgramReturn, second.StdErr);
+        StringAssert.Contains(second.StdOut, older.ToString());
+        Assert.HasCount(2, second.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+        var empty = await Client.DmsCommandApp.Create().TestRunAsync([..args, "--offset", "2", "--output-format", "json"]);
+        Assert.AreEqual(0, empty.ProgramReturn, empty.StdErr);
+        Assert.IsEmpty(JArray.Parse(empty.StdOut));
+
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(args);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        StringAssert.Contains(table.StdOut, "latest.txt");
+        Assert.DoesNotContain("reviewer-private.txt", table.StdOut);
+        Assert.DoesNotContain("unfinished.txt", table.StdOut);
+        Assert.DoesNotContain("expired.txt", table.StdOut);
+
+        var denied = await Client.DmsCommandApp.Create().TestRunAsync(["artifact", "ls", "--server",
+            Http.BaseAddress.ToString(), "--api-key", setup.ReviewerKey]);
+        Assert.AreNotEqual(0, denied.ProgramReturn);
+        Assert.IsTrue(string.IsNullOrWhiteSpace(denied.StdOut));
+    }
+
+    [TestMethod]
+    public async Task DirectoryResultsUseOneRootIdForLargeBoundedListsEmptyDirectoriesAndFailures()
+    {
+        var setup = await SetupAsync();
+        var secondKey = DmsKeyAuthenticationHandler.CreateKey(true);
+        var second = new Machine { Name = "Second fixture", KeyHash = DmsKeyAuthenticationHandler.Hash(secondKey) };
+        await DatabaseAsync(async db => { db.Machines.Add(second); return await db.SaveChangesAsync(); });
+
+        var directory = Directory.CreateTempSubdirectory("dms-list-results-").FullName;
+        using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        var token = stop.Token;
+        using var firstJournal = new TaskJournal(Path.Combine(directory, "first-journal"));
+        using var secondJournal = new TaskJournal(Path.Combine(directory, "second-journal"));
+        var firstAgent = new AgentClient(Http.BaseAddress!, setup.AgentKey, firstJournal).RunAsync(stop.Token);
+        var secondAgent = new AgentClient(Http.BaseAddress!, secondKey, secondJournal).RunAsync(stop.Token);
+        try
+        {
+            var listing = Directory.CreateDirectory(Path.Combine(directory, "listing")).FullName;
+            for (var i = 0; i < 56; i++)
+                await File.WriteAllTextAsync(Path.Combine(listing, $"file-{i:D2}, \"quoted\".txt"), "123", stop.Token);
+            var empty = Directory.CreateDirectory(Path.Combine(directory, "empty")).FullName;
+            using var scope = Server!.Services.CreateScope();
+            var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+
+            async Task<Guid> RunListingAsync(string path, int limit = 200)
+            {
+                var request = OperationsWorkflows.FilesystemLs.Request(new ListPathInput(path, limit), "List fixture",
+                    [setup.Machine, second.Id]);
+                var box = await workflows.SubmitAsync(setup.User, request);
+                Assert.AreEqual(DecisionState.Pending, box.Decision);
+                box = await workflows.DecideAsync(setup.Reviewer, box.Id, true, "Approved fixture listing");
+                var id = box.WorkflowId!.Value;
+                while (true)
+                {
+                    var state = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(item => item.Id == id)
+                        .Select(item => item.State).SingleAsync(token));
+                    if (state.Terminal()) return id;
+                    await Task.Delay(100, token);
+                }
+            }
+
+            string[] Args(Guid id, string format) => ["workflow", "result", id.ToString(), "--output-format", format,
+                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
+            var root = await RunListingAsync(listing, 50);
+            var json = await Client.DmsCommandApp.Create().TestRunAsync(Args(root, "json"));
+            Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
+            var result = JObject.Parse(json.StdOut).ToObject<FilesystemListResult>()!;
+            Assert.AreEqual(root, result.WorkflowId);
+            Assert.HasCount(2, result.Machines);
+            foreach (var machine in result.Machines)
+            {
+                Assert.AreEqual(false, machine.Complete);
+                Assert.HasCount(50, machine.Entries!);
+                Assert.AreEqual(3L, machine.Entries![0].Bytes);
+                Assert.IsNull(await DatabaseAsync(async db => OperationsWorkflows.FilesystemLs.ReadResult(
+                    await db.WorkflowRuns.Where(item => item.Id == machine.WorkflowId).Select(item => item.Result).SingleAsync()).Facts));
+            }
+            var csv = await Client.DmsCommandApp.Create().TestRunAsync(Args(root, "csv"));
+            Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
+            StringAssert.Contains(csv.StdOut, "\"\"quoted\"\"");
+            StringAssert.Contains(csv.StdErr, "listing incomplete");
+            Assert.HasCount(101, csv.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+
+            var emptyTable = await Client.DmsCommandApp.Create().TestRunAsync(Args(await RunListingAsync(empty), "table"));
+            Assert.AreEqual(0, emptyTable.ProgramReturn, emptyTable.StdErr);
+            StringAssert.Contains(emptyTable.StdOut, "Second fixture");
+            StringAssert.Contains(emptyTable.StdOut, "empty directory");
+            var failure = await Client.DmsCommandApp.Create().TestRunAsync(Args(await RunListingAsync(Path.Combine(directory, "missing")), "table"));
+            Assert.AreEqual(0, failure.ProgramReturn, failure.StdErr);
+            StringAssert.Contains(failure.StdOut, "[Failed] no directory result");
+
+            await DatabaseAsync(async db =>
+            {
+                DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanReadDmsOperations, false);
+                return await db.SaveChangesAsync();
+            });
+            var denied = await Client.DmsCommandApp.Create().TestRunAsync(Args(root, "json"));
+            Assert.AreNotEqual(0, denied.ProgramReturn);
+            Assert.IsTrue(string.IsNullOrWhiteSpace(denied.StdOut));
+        }
+        finally
+        {
+            await stop.CancelAsync();
+            try { await Task.WhenAll(firstAgent, secondAgent); }
+            catch (OperationCanceledException) { }
+            Directory.Delete(directory, true);
+        }
+    }
+
     [TestMethod]
     public async Task ScriptSubmissionRetriesReuseFrozenBytesAndTheWebReviewerCanInspectThem()
     {

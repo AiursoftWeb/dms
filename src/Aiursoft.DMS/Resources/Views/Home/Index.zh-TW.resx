@@ -844,4 +844,19 @@
     <value>{0} 記錄操作的請求人、目標及核准結果。</value>
   </data>
 
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>中央網頁應用程式與 API。它追蹤機器、管理 {0} 核准，並協調工作流程。</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>在您自己的電腦上執行的命令列工具。它會連線至 Controller，讓您能夠請求操作並檢視其結果。</value>
+  </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>安裝在每台受管理機器上的服務。它會連線至 Controller、回報狀態，並在本地執行已核准的工作流程。</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>DMS 的三個組成部分</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>查看您的機器清單、Agent 連線狀態、版本及操作歷史。</value>
+  </data>
 </root>

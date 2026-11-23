@@ -82,4 +82,10 @@
     <value>状态</value>
   </data>
 
+  <data name="Add a machine" xml:space="preserve">
+    <value>添加机器</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>暂无机器加入。</value>
+  </data>
 </root>

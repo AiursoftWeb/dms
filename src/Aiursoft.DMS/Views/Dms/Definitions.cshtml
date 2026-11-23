@@ -3,6 +3,14 @@
 @using Aiursoft.DMS.Services.Dms
 @model DmsDefinitionsViewModel
 
+@{
+    void RenderFlag(bool enabled)
+    {
+        var tone = enabled ? "success" : "secondary";
+        <span class="dms-badge text-nowrap bg-@(tone)-subtle text-@(tone)-emphasis">@(enabled ? @Localizer["Yes"] : @Localizer["No"])</span>
+    }
+}
+
 @* ReSharper disable once Razor.SectionNotResolved *@
 @section styles {
     <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
@@ -14,7 +22,7 @@
             <h1 id="definition-catalog-title">@Localizer["Standard workflows"]</h1>
             <p class="mb-0 text-body-secondary">
                 @LockboxText.Format(@Localizer["May approve own {0} requests"].Value):
-                <strong>@(Model.Catalog.CanApproveOwnRequests ? @Localizer["Yes"] : @Localizer["No"])</strong>
+                @{ RenderFlag(Model.Catalog.CanApproveOwnRequests); }
             </p>
         </div>
         @if (Model.Catalog.Definitions.Count > 0)
@@ -91,10 +99,10 @@
                                         case WorkflowLocation.Machine: @Localizer["Machine"] break;
                                     }
                                 </td>
-                                <td>@(item.RequiresTargets ? @Localizer["Yes"] : @Localizer["No"])</td>
-                                <td>@(item.CanRequest ? @Localizer["Yes"] : @Localizer["No"])</td>
-                                <td>@(item.AutoApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
-                                <td>@(item.CanApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
+                                <td>@{ RenderFlag(item.RequiresTargets); }</td>
+                                <td>@{ RenderFlag(item.CanRequest); }</td>
+                                <td>@{ RenderFlag(item.AutoApprove); }</td>
+                                <td>@{ RenderFlag(item.CanApprove); }</td>
                             </tr>
                         }
                     </tbody>

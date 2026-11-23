@@ -3,18 +3,53 @@
 @section styles {
     <link rel="stylesheet" href="~/styles/site.css" />
     <link rel="stylesheet" href="~/styles/marketing.css" />
+    <link rel="stylesheet" href="~/styles/dms-onboarding.css" asp-append-version="true" />
 }
 <vc:marketing-navbar></vc:marketing-navbar>
 <section class="landing-intro text-bg-dark py-5">
     <div class="container py-5">
         <h1 class="text-white">@Localizer["Approved operations. Accountable execution."]</h1>
         <p class="lead text-white-50">@LockboxText.Format(@Localizer["Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation."].Value)</p>
-        <a asp-controller="Dms" asp-action="Index" class="btn btn-primary btn-lg">@Localizer["Open DMS"]</a>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg">@Localizer["Open DMS"]</a>
+    </div>
+</section>
+<section class="bg-body-tertiary py-5" aria-labelledby="components-title">
+    <div class="container">
+        <h2 id="components-title" class="mb-4">@Localizer["The three parts of DMS"]</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <article class="card h-100 mb-0">
+                    <div class="card-body p-4">
+                        <span class="dms-onboarding-icon dms-onboarding-icon-blue dms-onboarding-icon-lg mb-3" aria-hidden="true"><i data-lucide="network"></i></span>
+                        <h3 class="h5">DMS Controller</h3>
+                        <p class="mb-0">@LockboxText.Format(@Localizer["The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows."].Value)</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="card h-100 mb-0">
+                    <div class="card-body p-4">
+                        <span class="dms-onboarding-icon dms-onboarding-icon-violet dms-onboarding-icon-lg mb-3" aria-hidden="true"><i data-lucide="terminal"></i></span>
+                        <h3 class="h5">DMS CLI</h3>
+                        <p class="mb-0">@Localizer["The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results."]</p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="card h-100 mb-0">
+                    <div class="card-body p-4">
+                        <span class="dms-onboarding-icon dms-onboarding-icon-green dms-onboarding-icon-lg mb-3" aria-hidden="true"><i data-lucide="server"></i></span>
+                        <h3 class="h5">DMS Agent</h3>
+                        <p class="mb-0">@Localizer["The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally."]</p>
+                    </div>
+                </article>
+            </div>
+        </div>
     </div>
 </section>
 <section class="container py-5">
     <div class="row g-4">
-        <div class="col-md-4"><h2>@Localizer["Know your machines"]</h2><p>@Localizer["View cluster inventory, Agent connectivity, versions, and each machine's operation history."]</p></div>
+        <div class="col-md-4"><h2>@Localizer["Know your machines"]</h2><p>@Localizer["View your machine inventory, Agent connectivity, versions, and operation history."]</p></div>
         <div class="col-md-4"><h2>@Localizer["Review before execution"]</h2><p>@LockboxText.Format(@Localizer["{0} records who requested an operation, its targets, and the approval decision."].Value)</p></div>
         <div class="col-md-4"><h2>@Localizer["Follow every workflow"]</h2><p>@Localizer["Share a workflow ID to inspect its state, child workflows, results, and trace."]</p></div>
     </div>

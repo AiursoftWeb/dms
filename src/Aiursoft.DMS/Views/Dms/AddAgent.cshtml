@@ -1,0 +1,72 @@
+@using Aiursoft.DMS.Controllers
+@using Aiursoft.DMS.Services.Dms
+@{
+    const string joinKeyCommand = "dms access create-join-key --name 'Agent enrollment' --days 7";
+    var installer = Url.ActionLink(nameof(AgentDownloadController.Installer), "AgentDownload")!;
+    var command = $"curl -fsSL '{installer.Replace("'", "'\\''", StringComparison.Ordinal)}' | sudo bash -s -- --api-key '<join-key>'";
+}
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-onboarding.css" asp-append-version="true" />
+}
+
+<a asp-action="Index" class="d-inline-block mb-3">@Localizer["Back to machines"]</a>
+<h1 class="h3">@Localizer["Add a machine"]</h1>
+<p>@Localizer["Install a DMS Agent to let this Controller manage a Linux machine."]</p>
+
+<div class="row">
+    <div class="col-lg-4 order-lg-2">
+        <aside class="card">
+            <div class="card-body p-4">
+                <h2 class="h5 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-green" aria-hidden="true"><i data-lucide="server"></i></span>
+                    <span>@Localizer["Machine requirements"]</span>
+                </h2>
+                <ul class="mb-0 ps-4">
+                    <li>@Localizer["Ubuntu or AnduinOS on x64 or arm64"]</li>
+                    <li>@Localizer["Bash, curl, systemd, and sudo access"]</li>
+                    <li>@Localizer["Outbound access to this Controller"]</li>
+                    <li>@Localizer["The .NET 10 SDK, or an APT source that provides dotnet10"]</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+    <div class="col-lg-8 order-lg-1">
+        <div class="card">
+            <div class="card-body p-4">
+                <h2 class="h5 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-amber" aria-hidden="true"><i data-lucide="key-round"></i></span>
+                    <span>@Localizer["1. Get a join key"]</span>
+                </h2>
+                <p>@Localizer["Ask an administrator for a join key for this Controller. Administrators with Manage DMS access and permission to request Medium workflows can create one from their DMS CLI."]</p>
+                <partial name="_OnboardingCommand" model="joinKeyCommand" />
+                <a asp-controller="Dashboard" asp-action="CliSetup">@Localizer["Set up DMS CLI"]</a>
+
+                <h2 class="h5 mt-4 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-blue" aria-hidden="true"><i data-lucide="download"></i></span>
+                    <span>@Localizer["2. Install the Agent on the machine"]</span>
+                </h2>
+                <p>@Localizer["On the machine you want to manage, open Bash, replace the join key placeholder with your key, and run the command."]</p>
+                <partial name="_OnboardingCommand" model="command" />
+                <p class="mb-0">@LockboxText.Format(@Localizer["The installer downloads the Agent from this Controller, starts it as a systemd service, and prints the {0} ID for registration."].Value)</p>
+
+                <h2 class="h5 mt-4 d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-green" aria-hidden="true"><i data-lucide="circle-check"></i></span>
+                    <span>@Localizer["3. Approve the registration and check the connection"]</span>
+                </h2>
+                <p>@LockboxText.Format(@Localizer["If registration is pending, share its {0} ID with someone who can approve Medium workflows. To approve your own request, you also need self-approval permission."].Value)</p>
+                <p>@Localizer["After approval, the Agent connects automatically. Return to Machines and check that its status is Online."]</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a asp-action="Index" class="btn btn-primary">@Localizer["View machines"]</a>
+                    <a asp-action="Lockboxes" class="btn btn-outline-secondary">@Localizer["My approvals"]</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section scripts {
+    <script src="~/scripts/copy-onboarding-command.js" asp-append-version="true" defer></script>
+}

@@ -202,4 +202,13 @@
     <value>工作流程歷史</value>
   </data>
 
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>將 DMS CLI 連接至此控制器</value>
+  </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>喺你部電腦安裝 CLI，並用個人 API 金鑰登入。</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>設定 DMS CLI</value>
+  </data>
 </root>
