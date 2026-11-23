@@ -188,6 +188,8 @@ public class BoxDeployTests
         Assert.AreEqual("{}", await box.InspectAsync());
         var trace = string.Join("\n", box.Events.Where(e => e.IsTrace).Select(e => e.Message));
         StringAssert.Contains(trace, "official=true");
+        if (origin.Contains("BoxForMoog", StringComparison.OrdinalIgnoreCase))
+            StringAssert.Contains(trace, "repository=boxformoog");
         StringAssert.Contains(trace, "Branch: master");
         StringAssert.Contains(trace, "Commit: " + head);
         StringAssert.Contains(trace, "TrackedChanges: false");
