@@ -127,6 +127,10 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DiskFree = new(WorkflowNames.DiskFree, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DiskFree)), PublicEntry: true);
     [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<AgentUpgradeInput, AgentUpgradeResult> AgentUpgrade = new(WorkflowNames.AgentUpgrade, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(AgentUpgrade)), "1", input => input.Validate(), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<FrpsDeployInput, FrpsDeployResult> FrpsDeploy =
+        new("machine.frps.deploy", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(FrpsDeploy)),
+            "1", input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, AgentStatusResult> AgentStatus = new(WorkflowNames.AgentStatus, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(AgentStatus)), PublicEntry: true);
 }

@@ -11,7 +11,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     Func<Guid, CancellationToken, Task<SshLeaseAuthorization>>? AuthorizeSshLease = null,
     Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null,
     Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null,
-    AptTransactionHook? AptTransactionHook = null);
+    AptTransactionHook? AptTransactionHook = null,
+    Func<Guid, CancellationToken, Task<string>>? GetFrpsDeployToken = null);
 
 public sealed partial class MachineWorkflowRegistry
 {
@@ -20,6 +21,7 @@ public sealed partial class MachineWorkflowRegistry
     public MachineWorkflowRegistry()
     {
         RegisterOperations();
+        Register(MachineWorkflows.FrpsDeploy, (input, agent) => new FrpsDeployWorkflow(input, agent));
         Register(MachineWorkflows.DockerPs, (input, _) => new DockerPsWorkflow(input));
         Register(MachineWorkflows.DockerLogs, (input, _) => new DockerLogsWorkflow(input));
         Register(MachineWorkflows.DockerExec, (input, _) => new DockerExecWorkflow(input));

@@ -2,7 +2,7 @@
 
 [Discover workflows and permissions](workflow-discovery.md) · [CLI and Agent setup](cli-and-agent.md) · [Operation options](operations.md)
 
-Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 123 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
+Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 124 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
 
 Enter a CLI command with `--help` to see its options. Workflow requests generally need a reason and, where applicable, a machine target. The `Open` inventory workflow uses the **Run open workflows** permission. For other risk levels, request, automatic approval, and manual approval are separate role permissions. Self-approval requires its own permission. Internal and scheduled entries show their registered risk and run through their parent or schedule. See [Role permissions](permissions.md).
 
@@ -19,6 +19,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Scheduled Agent upgrade | `machine.agent.scheduled-upgrade` | Agent schedule on every managed machine (High) | 00:00, 08:00, and 16:00 daily | Checks for a newer Controller release. Waits for other workflows to exit and for 10 seconds of continuous idle time before upgrading. |
 | Inspect Agent status | `machine.agent.status` | `dms machine agent status` (Safe) | — | Check Agent version, connection identity, and pending events. |
 | Upgrade an Agent | `machine.agent.upgrade` | `dms machine agent upgrade` (High) | — | Installs the Controller-selected Agent release. The workflow checks that the upgraded Agent reconnects. |
+| Deploy FRPS | `machine.frps.deploy` | `dms machine frps deploy` (VeryHigh) | — | Installs or upgrades FRPS on one Linux host. A fresh installation requires a token; an empty token preserves existing authentication. |
 | Inspect APT packages | `machine.apt.inspect` | `dms machine apt inspect` (Low) | — | Show installed packages and available APT updates. |
 | Install APT packages | `machine.apt.install` | `dms machine apt install` (High) | — | Install the requested APT packages. |
 | Upgrade APT packages | `machine.apt.upgrade` | `dms machine apt upgrade` (High) | — | Upgrade the specified installed APT packages. |

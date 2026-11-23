@@ -7,10 +7,11 @@ using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user) => gate.RunAsync(async () =>
     {
@@ -77,6 +78,15 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
         { throw new DmsException(400, "Invalid workflow input: " + exception.Message); }
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
+        FrpsDeployInput? frpsInput = null;
+        if (request.Workflow == MachineWorkflows.FrpsDeploy.Name)
+        {
+            frpsInput = MachineWorkflows.FrpsDeploy.ReadInput(request.Input);
+            if (frpsInput.ProtectedToken != null)
+                throw new DmsException(400, "Submit the FRPS token through the workflow token option.");
+            frpsInput = frpsInput with { FrpsToken = string.IsNullOrEmpty(frpsInput.FrpsToken) ? null : frpsInput.FrpsToken };
+            request.Input = MachineWorkflows.FrpsDeploy.Serialize(frpsInput);
+        }
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
@@ -94,6 +104,15 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
                 var open = OperationsWorkflows.SshOpen.ReadInput(request.Input);
                 var approved = OperationsWorkflows.SshOpen.ReadInput(frozen.Input);
                 request.Input = OperationsWorkflows.SshOpen.Serialize(open with { Fingerprint = open.Fingerprint ?? approved.Fingerprint });
+            }
+            if (frpsInput != null && frozen.Workflow == request.Workflow)
+            {
+                var approved = MachineWorkflows.FrpsDeploy.ReadInput(frozen.Input);
+                var approvedToken = approved.ProtectedToken == null ? null :
+                    protection.CreateProtector(FrpsDeployInput.ProtectionPurpose).Unprotect(approved.ProtectedToken);
+                if (approvedToken != frpsInput.FrpsToken)
+                    throw new DmsException(409, "Request ID already belongs to different parameters.");
+                request.Input = frozen.Input;
             }
             if (!JsonNode.DeepEquals(JsonSerializer.SerializeToNode(frozen), JsonSerializer.SerializeToNode(request))) throw new DmsException(409, "Request ID already belongs to different parameters.");
             return prior;
@@ -153,6 +172,11 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             var input = OperationsWorkflows.SshOpen.ReadInput(request.Input);
             var key = await sshKeys.RequireVerifiedAsync(user, input.KeyId, input.Fingerprint, CancellationToken.None);
             request.Input = OperationsWorkflows.SshOpen.Serialize(input with { Fingerprint = key.Fingerprint });
+        }
+        if (frpsInput?.FrpsToken is { } frpsToken)
+        {
+            request.Input = MachineWorkflows.FrpsDeploy.Serialize(new FrpsDeployInput(ProtectedToken:
+                protection.CreateProtector(FrpsDeployInput.ProtectionPurpose).Protect(frpsToken)));
         }
         await RequireArtifactsAsync(definition, request.Input, user);
         var lockbox = new LockboxRequest
