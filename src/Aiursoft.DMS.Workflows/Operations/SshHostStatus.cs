@@ -44,7 +44,8 @@ internal static partial class SshHostStatus
 
             bool? baselineReady = lease != null ? null : state?.Healthy == true && ordinaryOpen == false &&
                 await UnitsMaskedAndStoppedAsync(host, probe) && !await HasOpenSshConnectionsAsync(host, probe);
-            return new SshHostObservation(observedAt, ordinaryOpen, LeaseKnown: lease == null && state?.Healthy != false)
+            return new SshHostObservation(observedAt, ordinaryOpen,
+                LeaseKnown: lease == null && state?.Healthy != false)
             {
                 BaselineReady = baselineReady
             };

@@ -274,10 +274,12 @@ can finish cleanup after the underlying problem has been resolved.
 
 ## Open a temporary SSH lease
 
-Verify a personal key on the Controller's **SSH public keys** page and
-copy its key ID. Run the disable workflow successfully on the target to
-establish the managed closed state. Then submit a very-high-risk request
-for one machine.
+Open the target's details from **DMS → Machines** to check its temporary SSH
+readiness. If the machine needs setup or its readiness is unknown, ask the
+machine administrator to confirm the SSH setup. The administrator can use the
+approved disable workflow to establish the managed closed state.
+Verify a personal key on **SSH public keys**, copy its ID, and submit a
+very-high-risk request for one machine.
 
 ```sh
 dms machine ssh temp-allow-ssh --machine-id "$MACHINE_ID" --key-id "$KEY_ID" \

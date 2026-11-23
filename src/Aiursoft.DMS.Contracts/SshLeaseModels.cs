@@ -1,12 +1,14 @@
 using System.Buffers.Binary;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Aiursoft.DMS.Contracts;
 
 public sealed record SshOpenInput(Guid KeyId, int Minutes = 30, bool Sudo = false, string? Fingerprint = null)
 {
-    public const string BaselineRequiredError = "Run the SSH disable workflow successfully before opening a temporary lease.";
+    public const string BaselineRequiredError =
+        "Run the SSH disable workflow successfully before opening a temporary lease.";
 
     public void Validate()
     {
@@ -34,7 +36,7 @@ public sealed record SshLeaseCheckInput(bool CloseSshWhenNoLease = false)
 public sealed record SshHostObservation(DateTimeOffset ObservedAtUtc, bool? OrdinaryOpen, bool LeaseKnown,
     Guid? LeaseId = null, DateTimeOffset? ExpiresAtUtc = null)
 {
-    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? BaselineReady { get; init; }
 }
 

@@ -21,6 +21,7 @@ public sealed class MachineSshOverview(TemplateDbContext db)
         if (leaseIds.Length == 0)
             return machines.Select(machine => new DmsMachineSshRow(machine.Id, observed.GetValueOrDefault(machine.Id))).ToList();
 
+        var leases = OperationsWorkflows.SshOpen.Name;
         var requests = await (from run in db.WorkflowRuns.AsNoTracking()
                 join box in db.Lockboxes.AsNoTracking() on run.LockboxId equals box.Id
                 where leaseIds.Contains(run.Id) && run.Definition == leases && run.State == RunState.Succeeded &&
