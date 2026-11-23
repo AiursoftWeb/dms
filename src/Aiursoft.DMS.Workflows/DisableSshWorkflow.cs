@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Workflows.Operations;
 
@@ -7,6 +8,8 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
     : MachineWorkflow<EmptyInput, OperationResult>(OperationsWorkflows.SshDisable, input)
 {
     private static readonly string[] SshUnits = ["ssh.socket", "ssh.service"];
+    private static readonly string[] ListeningSockets = ["-Hltnp"];
+    private static readonly string[] EstablishedSockets = ["-Htnp", "state", "established"];
 
     public override Task<OperationResult> ExecuteAsync(MachineWorkflowContext context, EmptyInput value, CancellationToken token) =>
         RevokeAsync(context, environment, null, token);
@@ -142,17 +145,21 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
 
             step = "verify SSH listeners and established connections";
             await VerifyUnitsAsync(host, token);
-            await VerifyConnectionsAsync(host, token);
+            await VerifyClosureAsync(context, host, token);
             token.ThrowIfCancellationRequested();
             step = "persist the verified state";
             store.SaveState(new SshLeaseState(null, Healthy: true));
             revocation = revocation with { Complete = true };
             store.SaveRevocation(context.Id, revocation);
         }
-        catch (Exception exception)
+        catch (Exception exception) when (exception is not WorkflowNeedsVerificationException)
         {
-            await context.TraceAsync($"Could not {step}. The SSH baseline requires verification. {exception.Message}", "error");
-            throw new WorkflowNeedsVerificationException(context.Id);
+            var summary = $"Could not {step}. The SSH baseline requires verification. {exception.Message}";
+            await context.TraceAsync(summary, "error");
+            throw new WorkflowNeedsVerificationException(context.Id)
+            {
+                Result = JsonSerializer.Serialize(new OperationResult(summary, Complete: false))
+            };
         }
 
         return await ReportAsync(context, revocation, replayed: false);
@@ -204,17 +211,46 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             throw new IOException("An OpenSSH listener or established connection remains.");
     }
 
-    internal static async Task<bool> HasOpenSshConnectionsAsync(OperationHost host, CancellationToken token)
+    internal static async Task<bool> HasOpenSshConnectionsAsync(OperationHost host, CancellationToken token) =>
+        (await ReadSshSocketsAsync(host, ListeningSockets, token)).Length > 0 ||
+        (await ReadSshSocketsAsync(host, EstablishedSockets, token)).Length > 0;
+
+    private static async Task VerifyClosureAsync(MachineWorkflowContext context, OperationHost host, CancellationToken token)
     {
-        foreach (var args in new[] { new[] { "-Hltnp" }, ["-Htnp", "state", "established"] })
+        var listeners = await ReadSshSocketsAsync(host, ListeningSockets, token);
+        var connections = await ReadSshSocketsAsync(host, EstablishedSockets, token);
+        if (listeners.Length == 0 && connections.Length == 0) return;
+
+        var listenerStatus = listeners.Length == 0 ? "No OpenSSH listener was found." : "OpenSSH is still listening.";
+        var connectionStatus = connections.Length == 0 ? "No established OpenSSH connection was found."
+            : "Previously established OpenSSH connections remain.";
+        var summary = $"SSH service and socket are masked and stopped. {listenerStatus} {connectionStatus}";
+        var check = new SshClosureCheck(DateTimeOffset.UtcNow, listeners.Length, connections.Length,
+            SocketSamples(listeners), SocketSamples(connections));
+
+        await context.TraceAsync(summary, "error");
+        foreach (var line in check.ListenerSamples)
+            await context.TraceAsync($"Remaining OpenSSH listener: {line}", "error");
+        foreach (var line in check.EstablishedConnectionSamples)
+            await context.TraceAsync($"Remaining established OpenSSH connection: {line}", "error");
+
+        throw new WorkflowNeedsVerificationException(context.Id)
         {
-            var sockets = await RunAsync(host, "ss", args, token);
-            if (sockets.Output.Contains("(\"sshd\",", StringComparison.Ordinal) ||
-                sockets.Output.Contains("(\"sshd-session\",", StringComparison.Ordinal) ||
-                sockets.Output.Contains("(\"sshd-auth\",", StringComparison.Ordinal))
-                return true;
-        }
-        return false;
+            Result = JsonSerializer.Serialize(new OperationResult(summary, Complete: false, Facts: JsonSerializer.SerializeToElement(check)))
+        };
+    }
+
+    private static string[] SocketSamples(string[] sockets) =>
+        sockets.Take(5).Select(line => line.Length > 300 ? line[..300] + "…" : line).ToArray();
+
+    private static async Task<string[]> ReadSshSocketsAsync(OperationHost host, string[] arguments, CancellationToken token)
+    {
+        var sockets = await RunAsync(host, "ss", arguments, token);
+        return sockets.Output.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Where(line => line.Contains("(\"sshd\",", StringComparison.Ordinal) ||
+                line.Contains("(\"sshd-session\",", StringComparison.Ordinal) ||
+                line.Contains("(\"sshd-auth\",", StringComparison.Ordinal))
+            .ToArray();
     }
 
     private static async Task<bool> VerifyAccountAsync(OperationHost host, SshLease lease, CancellationToken token)

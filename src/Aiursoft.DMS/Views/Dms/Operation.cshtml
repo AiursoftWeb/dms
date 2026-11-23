@@ -111,6 +111,62 @@
             {
                 <partial name="_DmsSshLeaseFailure" model="sshMachine" />
             }
+            else if (Model.SshClosureFailure is { } sshClosure)
+            {
+                var check = OperationViewModel.ReadSshClosureCheck(sshClosure.Result);
+                <div class="border rounded p-3 mt-3">
+                    <h2 class="h5 mb-2">@Localizer["SSH closure needs verification"]</h2>
+                    @if (check != null)
+                    {
+                        <p class="mb-2">@Localizer["The SSH service and socket were masked and stopped."]</p>
+                        <dl class="dms-run-facts mt-2">
+                            <div>
+                                <dt>@Localizer["OpenSSH listeners"]</dt>
+                                <dd class="fw-semibold">
+                                    <span class="badge @(check.ListenerCount == 0 ? "bg-success-subtle text-success-emphasis" : "bg-warning-subtle text-warning-emphasis")">
+                                        @check.ListenerCount
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>@Localizer["Established OpenSSH connections"]</dt>
+                                <dd class="fw-semibold">
+                                    <span class="badge @(check.EstablishedConnectionCount == 0 ? "bg-success-subtle text-success-emphasis" : "bg-warning-subtle text-warning-emphasis")">
+                                        @check.EstablishedConnectionCount
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>@Localizer["Checked"]</dt>
+                                <dd><time datetime="@check.ObservedAtUtc.ToString("O", CultureInfo.InvariantCulture)" data-utc-now>@check.ObservedAtUtc.ToString("u", CultureInfo.InvariantCulture)</time></dd>
+                            </div>
+                        </dl>
+                        @if (check.ListenerSamples.Length != 0)
+                        {
+                            <details class="mt-2">
+                                <summary>@Localizer["Remaining listener details"]</summary>
+                                <pre class="dms-payload mb-0">@string.Join("\n", check.ListenerSamples)</pre>
+                            </details>
+                        }
+                        @if (check.EstablishedConnectionSamples.Length != 0)
+                        {
+                            <details class="mt-2">
+                                <summary>@Localizer["Remaining connection details"]</summary>
+                                <pre class="dms-payload mb-0">@string.Join("\n", check.EstablishedConnectionSamples)</pre>
+                            </details>
+                        }
+                    }
+                    else if (OperationViewModel.ReadSummary(sshClosure.Result) is { } closureError)
+                    {
+                        <p class="mb-2">@closureError</p>
+                    }
+                    else
+                    {
+                        <p class="mb-2">@Localizer["This run has no recorded listener or connection counts."]</p>
+                    }
+                    <a asp-action="Operation" asp-route-id="@sshClosure.Id" asp-fragment="trace">@Localizer["View the SSH verification log"]</a>
+                </div>
+            }
             else if (Model.ResultSummary is { } result)
             {
                 var tone = run.State == RunState.Failed ? "danger" : run.State is RunState.Warning or RunState.NeedsVerification ? "warning" : "secondary";

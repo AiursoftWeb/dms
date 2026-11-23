@@ -101,6 +101,59 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
+    public async Task SshDisableDisplaysChildDiagnosticsOnTheRequestedWorkflow()
+    {
+        await LoginAsAdmin();
+        var setup = await ArrangeAsync(true);
+        var check = new SshClosureCheck(DateTimeOffset.UtcNow, 0, 1, [],
+            ["192.0.2.10:22 192.0.2.11:42000"]);
+        var result = JsonSerializer.Serialize(new OperationResult("Existing connections remain", Complete: false,
+            Facts: JsonSerializer.SerializeToElement(check)));
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        Guid rootId;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var request = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Show connection diagnostics", [setup.Machine]);
+            rootId = (await service.SubmitAsync(setup.User, request)).WorkflowId!.Value;
+        }
+
+        while (true)
+        {
+            using var scope = Server.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var child = await db.WorkflowRuns.SingleOrDefaultAsync(r => r.ParentId == rootId, timeout.Token);
+            if (child != null)
+            {
+                child.State = RunState.NeedsVerification;
+                child.Result = result;
+                await db.SaveChangesAsync(timeout.Token);
+                break;
+            }
+            await Task.Delay(50, timeout.Token);
+        }
+
+        while (true)
+        {
+            using var scope = Server.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var root = await service.GetWorkflowAsync(setup.User, rootId);
+            if (root.State == RunState.NeedsVerification)
+            {
+                Assert.AreEqual(result, root.Result);
+                break;
+            }
+            await Task.Delay(50, timeout.Token);
+        }
+
+        var page = await Http.GetStringAsync($"/Dms/Operation/{rootId}", timeout.Token);
+        StringAssert.Contains(page, "OpenSSH listeners");
+        StringAssert.Contains(page, "Established OpenSSH connections");
+        StringAssert.Contains(page, "192.0.2.11:42000");
+    }
+
+    [TestMethod]
     [DataRow(RunState.Offered, false, RunState.Cancelled)]
     [DataRow(RunState.CancelRequested, false, RunState.Cancelled)]
     [DataRow(RunState.Running, true, RunState.CancelRequested)]

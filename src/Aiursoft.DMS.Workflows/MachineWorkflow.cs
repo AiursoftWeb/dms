@@ -93,9 +93,13 @@ public sealed class MachineWorkflowContext
             await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.Cancelled });
             throw;
         }
-        catch (WorkflowNeedsVerificationException)
+        catch (WorkflowNeedsVerificationException exception)
         {
-            await _report(new WorkflowEvent { WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version, State = RunState.NeedsVerification });
+            await _report(new WorkflowEvent
+            {
+                WorkflowId = _id, ParentId = _parentId, Definition = workflow.Name, Version = workflow.Version,
+                State = RunState.NeedsVerification, Result = exception.WorkflowId == _id ? exception.Result : ""
+            });
             throw;
         }
         catch (Exception exception)

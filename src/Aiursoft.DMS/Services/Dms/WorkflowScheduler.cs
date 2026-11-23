@@ -134,6 +134,9 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             var children = await db.WorkflowRuns.Where(r => r.ParentId == run.Id).ToListAsync(token);
             if (children.Count == 0) continue;
             run.State = Aggregate(children);
+            if (run.Definition == WorkflowNames.Batch && (run.State is RunState.Succeeded or RunState.NeedsVerification) &&
+                children is [var child] && child.Definition == OperationsWorkflows.SshDisable.Name)
+                run.Result = child.Result;
             run.StartedAt ??= DateTime.UtcNow;
             if (run.State.Terminal()) run.FinishedAt = DateTime.UtcNow;
         }

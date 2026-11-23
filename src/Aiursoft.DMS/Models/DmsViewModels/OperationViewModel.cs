@@ -18,6 +18,9 @@ public sealed class OperationViewModel : UiStackLayoutViewModel
     public int TracePage { get; init; }
     public bool HasNextTracePage { get; set; }
     public string? ResultSummary => ReadSummary(Run.Result);
+    public WorkflowRun? SshClosureFailure => Steps.FirstOrDefault(step =>
+        step.State == RunState.NeedsVerification &&
+        (step.Definition == OperationsWorkflows.SshDisable.Name || step.Definition == OperationsWorkflows.SshCheckLease.Name));
     public WorkflowRun? SshBaselineFailure => Steps.FirstOrDefault(IsSshBaselineFailure);
 
     internal static bool IsSshBaselineFailure(WorkflowRun run) =>
@@ -38,6 +41,17 @@ public sealed class OperationViewModel : UiStackLayoutViewModel
             foreach (var child in children[node.Step.Id].Reverse())
                 pending.Push((child, node.Depth + 1));
         }
+    }
+
+    public static SshClosureCheck? ReadSshClosureCheck(string? result)
+    {
+        if (string.IsNullOrEmpty(result)) return null;
+        try
+        {
+            var check = JsonSerializer.Deserialize<OperationResult>(result)?.Facts?.Deserialize<SshClosureCheck>();
+            return check is { ListenerSamples: not null, EstablishedConnectionSamples: not null } ? check : null;
+        }
+        catch (JsonException) { return null; }
     }
 
     internal static string? ReadSummary(string? result)

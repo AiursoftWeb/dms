@@ -543,6 +543,13 @@ public sealed record SshAuditInput(string User = "root", string Address = "127.0
     }
 }
 
+public sealed record SshClosureCheck(
+    DateTimeOffset ObservedAtUtc,
+    int ListenerCount,
+    int EstablishedConnectionCount,
+    string[] ListenerSamples,
+    string[] EstablishedConnectionSamples);
+
 public sealed record OperationResult(
     string Summary,
     bool Complete = true,
