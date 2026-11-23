@@ -30,9 +30,10 @@ public sealed class ClusterWorkflowRegistry
         Func<TransactionalClusterWorkflow<TInput, TResult>> factory) =>
         _definitions.Add(definition.Name, new Registration(definition, CreateTransactional: factory));
 
-    public ClusterWorkflowRegistry()
+    public ClusterWorkflowRegistry(DmsArtifactStore artifacts)
     {
         Register(ClusterWorkflows.GetMachines, () => new GetMachinesWorkflow());
+        Register(ClusterWorkflows.ListArtifacts, () => new ListArtifactsWorkflow(artifacts));
         Register(ClusterWorkflows.DiskUsage, () => new ClusterDiskUsageWorkflow());
         Register(ClusterWorkflows.AddMachine, () => new AddMachineWorkflow());
         Register(ClusterWorkflows.Cancel, () => new CancelWorkflow());
@@ -54,6 +55,7 @@ public sealed class WorkflowExecutionContext(ClusterWorkflowRuntime runtime, Gui
     public Guid Id => id;
     internal bool HasWarnings { get; private set; }
     public Task<IReadOnlyList<Guid>> GetApprovedMachinesAsync(CancellationToken token) => runtime.ApprovedMachinesAsync(id, token);
+    public Task<string> GetRequesterAsync(CancellationToken token) => runtime.RequesterAsync(id, token);
     public Task<T> WithInventoryAsync<T>(Func<TemplateDbContext, Task<T>> action, CancellationToken token) => runtime.WithInventoryAsync(id, action, token);
     public Task TraceAsync(string message, CancellationToken token) => runtime.TraceAsync(id, message, token);
     public Task WarningAsync(CancellationToken token)
@@ -150,6 +152,13 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         var parent = await ParentAsync(db, id, token);
         var launch = await db.WorkflowLaunches.SingleAsync(l => l.RootId == parent.RootId, token);
         return launch.ReadTargets();
+    });
+
+    public Task<string> RequesterAsync(Guid id, CancellationToken token) => DatabaseAsync(async db =>
+    {
+        var run = await ParentAsync(db, id, token);
+        return await db.WorkflowLaunches.Where(launch => launch.RootId == run.RootId)
+            .Select(launch => launch.RequesterId).SingleAsync(token);
     });
 
     public Task<T> WithInventoryAsync<T>(Guid id, Func<TemplateDbContext, Task<T>> action, CancellationToken token) => DatabaseAsync(async db =>
