@@ -12,13 +12,6 @@
         <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-lg">@Localizer["Open DMS"]</a>
     </div>
 </section>
-<section class="container py-5">
-    <div class="row g-4">
-        <div class="col-md-4"><h2>@Localizer["Know your machines"]</h2><p>@Localizer["View your machine inventory, Agent connectivity, versions, and operation history."]</p></div>
-        <div class="col-md-4"><h2>@Localizer["Review before execution"]</h2><p>@LockboxText.Format(@Localizer["{0} records who requested an operation, its targets, and the approval decision."].Value)</p></div>
-        <div class="col-md-4"><h2>@Localizer["Follow every workflow"]</h2><p>@Localizer["Share a workflow ID to inspect its state, child workflows, results, and trace."]</p></div>
-    </div>
-</section>
 <section class="bg-body-tertiary py-5" aria-labelledby="components-title">
     <div class="container">
         <h2 id="components-title" class="mb-4">@Localizer["The three parts of DMS"]</h2>
@@ -48,6 +41,13 @@
                 </article>
             </div>
         </div>
+    </div>
+</section>
+<section class="container py-5">
+    <div class="row g-4">
+        <div class="col-md-4"><h2>@Localizer["Know your machines"]</h2><p>@Localizer["View your machine inventory, Agent connectivity, versions, and operation history."]</p></div>
+        <div class="col-md-4"><h2>@Localizer["Review before execution"]</h2><p>@LockboxText.Format(@Localizer["{0} records who requested an operation, its targets, and the approval decision."].Value)</p></div>
+        <div class="col-md-4"><h2>@Localizer["Follow every workflow"]</h2><p>@Localizer["Share a workflow ID to inspect its state, child workflows, results, and trace."]</p></div>
     </div>
 </section>
 <vc:marketing-footer></vc:marketing-footer>

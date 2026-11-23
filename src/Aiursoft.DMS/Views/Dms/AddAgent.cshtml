@@ -11,7 +11,20 @@
 <p>@Localizer["Install a DMS Agent to let this Controller manage a Linux machine."]</p>
 
 <div class="row">
-    <div class="col-lg-8">
+    <div class="col-lg-4 order-lg-2">
+        <aside class="card">
+            <div class="card-body p-4">
+                <h2 class="h5">@Localizer["Machine requirements"]</h2>
+                <ul class="mb-0 ps-4">
+                    <li>@Localizer["Ubuntu or AnduinOS on x64 or arm64"]</li>
+                    <li>@Localizer["Bash, curl, systemd, and sudo access"]</li>
+                    <li>@Localizer["Outbound access to this Controller"]</li>
+                    <li>@Localizer["The .NET 10 SDK, or an APT source that provides dotnet10"]</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+    <div class="col-lg-8 order-lg-1">
         <div class="card">
             <div class="card-body p-4">
                 <h2 class="h5">@Localizer["1. Get a join key"]</h2>
@@ -33,19 +46,6 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-4">
-        <aside class="card">
-            <div class="card-body p-4">
-                <h2 class="h5">@Localizer["Machine requirements"]</h2>
-                <ul class="mb-0 ps-4">
-                    <li>@Localizer["Ubuntu or AnduinOS on x64 or arm64"]</li>
-                    <li>@Localizer["Bash, curl, systemd, and sudo access"]</li>
-                    <li>@Localizer["Outbound access to this Controller"]</li>
-                    <li>@Localizer["The .NET 10 SDK, or an APT source that provides dotnet10"]</li>
-                </ul>
-            </div>
-        </aside>
     </div>
 </div>
 

@@ -848,7 +848,7 @@
     <value>中央網頁應用程式及 API。它追蹤機器、管理 {0} 審批，並協調工作流程。</value>
   </data>
   <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
-    <value>喺你自己部電腦上運行嘅命令列工具。佢會連接至 Controller，令你夠請求操作同檢視結果。</value>
+    <value>在你的電腦上執行的命令列工具。連接至 Controller 後，你可以提出操作請求並檢視結果。</value>
   </data>
   <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
     <value>安裝喺每部受管理裝置上嘅服務。佢會連線去 Controller、報告自身狀態，並喺本地執行已批准嘅工作流程。</value>
