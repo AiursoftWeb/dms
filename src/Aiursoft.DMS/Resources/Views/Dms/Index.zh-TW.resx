@@ -82,4 +82,10 @@
     <value>狀態</value>
   </data>
 
+  <data name="Add a machine" xml:space="preserve">
+    <value>新增機器</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>目前尚無機器加入。</value>
+  </data>
 </root>

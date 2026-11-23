@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. 安装 CLI</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. 创建个人 API 密钥</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. 登录此控制器</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. 验证连接</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>返回 DMS</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>检查 CLI 正在使用的账户和权限。</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>现有的 DMS_SERVER 和 DMS_API_KEY 环境变量会覆盖您已保存的登录信息。请清除这些变量以使用已保存的设置。</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>请为该密钥命名，并在其显示后立即复制。DMS 仅会显示一次。</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>如果 CLI 已安装，请使用以下命令进行更新。</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>如果您有权限运行 Open 工作流，请尝试使用 CLI 列出机器。</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>请先安装 .NET 10 SDK，然后在终端中运行此命令。</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>打开 API 密钥</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>运行登录命令，在隐藏提示符处粘贴个人 API 密钥，然后按 Enter 键。</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>在您的计算机上运行这些命令以连接到此 DMS 控制器。</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>配置 DMS CLI</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>CLI 会将此地址和您的个人 API 密钥保存在您的计算机上。</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>此控制器</value>
+  </data>
+
+</root>

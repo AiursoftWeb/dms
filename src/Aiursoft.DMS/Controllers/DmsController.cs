@@ -5,6 +5,7 @@ using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Services;
+using Aiursoft.UiStack.Layout;
 using Aiursoft.UiStack.Navigation;
 using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.AspNetCore.Authorization;
@@ -52,6 +53,12 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             Connection = connection, Page = page, HasNextPage = rows.Count > pageSize
         });
     }
+
+    [HttpGet]
+    public IActionResult AddAgent() => this.StackView(new UiStackLayoutViewModel
+    {
+        PageTitle = "Add a machine"
+    });
 
     [HttpGet]
     public async Task<IActionResult> Machine(Guid id)

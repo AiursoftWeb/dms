@@ -43,4 +43,7 @@
     <value>有效天數</value>
   </data>
 
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>設定 DMS CLI</value>
+  </data>
 </root>

@@ -11,6 +11,10 @@
 <div class="dms-workspace mx-auto">
     <header class="dms-page-heading">
         <h1>@Localizer["Machines"]</h1>
+        <a asp-action="AddAgent" class="btn btn-primary">
+            <i data-lucide="plus" aria-hidden="true"></i>
+            @Localizer["Add a machine"]
+        </a>
     </header>
 
     <form class="card dms-filters" method="get" asp-action="Index">
@@ -41,7 +45,7 @@
             <i data-lucide="server" aria-hidden="true"></i>
             <p>@(Model.Search.Length > 0 || Model.Connection.HasValue || Model.Page > 0
                 ? @Localizer["No machines match these filters."]
-                : @Localizer["No machines have joined. Use a join key to request Agent registration."])</p>
+                : @Localizer["No machines have joined yet."])</p>
         </div>
     }
     else
