@@ -140,6 +140,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Read the system journal | `machine.system.journal` | `dms machine system journal` (Medium) | — | Read systemd journal entries by unit, boot, or priority. |
 | Read kernel events | `machine.system.kernel-events` | `dms machine system kernel-events` (Medium) | — | Read kernel events with time, boot, and category filters. |
 | Reboot a machine | `machine.system.reboot` | `dms machine system reboot` (High) | — | Requests a machine reboot and verifies that the Agent reconnects after the boot changes. |
+| Shut down and power off a machine | `machine.system.poweroff` | `dms machine system poweroff` (VeryHigh). Alias `shutdown` | — | Schedules a machine poweroff with a countdown and shuts down the system. |
 | List host timers and cron jobs | `machine.system.timers` | `dms machine system timers` (Medium) | — | Lists host systemd timers and cron jobs. |
 | Inspect system uptime | `machine.system.uptime` | `dms machine system uptime` (Safe) | — | Show how long the machine has been running and its boot ID. |
 | List systemd services | `machine.systemctl.list` | `dms machine systemctl list` (Low) | — | List systemd services and their states. |
