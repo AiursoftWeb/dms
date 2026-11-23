@@ -16,7 +16,7 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         set -euo pipefail
         repository=$1
         git=$2
-        box_git() { "$git" -c "safe.directory=$repository" -C "$repository" "$@"; }
+        box_git() { "$git" --no-optional-locks -c "safe.directory=$repository" -c core.fsmonitor=false -C "$repository" "$@"; }
         [ "$(box_git rev-parse --show-toplevel)" = "$repository" ] || {
             echo 'The Box must be the root of its Git working tree.' >&2; exit 1;
         }
@@ -30,8 +30,8 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         if box_git ls-files --error-unmatch .env.prod >/dev/null 2>&1; then
             echo 'Private .env.prod must not be tracked by Git.' >&2; exit 1;
         fi
-        box_git diff --quiet --ignore-submodules -- || { echo 'The Box has local tracked changes.' >&2; exit 1; }
-        box_git diff --cached --quiet --ignore-submodules -- || { echo 'The Box has staged changes.' >&2; exit 1; }
+        box_git diff --quiet --no-ext-diff --no-textconv --ignore-submodules -- || { echo 'The Box has local tracked changes.' >&2; exit 1; }
+        box_git diff --cached --quiet --no-ext-diff --no-textconv --ignore-submodules -- || { echo 'The Box has staged changes.' >&2; exit 1; }
         box_git rev-parse --verify HEAD
         """;
 
