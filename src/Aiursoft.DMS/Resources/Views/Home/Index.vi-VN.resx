@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Kiểm tra Lint</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} ghi lại ai đã yêu cầu một thao tác, các mục tiêu của nó và quyết định phê duyệt.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Giấy phép MIT</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Triết lý</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Ứng dụng web và API trung tâm. Nó theo dõi các máy, quản lý phê duyệt {0} và điều phối các quy trình làm việc.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Công cụ dòng lệnh bạn chạy trên máy tính của mình. Nó kết nối với Controller để bạn có thể yêu cầu các thao tác và kiểm tra kết quả của chúng.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Nền tảng doanh nghiệp .NET chính xác, đã được kiểm chứng qua thực tế. Từ Xác thực đến Trí tuệ nhân tạo, chúng tôi đã giải quyết những phần khó khăn để bạn không phải lo lắng.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Thanh điều hướng tự động điều chỉnh dựa trên vai trò và quyền của người dùng.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Dịch vụ bạn cài đặt trên mỗi máy được quản lý. Nó kết nối với Controller, báo cáo trạng thái của mình và thực thi các quy trình làm việc đã được phê duyệt tại địa phương.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Mẫu này được xây dựng để triển khai dễ dàng. Nó bao gồm hỗ trợ Docker đầy đủ, vì vậy bạn có thể đóng gói ứng dụng của mình và chạy nó ở bất cứ đâu. Bạn cũng có thể triển khai trực tiếp lên IIS, Azure App Service hoặc bất kỳ máy chủ nào hỗ trợ ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>Ba thành phần của DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Đây là một dự án mẫu</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Xem trên GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Xem danh sách máy, kết nối Agent, phiên bản và lịch sử hoạt động.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory có sẵn</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>Có sẵn API java.time</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} ghi lại ai đã yêu cầu một thao tác, các mục tiêu của nó và quyết định phê duyệt.</value>
   </data>
 
 </root>

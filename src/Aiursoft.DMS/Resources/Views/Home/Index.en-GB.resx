@@ -744,14 +744,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>The Philosophy</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>The navigation bar automatically adjusts based on user roles and permissions.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>The template is designed for straightforward deployment. It includes comprehensive Docker support, allowing you to containerise your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>The three parts of DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>This is a template project</value>
@@ -785,6 +797,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>View on GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>View your machine inventory, Agent connectivity, versions, and operation history.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory available</value>

@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Доступ заборонено</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Додати машину</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Додати публічний ключ SSH</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Публічні ключі SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Налаштування DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Налаштування</value>

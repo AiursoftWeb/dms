@@ -21,8 +21,44 @@
       <data name="Approval context" xml:space="preserve">
     <value>บริบทการอนุมัติ</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>อัตโนมัติ</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Callstack</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>คอนโทรลเลอร์</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>ระยะเวลา</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>ตัวระบุการดำเนินการและตัวกระตุ้น</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>บันทึกการดำเนินการ</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>หน้าบันทึกการดำเนินการ</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>การนำทาง.Execution</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>ขั้นตอนการดำเนินการ</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>เสร็จสิ้น</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>เครื่องจักร</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>ถัดไป</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>ยังไม่เริ่ม</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>แหล่งที่มา</value>
@@ -30,14 +66,44 @@
   <data name="Parent" xml:space="preserve">
     <value>ผู้ดูแล</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์ระดับบน</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>ก่อนหน้า</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>ผลลัพธ์การดำเนินการแบบดิบ</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>ผลลัพธ์</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์หลัก</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>ดูขั้นตอนการดำเนินการทั้งหมด</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>เริ่มแล้ว</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>สถานะ</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>ขั้นตอนที่ต้องตรวจสอบ</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>ตารางเวลาของระบบ</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>เครื่องเป้าหมาย</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>บันทึกการดำเนินการไม่สามารถใช้งานได้ เหตุการณ์ที่รอดำเนินการยังคงถูกจัดเก็บไว้</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>ไม่มีเหตุการณ์ที่จัดเก็บถาวรในหน้านี้</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>การติดตาม</value>
@@ -47,6 +113,15 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>เวิร์กโฟลว์</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>รหัส Workflow</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>ประวัติเวิร์กโฟลว์</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>คำขอ {0}</value>
   </data>
 
 </root>

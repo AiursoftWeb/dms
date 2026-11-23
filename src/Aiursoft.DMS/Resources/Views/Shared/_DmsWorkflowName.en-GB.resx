@@ -30,8 +30,17 @@
   <data name="Open an SSH lease" xml:space="preserve">
     <value>Open an SSH lease</value>
   </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>Preview APT package changes</value>
+  </data>
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>Refresh APT package indexes</value>
+  </data>
   <data name="Refresh images with Box Puller" xml:space="preserve">
     <value>Refresh images with Box Puller</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>Remove unused APT packages</value>
   </data>
   <data name="Run a command in Docker" xml:space="preserve">
     <value>Run a command in Docker</value>
@@ -41,6 +50,9 @@
   </data>
   <data name="Upgrade DMS Agent" xml:space="preserve">
     <value>Upgrade DMS Agent</value>
+  </data>
+  <data name="Upgrade available APT packages" xml:space="preserve">
+    <value>Upgrade available APT packages</value>
   </data>
 
 </root>

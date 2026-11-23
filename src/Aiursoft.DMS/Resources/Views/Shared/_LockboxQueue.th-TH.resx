@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>คำขอ {0} ทั้งหมด</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>ใช้ตัวกรอง</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>อนุมัติแล้ว</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>กำลังรอการอนุมัติ</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>ล้าง</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>ถูกปฏิเสธ</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>สถานะการดำเนินการ</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>ความเสี่ยงสูง</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>ความเสี่ยงต่ำ</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>ความเสี่ยงระดับปานกลาง</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>ต้องส่งคำขอใหม่</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>ถัดไป</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>ไม่มีคำขอ {0} ที่รอให้คุณตรวจสอบ</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>ไม่พบคำขอ {0} ที่ตรงกับตัวกรองเหล่านี้</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์ที่เปิดอยู่</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>ก่อนหน้า</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>พร้อมให้ฉันตรวจสอบ</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>ตรวจสอบ</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์ที่ปลอดภัย</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>ค้นหาคำขอ {0}</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>ดูคำขอ {0} ที่รอดำเนินการทั้งหมด</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>แสดง</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>ความเสี่ยงสูงมาก</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>ดูคำขอ {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>ยกเลิกแล้ว</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>เวิร์กโฟลว์ ผู้ขอ หรือรหัส {0}</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>หน้าคำขอ {0}</value>
+  </data>
+
+</root>

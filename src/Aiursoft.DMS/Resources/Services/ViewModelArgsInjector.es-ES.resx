@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>Configuración de la cuenta</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Añadir una máquina</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Añadir una clave pública SSH</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Claves públicas SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configurar DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Configuración</value>

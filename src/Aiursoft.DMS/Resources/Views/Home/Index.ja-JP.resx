@@ -741,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>哲学</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>中央のWebアプリケーションおよびAPI。マシンの追跡、{0}承認の管理、ワークフローの調整を行います。</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>ご自身のコンピュータで実行するコマンドラインツールです。Controllerに接続し、操作のリクエストとその結果の確認を行います。</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>決定的な、実戦で検証された .NET エンタープライズ基盤。認証から AI まで、難しい部分はすべて解決済みなので、あなたはそれらを心配する必要がありません。</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>ナビゲーションバーは、ユーザーの役割と権限に基づいて自動的に調整されます。</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>管理対象の各マシンにインストールするサービスです。Controller に接続し、そのステータスを報告し、承認されたワークフローをローカルで実行します。</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>このテンプレートは簡単なデプロイを実現するために構築されています。完全なDockerサポートを含んでいるため、アプリをコンテナ化してどこでも実行できます。また、IIS、Azure App Service、またはASP.NET Coreをサポートする任意のサーバーに直接デプロイすることも可能です。</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>DMSの3つの構成要素</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>これはテンプレートプロジェクトです</value>
@@ -782,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>GitHubで表示</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>マシンのインベントリ、Agentの接続状態、バージョン、および操作履歴を確認します。</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory が利用可能</value>

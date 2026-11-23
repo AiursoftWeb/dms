@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Về các quyền này</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Áp dụng</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Tự động phê duyệt</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cụm</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Vị trí thực thi</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Cao</value>
@@ -66,6 +72,12 @@
   <data name="Risk" xml:space="preserve">
     <value>Rủi ro</value>
   </data>
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Rủi ro (cao nhất trước)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Rủi ro (thấp nhất trước)</value>
+  </data>
   <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Quyền phân vai áp dụng cho mọi máy trong instance DMS này và mức độ rủi ro của từng quy trình làm việc. Phê duyệt tự động yêu cầu {0} quyền yêu cầu. Việc phê duyệt yêu cầu của chính bạn cũng yêu cầu quyền tự phê duyệt.</value>
   </data>
@@ -75,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>Hiển thị quy trình</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Sắp xếp theo</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Quy trình chuẩn</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Danh mục này liệt kê các quy trình làm việc chuẩn công khai có sẵn trên Controller. Khả năng sử dụng của Agent và các phiên bản được hỗ trợ sẽ được kiểm tra trong quá trình thực thi. Các thao tác điều khiển đặc biệt và các quy trình con bên trong không được liệt kê.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Không xác định</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Phiên bản</value>
@@ -89,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Quy trình làm việc</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Tên quy trình (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Tên quy trình (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Có</value>

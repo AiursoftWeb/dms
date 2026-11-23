@@ -18,7 +18,13 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All enabled machines at submission" xml:space="preserve">
+      <data name="APT package plan" xml:space="preserve">
+    <value>APT 套件計畫</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>會移除套件的計畫包含以下額外升級，本次不執行</value>
+  </data>
+  <data name="All enabled machines at submission" xml:space="preserve">
     <value>提交時所有已啟用的機器</value>
   </data>
   <data name="Approve" xml:space="preserve">
@@ -102,6 +108,9 @@
   <data name="Image scope" xml:space="preserve">
     <value>映像範圍</value>
   </data>
+  <data name="Install" xml:space="preserve">
+    <value>安裝</value>
+  </data>
   <data name="Low risk" xml:space="preserve">
     <value>低風險</value>
   </data>
@@ -117,6 +126,9 @@
   <data name="No machine targets" xml:space="preserve">
     <value>無目標機器</value>
   </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>沒有計畫變更的套件。</value>
+  </data>
   <data name="Open workflow" xml:space="preserve">
     <value>開放工作流程</value>
   </data>
@@ -128,6 +140,12 @@
   </data>
   <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
     <value>根據已儲存的輸入及目標機器重新建構。</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>移除</value>
+  </data>
+  <data name="Remove package and configuration" xml:space="preserve">
+    <value>移除套件及其設定</value>
   </data>
   <data name="Requested Agent package" xml:space="preserve">
     <value>請求的 Agent 套件</value>
@@ -162,6 +180,9 @@
   <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
     <value>原有 Agent 套件已重新可用。請檢視原有請求。</value>
   </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>此機器的預覽無法使用。</value>
+  </data>
   <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
     <value>提交者需要提交新的升級請求。</value>
   </data>
@@ -170,6 +191,9 @@
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>此工作流程不需要任何參數。</value>
+  </data>
+  <data name="Upgrade" xml:space="preserve">
+    <value>升級</value>
   </data>
   <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
     <value>在 {0} 上升級 DMS Agent</value>
@@ -220,28 +244,4 @@
     <value>{0} 申請者 ID</value>
   </data>
 
-  <data name="APT package plan" xml:space="preserve">
-    <value>APT 套件計畫</value>
-  </data>
-  <data name="The preview is unavailable for this machine." xml:space="preserve">
-    <value>此機器的預覽無法使用。</value>
-  </data>
-  <data name="No package changes planned." xml:space="preserve">
-    <value>沒有計畫變更的套件。</value>
-  </data>
-  <data name="Install" xml:space="preserve">
-    <value>安裝</value>
-  </data>
-  <data name="Upgrade" xml:space="preserve">
-    <value>升級</value>
-  </data>
-  <data name="Remove" xml:space="preserve">
-    <value>移除</value>
-  </data>
-  <data name="Remove package and configuration" xml:space="preserve">
-    <value>移除套件及其設定</value>
-  </data>
-  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
-    <value>會移除套件的計畫包含以下額外升級，本次不執行</value>
-  </data>
 </root>

@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Erişim Reddedildi</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Bir makine ekle</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Bir SSH genel anahtarı ekleyin</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH genel anahtarları</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI&apos;yi yapılandır</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Ayarlar</value>

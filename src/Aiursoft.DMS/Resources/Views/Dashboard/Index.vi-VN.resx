@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>Tài liệu Toàn diện</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>Kết nối DMS CLI với Controller này</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>Xác thực tính nhất quán</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>Bao gồm tài liệu phong phú và các ví dụ thực tế để giúp bạn bắt đầu nhanh chóng.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>Cài đặt CLI trên máy tính của bạn và đăng nhập bằng khóa API cá nhân.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Quản lý Tập tin Tích hợp</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Thiết kế đáp ứng</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>Xem xét các yêu cầu {0}</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>Xem xét các thao tác được yêu cầu {0}, tham số và các mục tiêu cố định.</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Xem xét các yêu cầu {0}</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Kiểm thử tích hợp mạnh mẽ</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>Tích hợp liền mạch với mọi nhà cung cấp OpenID Connect, kèm theo đồng bộ hóa vai trò tự động.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Cài đặt DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>Ghi đè cấu hình thông minh</value>

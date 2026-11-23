@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>การตั้งค่าบัญชี</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>เพิ่มเครื่อง</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>เพิ่มคีย์ SSH สาธารณะ</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>คีย์สาธารณะ SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>ตั้งค่า DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>การตั้งค่า</value>

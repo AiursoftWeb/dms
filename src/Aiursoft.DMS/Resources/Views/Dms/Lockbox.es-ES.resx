@@ -18,14 +18,53 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="APT package plan" xml:space="preserve">
+    <value>Plan de paquetes APT</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>Actualizaciones adicionales en un plan que eliminarían paquetes</value>
+  </data>
+  <data name="All enabled machines at submission" xml:space="preserve">
+    <value>Todas las máquinas habilitadas en el momento del envío</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Aprobar</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Aprobado</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Máquinas objetivo aprobadas</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Aprobado · Esperando ejecución</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID del aprobador</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Aprobación automática</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Pendiente de aprobación</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Volver a aprobaciones</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Comando</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Comando copiado</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copiar</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Creado</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Paquete de Agent disponible actualmente</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Decisión</value>
@@ -33,11 +72,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Motivo de la decisión</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Denegado</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Denegar</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Comando de Docker en esta solicitud de {0}</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Comando DMS equivalente</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Estado de ejecución</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>El estado de ejecución no está disponible.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Archivos de entrada congelados</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Riesgo alto</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Flujo de trabajo de aprobación histórico</value>
@@ -45,14 +102,128 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Imagen</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Alcance de la imagen</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Riesgo bajo</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Riesgo medio</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Requiere una nueva solicitud</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>No hay aprobadores elegibles en este momento.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>Sin objetivos de máquina</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>No se han previsto cambios de paquetes.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Flujo de trabajo abierto</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parámetros</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Reconstruido a partir de la entrada guardada y las máquinas objetivo.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>Paquete de agente solicitado</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Revise el paquete actual y envíe una nueva solicitud para las mismas máquinas.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Revise el contenido exacto enviado para su ejecución.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Riesgo</value>
   </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Flujo de trabajo seguro</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Enviar una nueva solicitud de actualización</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Máquinas destino</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>El paquete de Agent no está disponible temporalmente. Inténtelo de nuevo más tarde.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>El paquete Agent actual ha cambiado de nuevo. Revísalo antes de enviarlo.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>El paquete original de Agent está disponible de nuevo. Revise la solicitud original.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>La vista previa no está disponible para este equipo.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>El solicitante debe enviar una nueva solicitud de actualización.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>El paquete de Agent seleccionado ha sido reemplazado. La actualización no ha comenzado.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>Este flujo de trabajo no toma parámetros.</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>Actualizar el agente DMS en {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Riesgo muy alto</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>Ver la ejecución del flujo de trabajo</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Quién puede aprobar</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Retirado</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flujo de trabajo</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>Versión del flujo de trabajo</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Su rol actual no le permite solicitar esta actualización.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>bytes</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>ID de {0}</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} identificadores de solicitud y carga útil en bruto</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>Motivo de la solicitud de {0}</value>
+  </data>
+  <data name="{0} request time" xml:space="preserve">
+    <value>{0} fecha de solicitud</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Solicitante de {0}</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} ID del solicitante</value>
   </data>
 
 </root>

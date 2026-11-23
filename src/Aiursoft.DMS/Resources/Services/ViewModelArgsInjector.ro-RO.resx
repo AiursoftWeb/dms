@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Acces respins</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Adaugă o mașină</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Adăugați o cheie publică SSH</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Chei publice SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configurați DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Setări</value>

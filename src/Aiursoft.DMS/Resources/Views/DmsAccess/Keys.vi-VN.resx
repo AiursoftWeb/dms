@@ -39,6 +39,9 @@
   <data name="Revoke" xml:space="preserve">
     <value>Thu hồi</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Cài đặt DMS CLI</value>
+  </data>
   <data name="Valid days" xml:space="preserve">
     <value>Số ngày hợp lệ</value>
   </data>

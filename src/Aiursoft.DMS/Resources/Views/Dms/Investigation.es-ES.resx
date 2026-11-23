@@ -30,9 +30,6 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Cualquier modo de aprobación</value>
   </data>
-  <data name="{0} request" xml:space="preserve">
-    <value>Solicitud de {0}</value>
-  </data>
   <data name="Approver" xml:space="preserve">
     <value>Aprobador</value>
   </data>
@@ -62,9 +59,6 @@
   </data>
   <data name="Investigation" xml:space="preserve">
     <value>Investigación</value>
-  </data>
-  <data name="{0} ID" xml:space="preserve">
-    <value>ID de {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Máquina</value>
@@ -105,18 +99,6 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Registrado hasta (exclusivo, UTC)</value>
   </data>
-  <data name="Workflow in the {0} request" xml:space="preserve">
-    <value>Solicitado (solicitudes de {0})</value>
-  </data>
-  <data name="Workflow type in the {0} request" xml:space="preserve">
-    <value>Tipo de flujo de trabajo solicitado (solicitudes de {0})</value>
-  </data>
-  <data name="{0} requester" xml:space="preserve">
-    <value>Solicitante (solicitudes de {0})</value>
-  </data>
-  <data name="{0} requester ID" xml:space="preserve">
-    <value>ID del solicitante (solicitudes de {0})</value>
-  </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>ID del workflow raíz</value>
   </data>
@@ -141,11 +123,29 @@
   <data name="Workflow ID" xml:space="preserve">
     <value>ID de flujo de trabajo</value>
   </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Solicitado (solicitudes de {0})</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Tipo de flujo de trabajo solicitado (solicitudes de {0})</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Sí</value>
   </data>
   <data name="You do not have access to any clusters." xml:space="preserve">
     <value>No tiene acceso a ningún clúster.</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>ID de {0}</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>Solicitud de {0}</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Solicitante (solicitudes de {0})</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID del solicitante (solicitudes de {0})</value>
   </data>
 
 </root>
