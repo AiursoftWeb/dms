@@ -251,6 +251,7 @@ public class OperationsApprovalTests : TestBase
         await store.AppendUploadAsync(artifact.Id, 0, new MemoryStream(bytes), CancellationToken.None);
         await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
         var cases = Cases(artifact).ToArray();
+        Assert.AreEqual("2", OperationsWorkflows.FilesystemCat.Version);
         Assert.HasCount(98, cases);
         Assert.AreEqual(98, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();

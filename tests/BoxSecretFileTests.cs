@@ -22,11 +22,16 @@ public sealed class BoxSecretFileTests
         var mode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
         File.SetUnixFileMode(fixture.Env, mode);
         var file = new BoxSecretFile(fixture.Directory.FullName, fixture.Transport);
-        Assert.AreEqual(3, file.List().Keys.Count);
+        CollectionAssert.AreEqual(new[]
+        {
+            ("CLOUDFLARE_API_TOKEN", true), ("EMPTY", false), ("PG", true)
+        }, file.List().Keys.Select(key => (key.Name, key.Configured)).ToArray());
         Assert.IsFalse(file.Summary("EMPTY").Configured);
         Assert.IsFalse(file.Summary("MISSING").Configured);
         var summary = file.Summary("CLOUDFLARE_API_TOKEN");
+        Assert.AreEqual("CLOUDFLARE_API_TOKEN", summary.Name);
         Assert.IsTrue(summary.Configured);
+        Assert.AreEqual("0123456789abcdef", summary.Fingerprint);
         Assert.IsFalse(JsonSerializer.Serialize(summary).Contains("synthetic-secret", StringComparison.Ordinal));
         var id = Guid.NewGuid();
         fixture.Transport.Value = "new-$value=& with spaces";

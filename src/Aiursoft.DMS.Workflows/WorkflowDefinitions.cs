@@ -37,7 +37,7 @@ public sealed partial class MachineWorkflowRegistry
         Register(MachineWorkflows.BoxListSecret, (input, agent) => new BoxSecretWorkflow<EmptyInput, BoxSecretsResult>(
             MachineWorkflows.BoxListSecret, input, agent.BoxSecrets, (file, _, _) => Task.FromResult(file.List())));
         Register(MachineWorkflows.BoxGetSecretSummary, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretSummary>(
-            MachineWorkflows.BoxGetSecretSummary, input, agent.BoxSecrets, (file, id, _) => Task.FromResult(file.Summary(input.Name))));
+            MachineWorkflows.BoxGetSecretSummary, input, agent.BoxSecrets, (file, _, _) => Task.FromResult(file.Summary(input.Name))));
         Register(MachineWorkflows.BoxSetSecret, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretResult>(
             MachineWorkflows.BoxSetSecret, input, agent.BoxSecrets, (file, id, token) => file.SetAsync(input.Name, id, token)));
         Register(MachineWorkflows.BoxGetSecretRaw, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretResult>(
