@@ -10,7 +10,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     OperationHost? Operations = null,
     Func<Guid, CancellationToken, Task<SshLeaseAuthorization>>? AuthorizeSshLease = null,
     Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null,
-    Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null);
+    Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null,
+    AptTransactionHook? AptTransactionHook = null);
 
 public sealed partial class MachineWorkflowRegistry
 {

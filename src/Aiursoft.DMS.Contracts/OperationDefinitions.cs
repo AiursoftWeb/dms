@@ -427,6 +427,25 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<PackageUpgradeInput, OperationResult> AptUpgrade =
         new("machine.apt.upgrade", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptUpgrade)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> AptUpdate =
+        new("machine.apt.update", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptUpdate)), "1", PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.Low)]
+    public static readonly MachineWorkflowDefinition<AptPlanInput, AptPlanResult> AptPlan =
+        new("machine.apt.plan", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptPlan)),
+            "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.High)]
+    public static readonly MachineWorkflowDefinition<AptApplyInput, OperationResult> AptUpgradeAll =
+        new("machine.apt.upgrade-all", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptUpgradeAll)),
+            "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.High)]
+    public static readonly MachineWorkflowDefinition<AptApplyInput, OperationResult> AptAutoremove =
+        new("machine.apt.autoremove", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptAutoremove)),
+            "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+
     [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<RebootInput, OperationResult> SystemReboot =
         new("machine.system.reboot", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemReboot)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
