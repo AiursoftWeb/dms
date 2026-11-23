@@ -1,0 +1,7 @@
+@using Aiursoft.DMS.Models.DmsViewModels
+@model IReadOnlyList<DmsMachineSshRow>
+
+@foreach (var row in Model)
+{
+    <partial name="_DmsMachineSsh" model="row" />
+}

@@ -359,3 +359,31 @@
     color: #fed7aa;
     background-color: #431407;
 }
+
+.dms-machine-ssh {
+    margin-top: .55rem;
+}
+
+.dms-ssh-line:not([hidden]),
+.dms-ssh-details {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35rem .75rem;
+}
+
+.dms-ssh-line .badge {
+    border-radius: var(--bs-border-radius-pill);
+    font-size: .75rem;
+    padding: .35em .6em;
+}
+
+.dms-ssh-details {
+    color: var(--bs-secondary-color);
+    font-size: .875rem;
+    overflow-wrap: anywhere;
+}
+
+.dms-ssh-countdown {
+    font-variant-numeric: tabular-nums;
+}

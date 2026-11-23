@@ -16,7 +16,7 @@ public static partial class DmsCommandApp
         var depth = new Option<int>("--depth")
             { DefaultValueFactory = _ => 1, Description = "Maximum number of directory levels to list." };
         return StandardCommand("ls",
-            "List files and directories under a path. After approval, read the listing with workflow result.",
+            "Request a directory listing on the selected machines. The receipt shows how to follow approval and view the listing.",
             OperationsWorkflows.FilesystemLs,
             p => new ListPathInput(p.GetValue(path)!, p.GetValue(limit), p.GetValue(depth)),
             path,

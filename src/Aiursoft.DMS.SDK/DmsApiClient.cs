@@ -24,6 +24,10 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
     public Task<DmsResponse> ListLockboxesAsync(int page = 0, DecisionState? decision = null) => http.Get<DmsResponse>(Endpoint("lockboxes", new { page, decision }), headers: Headers);
     public Task<DmsResponse> GetLockboxAsync(LockboxId id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}"), headers: Headers);
     public Task<DmsResponse> LockboxStatusAsync(LockboxId id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}/status"), headers: Headers);
+    public Task<DmsResponse> LockboxStatusAsync(LockboxId id, bool includeDefinition) =>
+        includeDefinition
+            ? http.Get<DmsResponse>(Endpoint($"lockboxes/{id}/status", new { includeDefinition }), headers: Headers)
+            : LockboxStatusAsync(id);
     public Task<DmsResponse> WaitForOpenResultAsync(LockboxId id) =>
         http.Get<DmsResponse>(Endpoint($"lockboxes/{id}/result"), autoRetry: false, headers: Headers);
     public Task<DmsResponse> WaitForClickHouseResultAsync(LockboxId id) =>

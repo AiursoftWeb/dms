@@ -46,6 +46,19 @@ public class DmsCliHelpTests
     }
 
     [TestMethod]
+    [DataRow("", "files uploaded to DMS or exported from a machine to DMS")]
+    [DataRow("artifact ls", "dms artifact download --id <ArtifactId> --file ./report.tar")]
+    [DataRow("machine filesystem ls", "The receipt shows how to follow approval")]
+    [DataRow("workflow result", "View a directory listing")]
+    public async Task HelpLetsUsersFindDirectoryAndArtifactCommands(string path, string guidance)
+    {
+        var args = path.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var result = await DmsCommandApp.Create().TestRunAsync([.. args, "--help"]);
+        Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+        StringAssert.Contains(result.StdOut, guidance);
+    }
+
+    [TestMethod]
     public void EmptyInventoryCsvRetainsColumnHeaders()
     {
         using var output = new StringWriter();

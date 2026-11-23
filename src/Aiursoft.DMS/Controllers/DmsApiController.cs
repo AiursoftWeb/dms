@@ -93,7 +93,8 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
 
     [HttpGet("lockboxes/{id:guid}/status")]
     [HttpGet("lockboxes/lb/{id:guid}/status")]
-    public Task<IActionResult> LockboxStatus(Guid id) => Handle(async () => await workflows.GetLockboxStatusAsync(Actor, id));
+    public Task<IActionResult> LockboxStatus(Guid id, bool includeDefinition = false) =>
+        Handle(async () => await workflows.GetLockboxStatusAsync(Actor, id, includeDefinition));
 
     [HttpGet("lockboxes/{id:guid}/result")]
     [HttpGet("lockboxes/lb/{id:guid}/result")]

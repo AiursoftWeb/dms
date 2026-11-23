@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
 }
 
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section scripts {
+    <script src="~/scripts/machine-ssh-states.js" asp-append-version="true" defer></script>
+}
+
 <div class="dms-workspace mx-auto">
     <header class="dms-page-heading">
         <h1>@Localizer["Machines"]</h1>
@@ -50,7 +55,7 @@
     }
     else
     {
-        <ul class="card dms-items list-unstyled">
+        <ul class="card dms-items list-unstyled" data-machine-ssh-list="@Url.Action("MachineSshStates")">
             @foreach (var machine in Model.Machines)
             {
                 <li class="dms-item dms-machine-item d-block">
@@ -72,6 +77,7 @@
                                     <span><i data-lucide="clock" aria-hidden="true"></i> @Localizer["Last seen"] <time datetime="@timestamp" data-utc-time="@timestamp">@lastSeen.ToString("u", CultureInfo.InvariantCulture)</time></span>
                                 }
                             </div>
+                            <partial name="_DmsMachineSsh" model="@Model.SshStates[machine.Id]" />
                         </div>
                     </div>
                 </li>
