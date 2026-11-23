@@ -21,47 +21,8 @@
       <data name="Agent version" xml:space="preserve">
     <value>Agent 版本</value>
   </data>
-  <data name="Cluster" xml:space="preserve">
-    <value>集群</value>
-  </data>
-  <data name="Last seen" xml:space="preserve">
-    <value>最近心跳</value>
-  </data>
-  <data name="Machine" xml:space="preserve">
-    <value>机器</value>
-  </data>
-  <data name="Machines" xml:space="preserve">
-    <value>机器</value>
-  </data>
-  <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
-    <value>未检测到任何机器。请配置集群访问权限，然后使用 CLI 请求机器注册。</value>
-  </data>
-  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
-    <value>暂无机器加入。请使用加入密钥请求注册 Agent。</value>
-  </data>
-  <data name="Status" xml:space="preserve">
-    <value>状态</value>
-  </data>
-  <data name="Machine name" xml:space="preserve">
-    <value>机器名称</value>
-  </data>
-  <data name="Connection status" xml:space="preserve">
-    <value>连接状态</value>
-  </data>
   <data name="All states" xml:space="preserve">
     <value>所有状态</value>
-  </data>
-  <data name="Online" xml:space="preserve">
-    <value>在线</value>
-  </data>
-  <data name="Offline" xml:space="preserve">
-    <value>离线</value>
-  </data>
-  <data name="Never connected" xml:space="preserve">
-    <value>从未连接</value>
-  </data>
-  <data name="Disabled" xml:space="preserve">
-    <value>已禁用</value>
   </data>
   <data name="Apply filters" xml:space="preserve">
     <value>应用筛选</value>
@@ -69,17 +30,56 @@
   <data name="Clear filters" xml:space="preserve">
     <value>清除筛选</value>
   </data>
-  <data name="No machines match these filters." xml:space="preserve">
-    <value>没有机器符合这些筛选条件。</value>
+  <data name="Cluster" xml:space="preserve">
+    <value>集群</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>连接状态</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>已禁用</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>最近心跳</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>机器</value>
+  </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>机器名称</value>
   </data>
   <data name="Machine pages" xml:space="preserve">
     <value>机器页面</value>
   </data>
-  <data name="Previous" xml:space="preserve">
-    <value>上一页</value>
+  <data name="Machines" xml:space="preserve">
+    <value>机器</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>从未连接</value>
   </data>
   <data name="Next" xml:space="preserve">
     <value>下一页</value>
+  </data>
+  <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
+    <value>未检测到任何机器。请配置集群访问权限，然后使用 CLI 请求机器注册。</value>
+  </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>暂无机器加入。请使用加入密钥请求注册 Agent。</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>没有机器符合这些筛选条件。</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>离线</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>在线</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>上一页</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>状态</value>
   </data>
 
 </root>

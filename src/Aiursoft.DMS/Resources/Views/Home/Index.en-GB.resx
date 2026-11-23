@@ -489,9 +489,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lint Check</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} records who requested an operation, its targets, and the approval decision.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT License</value>
   </data>
@@ -845,6 +842,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API available</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} records who requested an operation, its targets, and the approval decision.</value>
   </data>
 
 </root>

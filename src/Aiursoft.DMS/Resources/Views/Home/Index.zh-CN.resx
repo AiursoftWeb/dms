@@ -489,9 +489,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lint 检查</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} 记录操作的请求人、目标和审批结果。</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT 许可证</value>
   </data>
@@ -845,6 +842,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>提供 java.time API</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} 记录操作的请求人、目标和审批结果。</value>
   </data>
 
 </root>

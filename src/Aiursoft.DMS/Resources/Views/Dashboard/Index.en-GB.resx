@@ -147,11 +147,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Responsive Design</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>Review {0} requests</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>Review the requested operation, parameters and fixed targets. ({0} requests)</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Review {0} requests</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Robust Integration Testing</value>
