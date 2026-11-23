@@ -175,9 +175,6 @@
   <data name="Needs a new request" xml:space="preserve">
     <value>需重新申请</value>
   </data>
-  <data name="Next step" xml:space="preserve">
-    <value>下一步</value>
-  </data>
   <data name="Requested Agent package" xml:space="preserve">
     <value>申请时选定的 Agent 安装包</value>
   </data>
