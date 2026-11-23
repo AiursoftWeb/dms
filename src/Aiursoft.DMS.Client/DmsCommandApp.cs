@@ -13,7 +13,7 @@ public static partial class DmsCommandApp
 {
     public static NestedCommandApp Create() => new DmsNavigationApp()
         .WithFeature(new LoginCommand())
-        .WithFeature(new Group("artifact", "List, upload, inspect, and download files used by workflows.",
+        .WithFeature(new Group("artifact", "Manage files uploaded to DMS or exported from a machine to DMS.",
         [
             ArtifactListCommand(),
             new ArtifactCommand("upload"),
@@ -267,7 +267,7 @@ public static partial class DmsCommandApp
             new ActionCommand("callstack",
                 "Show a workflow and its descendants as a tree.",
                 "callstack", positionalOnly: true),
-            new ActionCommand("result", "List directory entries by machine for a filesystem ls workflow.",
+            new ActionCommand("result", "View a directory listing from a machine filesystem ls request.",
                 "filesystem-result", positionalOnly: true),
             new ActionCommand("trace", "Read archived trace entries for a workflow and its descendants.", "trace", positionalOnly: true)
         ]))
@@ -292,7 +292,11 @@ public static partial class DmsCommandApp
             { DefaultValueFactory = _ => new ArtifactListInput().Limit, Description = "Number of artifacts to return, from 1 to 20." };
         var offset = new Option<int>("--offset")
             { Description = "Skip this many artifacts, ordered newest first." };
-        return StandardCommand("ls", "List your available artifacts. Requires Run open workflows.",
+        return StandardCommand("ls", """
+            List files you uploaded to DMS or exported from a machine. Requires Run open workflows.
+            Download a file using its listed ID.
+              dms artifact download --id <ArtifactId> --file ./report.tar
+            """,
             ClusterWorkflows.ListArtifacts, context => new ArtifactListInput(context.GetValue(offset), context.GetValue(limit)), limit, offset);
     }
 
@@ -749,7 +753,7 @@ public static partial class DmsCommandApp
                     "definitions" => await client.ListDefinitionsAsync(),
                     "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page),
                         context.GetValue(_decision)),
-                    "lockbox-status" => await client.LockboxStatusAsync(lockboxId),
+                    "lockbox-status" => await client.LockboxStatusAsync(lockboxId, includeDefinition: SelectedFormat(context) == OutputFormat.Table),
                     "get" => await client.GetLockboxAsync(lockboxId),
                     "withdraw" => await client.WithdrawAsync(lockboxId),
                     "approve" or "deny" => await client.DecideAsync(lockboxId,
@@ -777,7 +781,38 @@ public static partial class DmsCommandApp
                 DmsOutputWriter.WriteFilesystemResult(context.InvocationConfiguration.Output, context.InvocationConfiguration.Error,
                     ((JObject)response.Data!).ToObject<FilesystemListResult>()!, format, color, width);
             else
+            {
                 base.WriteResponse(context, response, format, color, width);
+                if (format == OutputFormat.Table && response.Data is JObject data)
+                    WriteDirectoryNextStep(context.InvocationConfiguration.Output, data);
+            }
+        }
+
+        private void WriteDirectoryNextStep(TextWriter output, JObject data)
+        {
+            Guid? workflowId;
+            if (action == OperationsWorkflows.FilesystemLs.Name && data.ToObject<LockboxReceipt>() is { } receipt)
+            {
+                workflowId = receipt.WorkflowId;
+                if (workflowId == null)
+                {
+                    output.WriteLine();
+                    output.WriteLine("Check approval status with this command.");
+                    output.WriteLine($"  dms lockbox status {receipt.LockboxId}");
+                    return;
+                }
+            }
+            else if (action is "lockbox-status" or "approve" &&
+                     data["Definition"]?.Value<string>() == OperationsWorkflows.FilesystemLs.Name &&
+                     data["Decision"]?.Value<int>() == (int)DecisionState.Approved &&
+                     Guid.TryParse(data["WorkflowId"]?.ToString(), out var approvedWorkflowId))
+                workflowId = approvedWorkflowId;
+            else
+                return;
+
+            output.WriteLine();
+            output.WriteLine("View the directory listing after execution. Requires Read DMS operations.");
+            output.WriteLine($"  dms workflow result {workflowId}");
         }
 
         private async Task<DmsResponse> ReadOpenResultAsync(DmsApiClient client, DmsResponse response, Guid requestId,
