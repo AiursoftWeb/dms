@@ -317,3 +317,22 @@
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+.dms-definitions-table > :not(caption) > * > * {
+    padding: .625rem .875rem;
+}
+
+.dms-definitions-table th:first-child {
+    inline-size: 32%;
+    min-inline-size: min(43vw, 13rem);
+}
+
+.dms-risk-high {
+    color: #7c2d12;
+    background-color: #ffedd5;
+}
+
+[data-bs-theme="dark"] .dms-risk-high {
+    color: #fed7aa;
+    background-color: #431407;
+}

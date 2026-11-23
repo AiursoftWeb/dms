@@ -1,49 +1,110 @@
-@using Aiursoft.DMS.Services.Dms
-@model Aiursoft.DMS.Models.DmsViewModels.DmsViewModel
 @using Aiursoft.DMS.Contracts
-<h1>@Localizer["Standard workflows"]</h1>
-@if (Model.Catalog != null)
-{
-    <p>@LockboxText.Format(@Localizer["May approve own {0} requests"].Value): <strong>@(Model.Catalog.CanApproveOwnRequests ? @Localizer["Yes"] : @Localizer["No"])</strong></p>
-    <div class="card"><div class="card-body table-responsive">
-        <table class="table align-middle">
-            <thead><tr>
-                <th>@Localizer["Workflow"]</th><th>@Localizer["Location"]</th><th>@Localizer["Risk"]</th>
-                <th>@Localizer["Requires machine targets"]</th><th>@Localizer["May request"]</th>
-                <th>@Localizer["Automatically approve"]</th><th>@Localizer["May approve"]</th>
-            </tr></thead>
-            <tbody>
-            @foreach (var item in Model.Catalog.Definitions)
-            {
-                <tr>
-                    <td><a asp-action="Operations" asp-route-definition="@item.Name">@item.Name</a><br /><small>@Localizer["Version"] @item.Version</small></td>
-                    <td>@switch (item.Location)
-                    {
-                        case WorkflowLocation.Cluster: @Localizer["Cluster"] break;
-                        case WorkflowLocation.Machine: @Localizer["Machine"] break;
-                    }</td>
-                    <td>@switch (item.Risk)
-                    {
-                        case RiskLevel.Open: @Localizer["Open"] break;
-                        case RiskLevel.Safe: @Localizer["Safe"] break;
-                        case RiskLevel.Low: @Localizer["Low"] break;
-                        case RiskLevel.Medium: @Localizer["Medium"] break;
-                        case RiskLevel.High: @Localizer["High"] break;
-                        case RiskLevel.VeryHigh: @Localizer["Very high"] break;
-                    }</td>
-                    <td>@(item.RequiresTargets ? @Localizer["Yes"] : @Localizer["No"])</td>
-                    <td>@(item.CanRequest ? @Localizer["Yes"] : @Localizer["No"])</td>
-                    <td>@(item.AutoApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
-                    <td>@(item.CanApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
-                </tr>
-            }
-            </tbody>
-        </table>
-        @if (Model.Catalog.Definitions.Count == 0) { <p>@Localizer["No public standard workflows are registered."]</p> }
-    </div></div>
+@using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.DMS.Services.Dms
+@model DmsDefinitionsViewModel
+
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-workspace.css" asp-append-version="true" />
+}
+
+<div class="dms-workspace mx-auto">
+    <header class="dms-page-heading">
+        <div>
+            <h1 id="definition-catalog-title">@Localizer["Standard workflows"]</h1>
+            <p class="mb-0 text-body-secondary">
+                @LockboxText.Format(@Localizer["May approve own {0} requests"].Value):
+                <strong>@(Model.Catalog.CanApproveOwnRequests ? @Localizer["Yes"] : @Localizer["No"])</strong>
+            </p>
+        </div>
+        @if (Model.Catalog.Definitions.Count > 0)
+        {
+            <form class="d-flex flex-wrap align-items-end gap-2" method="get" asp-action="Definitions">
+                <div>
+                    <label for="sort" class="form-label mb-1">@Localizer["Sort by"]</label>
+                    <select id="sort" name="sort" class="form-select">
+                        <option value="@WorkflowDefinitionSort.Name" selected="@(Model.Sort == WorkflowDefinitionSort.Name)">@Localizer["Workflow name (A–Z)"]</option>
+                        <option value="@WorkflowDefinitionSort.NameDescending" selected="@(Model.Sort == WorkflowDefinitionSort.NameDescending)">@Localizer["Workflow name (Z–A)"]</option>
+                        <option value="@WorkflowDefinitionSort.RiskDescending" selected="@(Model.Sort == WorkflowDefinitionSort.RiskDescending)">@Localizer["Risk (highest first)"]</option>
+                        <option value="@WorkflowDefinitionSort.RiskAscending" selected="@(Model.Sort == WorkflowDefinitionSort.RiskAscending)">@Localizer["Risk (lowest first)"]</option>
+                        <option value="@WorkflowDefinitionSort.Location" selected="@(Model.Sort == WorkflowDefinitionSort.Location)">@Localizer["Execution location"]</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">@Localizer["Apply"]</button>
+            </form>
+        }
+    </header>
+    @if (Model.Catalog.Definitions.Count == 0)
+    {
+        <div class="card dms-empty">
+            <p>@Localizer["No public standard workflows are registered."]</p>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="table-responsive" tabindex="0" role="region" aria-labelledby="definition-catalog-title">
+                <table class="table table-hover align-middle mb-0 dms-definitions-table">
+                    <thead>
+                        <tr class="table-active">
+                            <th scope="col">@Localizer["Workflow"]</th>
+                            <th scope="col">@Localizer["Risk"]</th>
+                            <th scope="col">@Localizer["Location"]</th>
+                            <th scope="col">@Localizer["Requires machine targets"]</th>
+                            <th scope="col">@Localizer["May request"]</th>
+                            <th scope="col">@Localizer["Automatically approve"]</th>
+                            <th scope="col">@Localizer["May approve"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Catalog.Definitions)
+                        {
+                            var riskLabel = item.Risk switch
+                            {
+                                RiskLevel.Open => @Localizer["Open"],
+                                RiskLevel.Safe => @Localizer["Safe"],
+                                RiskLevel.Low => @Localizer["Low"],
+                                RiskLevel.Medium => @Localizer["Medium"],
+                                RiskLevel.High => @Localizer["High"],
+                                RiskLevel.VeryHigh => @Localizer["Very high"],
+                                _ => @Localizer["Unknown"]
+                            };
+                            var riskStyle = item.Risk switch
+                            {
+                                RiskLevel.Safe => "bg-success-subtle text-success-emphasis",
+                                RiskLevel.Low => "bg-info-subtle text-info-emphasis",
+                                RiskLevel.Medium => "bg-warning-subtle text-warning-emphasis",
+                                RiskLevel.High => "dms-risk-high",
+                                RiskLevel.VeryHigh => "bg-danger-subtle text-danger-emphasis",
+                                _ => "bg-secondary-subtle text-secondary-emphasis"
+                            };
+                            <tr>
+                                <th scope="row" class="fw-normal">
+                                    <a class="fw-semibold" asp-action="Operations" asp-route-definition="@item.Name">@item.Name</a>
+                                    <small class="d-block text-body-secondary">@Localizer["Version"] @item.Version</small>
+                                </th>
+                                <td><span class="dms-badge text-nowrap @riskStyle">@riskLabel</span></td>
+                                <td>
+                                    @switch (item.Location)
+                                    {
+                                        case WorkflowLocation.Cluster: @Localizer["Cluster"] break;
+                                        case WorkflowLocation.Machine: @Localizer["Machine"] break;
+                                    }
+                                </td>
+                                <td>@(item.RequiresTargets ? @Localizer["Yes"] : @Localizer["No"])</td>
+                                <td>@(item.CanRequest ? @Localizer["Yes"] : @Localizer["No"])</td>
+                                <td>@(item.AutoApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
+                                <td>@(item.CanApprove ? @Localizer["Yes"] : @Localizer["No"])</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
     <details class="mt-3">
         <summary>@Localizer["About these permissions"]</summary>
         <p>@LockboxText.Format(@Localizer["Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission."].Value)</p>
         <p>@Localizer["This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed."]</p>
     </details>
-}
+</div>
