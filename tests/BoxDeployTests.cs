@@ -178,6 +178,8 @@ public class BoxDeployTests
     [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforchina.git")]
     [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforhl.git")]
     [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforarchive.git")]
+    [DataRow("https://gitlab.aiursoft.com/aiursoft/BoxForMoog.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/BoxForMoog.git")]
     public async Task OfficialHttpsScpAndPublishedSshOriginsAreInspectedAndDeployable(string origin)
     {
         using var box = new Box();

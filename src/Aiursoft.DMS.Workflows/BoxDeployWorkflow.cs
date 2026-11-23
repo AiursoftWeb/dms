@@ -8,9 +8,9 @@ namespace Aiursoft.DMS.Workflows;
 public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root = "/swarm-vol", string git = "/usr/bin/git", string gitConfigurationPath = BoxGitConfiguration.FilePath)
     : MachineWorkflow<BoxDeployInput, BoxDeployResult>(MachineWorkflows.BoxDeploy, input)
 {
-    // Keep credentials out of the query output. Only the five official Box origins are accepted.
+    // Keep credentials out of the query output. Only official Box origins are accepted.
     // GitLab advertises this SSH endpoint; retain the existing HTTPS and SCP forms.
-    internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive)(\.git)?$";
+    internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive|boxformoog)(\.git)?$";
 
     private const string Preflight = """
         set -euo pipefail
