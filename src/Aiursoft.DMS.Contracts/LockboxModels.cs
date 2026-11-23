@@ -64,4 +64,8 @@ public sealed record LockboxStatus(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
     public string? Definition { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+    public string? EquivalentCommand { get; init; }
 }

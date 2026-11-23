@@ -279,6 +279,114 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    [DataRow(false, "Test")]
+    [DataRow(true, "--help")]
+    [DataRow(false, "@lockbox-preview.rsp")]
+    public async Task HistoricalAgentStatusPreviewSubmitsTheSameFrozenOperation(bool allMachines, string reason)
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
+        using var scope = Server!.Services.CreateScope();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var original = await workflows.SubmitAsync(setup.User, MachineWorkflows.AgentStatus.Request(
+            new EmptyInput(), reason, allMachines ? [] : [setup.First], allMachines));
+
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        db.Machines.Add(new Machine { Name = "Machine enrolled later" });
+        await db.SaveChangesAsync();
+
+        await LoginAsAdmin();
+        var id = Uri.EscapeDataString(new LockboxId(original.Id).ToString());
+        var page = await Http.GetStringAsync($"/Dms/Lockbox?id={id}");
+        var preview = System.Text.RegularExpressions.Regex.Match(
+            page, @"<code data-command[^>]*><span>([^<]+)</span>([^<]*)</code>");
+        Assert.IsTrue(preview.Success);
+        StringAssert.Contains(page, "Equivalent DMS command");
+        StringAssert.Contains(preview.Groups[1].Value, "dms machine agent status");
+        Assert.DoesNotContain("--all-machines", preview.Value);
+
+        var command = WebUtility.HtmlDecode(preview.Groups[1].Value + preview.Groups[2].Value)
+            .ReplaceLineEndings("\n").Replace(" \\\n  ", " ");
+        var statusArgs = new[] { "lockbox", "status", new LockboxId(original.Id).ToString(),
+            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(statusArgs);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        Assert.Contains(command, table.StdOut.ReplaceLineEndings("\n").Split('\n'));
+
+        var json = await Client.DmsCommandApp.Create().TestRunAsync([.. statusArgs, "--output-format", "json"]);
+        Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
+        var summary = JObject.Parse(json.StdOut)["Data"]!.ToObject<LockboxStatus>()!;
+        Assert.AreEqual(command, summary.EquivalentCommand);
+        Assert.IsNull(summary.Definition);
+
+        using var requestWithDefinition = new HttpRequestMessage(HttpMethod.Get,
+            $"/api/v1/dms/lockboxes/{new LockboxId(original.Id)}/status?includeDefinition=true");
+        requestWithDefinition.Headers.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
+        using var statusWithDefinition = await Http.SendAsync(requestWithDefinition);
+        Assert.AreEqual(HttpStatusCode.OK, statusWithDefinition.StatusCode);
+        var extended = JObject.Parse(await statusWithDefinition.Content.ReadAsStringAsync())["Data"]!
+            .ToObject<LockboxStatus>()!;
+        Assert.AreEqual(MachineWorkflows.AgentStatus.Name, extended.Definition);
+        Assert.AreEqual(command, extended.EquivalentCommand);
+
+        var csv = await Client.DmsCommandApp.Create().TestRunAsync([.. statusArgs, "--output-format", "csv"]);
+        Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
+        StringAssert.Contains(csv.StdOut, "EquivalentCommand");
+        StringAssert.Contains(csv.StdOut, command);
+
+        // These cases use single-word reasons so the literal shell quoting can
+        // be removed before passing the resulting argument list to the CLI.
+        var arguments = command.Replace("'", "").Split(' ');
+        var result = await Client.DmsCommandApp.Create().TestRunAsync(
+            [.. arguments.Skip(1), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+        Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+
+        var replay = await db.Lockboxes.AsNoTracking().SingleAsync(
+            box => box.Id != original.Id && box.RequesterId == setup.User);
+        Assert.AreEqual(original.Definition, replay.Definition);
+        Assert.AreEqual(original.Version, replay.Version);
+        Assert.AreEqual(original.TargetMachines, replay.TargetMachines);
+        Assert.AreEqual(original.Reason, replay.Reason);
+        Assert.AreEqual(System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(original.Parameters)!.Input,
+            System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(replay.Parameters)!.Input);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task UnmappedWorkflowShowsParametersAndKeepsTheEndpointInAuditDetails(bool unknownVersion)
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Low), DmsPermissions.Request(RiskLevel.Safe));
+        using var scope = Server!.Services.CreateScope();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var request = unknownVersion
+            ? MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Check Agent", [setup.First])
+            : MachineWorkflows.ServiceStatus.Request(new ServiceInput("dms-example.service"), "Review service", [setup.First]);
+        var box = await workflows.SubmitAsync(setup.User, request);
+        if (unknownVersion)
+        {
+            box.Version = "99";
+            await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().SaveChangesAsync();
+        }
+
+        await LoginAsAdmin();
+        var id = Uri.EscapeDataString(new LockboxId(box.Id).ToString());
+        var page = await Http.GetStringAsync($"/Dms/Lockbox?id={id}");
+
+        Assert.DoesNotContain("data-command", page);
+        var audit = page.IndexOf("<details class=\"card lockbox-audit\">", StringComparison.Ordinal);
+        Assert.IsGreaterThan(0, audit);
+        Assert.DoesNotContain("POST /api/v1/dms/lockboxes", page[..audit]);
+        StringAssert.Contains(page[..audit], unknownVersion ? "This workflow takes no parameters." : "dms-example.service");
+        StringAssert.Contains(page[audit..], "POST /api/v1/dms/lockboxes");
+
+        var status = await Client.DmsCommandApp.Create().TestRunAsync(
+            ["lockbox", "status", new LockboxId(box.Id).ToString(), "--output-format", "json",
+                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+        Assert.AreEqual(0, status.ProgramReturn, status.StdErr);
+        Assert.IsNull(JObject.Parse(status.StdOut)["Data"]!["EquivalentCommand"]);
+    }
+
+    [TestMethod]
     public async Task RequesterCanFollowOwnWebExecutionWithoutGlobalReadPermission()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));
@@ -400,6 +508,10 @@ public class DmsRolePermissionTests : TestBase
         await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Safe), true);
         var automatic = await SubmitAsync();
         StringAssert.Contains(await Cli(setup.Key, "lockbox", "status", automatic.Id.ToString()), "System (automatic approval)");
+        var unsafeReason = await workflows.SubmitAsync(setup.User, MachineWorkflows.AgentStatus.Request(
+            new EmptyInput(), "Reason \u001b[2J", [setup.First]));
+        var unsafeStatus = await Cli(setup.Key, "lockbox", "status", unsafeReason.Id.ToString(), "--output-format", "json");
+        Assert.IsNull(JObject.Parse(unsafeStatus)["Data"]!["EquivalentCommand"]);
         StringAssert.Contains(await Cli(setup.Key, "lockbox", "get", "--id", id), "ClientRequestId");
         StringAssert.Contains(await Cli(setup.Key, "workflow", "status", approved.WorkflowId.Value.ToString()), "WorkflowId");
         var workflowId = approved.WorkflowId.Value.ToString();
