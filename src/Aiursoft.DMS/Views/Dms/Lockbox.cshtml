@@ -200,7 +200,58 @@
         @if (!needsResubmission)
         {
             <div class="lockbox-request">
-                @if (upgrade != null)
+                @if (Model.AptPlans is { } aptPlans)
+                {
+                    <section class="card lockbox-panel" aria-labelledby="lockbox-apt-plan-heading">
+                        <div class="card-body">
+                            <h2 id="lockbox-apt-plan-heading"><i data-lucide="package" aria-hidden="true"></i>@Localizer["APT package plan"]</h2>
+                            @foreach (var machine in snapshot.Targets)
+                            {
+                                <details class="mb-2" open="@(snapshot.Targets.Count == 1)">
+                                    <summary>@Model.MachineNames.GetValueOrDefault(machine, machine.ToString())</summary>
+                                    @if (!aptPlans.TryGetValue(machine, out var plan))
+                                    {
+                                        <p class="text-danger">@Localizer["The preview is unavailable for this machine."]</p>
+                                    }
+                                    else if (plan.Changes.Length == 0)
+                                    {
+                                        <p class="text-body-secondary mb-1">@Localizer["No package changes planned."]</p>
+                                    }
+                                    else
+                                    {
+                                        <ul class="mb-2">
+                                            @foreach (var change in plan.Changes)
+                                            {
+                                                <li>
+                                                    @(change.Action switch
+                                                    {
+                                                        AptPackageAction.Install => Localizer["Install"],
+                                                        AptPackageAction.Upgrade => Localizer["Upgrade"],
+                                                        AptPackageAction.Remove => Localizer["Remove"],
+                                                        _ => Localizer["Remove package and configuration"]
+                                                    })
+                                                    <code class="text-break">@change.Package</code>
+                                                    <span class="text-break">@(change.FromVersion ?? "—") → @(change.ToVersion ?? "—")</span>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    @if (plan is { AdditionalUpgradesRequiringReview.Length: > 0 })
+                                    {
+                                        <p class="text-body-secondary mb-1">@Localizer["Additional upgrades in a plan that would remove packages"]</p>
+                                        <ul class="mb-2">
+                                            @foreach (var change in plan.AdditionalUpgradesRequiringReview)
+                                            {
+                                                <li><code class="text-break">@change.Package</code> <span class="text-break">@change.FromVersion → @change.ToVersion</span></li>
+                                            }
+                                        </ul>
+                                    }
+                                </details>
+                            }
+                        </div>
+                    </section>
+                }
+                else if (upgrade != null)
                 {
                     <section class="card lockbox-panel" aria-labelledby="lockbox-agent-package-heading">
                         <div class="card-body">

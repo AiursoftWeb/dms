@@ -11,6 +11,10 @@
         var name when name == OperationsWorkflows.SshOpen.Name => @Localizer["Open an SSH lease"].Value,
         var name when name == OperationsWorkflows.SshDisable.Name => @Localizer["Disable SSH access"].Value,
         var name when name == OperationsWorkflows.SystemExecuteScript.Name => @Localizer["Run an uploaded script"].Value,
+        var name when name == OperationsWorkflows.AptUpdate.Name => @Localizer["Refresh APT package indexes"].Value,
+        var name when name == OperationsWorkflows.AptPlan.Name => @Localizer["Preview APT package changes"].Value,
+        var name when name == OperationsWorkflows.AptUpgradeAll.Name => @Localizer["Upgrade available APT packages"].Value,
+        var name when name == OperationsWorkflows.AptAutoremove.Name => @Localizer["Remove unused APT packages"].Value,
         _ => Model
     };
 }

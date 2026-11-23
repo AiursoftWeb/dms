@@ -346,24 +346,48 @@ public sealed record JournalInput(
 
 public sealed record PackageInput(string[] Packages) : IOperationInput
 {
-    public void Validate()
+    public void Validate() => ValidatePackages(Packages, requireVersion: false);
+
+    internal static void ValidatePackages(string[] packages, bool requireVersion)
     {
-        ArgumentNullException.ThrowIfNull(Packages);
-        if (Packages.Length is < 1 or > 100 || Packages.Any(p =>
+        ArgumentNullException.ThrowIfNull(packages);
+        if (packages.Length is < 1 or > 100 || packages.Any(p =>
                 string.IsNullOrEmpty(p) || p.Length > 200 || !Regex.IsMatch(p,
                     @"\A[a-z0-9][a-z0-9+.-]*(?::[a-z0-9-]+)?(?:=[a-zA-Z0-9.+:~_-]+)?\z",
-                    RegexOptions.CultureInvariant)))
-            throw new ArgumentException("Specify 1 to 100 exact package names, optionally with =version.");
+                    RegexOptions.CultureInvariant) || (requireVersion && !p.Contains('='))))
+            throw new ArgumentException(requireVersion
+                ? "Specify 1 to 100 packages as name=version. Use apt upgrade-all to upgrade all packages."
+                : "Specify 1 to 100 exact package names, optionally with =version.");
     }
 }
 
 public sealed record PackageUpgradeInput(string[] Packages) : IOperationInput
 {
+    public void Validate() => PackageInput.ValidatePackages(Packages, requireVersion: true);
+}
+
+public enum AptMaintenance { UpgradeAll, Autoremove }
+
+public enum AptPackageAction { Install, Upgrade, Remove, Purge }
+
+public sealed record AptPackageChange(AptPackageAction Action, string Package, string? FromVersion, string? ToVersion);
+
+public sealed record AptPlanInput(AptMaintenance Operation, bool Purge = false)
+{
     public void Validate()
     {
-        new PackageInput(Packages).Validate();
-        if (Packages.Any(p => !p.Contains('=')))
-            throw new ArgumentException("Freeze each target package as name=version in the approval.");
+        if (!Enum.IsDefined(Operation) || (Purge && Operation != AptMaintenance.Autoremove))
+            throw new ArgumentException("Purge is only available for APT autoremove.");
+    }
+}
+
+public sealed record AptPlanResult(AptPackageChange[] Changes, AptPackageChange[] AdditionalUpgradesRequiringReview);
+
+public sealed record AptApplyInput(Guid PlanId, bool Purge = false, AptPackageChange[]? Changes = null)
+{
+    public void Validate()
+    {
+        if (PlanId == Guid.Empty) throw new ArgumentException("Provide the workflow ID of a completed APT preview.");
     }
 }
 

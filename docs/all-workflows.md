@@ -2,7 +2,7 @@
 
 [Discover workflows and permissions](workflow-discovery.md) · [CLI and Agent setup](cli-and-agent.md) · [Operation options](operations.md)
 
-Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 119 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
+Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 123 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
 
 Enter a CLI command with `--help` to see its options. Workflow requests generally need a reason and, where applicable, a machine target. The `Open` inventory workflow uses the **Run open workflows** permission. For other risk levels, request, automatic approval, and manual approval are separate role permissions. Self-approval requires its own permission. Internal and scheduled entries show their registered risk and run through their parent or schedule. See [Role permissions](permissions.md).
 
@@ -22,6 +22,10 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Inspect APT packages | `machine.apt.inspect` | `dms machine apt inspect` (Low) | — | Show installed packages and available APT updates. |
 | Install APT packages | `machine.apt.install` | `dms machine apt install` (High) | — | Install the requested APT packages. |
 | Upgrade APT packages | `machine.apt.upgrade` | `dms machine apt upgrade` (High) | — | Upgrade the specified installed APT packages. |
+| Refresh APT indexes | `machine.apt.update` | `dms machine apt update` (Medium) | — | Refresh each target's package indexes. Any source error fails that target. |
+| Preview APT maintenance | `machine.apt.plan` | `dms machine apt upgrade-all --dry-run` or `dms machine apt autoremove --dry-run` (Low) | — | Record each target's package actions using its existing indexes. |
+| Upgrade available APT packages | `machine.apt.upgrade-all` | `dms machine apt upgrade-all --plan` (High) | — | Upgrade the reviewed per-machine packages and any approved new dependencies without removals. |
+| Remove unused APT packages | `machine.apt.autoremove` | `dms machine apt autoremove --plan` (High) | — | Remove the reviewed unused packages. `--purge` also removes their package configuration files. |
 | Configure Box Git access | `machine.box.configure-git` | `dms machine box configure-git` (High) | — | Configures which existing SSH identity file and known-hosts file Box uses for Git pulls. |
 | Deploy a Box | `machine.box.deploy` | `dms machine box deploy` (High) | — | Updates the Box checkout and deploys from the selected stage onward. The service filter can limit the deployment. |
 | Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Safe) | — | Reads the local Box branch, commit, and working-tree state and reports sanitized remote information. |
