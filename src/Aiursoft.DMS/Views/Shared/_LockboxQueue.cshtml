@@ -117,7 +117,14 @@
                         </div>
                     </div>
                     <div class="dms-item-status">
-                        <partial name="_DmsDecisionStatus" model="item.Decision" />
+                        @if (row.RequiresResubmission)
+                        {
+                            <span class="dms-badge text-warning-emphasis bg-warning-subtle">@Localizer["Needs a new request"]</span>
+                        }
+                        else
+                        {
+                            <partial name="_DmsDecisionStatus" model="item.Decision" />
+                        }
                         <span class="dms-badge text-@(riskTone)-emphasis bg-@(riskTone)-subtle">@risk</span>
                         @if (row.ExecutionState is { } state)
                         {

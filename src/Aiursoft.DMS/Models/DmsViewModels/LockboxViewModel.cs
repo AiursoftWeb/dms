@@ -19,6 +19,13 @@ public sealed class LockboxViewModel : UiStackLayoutViewModel
     public bool OwnRequestView { get; init; }
     public bool CanViewOperations { get; init; }
     public RunState? ExecutionState { get; init; }
+    public AgentUpgradeReview? AgentUpgrade { get; init; }
+    public bool CanResubmit { get; init; }
+}
+
+public sealed record AgentUpgradeReview(IReadOnlyList<AgentRelease> Requested, IReadOnlyList<AgentRelease>? Available)
+{
+    public bool RequiresResubmission => Available is not null && !AgentReleaseStore.Matches(Requested, Available);
 }
 
 public sealed record LockboxSnapshot(

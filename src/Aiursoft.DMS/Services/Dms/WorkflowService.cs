@@ -31,6 +31,32 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
 
     public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(() => SubmitCoreAsync(user, request));
 
+    internal static AgentUpgradeInput ReadRequestedAgentUpgrade(LockboxRequest item) =>
+        MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input);
+
+    internal Task<LockboxRequest> ResubmitAgentUpgradeAsync(string user, Guid id, Guid requestId, string releaseIdentity) =>
+        gate.RunAsync(async () =>
+        {
+            var original = await db.Lockboxes.AsNoTracking().NotCacheable()
+                .SingleOrDefaultAsync(box => box.Id == id && box.RequesterId == user)
+                ?? throw new DmsException(404, "Lockbox not found.");
+            if (original.Decision != DecisionState.Pending || original.Definition != WorkflowNames.AgentUpgrade ||
+                original.Version != MachineWorkflows.AgentUpgrade.Version)
+                throw new DmsException(409, "This Agent upgrade cannot be resubmitted.");
+
+            var current = releases.Read();
+            if (!string.Equals(AgentReleaseStore.Identity(current), releaseIdentity, StringComparison.Ordinal))
+                throw new DmsException(409, AgentReleaseStore.PreviewChangedMessage);
+            if (AgentReleaseStore.Matches(ReadRequestedAgentUpgrade(original).Releases, current))
+                throw new DmsException(409, AgentReleaseStore.OriginalAvailableMessage);
+            var targets = JsonSerializer.Deserialize<List<Guid>>(original.TargetMachines);
+            if (targets is not { Count: > 0 })
+                throw new DmsException(409, "The original Agent upgrade has no target machines.");
+
+            return await SubmitCoreAsync(user, MachineWorkflows.AgentUpgrade.Request(
+                new AgentUpgradeInput(current), original.Reason, targets, requestId: requestId));
+        });
+
     // Enrollment uses the same approval path while holding ControllerGate and a database transaction.
     internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request, Guid? enrollmentId = null)
     {

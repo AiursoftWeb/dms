@@ -97,4 +97,7 @@
     <value>{0} 请求分页</value>
   </data>
 
+  <data name="Needs a new request" xml:space="preserve">
+    <value>需重新申请</value>
+  </data>
 </root>

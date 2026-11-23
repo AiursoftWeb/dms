@@ -1,9 +1,12 @@
 using Aiursoft.DMS.Authorization;
+using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
@@ -11,6 +14,128 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class AgentUpgradeIntegrationTests : TestBase
 {
+    [TestMethod]
+    public async Task WebShowsSupersededPackageOutsideTheQueueAndLetsOnlyTheRequesterResubmit()
+    {
+        var environment = Server!.Services.GetRequiredService<IWebHostEnvironment>();
+        var directory = Directory.CreateDirectory(Path.Combine(environment.ContentRootPath, "agent-assets"));
+        var metadata = Path.Combine(directory.FullName, "releases.json");
+        var release = new AgentRelease("linux-x64", "1.10.1.0", new string('a', 64), new string('b', 64));
+        var input = new AgentUpgradeInput([release, release with { Architecture = "linux-arm64" }]);
+        var replacement = input.Releases.Select(r => r with { ArchiveSha256 = new string('c', 64) }).ToList();
+        await File.WriteAllTextAsync(metadata, JsonSerializer.Serialize(input.Releases));
+        try
+        {
+            using var scope = Server.Services.CreateScope();
+            var services = scope.ServiceProvider;
+            var db = services.GetRequiredService<TemplateDbContext>();
+            var users = services.GetRequiredService<UserManager<User>>();
+            var workflows = services.GetRequiredService<WorkflowService>();
+            var requester = new User
+            {
+                UserName = "upgrade-requester", DisplayName = "Upgrade requester",
+                Email = "upgrade-requester@example.test", EmailConfirmed = true
+            };
+            const string password = "Operator@123456!";
+            Assert.IsTrue((await users.CreateAsync(requester, password)).Succeeded);
+            DmsTestPermissions.Set(db, requester.Id, DmsPermissions.Request(RiskLevel.High));
+            var machine = new Machine { Name = "Upgrade target" };
+            db.Machines.Add(machine);
+            await db.SaveChangesAsync();
+            var old = await workflows.SubmitAsync(requester.Id,
+                MachineWorkflows.AgentUpgrade.Request(input, "Review the canary upgrade", [machine.Id]));
+            var id = new LockboxId(old.Id).ToString();
+            var queryId = Uri.EscapeDataString(id);
+            var detail = "/Dms/Lockbox?id=" + queryId;
+            var myDetail = "/DmsAccess/MyLockbox?id=" + queryId;
+            const string approvalQueue = "/Dms/Lockboxes?scope=review";
+            const string replacementPath = "/DmsAccess/ResubmitAgentUpgrade";
+
+            await LoginAsAdmin();
+            var token = await GetAntiCsrfToken(detail);
+            StringAssert.Contains(await Http.GetStringAsync(detail), "action=\"/Dms/Decide\"");
+            StringAssert.Contains(Uri.UnescapeDataString(await Http.GetStringAsync(approvalQueue)), id);
+
+            File.Delete(metadata);
+            StringAssert.Contains(await Http.GetStringAsync(detail), "The Agent package is temporarily unavailable.");
+            StringAssert.Contains(Uri.UnescapeDataString(await Http.GetStringAsync(approvalQueue)), id);
+
+            await File.WriteAllTextAsync(metadata, JsonSerializer.Serialize(replacement));
+            using var staleClick = await PostForm("/Dms/Decide",
+                new Dictionary<string, string> { ["id"] = id, ["approve"] = "true", ["__RequestVerificationToken"] = token });
+            AssertRedirect(staleClick, "/Dms/Lockbox", exact: false);
+            var stale = await Http.GetStringAsync(detail);
+            StringAssert.Contains(stale, "Upgrade the DMS Agent on Upgrade target");
+            StringAssert.Contains(stale, "Needs a new request");
+            StringAssert.Contains(stale, "The upgrade has not started.");
+            Assert.DoesNotContain("Awaiting approval", stale);
+            Assert.DoesNotContain("action=\"/Dms/Decide\"", stale);
+            Assert.DoesNotContain(replacementPath, stale);
+            Assert.DoesNotContain(id, Uri.UnescapeDataString(await Http.GetStringAsync(approvalQueue)));
+            Assert.IsFalse(await db.WorkflowRuns.AnyAsync(run => run.LockboxId == old.Id));
+            using var forbidden = await PostForm(replacementPath, new Dictionary<string, string>
+            {
+                ["id"] = id, ["requestId"] = Guid.NewGuid().ToString(),
+                ["releaseIdentity"] = new string('a', 64), ["__RequestVerificationToken"] = token
+            });
+            Assert.AreEqual(HttpStatusCode.NotFound, forbidden.StatusCode);
+
+            using var logout = await Http.GetAsync("/Account/LogOff");
+            Assert.AreEqual(HttpStatusCode.Found, logout.StatusCode);
+            using var login = await PostForm("/Account/Login", new Dictionary<string, string>
+            {
+                ["EmailOrUserName"] = requester.UserName!, ["Password"] = password
+            });
+            Assert.AreEqual(HttpStatusCode.Found, login.StatusCode);
+            var history = await Http.GetStringAsync("/DmsAccess/MyLockboxes");
+            StringAssert.Contains(Uri.UnescapeDataString(history), id);
+            StringAssert.Contains(history, "Needs a new request");
+            var current = await Http.GetStringAsync(myDetail);
+            StringAssert.Contains(current, "Currently available Agent package");
+            StringAssert.Contains(current, "Submit a new upgrade request");
+            var form = new Dictionary<string, string>
+            {
+                ["id"] = id,
+                ["requestId"] = Regex.Match(current, "name=\"requestId\" value=\"([^\"]+)\"").Groups[1].Value,
+                ["releaseIdentity"] = Regex.Match(current, "name=\"releaseIdentity\" value=\"([^\"]+)\"").Groups[1].Value
+            };
+            Assert.AreEqual(64, form["releaseIdentity"].Length);
+            await File.WriteAllTextAsync(metadata,
+                JsonSerializer.Serialize(replacement.Select(r => r with { ArchiveSha256 = new string('d', 64) })));
+            using var anotherChange = await PostForm(replacementPath, form, myDetail);
+            AssertRedirect(anotherChange, "/DmsAccess/MyLockbox", exact: false);
+            StringAssert.Contains(await Http.GetStringAsync(myDetail), "The current Agent package changed again.");
+            Assert.AreEqual(1, await db.Lockboxes.CountAsync(box => box.RequesterId == requester.Id));
+
+            await File.WriteAllTextAsync(metadata, JsonSerializer.Serialize(replacement));
+            using var submitted = await PostForm(replacementPath, form, myDetail);
+            AssertRedirect(submitted, "/DmsAccess/MyLockbox", exact: false);
+            using var retry = await PostForm(replacementPath, form, myDetail);
+            Assert.AreEqual(submitted.Headers.Location, retry.Headers.Location);
+            var newRequest = await db.Lockboxes.AsNoTracking().SingleAsync(box => box.Id != old.Id && box.RequesterId == requester.Id);
+            Assert.AreEqual(DecisionState.Pending, newRequest.Decision);
+            Assert.AreEqual(old.TargetMachines, newRequest.TargetMachines);
+            Assert.AreEqual(old.Reason, newRequest.Reason);
+            Assert.IsNull(newRequest.WorkflowId);
+            var submittedInput = JsonSerializer.Deserialize<OperationRequest>(newRequest.Parameters)!.Input;
+            CollectionAssert.AreEqual(replacement, MachineWorkflows.AgentUpgrade.ReadInput(submittedInput).Releases);
+
+            using var requesterLogout = await Http.GetAsync("/Account/LogOff");
+            Assert.AreEqual(HttpStatusCode.Found, requesterLogout.StatusCode);
+            await LoginAsAdmin();
+            var newId = new LockboxId(newRequest.Id).ToString();
+            var queue = Uri.UnescapeDataString(await Http.GetStringAsync(approvalQueue));
+            StringAssert.Contains(queue, newId);
+            Assert.DoesNotContain(id, queue);
+            var newDetail = "/Dms/Lockbox?id=" + Uri.EscapeDataString(newId);
+            using var approve = await PostForm("/Dms/Decide",
+                new Dictionary<string, string> { ["id"] = newId, ["approve"] = "true" }, newDetail);
+            AssertRedirect(approve, "/Dms/Lockbox", exact: false);
+            StringAssert.Contains(await Http.GetStringAsync(newDetail), "View workflow execution");
+        }
+        finally { File.Delete(metadata); }
+    }
+
     [TestMethod]
     public async Task BootstrapIncludesControllerOriginAndServesOnlyThePackagedTool()
     {
