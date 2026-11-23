@@ -38,7 +38,7 @@ public class AgentUpgradeIntegrationTests : TestBase
             };
             const string password = "Operator@123456!";
             Assert.IsTrue((await users.CreateAsync(requester, password)).Succeeded);
-            DmsTestPermissions.Set(db, requester.Id, DmsPermissions.Request(RiskLevel.High));
+            DmsTestPermissions.Set(db, requester.Id, DmsPermissions.Request(RiskLevel.Medium));
             var machine = new Machine { Name = "Upgrade target" };
             db.Machines.Add(machine);
             await db.SaveChangesAsync();
@@ -160,7 +160,7 @@ public class AgentUpgradeIntegrationTests : TestBase
     }
 
     [TestMethod]
-    public async Task CliFreezesReleaseAndHighRiskApprovalRejectsAssetChanges()
+    public async Task CliFreezesReleaseAndMediumRiskApprovalRejectsAssetChanges()
     {
         var environment = Server!.Services.GetRequiredService<IWebHostEnvironment>();
         var directory = Path.Combine(environment.ContentRootPath, "agent-assets");
@@ -185,7 +185,7 @@ public class AgentUpgradeIntegrationTests : TestBase
                 var machine = new Machine { Name = "Upgrade target" }; machineId = machine.Id;
                 db.Machines.Add(machine);
                 db.PersonalApiKeys.Add(new PersonalApiKey { UserId = user.Id, Name = "Upgrade CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
-                DmsTestPermissions.Risk(db, user.Id, RiskLevel.High, request: true, automatic: false, approve: true);
+                DmsTestPermissions.Risk(db, user.Id, RiskLevel.Medium, request: true, automatic: false, approve: true);
                 await db.SaveChangesAsync();
             }
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "agent", "upgrade",
@@ -194,7 +194,7 @@ public class AgentUpgradeIntegrationTests : TestBase
             using var inspection = Server.Services.CreateScope();
             var database = inspection.ServiceProvider.GetRequiredService<TemplateDbContext>();
             var request = await database.Lockboxes.SingleAsync(l => l.RequesterId == userId);
-            Assert.AreEqual(RiskLevel.High, request.Risk);
+            Assert.AreEqual(RiskLevel.Medium, request.Risk);
             Assert.AreEqual(DecisionState.Pending, request.Decision);
             CollectionAssert.AreEqual(new List<Guid> { machineId }, JsonSerializer.Deserialize<List<Guid>>(request.TargetMachines)!);
             var parameters = JsonSerializer.Deserialize<OperationRequest>(request.Parameters)!;
