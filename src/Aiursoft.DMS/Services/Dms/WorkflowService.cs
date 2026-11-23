@@ -222,7 +222,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var item = await db.Lockboxes.SingleOrDefaultAsync(l => l.Id == id) ?? throw new DmsException(404, "Lockbox not found.");
         var principal = await access.PrincipalAsync(user);
         if (approve && BoxSecretTransfers.RequiresIndependentApproval(item.Definition) && item.RequesterId == user)
-            throw new DmsException(403, "Raw Box secret requests require approval from another user.");
+            throw new DmsException(403, "Privileged as-root requests and raw Box secret requests require approval from another user.");
         if (!DmsPermissions.CanDecide(principal, item.Risk, item.RequesterId == user))
             throw new DmsException(403, "Approval permission for this risk level is required; your own Lockbox requests also require self-approval permission.");
         if (item.Decision != DecisionState.Pending) throw new DmsException(409, "This Lockbox request has already been decided.");

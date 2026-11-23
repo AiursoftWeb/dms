@@ -80,6 +80,24 @@ public sealed class BoxSecretFileTests
         var elevatedFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.CatAsRootAsync(context,
             input, agent, CancellationToken.None));
         StringAssert.Contains(elevatedFailure.Message, "Box secret workflows");
+
+        var tailFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.TailAsync(context,
+            input, agent, CancellationToken.None));
+        StringAssert.Contains(tailFailure.Message, "Box secret workflows");
+        var tailAsRootFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.TailAsRootAsync(context,
+            input, agent, CancellationToken.None));
+        StringAssert.Contains(tailAsRootFailure.Message, "Box secret workflows");
+
+        var exportInput = new ExportPathInput("/swarm-vol/BoxForMoog/.env.prod");
+        var exportFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.ExportAsync(context,
+            exportInput, agent, CancellationToken.None));
+        StringAssert.Contains(exportFailure.Message, "Box secret workflows");
+        var dlFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.DownloadAsync(context,
+            exportInput, agent, CancellationToken.None));
+        StringAssert.Contains(dlFailure.Message, "Box secret workflows");
+        var dlAsRootFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.DownloadAsRootAsync(context,
+            exportInput, agent, CancellationToken.None));
+        StringAssert.Contains(dlAsRootFailure.Message, "Box secret workflows");
     }
 
     private sealed class Fixture : IDisposable

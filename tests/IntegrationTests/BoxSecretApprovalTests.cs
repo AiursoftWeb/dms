@@ -116,6 +116,46 @@ public sealed class BoxSecretApprovalTests : TestBase
         Assert.AreEqual(HttpStatusCode.Gone, again.StatusCode);
     }
 
+    [TestMethod]
+    [DataRow("machine.filesystem.cat-as-root")]
+    [DataRow("machine.filesystem.tail-as-root")]
+    [DataRow("machine.filesystem.download-as-root")]
+    public async Task AsRootWorkflowsRequireIndependentApproval(string workflowName)
+    {
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var requester = new User { UserName = "as-root-req-" + Guid.NewGuid().ToString("N"), DisplayName = "Requester" };
+        var approver = new User { UserName = "as-root-app-" + Guid.NewGuid().ToString("N"), DisplayName = "Approver" };
+        db.Users.AddRange(requester, approver);
+        DmsTestPermissions.Risk(db, requester.Id, RiskLevel.VeryHigh, request: true, automatic: true, approve: true);
+        DmsTestPermissions.Set(db, requester.Id, AppPermissionNames.CanApproveOwnWorkflow);
+        DmsTestPermissions.Risk(db, approver.Id, RiskLevel.VeryHigh, request: true, approve: true);
+        var target = new Machine { Name = "Fixture Machine", KeyHash = "fixture" };
+        db.Machines.Add(target);
+        await db.SaveChangesAsync();
+
+        object input = workflowName == OperationsWorkflows.FilesystemDownloadAsRoot.Name
+            ? new ExportPathInput("/tmp/test")
+            : new TextFileInput("/tmp/test");
+        var request = new OperationRequest
+        {
+            Workflow = workflowName,
+            MachineIds = [target.Id],
+            Reason = "Investigation",
+            Input = JsonSerializer.Serialize(input, input.GetType())
+        };
+        var box = await workflows.SubmitAsync(requester.Id, request);
+        Assert.AreEqual(DecisionState.Pending, box.Decision);
+
+        var selfApproval = await Assert.ThrowsAsync<DmsException>(() => workflows.DecideAsync(requester.Id, box.Id, true, "Self approval"));
+        Assert.AreEqual(403, selfApproval.StatusCode);
+        Assert.AreEqual("Privileged as-root requests and raw Box secret requests require approval from another user.", selfApproval.Message);
+
+        box = await workflows.DecideAsync(approver.Id, box.Id, true, "Approved by colleague");
+        Assert.AreEqual(DecisionState.Approved, box.Decision);
+    }
+
     private static string PersonalKey(TemplateDbContext db, User user)
     {
         var key = DmsKeyAuthenticationHandler.CreateKey(machine: false);

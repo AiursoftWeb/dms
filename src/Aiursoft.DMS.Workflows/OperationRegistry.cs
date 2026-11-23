@@ -78,6 +78,21 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 FilesystemOperations.TailAsync,
                 agent));
+        Register(OperationsWorkflows.FilesystemTailAsRoot,
+            (input, agent) => new OperationWorkflow<TextFileInput>(OperationsWorkflows.FilesystemTailAsRoot,
+                input,
+                FilesystemOperations.TailAsRootAsync,
+                agent));
+        Register(OperationsWorkflows.FilesystemDownload,
+            (input, agent) => new OperationWorkflow<ExportPathInput>(OperationsWorkflows.FilesystemDownload,
+                input,
+                FilesystemOperations.DownloadAsync,
+                agent));
+        Register(OperationsWorkflows.FilesystemDownloadAsRoot,
+            (input, agent) => new OperationWorkflow<ExportPathInput>(OperationsWorkflows.FilesystemDownloadAsRoot,
+                input,
+                FilesystemOperations.DownloadAsRootAsync,
+                agent));
         Register(OperationsWorkflows.FilesystemFind,
             (input, agent) => new OperationWorkflow<FindFilesInput>(OperationsWorkflows.FilesystemFind,
                 input,

@@ -40,8 +40,14 @@ public class OperationsApprovalTests : TestBase
             "machine filesystem cat");
         yield return (OperationsWorkflows.FilesystemCatAsRoot, new TextFileInput("/tmp/dms-test/file"), RiskLevel.VeryHigh,
             "machine filesystem cat-as-root");
-        yield return (OperationsWorkflows.FilesystemTail, new TextFileInput("/tmp/dms-test/file"), RiskLevel.High,
+        yield return (OperationsWorkflows.FilesystemTail, new TextFileInput("/tmp/dms-test/file"), RiskLevel.Low,
             "machine filesystem tail");
+        yield return (OperationsWorkflows.FilesystemTailAsRoot, new TextFileInput("/tmp/dms-test/file"), RiskLevel.VeryHigh,
+            "machine filesystem tail-as-root");
+        yield return (OperationsWorkflows.FilesystemDownload, new ExportPathInput("/tmp/dms-test/source"), RiskLevel.Low,
+            "machine filesystem download");
+        yield return (OperationsWorkflows.FilesystemDownloadAsRoot, new ExportPathInput("/tmp/dms-test/source"), RiskLevel.VeryHigh,
+            "machine filesystem download-as-root");
         yield return (OperationsWorkflows.FilesystemFind, new FindFilesInput("/tmp/dms-test"), RiskLevel.Low,
             "machine filesystem find");
         yield return (OperationsWorkflows.FilesystemMkdir, new MakeDirectoryInput("/tmp/dms-test/new"), RiskLevel.High,
@@ -254,8 +260,12 @@ public class OperationsApprovalTests : TestBase
         await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
         var cases = Cases(artifact).ToArray();
         Assert.AreEqual("2", OperationsWorkflows.FilesystemCat.Version);
-        Assert.HasCount(99, cases);
-        Assert.AreEqual(99, cases.Select(c => c.Definition.Name).Distinct().Count());
+        Assert.AreEqual("2", OperationsWorkflows.FilesystemTail.Version);
+        Assert.AreEqual("2", OperationsWorkflows.FilesystemDownload.Version);
+        Assert.AreEqual("1", OperationsWorkflows.FilesystemTailAsRoot.Version);
+        Assert.AreEqual("1", OperationsWorkflows.FilesystemDownloadAsRoot.Version);
+        Assert.HasCount(102, cases);
+        Assert.AreEqual(102, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var allMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", allMachines: true);
         var multipleMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", [machine.Id, Guid.NewGuid()]);

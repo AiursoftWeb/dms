@@ -150,14 +150,103 @@ public class OperationsWorkflowTests
     }
 
     [TestMethod]
+    [DataRow("600")]
+    [DataRow("700")]
+    [DataRow("640")]
+    [DataRow("641")]
+    public async Task TailRequiresOtherReadEvenWhenTheAgentCanReadTheFile(string mode)
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var directory = Directory.CreateTempSubdirectory("dms-ops-tail-");
+        try
+        {
+            File.SetUnixFileMode(directory.FullName, (UnixFileMode)Convert.ToInt32("755", 8));
+            var path = Path.Combine(directory.FullName, "restricted file");
+            const string contents = "line 1\nline 2\nprivate tail contents\n";
+            await File.WriteAllTextAsync(path, contents);
+            File.SetUnixFileMode(path, (UnixFileMode)Convert.ToInt32(mode, 8));
+            var input = new TextFileInput(path, Lines: 1);
+            var error = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemTail, input));
+            StringAssert.Contains(error.Message, "dms machine filesystem tail-as-root");
+            var elevated = await RunAsync(OperationsWorkflows.FilesystemTailAsRoot, input);
+            StringAssert.Contains(Trace(elevated.Events), "private tail contents");
+
+            File.SetUnixFileMode(path, (UnixFileMode)Convert.ToInt32("644", 8));
+            var ordinary = await RunAsync(OperationsWorkflows.FilesystemTail, input);
+            StringAssert.Contains(Trace(ordinary.Events), "private tail contents");
+            Assert.DoesNotContain("line 1", Trace(ordinary.Events));
+        }
+        finally { directory.Delete(recursive: true); }
+    }
+
+    [TestMethod]
+    public async Task ExportAndDownloadRequireOtherReadAndBlockRestrictedEntriesAndBoxSecret()
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var directory = Directory.CreateTempSubdirectory("dms-ops-dl-");
+        try
+        {
+            File.SetUnixFileMode(directory.FullName, (UnixFileMode)Convert.ToInt32("755", 8));
+            var restrictedFile = Path.Combine(directory.FullName, "private.key");
+            await File.WriteAllTextAsync(restrictedFile, "secret payload");
+            File.SetUnixFileMode(restrictedFile, (UnixFileMode)Convert.ToInt32("600", 8));
+
+            var environment = EnvironmentFor(artifacts: new MemoryArtifacts());
+
+            var exportErr = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemExport, new ExportPathInput(restrictedFile), environment));
+            StringAssert.Contains(exportErr.Message, "dms machine filesystem download-as-root");
+
+            var dlErr = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemDownload, new ExportPathInput(restrictedFile), environment));
+            StringAssert.Contains(dlErr.Message, "dms machine filesystem download-as-root");
+
+            var asRoot = await RunAsync(OperationsWorkflows.FilesystemDownloadAsRoot, new ExportPathInput(restrictedFile), environment);
+            Assert.IsNotNull(asRoot.Result.Artifact);
+
+            const string envFile = "/swarm-vol/BoxForMoog/.env.prod";
+            var envExportErr = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemExport, new ExportPathInput(envFile), environment));
+            StringAssert.Contains(envExportErr.Message, "Box secret workflows");
+
+            var envDlErr = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemDownload, new ExportPathInput(envFile), environment));
+            StringAssert.Contains(envDlErr.Message, "Box secret workflows");
+
+            var envAsRootErr = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemDownloadAsRoot, new ExportPathInput(envFile), environment));
+            StringAssert.Contains(envAsRootErr.Message, "Box secret workflows");
+
+            var subDir = Directory.CreateDirectory(Path.Combine(directory.FullName, "dir")).FullName;
+            File.SetUnixFileMode(subDir, (UnixFileMode)Convert.ToInt32("755", 8));
+            var innerPublic = Path.Combine(subDir, "public.txt");
+            await File.WriteAllTextAsync(innerPublic, "public");
+            File.SetUnixFileMode(innerPublic, (UnixFileMode)Convert.ToInt32("644", 8));
+            var innerRestricted = Path.Combine(subDir, "inner_private.txt");
+            await File.WriteAllTextAsync(innerRestricted, "private");
+            File.SetUnixFileMode(innerRestricted, (UnixFileMode)Convert.ToInt32("600", 8));
+
+            var dirDlErr = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemDownload, new ExportPathInput(subDir, Recursive: true), environment));
+            StringAssert.Contains(dirDlErr.Message, "dms machine filesystem download-as-root");
+
+            var dirAsRoot = await RunAsync(OperationsWorkflows.FilesystemDownloadAsRoot, new ExportPathInput(subDir, Recursive: true), environment);
+            Assert.IsNotNull(dirAsRoot.Result.Artifact);
+        }
+        finally { directory.Delete(recursive: true); }
+    }
+
+    [TestMethod]
     public async Task ExportImportVerifiesBytesAndSafelyRoundTripsADirectory()
     {
         var directory = Directory.CreateTempSubdirectory("dms-ops-transfer-").FullName;
         try
         {
             var source = Directory.CreateDirectory(Path.Combine(directory, "source")).FullName;
-            Directory.CreateDirectory(Path.Combine(source, "empty"));
-            await File.WriteAllTextAsync(Path.Combine(source, "a file"), "artifact payload");
+            var empty = Directory.CreateDirectory(Path.Combine(source, "empty")).FullName;
+            var file = Path.Combine(source, "a file");
+            await File.WriteAllTextAsync(file, "artifact payload");
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(directory, (UnixFileMode)0x1ED);
+                File.SetUnixFileMode(source, (UnixFileMode)0x1ED);
+                File.SetUnixFileMode(empty, (UnixFileMode)0x1ED);
+                File.SetUnixFileMode(file, (UnixFileMode)0x1A4);
+            }
             var transport = new MemoryArtifacts(); var environment = EnvironmentFor(artifacts: transport);
             var exported = await RunAsync(OperationsWorkflows.FilesystemExport, new ExportPathInput(source, true), environment);
             Assert.IsNotNull(exported.Result.Artifact); Assert.AreEqual("directory-tar", exported.Result.Artifact.Kind);

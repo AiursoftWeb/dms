@@ -2,7 +2,7 @@
 
 [Discover workflows and permissions](workflow-discovery.md) · [CLI and Agent setup](cli-and-agent.md) · [Operation options](operations.md)
 
-Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 124 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
+Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 127 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
 
 Enter a CLI command with `--help` to see its options. Workflow requests generally need a reason and, where applicable, a machine target. The `Open` inventory workflow uses the **Run open workflows** permission. For other risk levels, request, automatic approval, and manual approval are separate role permissions. Self-approval requires its own permission. Internal and scheduled entries show their registered risk and run through their parent or schedule. See [Role permissions](permissions.md).
 
@@ -65,7 +65,9 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Copy files | `machine.filesystem.cp` | `dms machine filesystem cp` (VeryHigh) | — | Copy a file or directory on the same machine. |
 | Collect machine disk usage | `machine.filesystem.disk-usage` | Fleet disk-usage workflow (Safe) | — | Collects filesystem capacity and usage for one machine and returns its observations to the fleet disk-usage workflow. |
 | Measure directory disk usage | `machine.filesystem.du` | `dms machine filesystem du` (Low) | — | Measure disk usage under a directory. |
-| Export machine files | `machine.filesystem.export` | `dms machine filesystem export` (High) | — | Packages an approved path as an authorized downloadable artifact. |
+| Download public files | `machine.filesystem.download` | `dms machine filesystem download` (Low) | — | Export and download files readable by other users to the local machine. |
+| Download files with Agent privileges | `machine.filesystem.download-as-root` | `dms machine filesystem download-as-root` (VeryHigh) | — | Export and download files using the Agent's privileges to the local machine. |
+| Export machine files | `machine.filesystem.export` | `dms machine filesystem export` (High) | — | Packages an approved path readable by other users as an authorized downloadable artifact. |
 | Find files | `machine.filesystem.find` | `dms machine filesystem find` (Low) | — | Find files by name, size, or modification time. |
 | Import a file artifact | `machine.filesystem.import` | `dms machine filesystem import` (VeryHigh) | — | Writes the approved artifact to the destination path. Overwrite must be explicitly requested. |
 | List directory entries | `machine.filesystem.ls` | `dms machine filesystem ls` (Low) | — | List files and directories under a path. |
@@ -73,7 +75,8 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Move or rename files | `machine.filesystem.mv` | `dms machine filesystem mv` (VeryHigh) | — | Move or rename a file or directory on the same machine. |
 | Remove a file or directory | `machine.filesystem.rm` | `dms machine filesystem rm` (High) | — | Permanently removes the approved path. Directory recursion requires an explicit request. |
 | Inspect file metadata | `machine.filesystem.stat` | `dms machine filesystem stat` (Low) | — | Read a file's type, size, ownership, permissions, and timestamps. |
-| Read the end of a file | `machine.filesystem.tail` | `dms machine filesystem tail` (High) | — | Read the last lines of a text file. |
+| Read the end of a public file | `machine.filesystem.tail` | `dms machine filesystem tail` (Low) | — | Read the last lines of a file readable by other users. |
+| Read the end of a file with Agent privileges | `machine.filesystem.tail-as-root` | `dms machine filesystem tail-as-root` (VeryHigh) | — | Read the last lines of a file using the Agent's privileges. |
 | Audit bcache settings | `machine.layout.bcache-audit` | `dms machine layout bcache-audit` (Low) | — | Compare the machine's bcache configuration with a baseline. |
 | Inspect bcache | `machine.layout.bcache-info` | `dms machine layout bcache-info` (Low) | — | Show bcache devices, modes, and counters. |
 | Inspect filesystem capacity | `machine.layout.df` | `dms machine layout df` (Safe) | — | Show used and available space on mounted filesystems. |

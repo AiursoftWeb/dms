@@ -72,14 +72,68 @@ public static partial class DockerOperations
         if (entries.Length != 1) throw new InvalidDataException("Container archive did not contain exactly the requested path.");
         return entries[0];
     }
+    private static void CheckContainerMountSources(JsonElement containerInspect, string containerPath)
+    {
+        if (!containerInspect.TryGetProperty("Mounts", out var mounts) || mounts.ValueKind != JsonValueKind.Array)
+            return;
+        foreach (var mount in mounts.EnumerateArray())
+        {
+            var dest = mount.TryGetProperty("Destination", out var d) ? d.GetString() : null;
+            var src = mount.TryGetProperty("Source", out var s) ? s.GetString() : null;
+            if (string.IsNullOrEmpty(dest) || string.IsNullOrEmpty(src)) continue;
+
+            if (containerPath.Equals(dest, StringComparison.Ordinal) ||
+                containerPath.StartsWith(dest.TrimEnd('/') + "/", StringComparison.Ordinal))
+            {
+                var relative = Path.GetRelativePath(dest, containerPath);
+                var hostPath = Path.GetFullPath(Path.Combine(src, relative));
+                FilesystemOperations.RequirePublicContentPath(hostPath);
+                if (OperatingSystem.IsLinux() && (File.Exists(hostPath) || Directory.Exists(hostPath)))
+                {
+                    var mode = File.GetUnixFileMode(hostPath);
+                    if ((mode & UnixFileMode.OtherRead) == 0)
+                        throw new IOException($"Cannot export restricted container mount source '{hostPath}'. For restricted files, use 'dms machine filesystem download-as-root'.");
+                }
+            }
+            else if (dest.StartsWith(containerPath.TrimEnd('/') + "/", StringComparison.Ordinal))
+            {
+                FilesystemOperations.RequirePublicContentPath(src);
+                if (OperatingSystem.IsLinux() && (File.Exists(src) || Directory.Exists(src)))
+                {
+                    var mode = File.GetUnixFileMode(src);
+                    if ((mode & UnixFileMode.OtherRead) == 0)
+                        throw new IOException($"Cannot export restricted container mount source '{src}'. For restricted files, use 'dms machine filesystem download-as-root'.");
+                }
+            }
+        }
+    }
+
+    private static void MakeStagedExportReadable(string directory)
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        foreach (var entry in Directory.EnumerateFileSystemEntries(directory, "*", SearchOption.AllDirectories))
+        {
+            if (Directory.Exists(entry))
+                File.SetUnixFileMode(entry, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            else if (File.Exists(entry))
+                File.SetUnixFileMode(entry, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.OtherRead);
+        }
+    }
+
     public static async Task<OperationResult> FilesystemExportAsync(MachineWorkflowContext context, ContainerExportInput input, AgentEnvironment agent, CancellationToken token)
     {
         input.Validate();
-        await ReadContainerAsync(context, input.Container, agent, token);
+        var details = await ReadContainerAsync(context, input.Container, agent, token);
+        CheckContainerMountSources(details, input.Path);
         using var http = ArchiveClient(); var temporary = SafeOperationPaths.TemporaryDirectory();
         try
         {
             var source = await ReceiveContainerPathAsync(http, input.Container, input.Path, input.Recursive, input.MaxBytes, temporary, token);
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(temporary, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                MakeStagedExportReadable(temporary);
+            }
             return await context.CallAsync(OperationsWorkflows.FilesystemExport, new ExportPathInput(source, input.Recursive, input.MaxBytes), token);
         }
         finally { Directory.Delete(temporary, true); }
