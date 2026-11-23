@@ -30,9 +30,15 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Deploy a Box | `machine.box.deploy` | `dms machine box deploy` (High) | — | Updates the Box checkout and deploys from the selected stage onward. The service filter can limit the deployment. |
 | Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Safe) | — | Reads the local Box branch, commit, and working-tree state and reports sanitized remote information. |
 | Refresh images with Box Puller | `machine.box.puller.force-update` | `dms machine box puller force-update` (High) | — | Refreshes a selected image or the configured image set through the specified Box Puller. |
+| Find a ClickHouse container | `machine.clickhouse.find-container` | `dms machine clickhouse find-container` (Open) | — | Find the unique running ClickHouse server container on the target machine. |
+| List ClickHouse databases | `machine.clickhouse.list-databases` | `dms machine clickhouse list-databases` (Open) | — | List databases visible to the local read account. |
+| List ClickHouse tables | `machine.clickhouse.list-tables` | `dms machine clickhouse list-tables` (Open) | — | List visible tables in one database. |
+| Describe a ClickHouse table | `machine.clickhouse.describe-table` | `dms machine clickhouse describe-table` (Open) | — | Display column names and types. |
+| Investigate ClickHouse | `machine.clickhouse.query` | `dms machine clickhouse sql` (Low) | — | Run one bounded read-only statement and return its rows to the requester. |
+| Change ClickHouse data or columns | `machine.clickhouse.execute` | `dms machine clickhouse sql` (High) | — | Apply an approved write to the frozen local container. |
 | Describe a database table | `machine.database.describe-table` | `dms machine database describe-table` (Low) | — | Show a database table's columns and types. |
 | Inspect database activity | `machine.database.diagnostics` | `dms machine database diagnostics` (Medium) | — | Inspect a database's active queries, connections, and resource usage. |
-| Discover database services | `machine.database.discover` | `dms machine database discover` (Low) | — | Find database services and configured connection names on a machine. |
+| Discover database services | `machine.database.discover` | `dms machine database discover` (Low) | — | Find local database containers and configured connection names. |
 | Execute SQL from a file | `machine.database.execute-sql` | `dms machine database execute-sql` (VeryHigh) | — | Runs approved SQL from a file against a configured writable connection. The file can contain writes or schema changes. |
 | List databases | `machine.database.list-databases` | `dms machine database list-databases` (Low) | — | List databases available through a configured connection. |
 | List tables | `machine.database.list-tables` | `dms machine database list-tables` (Low) | — | List tables in the specified database. |
