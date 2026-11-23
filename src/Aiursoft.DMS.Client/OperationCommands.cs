@@ -399,6 +399,14 @@ public static partial class DmsCommandApp
             _ => new EmptyInput());
     }
 
+    private static ActionCommand NewNvidiaOverviewCommand()
+    {
+        return StandardCommand("overview",
+            "Show NVIDIA GPUs, driver, memory, active processes, and topology in one trace.",
+            OperationsWorkflows.NvidiaOverview,
+            _ => new EmptyInput());
+    }
+
     private static ActionCommand NewNvidiaProcessesCommand()
     {
         return StandardCommand("processes",
