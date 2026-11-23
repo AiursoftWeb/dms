@@ -76,6 +76,35 @@ public class DisableSshWorkflowTests
     }
 
     [TestMethod]
+    public async Task TemporaryAccountGetsExactlyTheApprovedKeys()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH leases run on Linux.");
+        using var fixture = new Fixture();
+        await fixture.RunAsync(Guid.NewGuid());
+        var first = SshPublicKey.Parse("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHpyp+C8Ia2B6RVM1UCr5HG+EtGR2xz5OF05P9kPz84D");
+        var second = SshPublicKey.Parse("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHpyp+C8Ia2B6RVM1UCr5HG+EtGR2xz5OF05P9kPz84E");
+        var key1 = Guid.NewGuid();
+        var key2 = Guid.NewGuid();
+        var input = new SshOpenInput
+        {
+            Keys = [new SshApprovedKey(key1, first.Fingerprint), new SshApprovedKey(key2, second.Fingerprint)]
+        };
+        var authorization = new SshLeaseAuthorization(Guid.Empty, "requester", "")
+        {
+            Keys = [new SshAuthorizedKey(key1, first.Key), new SshAuthorizedKey(key2, second.Key)]
+        };
+        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.OpenAsync(Guid.NewGuid(), input, authorization with
+        {
+            Keys = [new SshAuthorizedKey(key1, first.Key), new SshAuthorizedKey(key2, first.Key)]
+        }));
+
+        var lease = Guid.NewGuid();
+        await fixture.OpenAsync(lease, input, authorization);
+        CollectionAssert.AreEqual(new[] { first.Key, second.Key }, fixture.AuthorizedKeys(lease));
+        Assert.IsTrue(fixture.State().GetProperty("Healthy").GetBoolean());
+    }
+
+    [TestMethod]
     public async Task DelayedRecoveryCannotCloseANewerLease()
     {
         if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH disable runs on Linux.");
@@ -283,6 +312,21 @@ public class DisableSshWorkflowTests
             return disable.ReadResult(await context.RunAsync(_registry.Create(disable.Name, "{}", agent), CancellationToken.None));
         }
 
+        public string[] AuthorizedKeys(Guid lease) =>
+            File.ReadAllLines(Path.Combine(_root.FullName, "etc", "ssh", $"dms-ssh-{lease:N}.pub"));
+
+        public async Task OpenAsync(Guid id, SshOpenInput input, SshLeaseAuthorization authorization)
+        {
+            var bootFile = Path.Combine(_root.FullName, "proc/sys/kernel/random/boot_id");
+            Directory.CreateDirectory(Path.GetDirectoryName(bootFile)!);
+            await File.WriteAllTextAsync(bootFile, Guid.NewGuid().ToString());
+            Directory.CreateDirectory(Path.Combine(_root.FullName, "etc", "ssh"));
+            var agent = new AgentEnvironment(Guid.NewGuid(), "test", 0, 0,
+                AuthorizeSshLease: (_, _) => Task.FromResult(authorization), Operations: new OperationHost(_root.FullName, NativeAsync));
+            var context = new MachineWorkflowContext(id, null, _ => Task.CompletedTask);
+            await context.RunAsync(new OpenTemporarySshWorkflow(input, agent), CancellationToken.None);
+        }
+
         private async Task<NativeResult> NativeAsync(NativeCommand command, CancellationToken token)
         {
             switch (command.Executable)
@@ -308,6 +352,11 @@ public class DisableSshWorkflowTests
                     return new NativeResult(0, SshListening ? "LISTEN users:((\"sshd\",pid=123,fd=3))" : RemainingListener, "");
                 case "ss":
                     return new NativeResult(0, RemainingConnection, "");
+                case "systemd-run":
+                    SshListening = true;
+                    return new NativeResult(0, "", "");
+                case "getent":
+                case "useradd":
                 case "loginctl":
                     return new NativeResult(0, "", "");
                 case "pkill":

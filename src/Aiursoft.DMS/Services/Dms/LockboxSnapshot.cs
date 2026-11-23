@@ -86,7 +86,7 @@ public sealed record LockboxSnapshot(
         {
             var lease = SshOpen.Definition.ReadInput(input);
             invocation = SshOpen.Invocation;
-            options.Add($"{KeyIdOption} {lease.KeyId}");
+            if (lease.KeyId != Guid.Empty) options.Add($"{KeyIdOption} {lease.KeyId}");
             options.Add(FormattableString.Invariant($"{MinutesOption} {lease.Minutes}"));
             if (lease.Sudo) options.Add(SudoOption);
         }

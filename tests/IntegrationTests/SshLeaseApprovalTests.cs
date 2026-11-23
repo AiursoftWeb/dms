@@ -75,6 +75,105 @@ public sealed class SshLeaseApprovalTests : TestBase
     }
 
     [TestMethod]
+    public async Task OmittedKeyFreezesOnlyTheRequestersVerifiedKeysAndRevocationStopsExecution()
+    {
+        await LoginAsAdmin();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var keys = scope.ServiceProvider.GetRequiredService<PersonalSshKeys>();
+        var requester = new User { UserName = "all-keys-requester", DisplayName = "All-keys requester" };
+        var approver = new User { UserName = "all-keys-approver", DisplayName = "All-keys approver" };
+        db.Users.AddRange(requester, approver);
+        DmsTestPermissions.Risk(db, requester.Id, RiskLevel.VeryHigh, request: true);
+        DmsTestPermissions.Risk(db, approver.Id, RiskLevel.VeryHigh, approve: true);
+        var apiKey = DmsKeyAuthenticationHandler.CreateKey(machine: false);
+        db.PersonalApiKeys.Add(new PersonalApiKey
+        {
+            UserId = requester.Id, Name = "CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(apiKey),
+            ExpiresAt = DateTime.UtcNow.AddHours(1)
+        });
+        var agent = DmsKeyAuthenticationHandler.CreateKey(machine: true);
+        var target = new Machine { Name = "All-keys target", KeyHash = DmsKeyAuthenticationHandler.Hash(agent) };
+        db.Machines.Add(target);
+        await db.SaveChangesAsync();
+
+        var definition = OperationsWorkflows.SshOpen;
+        const string reason = "Open SSH with my keys";
+        var none = definition.Request(new SshOpenInput(), reason, [target.Id]);
+        var missing = await Assert.ThrowsAsync<DmsException>(() => workflows.SubmitAsync(requester.Id, none));
+        Assert.AreEqual(409, missing.StatusCode);
+
+        var first = NewKey(1, 1, requester.Id);
+        var second = NewKey(2, 2, requester.Id);
+        var pending = NewKey(3, 0, requester.Id);
+        var revoked = NewKey(4, null, requester.Id);
+        var foreign = NewKey(5, 1, approver.Id);
+        db.PersonalSshKeys.AddRange(first, second, pending, revoked, foreign);
+        await db.SaveChangesAsync();
+
+        var requestId = Guid.NewGuid();
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "ssh", "temp-allow-ssh",
+            "--machine-id", target.Id.ToString(), "--reason", reason, "--request-id", requestId.ToString(),
+            "--server", Http.BaseAddress!.ToString(), "--api-key", apiKey]);
+        Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
+        var item = db.Lockboxes.Single(box => box.RequesterId == requester.Id && box.ClientRequestId == requestId);
+        Assert.AreEqual(DecisionState.Pending, item.Decision);
+        var approvedInput = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input;
+        var input = definition.ReadInput(approvedInput);
+        CollectionAssert.AreEqual(new[] { first.Id, second.Id }, input.ApprovedKeys().Select(key => key.Id).ToArray());
+        var page = WebUtility.HtmlDecode(await Http.GetStringAsync($"/Dms/Lockbox/{item.Id}"));
+        StringAssert.Contains(page, "SSH key fingerprints");
+        StringAssert.Contains(page, first.Fingerprint);
+        StringAssert.Contains(page, second.Fingerprint);
+        Assert.IsFalse(page.Contains(foreign.Fingerprint, StringComparison.Ordinal));
+
+        var injected = definition.Request(new SshOpenInput { Keys = [new SshApprovedKey(first.Id, first.Fingerprint)] }, reason, [target.Id]);
+        Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => workflows.SubmitAsync(requester.Id, injected))).StatusCode);
+        var different = definition.Request(new SshOpenInput(first.Id), reason, [target.Id], requestId: requestId);
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => workflows.SubmitAsync(requester.Id, different))).StatusCode);
+
+        db.PersonalSshKeys.Add(NewKey(6, 3, requester.Id));
+        await db.SaveChangesAsync();
+        var repeat = definition.Request(new SshOpenInput(), reason, [target.Id], requestId: requestId);
+        Assert.AreEqual(item.Parameters, (await workflows.SubmitAsync(requester.Id, repeat)).Parameters);
+
+        item = await workflows.DecideAsync(approver.Id, item.Id, approve: true, "Approve this key selection");
+        var task = new WorkflowRun
+        {
+            ParentId = item.WorkflowId, RootId = item.WorkflowId!.Value, LockboxId = item.Id, MachineId = target.Id,
+            IsMachineTask = true, Definition = definition.Name, Version = definition.Version,
+            Input = approvedInput, State = RunState.Running
+        };
+        db.WorkflowRuns.Add(task);
+        await db.SaveChangesAsync();
+
+        using var reply = await AuthorizeAsync(task.Id, agent);
+        Assert.AreEqual(HttpStatusCode.OK, reply.StatusCode);
+        var authorization = await reply.Content.ReadFromJsonAsync<SshLeaseAuthorization>();
+        Assert.AreEqual(requester.Id, authorization!.RequesterId);
+        CollectionAssert.AreEqual(
+            new[] { new SshAuthorizedKey(first.Id, first.PublicKey), new SshAuthorizedKey(second.Id, second.PublicKey) },
+            authorization.Keys);
+
+        await keys.RevokeAsync(requester.Id, second.Id);
+        using var after = await AuthorizeAsync(task.Id, agent);
+        Assert.AreEqual(HttpStatusCode.Conflict, after.StatusCode);
+
+        static PersonalSshKey NewKey(byte suffix, int? slot, string user)
+        {
+            var blob = Convert.FromBase64String("AAAAC3NzaC1lZDI1NTE5AAAAIHpyp+C8Ia2B6RVM1UCr5HG+EtGR2xz5OF05P9kPz84D");
+            blob[^1] = suffix;
+            var (key, fingerprint) = SshPublicKey.Parse("ssh-ed25519 " + Convert.ToBase64String(blob));
+            return new PersonalSshKey
+            {
+                UserId = user, Name = $"Key {suffix}", PublicKey = key, Fingerprint = fingerprint, Slot = slot,
+                VerifiedAt = slot == 0 ? null : DateTime.UtcNow, RevokedAt = slot == null ? DateTime.UtcNow : null
+            };
+        }
+    }
+
+    [TestMethod]
     public async Task LeasePagesShowReadinessAndExplainTheHistoricalBaselineFailure()
     {
         await LoginAsAdmin();

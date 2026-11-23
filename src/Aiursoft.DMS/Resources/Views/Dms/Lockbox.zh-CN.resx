@@ -229,4 +229,7 @@
     <value>{0} 请求人 ID</value>
   </data>
 
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH 密钥指纹</value>
+  </data>
 </root>

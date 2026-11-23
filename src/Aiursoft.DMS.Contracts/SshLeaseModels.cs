@@ -5,20 +5,39 @@ using System.Text.Json.Serialization;
 
 namespace Aiursoft.DMS.Contracts;
 
-public sealed record SshOpenInput(Guid KeyId, int Minutes = 30, bool Sudo = false, string? Fingerprint = null)
+public sealed record SshOpenInput(
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] Guid KeyId = default,
+    int Minutes = 30, bool Sudo = false, string? Fingerprint = null)
 {
     public const string BaselineRequiredError =
         "Run the SSH disable workflow successfully before opening a temporary lease.";
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SshApprovedKey[]? Keys { get; init; }
+
     public void Validate()
     {
-        if (KeyId == Guid.Empty) throw new ArgumentException("Choose a verified personal SSH key.");
         if (Minutes is < 30 or > 270) throw new ArgumentException("SSH lease duration must be 30 to 270 minutes.");
-        if (Fingerprint is { Length: > 80 }) throw new ArgumentException("Invalid SSH key fingerprint.");
+        if (Fingerprint != null && (KeyId == Guid.Empty || Fingerprint.Length is 0 or > 80))
+            throw new ArgumentException("Invalid SSH key fingerprint.");
+        if (Keys != null && (KeyId != Guid.Empty || Keys.Length is < 1 or > SshPublicKey.MaxVerifiedPerUser ||
+            Keys.Any(key => key is null || key.Id == Guid.Empty || key.Fingerprint is not { Length: > 0 and <= 80 }) ||
+            Keys.Select(key => key.Id).Distinct().Count() != Keys.Length ||
+            Keys.Select(key => key.Fingerprint).Distinct(StringComparer.Ordinal).Count() != Keys.Length))
+            throw new ArgumentException("Invalid approved SSH key selection.");
     }
+
+    public SshApprovedKey[] ApprovedKeys() =>
+        Keys ?? (KeyId != Guid.Empty && Fingerprint != null ? [new(KeyId, Fingerprint)] : []);
 }
 
-public sealed record SshLeaseAuthorization(Guid KeyId, string RequesterId, string PublicKey);
+public sealed record SshApprovedKey(Guid Id, string Fingerprint);
+public sealed record SshAuthorizedKey(Guid Id, string PublicKey);
+public sealed record SshLeaseAuthorization(Guid KeyId, string RequesterId, string PublicKey)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SshAuthorizedKey[]? Keys { get; init; }
+}
 public sealed record SshRecoveryInput(Guid ExpectedLeaseId)
 {
     public void Validate()
@@ -47,6 +66,8 @@ public sealed record SshLeaseCheckResult(string Summary, bool? SshClosed)
 
 public static class SshPublicKey
 {
+    public const int MaxVerifiedPerUser = 3;
+
     public static (string Key, string Fingerprint) Parse(string input)
     {
         if (string.IsNullOrWhiteSpace(input) || input.Length > 8192 || input.Trim().Any(c => c is '\r' or '\n' or '\0'))
