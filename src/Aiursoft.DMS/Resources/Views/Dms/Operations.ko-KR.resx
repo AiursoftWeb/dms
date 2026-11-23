@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>모든 출처</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>모든 상태</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>필터 적용</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>자동</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>취소됨</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>필터 지우기</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>클러스터</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>클러스터 워크플로만</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>경고와 함께 완료됨</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>컨트롤러</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>생성됨</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>실행 페이지</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>실행 상태</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>실패</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>필터</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>머신</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>수동</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>검증 필요</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>다음</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>이 필터와 일치하는 실행이 없습니다.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>출처</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>상위 워크플로</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>이전</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>대기 중</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>루트 실행만</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>실행 중</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>상태</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>성공</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>실행 보기</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>워크플로</value>

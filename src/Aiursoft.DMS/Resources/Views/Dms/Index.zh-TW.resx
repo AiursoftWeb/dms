@@ -21,47 +21,8 @@
       <data name="Agent version" xml:space="preserve">
     <value>代理版本</value>
   </data>
-  <data name="Cluster" xml:space="preserve">
-    <value>叢集</value>
-  </data>
-  <data name="Last seen" xml:space="preserve">
-    <value>最後連線</value>
-  </data>
-  <data name="Machine" xml:space="preserve">
-    <value>機器</value>
-  </data>
-  <data name="Machines" xml:space="preserve">
-    <value>機器</value>
-  </data>
-  <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
-    <value>目前沒有可見的機器。請設定叢集存取權限，然後使用 CLI 要求機器註冊。</value>
-  </data>
-  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
-    <value>尚無機器加入。請使用加入金鑰請求 Agent 註冊。</value>
-  </data>
-  <data name="Status" xml:space="preserve">
-    <value>狀態</value>
-  </data>
-  <data name="Machine name" xml:space="preserve">
-    <value>機器名稱</value>
-  </data>
-  <data name="Connection status" xml:space="preserve">
-    <value>連線狀態</value>
-  </data>
   <data name="All states" xml:space="preserve">
     <value>全部狀態</value>
-  </data>
-  <data name="Online" xml:space="preserve">
-    <value>線上</value>
-  </data>
-  <data name="Offline" xml:space="preserve">
-    <value>離線</value>
-  </data>
-  <data name="Never connected" xml:space="preserve">
-    <value>從未連線</value>
-  </data>
-  <data name="Disabled" xml:space="preserve">
-    <value>已停用</value>
   </data>
   <data name="Apply filters" xml:space="preserve">
     <value>套用篩選器</value>
@@ -69,17 +30,56 @@
   <data name="Clear filters" xml:space="preserve">
     <value>清除篩選</value>
   </data>
-  <data name="No machines match these filters." xml:space="preserve">
-    <value>沒有機器符合這些篩選條件。</value>
+  <data name="Cluster" xml:space="preserve">
+    <value>叢集</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>連線狀態</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>已停用</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>最後連線</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>機器</value>
+  </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>機器名稱</value>
   </data>
   <data name="Machine pages" xml:space="preserve">
     <value>機器頁面</value>
   </data>
-  <data name="Previous" xml:space="preserve">
-    <value>上一頁</value>
+  <data name="Machines" xml:space="preserve">
+    <value>機器</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>從未連線</value>
   </data>
   <data name="Next" xml:space="preserve">
     <value>下一頁</value>
+  </data>
+  <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
+    <value>目前沒有可見的機器。請設定叢集存取權限，然後使用 CLI 要求機器註冊。</value>
+  </data>
+  <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
+    <value>尚無機器加入。請使用加入金鑰請求 Agent 註冊。</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>沒有機器符合這些篩選條件。</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>離線</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>線上</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>上一頁</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>狀態</value>
   </data>
 
 </root>

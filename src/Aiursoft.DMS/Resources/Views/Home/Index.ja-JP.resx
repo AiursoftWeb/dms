@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lintチェック</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0}は、操作の依頼者、対象、および承認の判断を記録します。</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MITライセンス</value>
   </data>
@@ -842,6 +839,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API 利用可能</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0}は、操作の依頼者、対象、および承認の判断を記録します。</value>
   </data>
 
 </root>
