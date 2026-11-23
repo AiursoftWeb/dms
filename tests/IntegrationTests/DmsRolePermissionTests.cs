@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
@@ -319,8 +318,8 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(original.Version, replay.Version);
         Assert.AreEqual(original.TargetMachines, replay.TargetMachines);
         Assert.AreEqual(original.Reason, replay.Reason);
-        Assert.AreEqual(JsonSerializer.Deserialize<OperationRequest>(original.Parameters)!.Input,
-            JsonSerializer.Deserialize<OperationRequest>(replay.Parameters)!.Input);
+        Assert.AreEqual(System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(original.Parameters)!.Input,
+            System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(replay.Parameters)!.Input);
     }
 
     [TestMethod]
