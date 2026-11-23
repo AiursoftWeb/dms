@@ -139,8 +139,8 @@ public class AgentUpgradeIntegrationTests : TestBase
     [TestMethod]
     public async Task BootstrapIncludesControllerOriginAndServesOnlyThePackagedTool()
     {
-        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, (await Http.GetAsync("/agent/install.sh")).StatusCode);
-        Assert.AreEqual(System.Net.HttpStatusCode.NotFound, (await Http.GetAsync("/agent/package")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync("/agent/install.sh")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync("/agent/package")).StatusCode);
         var directory = Path.Combine(Server!.Services.GetRequiredService<IWebHostEnvironment>().ContentRootPath, "agent-assets");
         Directory.CreateDirectory(directory);
         var installer = Path.Combine(directory, "install.sh");
@@ -154,7 +154,7 @@ public class AgentUpgradeIntegrationTests : TestBase
             StringAssert.Contains(await response.Content.ReadAsStringAsync(), "controller='" + Http.BaseAddress!.GetLeftPart(UriPartial.Authority) + "'");
             Assert.IsTrue(response.Headers.CacheControl!.NoStore);
             CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, await Http.GetByteArrayAsync("/agent/package"));
-            Assert.AreEqual(System.Net.HttpStatusCode.NotFound, (await Http.GetAsync("/agent/download/unsupported")).StatusCode);
+            Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync("/agent/download/unsupported")).StatusCode);
         }
         finally { File.Delete(installer); File.Delete(package); }
     }
@@ -167,7 +167,7 @@ public class AgentUpgradeIntegrationTests : TestBase
         Directory.CreateDirectory(directory);
         var metadata = Path.Combine(directory, "releases.json");
         Assert.IsFalse(File.Exists(metadata));
-        Assert.AreEqual(System.Net.HttpStatusCode.ServiceUnavailable, (await Http.GetAsync("/agent/releases")).StatusCode);
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, (await Http.GetAsync("/agent/releases")).StatusCode);
         var release = new AgentRelease("linux-x64", "1.0.16.0", new string('a', 64), new string('b', 64));
         var input = new AgentUpgradeInput([release, release with { Architecture = "linux-arm64" }]);
         File.WriteAllText(metadata, JsonSerializer.Serialize(input.Releases));

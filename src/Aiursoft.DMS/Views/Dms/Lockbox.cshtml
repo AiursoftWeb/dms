@@ -107,17 +107,17 @@
                 <div class="alert alert-warning mb-0">
                     <div class="alert-message">
                         <p class="mb-2" role="status">@Localizer["The selected Agent package has been replaced. The upgrade has not started."]</p>
-                        @if (Model.CanResubmit)
+                        @if (Model.CanResubmit && upgrade?.Available is { } available)
                         {
                             <p class="mb-2">
                                 @Localizer["Currently available Agent package"]
-                                <strong>@string.Join(", ", upgrade!.Available!.Select(release => release.Version).Distinct())</strong>
+                                <strong>@string.Join(", ", available.Select(release => release.Version).Distinct())</strong>
                             </p>
                             <p class="mb-2">@Localizer["Review the current package and submit a new request for the same machines."]</p>
                             <form asp-controller="DmsAccess" asp-action="ResubmitAgentUpgrade" method="post">
                                 <input type="hidden" name="id" value="@status.LockboxId" />
                                 <input type="hidden" name="requestId" value="@Guid.NewGuid()" />
-                                <input type="hidden" name="releaseIdentity" value="@AgentReleaseStore.Identity(upgrade!.Available!)" />
+                                <input type="hidden" name="releaseIdentity" value="@AgentReleaseStore.Identity(available)" />
                                 <button class="btn btn-primary" type="submit">@Localizer["Submit a new upgrade request"]</button>
                             </form>
                         }
