@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>すべてのオリジン</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>すべての状態</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>フィルターを適用</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>キャンセル済み</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>フィルターをクリア</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>クラスタ</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>クラスタワークフローのみ</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>警告ありで完了</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>コントローラー</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>作成日時</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>実行ページ</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>実行状態</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>失敗</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>絞り込み</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>マシン</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>手動</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>要確認</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>次へ</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>これらのフィルターに一致する実行はありません。</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>発生源</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>親ワークフロー</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>前へ</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>キュー済み</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>ルート実行のみ</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>実行中</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>状態</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>成功</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>実行を表示</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>ワークフロー</value>

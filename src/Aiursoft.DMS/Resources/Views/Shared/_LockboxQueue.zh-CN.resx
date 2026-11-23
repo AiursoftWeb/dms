@@ -48,6 +48,9 @@
   <data name="Medium risk" xml:space="preserve">
     <value>中等风险</value>
   </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>需重新申请</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>下一页</value>
   </data>
@@ -97,7 +100,4 @@
     <value>{0} 请求分页</value>
   </data>
 
-  <data name="Needs a new request" xml:space="preserve">
-    <value>需重新申请</value>
-  </data>
 </root>

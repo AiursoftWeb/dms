@@ -57,13 +57,16 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>公開の標準ワークフローは登録されていません。</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>オープン</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>マシンターゲットが必要</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>リスク</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>ロール権限は、このDMSインスタンスのすべてのマシンおよび各ワークフローのリスクレベルに適用されます。自動承認には、{0} リクエスト権限が必要です。自分のリクエストを承認するには、セルフ承認権限も必要です。</value>
   </data>
   <data name="Safe" xml:space="preserve">
