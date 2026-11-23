@@ -29,6 +29,11 @@ public class ScheduledWorkflowTests
         var lease = registry.Schedules.Single(s => s.Id == "machine.ssh.reconcile-lease");
         Assert.IsTrue(lease.RunOnStartup && lease.ReconcileAfterInterruption);
         Assert.AreEqual(RiskLevel.Medium, lease.Definition.Risk);
+        var upgrade = registry.Schedules.Single(s => s.Id == ScheduledAgentUpgradeWorkflow.DefinitionName);
+        Assert.IsTrue(upgrade.Matches(Slot.Date) && upgrade.Matches(Slot.Date.AddHours(8)) && upgrade.Matches(Slot.Date.AddHours(16)));
+        Assert.IsFalse(upgrade.Matches(Slot) || upgrade.RunOnStartup || upgrade.ReconcileAfterInterruption);
+        Assert.AreEqual(RiskLevel.High, upgrade.Definition.Risk);
+        Assert.IsFalse(upgrade.Definition.PublicEntry);
         Assert.Throws<InvalidOperationException>(() => registry.RegisterAttributed(typeof(MissingRiskWorkflow)));
         Assert.Throws<Cronos.CronFormatException>(() => registry.RegisterAttributed(typeof(InvalidCronWorkflow)));
         Assert.Throws<InvalidOperationException>(() => registry.RegisterAttributed(typeof(InputWorkflow)));

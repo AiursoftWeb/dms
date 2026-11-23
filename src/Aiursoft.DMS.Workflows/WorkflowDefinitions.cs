@@ -9,7 +9,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     Func<MachineWorkflowContext, RebootInput, CancellationToken, Task<OperationResult>>? Reboot = null,
     OperationHost? Operations = null,
     Func<Guid, CancellationToken, Task<SshLeaseAuthorization>>? AuthorizeSshLease = null,
-    Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null);
+    Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null,
+    Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null);
 
 public sealed partial class MachineWorkflowRegistry
 {

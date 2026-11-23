@@ -566,7 +566,13 @@ The installed Agent downloads its architecture-specific upgrade bundle from its 
 
 Follow the same Workflow ID using `operation get-workflow`, `get-callstack` and `get-trace`. Success is reported only by the matching new Agent over its authenticated Controller connection. A failed download leaves the old service running. An interrupted or unconfirmed switch requires verification and is never retried automatically. Cancellation after the handoff cannot roll back the switch. A child upgrade does not resume an interrupted parent's C# stack.
 
-Use an installed Agent release that already supports this workflow for the first upgrade. Development Agents started from arbitrary publish directories cannot update themselves. This command does not provide scheduled updates, a historical version repository or automatic rollback. Hosts whose Agent cannot contact the Controller need an operator to restore connectivity.
+Use an installed Agent release that already supports this workflow for the first upgrade. Development Agents started from arbitrary publish directories cannot update themselves. The manual command does not provide a historical version repository or automatic rollback. Hosts whose Agent cannot contact the Controller need an operator to restore connectivity.
+
+### Schedule Agent upgrades
+
+Every managed machine running an installed Agent with this feature runs `machine.agent.scheduled-upgrade` at 00:00, 08:00 and 16:00 UTC. The Agent authenticates to the Controller and checks for a strictly newer version for its architecture. While it waits, other workflows run normally. New work resets the 10-second idle window. Once the window completes, the Agent reserves maintenance, checks the release again, and uses the same verified activation and reconnect confirmation as a manual upgrade.
+
+Open **Workflow history** to inspect the scheduled run and its outcome. Use the manual command above to bootstrap an older Agent onto a release that supports this schedule or to request an immediate upgrade through Lockbox.
 
 ### Build Agent installation and upgrade assets
 

@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.WebSockets;
+using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Workflows;
 
@@ -14,6 +16,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
     private CancellationToken _stopping;
     private readonly HashSet<Task> _executions = [];
     private DateTime? _lastScheduleMinute;
+    private long _workflowStarts;
 
     public async Task RunAsync(CancellationToken stopping)
     {
@@ -69,6 +72,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
     // Called under _startGate. Keep live executions until graceful shutdown has drained them.
     private void Launch(JournalTask task)
     {
+        _workflowStarts++;
         _executions.RemoveWhere(t => t.IsCompleted);
         _executions.Add(ExecuteAsync(task));
     }
@@ -196,6 +200,56 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         }
     }
 
+    private async Task<string> ScheduledUpgradeAsync(Guid taskId, MachineWorkflowContext context, CancellationToken token)
+    {
+        var input = await AgentUpgradeManifest.GetAsync(controller, key, token);
+        var release = input.Releases.Single(item => item.Architecture == AgentUpgrade.Architecture);
+        if (Version.Parse(release.Version) <= Version.Parse(AgentUpgrade.Version))
+            return JsonSerializer.Serialize(new OperationResult("No newer Agent release is available."));
+
+        await context.TraceAsync("Waiting for all other workflows to exit and for 10 seconds of continuous idle time.");
+        if (!await TryReserveUpgradeWindowAsync(taskId, token))
+            return JsonSerializer.Serialize(new OperationResult("Another Agent maintenance operation took precedence."));
+
+        var current = await AgentUpgradeManifest.GetAsync(controller, key, token);
+        if (current.Releases.Single(item => item.Architecture == release.Architecture) != release)
+            return JsonSerializer.Serialize(new OperationResult("The Agent release changed while waiting."));
+
+        journal.SetScheduledUpgradeRelease(taskId, release);
+        await context.TraceAsync("The Agent has been idle for 10 seconds. Starting the scheduled upgrade.");
+        var result = await new AgentUpgrade(installedState!, journal).PrepareAsync(taskId, context, current, token);
+        return JsonSerializer.Serialize(result);
+    }
+
+    private async Task<bool> TryReserveUpgradeWindowAsync(Guid taskId, CancellationToken token)
+    {
+        long? idleSince = null;
+        var startsAtIdle = 0L;
+        while (true)
+        {
+            token.ThrowIfCancellationRequested();
+            lock (_startGate)
+            {
+                if (_maintenance != null) return false;
+                if (_running.Keys.Any(id => id != taskId) || journal.HasUnsettledWork(taskId))
+                {
+                    idleSince = null;
+                }
+                else if (idleSince == null || startsAtIdle != _workflowStarts)
+                {
+                    idleSince = Stopwatch.GetTimestamp();
+                    startsAtIdle = _workflowStarts;
+                }
+                else if (Stopwatch.GetElapsedTime(idleSince.Value) >= TimeSpan.FromSeconds(10))
+                {
+                    _maintenance = taskId;
+                    return true;
+                }
+            }
+            await Task.Delay(250, token);
+        }
+    }
+
     private async Task<OperationResult> RebootAsync(Guid taskId, MachineWorkflowContext context, RebootInput input, CancellationToken token)
     {
         lock (_startGate)
@@ -231,7 +285,8 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             Artifacts: new AgentArtifactTransport(controller, key, task.Id),
             Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token),
             AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token),
-            GetSecurityBaselinePolicy: token => AgentSecurityBaselinePolicy.GetAsync(controller, key, token));
+            GetSecurityBaselinePolicy: token => AgentSecurityBaselinePolicy.GetAsync(controller, key, token),
+            ScheduledUpgrade: installedState == null ? null : (context, token) => ScheduledUpgradeAsync(task.Id, context, token));
         var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try
@@ -244,7 +299,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         {
             if (journal.Snapshot().Single(t => t.Id == task.Id).State == RunState.Running)
                 await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition,
-                    State = RunState.Failed, Result = System.Text.Json.JsonSerializer.Serialize(new { Error = exception.Message }) });
+                    State = RunState.Failed, Result = JsonSerializer.Serialize(new { Error = exception.Message }) });
             Console.Error.WriteLine($"Workflow {task.Id}: {exception.GetType().Name}. Inspect the workflow trace and journal.");
         }
         finally
