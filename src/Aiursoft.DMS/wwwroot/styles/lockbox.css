@@ -60,6 +60,22 @@
     letter-spacing: -.025em;
 }
 
+.lockbox-workflow-title {
+    color: var(--bs-primary);
+    font-size: clamp(1.2rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+}
+
+.lockbox-workflow-desc {
+    font-size: 0.95rem;
+    margin-block-start: 0.2rem;
+}
+
+.lockbox-contract-banner {
+    border-inline-start: 0.25rem solid var(--bs-info);
+    border-radius: 0.4rem;
+}
+
 .lockbox-definition,
 .lockbox-label,
 .lockbox-context dt,
@@ -99,7 +115,7 @@
 
 .lockbox-context {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.35fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr);
     gap: 1rem 1.5rem;
     margin: 1.5rem 0 0;
     padding-block-start: 1.15rem;
@@ -123,6 +139,21 @@
     padding: .18rem .58rem;
     border-radius: .4rem;
     background: var(--bs-tertiary-bg);
+}
+
+.lockbox-target-item {
+    border: 1px solid var(--bs-border-color);
+    padding: .35rem .65rem !important;
+}
+
+.lockbox-target-uuid {
+    font-size: .78rem;
+    opacity: .85;
+    word-break: break-all;
+}
+
+.lockbox-reason-panel .lockbox-reason {
+    margin-block-start: 0.5rem;
 }
 
 .lockbox-reason {
