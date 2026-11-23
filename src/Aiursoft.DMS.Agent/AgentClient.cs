@@ -277,6 +277,33 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         }
     }
 
+    private async Task<OperationResult> PoweroffAsync(Guid taskId, MachineWorkflowContext context, PoweroffInput input, CancellationToken token)
+    {
+        lock (_startGate)
+        {
+            if (_maintenance != null) throw new InvalidOperationException("An Agent lifecycle operation is already running.");
+            _maintenance = taskId;
+        }
+        try
+        {
+            using var drain = CancellationTokenSource.CreateLinkedTokenSource(token); drain.CancelAfter(TimeSpan.FromMinutes(1));
+            await context.TraceAsync("Pausing new work and waiting for other machine tasks before poweroff.");
+            while (true)
+            {
+                var others = journal.Snapshot().Where(t => t.Id != taskId).ToArray();
+                if (others.Any(t => t.State is RunState.NeedsVerification or RunState.CancelRequested)) throw new InvalidOperationException("Reconcile uncertain tasks before powering off.");
+                if (others.All(t => t.State != RunState.Running)) break;
+                await Task.Delay(250, drain.Token);
+            }
+            return await new AgentPoweroff(installedState!, journal).PrepareAsync(taskId, context, input, token);
+        }
+        catch
+        {
+            lock (_startGate) { if (_maintenance == taskId) _maintenance = null; }
+            throw;
+        }
+    }
+
     private async Task ExecuteAsync(JournalTask task)
     {
         var environment = new AgentEnvironment(journal.InstallationId, typeof(AgentClient).Assembly.GetName().Version!.ToString(),
@@ -284,6 +311,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token),
             Artifacts: new AgentArtifactTransport(controller, key, task.Id),
             Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token),
+            Poweroff: installedState == null ? null : (context, input, token) => PoweroffAsync(task.Id, context, input, token),
             AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token),
             GetSecurityBaselinePolicy: token => AgentSecurityBaselinePolicy.GetAsync(controller, key, token),
             ScheduledUpgrade: installedState == null ? null : (context, token) => ScheduledUpgradeAsync(task.Id, context, token),

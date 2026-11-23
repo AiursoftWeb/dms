@@ -1034,6 +1034,20 @@ public static partial class DmsCommandApp
             delaySeconds);
     }
 
+    private static ActionCommand NewSystemPoweroffCommand()
+    {
+        var delaySeconds = new Option<int>("--delay-seconds")
+            { DefaultValueFactory = _ => 15, Description = "Seconds to wait before shutting down and powering off the machine (countdown, 5 to 3600)." };
+        delaySeconds.Aliases.Add("--countdown-seconds");
+        var cmd = StandardCommand("poweroff",
+            "Shut down the machine and power off.",
+            OperationsWorkflows.SystemPoweroff,
+            p => new PoweroffInput(p.GetValue(delaySeconds)),
+            delaySeconds);
+        cmd.CommandAliases = ["shutdown"];
+        return cmd;
+    }
+
     private static ActionCommand NewSystemExecuteScriptCommand()
     {
         var language = new Option<string>("--language")

@@ -268,6 +268,19 @@ public static partial class SystemOperations
             token);
     }
 
+    public static Task<OperationResult> SystemPoweroffAsync(MachineWorkflowContext context,
+        PoweroffInput input,
+        AgentEnvironment agent,
+        CancellationToken token)
+    {
+        input.Validate();
+        return (agent.Poweroff ??
+                throw new NotSupportedException("Poweroff requires the installed Agent."))(
+            context,
+            input,
+            token);
+    }
+
     public static async Task<OperationResult> SystemExecuteScriptAsync(MachineWorkflowContext context,
         ScriptInput input,
         AgentEnvironment agent,

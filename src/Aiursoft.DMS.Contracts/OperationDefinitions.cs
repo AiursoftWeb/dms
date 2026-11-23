@@ -461,6 +461,10 @@ public static class OperationsWorkflows
         new("machine.system.reboot", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemReboot)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<PoweroffInput, OperationResult> SystemPoweroff =
+        new("machine.system.poweroff", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemPoweroff)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.VeryHigh)]
     public static readonly MachineWorkflowDefinition<ScriptInput, OperationResult> SystemExecuteScript =
         new("machine.system.execute-script",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemExecuteScript)),

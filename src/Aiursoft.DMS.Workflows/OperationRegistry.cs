@@ -376,6 +376,11 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 SystemOperations.SystemRebootAsync,
                 agent));
+        Register(OperationsWorkflows.SystemPoweroff,
+            (input, agent) => new OperationWorkflow<PoweroffInput>(OperationsWorkflows.SystemPoweroff,
+                input,
+                SystemOperations.SystemPoweroffAsync,
+                agent));
         Register(OperationsWorkflows.SystemExecuteScript,
             (input, agent) => new OperationWorkflow<ScriptInput>(OperationsWorkflows.SystemExecuteScript,
                 input,
