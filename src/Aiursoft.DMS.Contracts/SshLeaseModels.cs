@@ -20,8 +20,10 @@ public sealed record SshOpenInput(
         if (Minutes is < 30 or > 270) throw new ArgumentException("SSH lease duration must be 30 to 270 minutes.");
         if (Fingerprint != null && (KeyId == Guid.Empty || Fingerprint.Length is 0 or > 80))
             throw new ArgumentException("Invalid SSH key fingerprint.");
+        // JSON arrays can contain null even when the element type is non-nullable.
         if (Keys != null && (KeyId != Guid.Empty || Keys.Length is < 1 or > SshPublicKey.MaxVerifiedPerUser ||
-            Keys.Any(key => key is null || key.Id == Guid.Empty || key.Fingerprint is not { Length: > 0 and <= 80 }) ||
+            Array.IndexOf(Keys, null!) >= 0 ||
+            Keys.Any(key => key.Id == Guid.Empty || key.Fingerprint is not { Length: > 0 and <= 80 }) ||
             Keys.Select(key => key.Id).Distinct().Count() != Keys.Length ||
             Keys.Select(key => key.Fingerprint).Distinct(StringComparer.Ordinal).Count() != Keys.Length))
             throw new ArgumentException("Invalid approved SSH key selection.");
