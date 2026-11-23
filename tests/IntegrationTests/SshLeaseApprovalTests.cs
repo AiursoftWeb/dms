@@ -130,6 +130,9 @@ public sealed class SshLeaseApprovalTests : TestBase
 
         var injected = definition.Request(new SshOpenInput { Keys = [new SshApprovedKey(first.Id, first.Fingerprint)] }, reason, [target.Id]);
         Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => workflows.SubmitAsync(requester.Id, injected))).StatusCode);
+        var invalid = definition.Request(new SshOpenInput(), reason, [target.Id]);
+        invalid.Input = """{"Keys":[null]}""";
+        Assert.AreEqual(400, (await Assert.ThrowsAsync<DmsException>(() => workflows.SubmitAsync(requester.Id, invalid))).StatusCode);
         var different = definition.Request(new SshOpenInput(first.Id), reason, [target.Id], requestId: requestId);
         Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => workflows.SubmitAsync(requester.Id, different))).StatusCode);
 
