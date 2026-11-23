@@ -287,7 +287,8 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token),
             GetSecurityBaselinePolicy: token => AgentSecurityBaselinePolicy.GetAsync(controller, key, token),
             ScheduledUpgrade: installedState == null ? null : (context, token) => ScheduledUpgradeAsync(task.Id, context, token),
-            AptTransactionHook: AgentAptTransaction.Hook);
+            AptTransactionHook: AgentAptTransaction.Hook,
+            GetFrpsDeployToken: (id, token) => AgentFrpsDeployToken.GetAsync(controller, key, id, token));
         var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
         _running[task.Id] = context;
         try
