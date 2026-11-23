@@ -75,7 +75,7 @@ public class BoxDeployTests
         if (problem == "missing") Directory.Move(box.Repository, Path.Combine(box.Root, "unrelated"));
         if (problem == "ambiguous")
         {
-            var second = Path.Combine(box.Root, "Box-other");
+            var second = Path.Combine(box.Root, "BoxFor-other");
             Directory.CreateDirectory(Path.Combine(second, ".git"));
             File.WriteAllText(Path.Combine(second, "deploy.sh"), "exit 99");
         }
@@ -178,6 +178,9 @@ public class BoxDeployTests
     [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforchina.git")]
     [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforhl.git")]
     [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/boxforarchive.git")]
+    [DataRow("https://gitlab.aiursoft.com/aiursoft/BoxForMoog.git")]
+    [DataRow("ssh://git@ssh.aiursoft.com:2202/aiursoft/BoxForMoog.git")]
+    [DataRow("https://gitlab.aiursoft.com/aiursoft/boxforcustom.git")]
     public async Task OfficialHttpsScpAndPublishedSshOriginsAreInspectedAndDeployable(string origin)
     {
         using var box = new Box();
@@ -186,6 +189,9 @@ public class BoxDeployTests
         Assert.AreEqual("{}", await box.InspectAsync());
         var trace = string.Join("\n", box.Events.Where(e => e.IsTrace).Select(e => e.Message));
         StringAssert.Contains(trace, "official=true");
+        var repoMatch = System.Text.RegularExpressions.Regex.Match(origin, @"boxfor[a-z0-9_-]+", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        if (repoMatch.Success)
+            StringAssert.Contains(trace, $"repository={repoMatch.Value.ToLowerInvariant()}");
         StringAssert.Contains(trace, "Branch: master");
         StringAssert.Contains(trace, "Commit: " + head);
         StringAssert.Contains(trace, "TrackedChanges: false");
@@ -421,7 +427,7 @@ public class BoxDeployTests
     {
         public string Directory { get; } = System.IO.Directory.CreateTempSubdirectory("dms-box-deploy-").FullName;
         public string Root => Path.Combine(Directory, "swarm-vol");
-        public string Repository => Path.Combine(Root, "Box with spaces");
+        public string Repository => Path.Combine(Root, "BoxFor with spaces");
         public string Source => Path.Combine(Directory, "source");
         public string Executable => Path.Combine(Directory, "git");
         public string GitConfiguration => Path.Combine(Directory, "config", "box-git.json");

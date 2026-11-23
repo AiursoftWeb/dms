@@ -8,9 +8,9 @@ namespace Aiursoft.DMS.Workflows;
 public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root = "/swarm-vol", string git = "/usr/bin/git", string gitConfigurationPath = BoxGitConfiguration.FilePath)
     : MachineWorkflow<BoxDeployInput, BoxDeployResult>(MachineWorkflows.BoxDeploy, input)
 {
-    // Keep credentials out of the query output. Only the five official Box origins are accepted.
+    // Keep credentials out of the query output. Only official Box origins are accepted.
     // GitLab advertises this SSH endpoint; retain the existing HTTPS and SCP forms.
-    internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxforglobal|boxforproart|boxforchina|boxforhl|boxforarchive)(\.git)?$";
+    internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxfor[a-zA-Z0-9_-]+)(\.git)?$";
 
     private const string Preflight = """
         set -euo pipefail
@@ -98,7 +98,7 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         if (!Directory.Exists(directory)) throw new InvalidOperationException("The Box search root does not exist.");
         // Search direct children only: never walk Docker volumes or choose an arbitrary first match.
         var candidates = Directory.EnumerateDirectories(directory)
-            .Where(path => Path.GetFileName(path).Contains("box", StringComparison.OrdinalIgnoreCase)
+            .Where(path => Path.GetFileName(path).StartsWith("boxfor", StringComparison.OrdinalIgnoreCase)
                 && !IsLink(path) && Directory.Exists(Path.Combine(path, ".git"))
                 && !IsLink(Path.Combine(path, ".git")) && File.Exists(Path.Combine(path, "deploy.sh"))
                 && !IsLink(Path.Combine(path, "deploy.sh")))
