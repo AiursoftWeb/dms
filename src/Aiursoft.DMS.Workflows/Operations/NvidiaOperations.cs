@@ -1,10 +1,12 @@
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows.Operations;
 
-public static class NvidiaOperations
+public static partial class NvidiaOperations
 {
     private static readonly string[] SnapshotArguments = ["--query-gpu=index,uuid,name,driver_version,memory.total,memory.used,utilization.gpu,utilization.memory,temperature.gpu,power.draw", "--format=csv,noheader,nounits"];
     private static readonly string[] TopologyArguments = ["topo", "--matrix"];
@@ -36,7 +38,7 @@ public static class NvidiaOperations
             return new OperationResult("nvidia-smi reported no GPUs in the snapshot.", Complete: false);
 
         for (var index = 0; index < gpus.Length; index++)
-            await TraceGpuAsync(context, $"GPU {index}", gpus[index]);
+            await TraceGpuAsync(context, $"GPU {index}", gpus[index], token);
 
         if (gpus.Any(gpu => Field(gpu, "product_name").StartsWith("NVIDIA GB10", StringComparison.Ordinal)))
             await TraceSharedMemoryAsync(context, OperationOutput.Host(agent), token);
@@ -46,8 +48,10 @@ public static class NvidiaOperations
             "N/A fields are unavailable.");
     }
 
-    private static async Task TraceGpuAsync(MachineWorkflowContext context, string label, XElement gpu)
+    private static async Task TraceGpuAsync(MachineWorkflowContext context, string label, XElement gpu,
+        CancellationToken token)
     {
+        token.ThrowIfCancellationRequested();
         var memory = gpu.Element("fb_memory_usage");
         var utilization = gpu.Element("utilization");
         var power = gpu.Element("gpu_power_readings") ?? gpu.Element("power_readings");
@@ -72,9 +76,12 @@ public static class NvidiaOperations
         }
 
         foreach (var process in processes)
+        {
+            token.ThrowIfCancellationRequested();
             await context.TraceAsync($"{label} process | PID {Field(process, "pid")} | " +
                 $"type {Field(process, "type")} | {Field(process, "process_name")} | " +
                 $"GPU context memory {Field(process, "used_memory")}");
+        }
     }
 
     private static async Task TraceSharedMemoryAsync(MachineWorkflowContext context, OperationHost host,
@@ -121,8 +128,9 @@ public static class NvidiaOperations
             while (reader.ReadLine() is { } line)
             {
                 token.ThrowIfCancellationRequested();
-                if (!string.IsNullOrWhiteSpace(line))
-                    await OperationOutput.TraceTextAsync(context, line.Replace("\t", "        ").TrimEnd());
+                var formatted = FormatTopologyLine(line);
+                if (formatted.Length > 0)
+                    await OperationOutput.TraceTextAsync(context, formatted);
             }
         }
         catch (Exception exception) when (exception is IOException or NotSupportedException ||
@@ -131,6 +139,22 @@ public static class NvidiaOperations
             await context.WarningAsync($"GPU topology unavailable: {exception.Message}");
         }
     }
+
+    private static string FormatTopologyLine(string line)
+    {
+        const int tabWidth = 8;
+        var cells = AnsiStyle().Replace(line, string.Empty).Split('\t');
+        var result = new StringBuilder(cells[0]);
+        foreach (var cell in cells.Skip(1))
+        {
+            result.Append(' ', tabWidth - result.Length % tabWidth);
+            result.Append(cell);
+        }
+        return result.ToString().TrimEnd();
+    }
+
+    [GeneratedRegex(@"\x1B\[[0-9;]*m")]
+    private static partial Regex AnsiStyle();
 
     private static string Field(XElement? element, string name) =>
         element?.Element(name)?.Value.Trim() is { Length: > 0 } value ? value : "N/A";

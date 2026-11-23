@@ -461,7 +461,7 @@ public class OperationsWorkflowTests
                 Assert.AreEqual("nvidia-smi", command.Executable);
                 if (command.Arguments.Contains("--xml-format")) return Task.FromResult(new NativeResult(0, xml, ""));
                 CollectionAssert.AreEqual(new[] { "topo", "--matrix" }, command.Arguments.ToArray());
-                return Task.FromResult(new NativeResult(0, "\tGPU0\nGPU0\tX\n", ""));
+                return Task.FromResult(new NativeResult(0, "\t\u001b[4mGPU0\u001b[0m\nGPU0\tX\n", ""));
             });
             var result = await RunAsync(OperationsWorkflows.NvidiaOverview, new EmptyInput(), EnvironmentFor(host));
 
@@ -473,7 +473,7 @@ public class OperationsWorkflowTests
             StringAssert.Contains(trace, $"framebuffer memory | used {used} | total {total}");
             StringAssert.Contains(trace, $"PID 100 | type C+G | fixture-worker | GPU context memory {processMemory}");
             StringAssert.Contains(trace, "temperature 47 C | power 13.10 W");
-            Assert.IsTrue(lines.Contains("        GPU0") && lines.Contains("GPU0        X"));
+            Assert.IsTrue(lines.Contains("        GPU0") && lines.Contains("GPU0    X"));
             var shared = trace.Contains("Host unified memory shared by CPU and GPU | used (estimated) 61.0 GiB | " +
                 "total 122.1 GiB | available 61.0 GiB (host-wide)", StringComparison.Ordinal);
             Assert.AreEqual(unified, shared);
