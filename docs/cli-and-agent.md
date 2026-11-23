@@ -385,6 +385,24 @@ health separately. Updating the Controller itself can temporarily interrupt the
 CLI/API connection; inspect the original Workflow ID after reconnecting. Update
 the Controller, CLI (1.2.0) and Agent (1.3.0) before using this new definition.
 
+## Deploy FRPS
+
+Use `dms machine frps deploy` with one managed Linux machine. The request opens a Very High risk Lockbox. The Agent installs the pinned upstream FRPS release for AMD64 or ARM64, verifies its SHA-256 and configuration, and checks that the systemd service starts.
+
+```bash
+dms machine frps deploy --machine-id <machine-id> --reason "Upgrade FRPS"
+```
+
+For a fresh install, supply a nonempty `--frps-token`:
+
+```bash
+read -rs frps_token
+dms machine frps deploy --machine-id <machine-id> --frps-token "$frps_token" --reason "Install FRPS"
+unset frps_token
+```
+
+A fresh install creates `frps.service` and listens on TCP and UDP port 7000. An upgrade of an existing `frps.service` preserves the service definition and configuration when the token option is omitted or empty. To rotate an existing inline TOML token, supply the replacement. The Controller encrypts the token before saving the Lockbox and releases it only to the approved running Agent. An upgrade restarts FRPS and briefly interrupts its tunnels. Custom wrappers and external authentication require separate maintenance.
+
 ## Force a Box Puller mirror update
 
 With `DMS_SERVER` and `DMS_API_KEY` configured, an enrolled Box can request:
