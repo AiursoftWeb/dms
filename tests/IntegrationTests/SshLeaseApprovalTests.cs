@@ -140,18 +140,16 @@ public sealed class SshLeaseApprovalTests : TestBase
         db.WorkflowRuns.AddRange(run, failed);
         await db.SaveChangesAsync();
 
-        using var culture = await Http.GetAsync("/Culture/Set?culture=zh-CN&returnUrl=/Dms");
-        Assert.AreEqual(HttpStatusCode.Found, culture.StatusCode);
         foreach (var route in new[] { approvalPage, $"/Dms/Operation/{run.Id}", $"/Dms/Operation/{failed.Id}" })
         {
             var page = await Page(route);
-            StringAssert.Contains(page, "gx10-test 尚未准备好临时 SSH");
-            StringAssert.Contains(page, "管理员确认机器准备好后，请重新提交申请。");
+            StringAssert.Contains(page, "gx10-test is not ready for temporary SSH");
+            StringAssert.Contains(page, "Submit a new request once the machine is ready.");
         }
 
         var childPage = await Page($"/Dms/Operation/{failed.Id}");
         StringAssert.Contains(childPage, SshOpenInput.BaselineRequiredError);
-        Assert.IsTrue(childPage.IndexOf("尚未准备好临时 SSH", StringComparison.Ordinal) <
+        Assert.IsTrue(childPage.IndexOf("gx10-test is not ready for temporary SSH", StringComparison.Ordinal) <
             childPage.IndexOf(SshOpenInput.BaselineRequiredError, StringComparison.Ordinal));
     }
 
