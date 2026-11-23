@@ -139,18 +139,25 @@ dms operation get-trace --id "$CHILD_WORKFLOW_ID" --output-format json
 
 Valid partial results are Warning with `Complete=false`; invalid input, corrupt/unsupported response formats and execution errors are not successful empty measurements. Large history reports can also be returned as a normal authorized JSON artifact when Agent artifact transport is available. These commands use retained data and finite observations; they do not add continuous process/network collection or recover missing historical client attribution.
 
-### NVIDIA (6)
+### NVIDIA (7)
 
 Driver-reported snapshots, compute/graphics processes, finite samples, ECC/Xid evidence, topology and CUDA compatibility. N/A stays unavailable; shared-memory GPUs need not expose all discrete-GPU fields.
 
 | Command | Risk | Options |
 | --- | --- | --- |
 | `nvidia smi` | Safe | — |
+| `nvidia overview` | Low | — |
 | `nvidia processes` | Low | — |
 | `nvidia sample` | Low | `--seconds=10`; `--interval=1`; `--limit=50` |
 | `nvidia errors` | Low | — |
 | `nvidia topology` | Low | — |
 | `nvidia driver-info` | Low | — |
+
+Run `dms machine nvidia overview --machine-id "$MACHINE_ID" --reason "Inspect GPU usage"`, then use
+`dms workflow trace "$WORKFLOW_ID"` to see the driver, each GPU's utilization and framebuffer memory,
+driver-reported compute and graphics processes, and the topology matrix. The GB10 reports host-wide unified memory
+separately. Unavailable GPU readings are shown as `N/A`. An unavailable process list or topology is reported as a
+warning and collected information remains in the trace. Update the Controller, CLI and target Agent for this command.
 
 ### Docker containers and files (10)
 

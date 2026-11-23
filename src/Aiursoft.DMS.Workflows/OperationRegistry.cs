@@ -184,6 +184,11 @@ public sealed partial class MachineWorkflowRegistry
                     input,
                     NvidiaOperations.SmiAsync,
                     agent));
+        Register(OperationsWorkflows.NvidiaOverview,
+            (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.NvidiaOverview,
+                input,
+                NvidiaOperations.OverviewAsync,
+                agent));
         Register(OperationsWorkflows.NvidiaProcesses,
             (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.NvidiaProcesses,
                 input,

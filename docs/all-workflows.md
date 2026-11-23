@@ -82,6 +82,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Sample network traffic | `machine.networking.traffic-sample` | `dms machine networking traffic-sample` (Medium) | — | Samples interface counters and connection metadata. |
 | Inspect NVIDIA drivers | `machine.nvidia.driver-info` | `dms machine nvidia driver-info` (Low) | — | Check NVIDIA driver, CUDA, and container runtime information. |
 | Read NVIDIA errors | `machine.nvidia.errors` | `dms machine nvidia errors` (Low) | — | Read NVIDIA driver and GPU error events. |
+| Inspect NVIDIA GPU overview | `machine.nvidia.overview` | `dms machine nvidia overview` (Low) | — | Show NVIDIA GPUs, driver, memory, active processes, and topology in one trace. |
 | List NVIDIA GPU processes | `machine.nvidia.processes` | `dms machine nvidia processes` (Low) | — | List processes using NVIDIA GPUs. |
 | Sample NVIDIA GPU usage | `machine.nvidia.sample` | `dms machine nvidia sample` (Low) | — | Sample NVIDIA GPU utilization and memory over time. |
 | Inspect NVIDIA GPU status | `machine.nvidia.smi` | `dms machine nvidia smi` (Safe) | — | Show NVIDIA GPU usage, memory, temperature, and power. |
