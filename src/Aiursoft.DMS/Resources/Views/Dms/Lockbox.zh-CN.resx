@@ -163,4 +163,46 @@
     <value>{0} 请求人 ID</value>
   </data>
 
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>已批准 · 等待执行</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>返回我的审批</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>当前可用的 Agent 安装包</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>需重新申请</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>申请时选定的 Agent 安装包</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>确认当前安装包后，为原目标机器提交一笔新申请。</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>重新申请升级</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>暂时无法读取 Agent 安装包，请稍后重试。</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>当前 Agent 安装包再次发生变化，请重新确认后提交。</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>原先选定的 Agent 安装包已恢复供应，可以回到原申请继续审批。</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>请申请人用当前安装包重新提交升级申请。</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>申请时选定的 Agent 安装包已被替换，升级尚未开始。</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>升级 {0} 的 DMS Agent</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>你的当前角色没有申请此升级的权限。</value>
+  </data>
 </root>

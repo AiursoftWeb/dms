@@ -49,6 +49,24 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Loc
     }
 
     [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResubmitAgentUpgrade(LockboxId id, Guid requestId, string releaseIdentity,
+        [FromServices] WorkflowService workflows)
+    {
+        if (!ModelState.IsValid || requestId == Guid.Empty || releaseIdentity is not { Length: 64 }) return BadRequest();
+        try
+        {
+            var replacement = await workflows.ResubmitAgentUpgradeAsync(Actor, id.Value, requestId, releaseIdentity);
+            return RedirectToAction(nameof(MyLockbox), new { id = new LockboxId(replacement.Id) });
+        }
+        catch (DmsException exception)
+        {
+            if (exception.StatusCode is not (409 or 503)) return StatusCode(exception.StatusCode);
+            TempData["DmsNotice"] = exception.Message;
+            return RedirectToAction(nameof(MyLockbox), new { id });
+        }
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Withdraw(LockboxId id, [FromServices] WorkflowService workflows, bool fromDetail = false)
     {
         if (!ModelState.IsValid) return BadRequest();
