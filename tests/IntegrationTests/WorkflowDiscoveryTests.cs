@@ -149,7 +149,8 @@ public class WorkflowDiscoveryTests : TestBase
     [TestMethod]
     public void CrossLocationNameCollisionIsRejectedEvenForInternalDefinitions()
     {
-        var machines = new MachineWorkflowRegistry(); var clusters = new ClusterWorkflowRegistry();
+        var machines = new MachineWorkflowRegistry();
+        var clusters = new ClusterWorkflowRegistry(new DmsArtifactStore(new ConfigurationBuilder().Build()));
         clusters.Register(new ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>>(MachineWorkflows.Performance.Name, RiskLevel.Safe), () => new GetMachinesWorkflow());
         Assert.Throws<InvalidOperationException>(() => new WorkflowCatalog(machines, clusters).PublicDefinitions());
     }

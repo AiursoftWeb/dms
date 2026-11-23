@@ -404,7 +404,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         access.Audit(user, "operation.get", id);
         await db.SaveChangesAsync();
         return new WorkflowDetails(run.Id, run.RootId, run.ParentId, run.LockboxId,
-            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, VisibleWorkflowResult(run),
+            run.MachineId, run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, InvestigationResult(run),
             run.Origin, run.ParentId == null ? run.Trigger : WorkflowTrigger.Subworkflow,
             run.ScheduleId, run.ScheduleExpression, run.ScheduledAt);
     });
@@ -413,16 +413,18 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
         await access.RequireViewAsync(user);
-        var all = await db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == run.RootId).OrderBy(r => r.CreatedAt).ToListAsync();
+        var all = await db.WorkflowRuns.AsNoTracking().NotCacheable().Where(r => r.RootId == run.RootId).OrderBy(r => r.CreatedAt).ToListAsync();
         var selected = SubtreeIds(id, all.Select(r => (r.Id, r.ParentId)));
         access.Audit(user, "operation.callstack", id); await db.SaveChangesAsync();
-        var subtree = all.Where(r => selected.Contains(r.Id)).ToList();
-        foreach (var item in subtree) item.Result = VisibleWorkflowResult(item);
-        return subtree;
+        var tree = all.Where(r => selected.Contains(r.Id)).ToList();
+        foreach (var item in tree) item.Result = InvestigationResult(item);
+        return tree;
     });
 
-    private static string VisibleWorkflowResult(WorkflowRun run) =>
-        ClickHouseWorkflows.HasPrivateResult(run.Definition) && run.State is RunState.Succeeded or RunState.Warning
+    // Dedicated result endpoints enforce ownership for artifact lists and ClickHouse rows.
+    private static string InvestigationResult(WorkflowRun run) =>
+        run.Definition == WorkflowNames.ListArtifacts ||
+        (ClickHouseWorkflows.HasPrivateResult(run.Definition) && run.State is RunState.Succeeded or RunState.Warning)
             ? string.Empty : run.Result;
 
     public async Task<IReadOnlyDictionary<string, string>> TraceScopeAsync(string user, Guid id, bool recursive)

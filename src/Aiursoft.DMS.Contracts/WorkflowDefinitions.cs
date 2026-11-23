@@ -137,6 +137,10 @@ public static class ClusterWorkflows
     public static readonly ClusterWorkflowDefinition<EmptyInput, ClusterDiskUsageResult> DiskUsage = new("cluster.disk-usage", WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(DiskUsage)), "1", SelectMachines: true, PublicEntry: true);
     [WorkflowRisk(RiskLevel.Open)]
     public static readonly ClusterWorkflowDefinition<EmptyInput, List<MachineSummary>> GetMachines = new(WorkflowNames.ListMachines, WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(GetMachines)), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.Open)]
+    public static readonly ClusterWorkflowDefinition<ArtifactListInput, List<ArtifactListItem>> ListArtifacts =
+        new(WorkflowNames.ListArtifacts, WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(ListArtifacts)),
+            ValidateInput: input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Medium)]
     public static readonly ClusterWorkflowDefinition<AddMachineInput, AddMachineResult> AddMachine =
         new(WorkflowNames.AddMachine, WorkflowMetadata.Risk(typeof(ClusterWorkflows), nameof(AddMachine)),
