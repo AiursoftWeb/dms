@@ -20,6 +20,8 @@ Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its op
 
 After approval and execution of a `machine filesystem ls` request, run `dms workflow result "$WORKFLOW_ID"` with the root ID to see each target's directory listing together. This requires the existing Read DMS operations permission. Empty directories, incomplete listings and failed machines have distinct statuses. JSON includes the machine statuses and entries; CSV writes one row per directory entry and reports statuses needing attention on standard error. Large historical listings depend on the retained trace data. The Controller reads the pending spool as well as the archive, so results can be available before trace archival finishes.
 
+With Client 1.23.0 and an updated Controller, follow the command printed in the table receipt. A receipt without a Workflow ID points to `dms lockbox status lb/<UUID>`. An approved listing points to `dms workflow result <WorkflowId>`. JSON and CSV retain their existing fields.
+
 Trace entries include their UTC time, Workflow ID, definition, source and text. Workflow authors use `TraceAsync` for execution context and `WarningAsync` for incomplete observations; native process output is written as `stdout` and `stderr`. Fixed operations report their tool, time limit, elapsed time, exit code and output character counts. Completed `OperationWorkflow` functions also write their result summary. These diagnostics do not dump arguments, standard input or environment variables; operations that suppress raw output retain that choice.
 
 Machine events are persisted in the Agent journal before delivery through its outbound WebSocket. The Controller durably spools trace events before acknowledging them and flushes them to ClickHouse `DmsWorkflowTrace`. Unacknowledged events can be retransmitted; event IDs deduplicate archive reads. Workflow metadata and Lockbox decisions remain in the relational database, with structured investigation facts archived separately to `DmsWorkflowAudit`. ClickHouse downtime retains a bounded backlog rather than silently discarding trace. Trace queries can briefly lag execution; `PendingArchiveEvents` reports the Controller-wide backlog, not just the selected workflow.
@@ -256,6 +258,8 @@ Observed Secure Boot and encryption state, effective SSH settings for an explici
 An export workflow reads the approved path after approval and returns an immutable artifact ID, SHA256, length and kind in its typed result. The bytes travel over the Agent's outbound HTTP connection to its Controller. They are stored privately under `Dms:StatePath/artifacts`, outside ClickHouse and the relational database. Trace contains metadata and progress, not the binary payload.
 
 Run `dms artifact ls` to see the IDs, names, sizes and expiration times of your completed, unexpired artifacts. It needs Run open workflows and is automatically approved and audited. Use `--limit` from 1 to 20 (default 20), `--offset` to skip entries in newest-first order, or `--output-format json` or `csv`. A blank expiration indicates an input retained for audit. Workflow status and the call tree show execution metadata. Only the requester can retrieve the listing through its Open Lockbox result.
+
+To download a file, copy its ID from `dms artifact ls` and run `dms artifact download --id "$ARTIFACT_ID" --file ./report.tar`.
 
 ```sh
 dms machine filesystem export --machine-id "$MACHINE_ID" --path /srv/reports --recursive --reason "Export these reports"

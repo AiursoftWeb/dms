@@ -93,6 +93,23 @@ public class ArtifactWorkflowTests : TestBase
             Http.BaseAddress.ToString(), "--api-key", setup.ReviewerKey]);
         Assert.AreNotEqual(0, denied.ProgramReturn);
         Assert.IsTrue(string.IsNullOrWhiteSpace(denied.StdOut));
+
+        await DatabaseAsync(async db =>
+        {
+            DmsTestPermissions.Set(db, setup.User, AppPermissionNames.CanReadDmsOperations);
+            return await db.SaveChangesAsync();
+        });
+        var directory = Directory.CreateTempSubdirectory("dms-artifact-download-from-list-");
+        try
+        {
+            var destination = Path.Combine(directory.FullName, artifact.Name);
+            var download = await Client.DmsCommandApp.Create().TestRunAsync(["artifact", "download",
+                "--id", artifact.Id.ToString(), "--file", destination, "--server", Http.BaseAddress!.ToString(),
+                "--api-key", setup.Key]);
+            Assert.AreEqual(0, download.ProgramReturn, download.StdErr);
+            Assert.AreEqual(artifact.Bytes, new FileInfo(destination).Length);
+        }
+        finally { directory.Delete(recursive: true); }
     }
 
     [TestMethod]
@@ -116,22 +133,59 @@ public class ArtifactWorkflowTests : TestBase
             for (var i = 0; i < 56; i++)
                 await File.WriteAllTextAsync(Path.Combine(listing, $"file-{i:D2}, \"quoted\".txt"), "123", stop.Token);
             var empty = Directory.CreateDirectory(Path.Combine(directory, "empty")).FullName;
-            using var scope = Server!.Services.CreateScope();
-            var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+
+            async Task<string> RunCliAsync(string key, params string[] args)
+            {
+                var output = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+                Assert.AreEqual(0, output.ProgramReturn, output.StdErr);
+                return output.StdOut;
+            }
+
+            string[] SubmitArgs(string path, int limit, Guid requestId) =>
+                ["machine", "filesystem", "ls", "--machine-id", setup.Machine.ToString(), second.Id.ToString(),
+                    "--path", path, "--limit", limit.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    "--reason", "List fixture", "--request-id", requestId.ToString()];
+
+            static string[] NextCommand(string output, string expected)
+            {
+                var line = output.Split('\n', StringSplitOptions.TrimEntries)
+                    .Single(line => line.Contains(expected, StringComparison.Ordinal));
+                return line[line.IndexOf("dms ", StringComparison.Ordinal)..].Split(' ')[1..];
+            }
 
             async Task<Guid> RunListingAsync(string path, int limit = 200)
             {
-                var request = OperationsWorkflows.FilesystemLs.Request(new ListPathInput(path, limit), "List fixture",
-                    [setup.Machine, second.Id]);
-                var box = await workflows.SubmitAsync(setup.User, request);
-                Assert.AreEqual(DecisionState.Pending, box.Decision);
-                box = await workflows.DecideAsync(setup.Reviewer, box.Id, true, "Approved fixture listing");
-                var id = box.WorkflowId!.Value;
+                var requestId = Guid.NewGuid();
+                var submission = SubmitArgs(path, limit, requestId);
+                var receipt = await RunCliAsync(setup.Key, submission);
+                var status = NextCommand(receipt, "Check approval status:");
+                var waiting = await RunCliAsync(setup.Key, status);
+                StringAssert.Contains(waiting, "Awaiting approval");
+                Assert.DoesNotContain("dms workflow result", waiting);
+                var approval = await RunCliAsync(setup.ReviewerKey, "lockbox", "approve", "--id", status[^1]);
+                var approved = await RunCliAsync(setup.Key, status);
+                var resultCommand = NextCommand(approved, "dms workflow result");
+                CollectionAssert.AreEqual(resultCommand, NextCommand(approval, "dms workflow result"));
+                var id = Guid.Parse(resultCommand[^1]);
+                var retry = await RunCliAsync(setup.Key, submission);
+                CollectionAssert.AreEqual(resultCommand, NextCommand(retry, "dms workflow result"));
+                var jsonReceipt = await RunCliAsync(setup.Key, [.. submission, "--output-format", "json"]);
+                var receiptFields = JObject.Parse(jsonReceipt)["Data"]!.ToObject<LockboxReceipt>()!;
+                Assert.AreEqual(id, receiptFields.WorkflowId);
+                var jsonStatus = JObject.Parse(await RunCliAsync(setup.Key, [.. status, "--output-format", "json"]));
+                Assert.IsNull(jsonStatus["Data"]!["Definition"]);
+                var csvStatus = await RunCliAsync(setup.Key, [.. status, "--output-format", "csv"]);
+                Assert.DoesNotContain("Definition", csvStatus.Split('\n')[0]);
+                Assert.DoesNotContain("dms workflow result", csvStatus);
                 while (true)
                 {
                     var state = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(item => item.Id == id)
                         .Select(item => item.State).SingleAsync(token));
-                    if (state.Terminal()) return id;
+                    if (state.Terminal())
+                    {
+                        StringAssert.Contains(await RunCliAsync(setup.Key, resultCommand), "Second fixture");
+                        return id;
+                    }
                     await Task.Delay(100, token);
                 }
             }
@@ -165,6 +219,12 @@ public class ArtifactWorkflowTests : TestBase
             var failure = await Client.DmsCommandApp.Create().TestRunAsync(Args(await RunListingAsync(Path.Combine(directory, "missing")), "table"));
             Assert.AreEqual(0, failure.ProgramReturn, failure.StdErr);
             StringAssert.Contains(failure.StdOut, "[Failed] no directory result");
+
+            var pending = NextCommand(await RunCliAsync(setup.Key, SubmitArgs(empty, 50, Guid.NewGuid())), "Check approval status:");
+            await RunCliAsync(setup.ReviewerKey, "lockbox", "deny", "--id", pending[^1]);
+            var rejected = await RunCliAsync(setup.Key, pending);
+            StringAssert.Contains(rejected, "Rejected");
+            Assert.DoesNotContain("dms workflow result", rejected);
 
             await DatabaseAsync(async db =>
             {

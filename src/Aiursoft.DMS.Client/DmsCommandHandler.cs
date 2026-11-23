@@ -88,9 +88,11 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
     protected sealed override Task Execute(ParseResult context) =>
         ExecuteAsync(context, DmsCredentials.Resolve(context.GetValue(_server), context.GetValue(_key)));
 
+    protected OutputFormat SelectedFormat(ParseResult context) => context.GetValue(_format);
+
     private async Task ExecuteAsync(ParseResult context, DmsCredentials credentials)
     {
-        var format = context.GetValue(_format);
+        var format = SelectedFormat(context);
         if (!Enum.IsDefined(format) || (format == OutputFormat.Log && !_supportsLog))
             throw new ArgumentException(_supportsLog
                 ? "Output format must be table, json, csv, or log."
