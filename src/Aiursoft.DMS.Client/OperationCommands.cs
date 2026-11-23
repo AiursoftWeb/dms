@@ -1259,12 +1259,15 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewSshOpenCommand()
     {
-        var key = new Option<Guid>("--key-id") { Required = true, Description = "Verified personal key ID from the DMS SSH public keys page." };
-        var minutes = new Option<int>("--minutes") { DefaultValueFactory = _ => 30, Description = "Lease duration in minutes, 30 to 270." };
-        var sudo = new Option<bool>("--sudo") { Description = "Grant the temporary account passwordless sudo." };
-        return StandardCommand("temp-allow-ssh",
+        var key = new Option<Guid>(MachineWorkflowCli.KeyIdOption)
+            { Required = true, Description = "Verified personal key ID from the DMS SSH public keys page." };
+        var minutes = new Option<int>(MachineWorkflowCli.MinutesOption)
+            { DefaultValueFactory = _ => 30, Description = "Lease duration in minutes, 30 to 270." };
+        var sudo = new Option<bool>(MachineWorkflowCli.SudoOption)
+            { Description = "Grant the temporary account passwordless sudo." };
+        return StandardCommand(MachineWorkflowCli.SshOpen.Name,
             "Grant time-limited SSH access using a verified personal key.",
-            OperationsWorkflows.SshOpen,
+            MachineWorkflowCli.SshOpen.Definition,
             p => new SshOpenInput(p.GetValue(key), p.GetValue(minutes), p.GetValue(sudo)), key, minutes, sudo);
     }
 

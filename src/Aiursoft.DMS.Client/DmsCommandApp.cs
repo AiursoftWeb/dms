@@ -29,7 +29,7 @@ public static partial class DmsCommandApp
             new ManagementCommand("revoke-join-key", "join-revoke"),
             new ManagementCommand("list-enrollments", "enrollments")
         ]))
-        .WithFeature(new Group("machine", "List managed machines and request operations on them.",
+        .WithFeature(new Group(MachineWorkflowCli.Machine, "List managed machines and request operations on them.",
         [
             StandardCommand("list",
                 "Print the machine inventory. Requires Run open workflows.",
@@ -79,14 +79,14 @@ public static partial class DmsCommandApp
                 NewFilesystemExportCommand(),
                 NewFilesystemImportCommand()
             ]),
-            new Group("box", "Inspect or deploy the Box repository on a machine.",
+            new Group(MachineWorkflowCli.Box, "Inspect or deploy the Box repository on a machine.",
             [
                 StandardCommand("inspect",
                     "Check the local Box repository's branch, commit, and working tree.",
                     MachineWorkflows.BoxInspect, _ => new EmptyInput()),
                 BoxConfigureGitCommand(),
                 BoxDeployCommand(),
-                new Group("puller", "Refresh images with the Box Puller.",
+                new Group(MachineWorkflowCli.Puller, "Refresh images with the Box Puller.",
                 [
                     PullerCommand()
                 ])
@@ -135,11 +135,11 @@ public static partial class DmsCommandApp
                 NewSystemctlStartCommand(),
                 NewSystemctlStopCommand()
             ]),
-            new Group("agent", "Check Agent health or install the Controller-provided release.",
+            new Group(MachineWorkflowCli.Agent, "Check Agent health or install the Controller-provided release.",
             [
-                StandardCommand("status",
+                StandardCommand(MachineWorkflowCli.AgentStatus.Name,
                     "Check Agent version, connection identity, and pending events.",
-                    MachineWorkflows.AgentStatus, _ => new EmptyInput()),
+                    MachineWorkflowCli.AgentStatus.Definition, _ => new EmptyInput()),
                 new ActionCommand("upgrade",
                     "Upgrade the Agent and confirm that the new version reconnects.",
                     WorkflowNames.AgentUpgrade, MachineWorkflows.AgentUpgrade)
@@ -223,12 +223,12 @@ public static partial class DmsCommandApp
                 NewNetworkingFirewallInfoCommand(),
                 NewNetworkingTlsCheckCommand()
             ]),
-            new Group("ssh", "Open time-limited SSH access or close it immediately.",
+            new Group(MachineWorkflowCli.Ssh, "Open time-limited SSH access or close it immediately.",
             [
                 NewSshOpenCommand(),
-                StandardCommand("disable",
+                StandardCommand(MachineWorkflowCli.SshDisable.Name,
                     "Close SSH access, disconnect sessions, and remove the temporary lease.",
-                    OperationsWorkflows.SshDisable, _ => new EmptyInput())
+                    MachineWorkflowCli.SshDisable.Definition, _ => new EmptyInput())
             ]),
             new Group("security", "Check host security controls and authentication events.",
             [
@@ -368,12 +368,13 @@ public static partial class DmsCommandApp
 
     private static ActionCommand PullerCommand()
     {
-        var image = new Option<string?>("--image")
+        var image = new Option<string?>(MachineWorkflowCli.ImageOption)
             { Description = "One image; omit to refresh all images configured in the selected Puller." };
-        var puller = new Option<string>("--puller") { Description = "Puller to refresh. Use main (default) or cn." };
-        return StandardCommand("force-update",
+        var puller = new Option<string>(MachineWorkflowCli.PullerOption)
+            { Description = "Puller to refresh. Use main (default) or cn." };
+        return StandardCommand(MachineWorkflowCli.PullerForceUpdate.Name,
             "Refresh one image or all configured images through the Box Puller.",
-            MachineWorkflows.PullerForceUpdate,
+            MachineWorkflowCli.PullerForceUpdate.Definition,
             context => new PullerForceUpdateInput(context.GetValue(image), context.GetValue(puller) ?? "main"),
             image,
             puller);
@@ -521,7 +522,7 @@ public static partial class DmsCommandApp
 
         private readonly Argument<string?> _positionalId = new("id");
 
-        private readonly Option<Guid[]> _machines = new("--machine-id")
+        private readonly Option<Guid[]> _machines = new(MachineWorkflowCli.MachineIdOption)
         {
             AllowMultipleArgumentsPerToken = true,
             Description = "Target machine IDs. Omit when exactly one machine is enabled."
@@ -538,7 +539,7 @@ public static partial class DmsCommandApp
         private readonly Option<bool> _showLockboxId = new("--show-lockbox-id")
             { Description = "Print the Lockbox and workflow IDs immediately after submission." };
 
-        private readonly Option<string> _reason = new("--reason");
+        private readonly Option<string> _reason = new(MachineWorkflowCli.ReasonOption);
         private readonly Option<int> _skip = new("--skip")
             { Description = "Skip this many trace entries before returning the next page." };
         private readonly Option<bool> _recursive = new("--recursive")

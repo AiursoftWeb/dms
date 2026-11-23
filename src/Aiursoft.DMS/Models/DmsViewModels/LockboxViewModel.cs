@@ -3,6 +3,7 @@ using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.UiStack.Layout;
+using static Aiursoft.DMS.Client.MachineWorkflowCli;
 
 namespace Aiursoft.DMS.Models.DmsViewModels;
 
@@ -58,34 +59,55 @@ public sealed record LockboxSnapshot(
             return new LockboxCommand("docker exec " + Quote(command.Container),
                 string.Join(' ', command.Command.Select(Quote)), IsEquivalentCli: false);
         }
-        if (targets.Count == 0) return null;
+        if (targets.Count == 0 || item.Reason.Contains('\0')) return null;
 
-        var options = new List<string> { "--machine-id " + string.Join(' ', targets) };
+        try
+        {
+            return ReadEquivalentCommand(item, input, targets);
+        }
+        catch (Exception e) when (e is JsonException or ArgumentException or InvalidDataException)
+        {
+            // Historical inputs that no longer match a CLI contract still have a parameter preview.
+            return null;
+        }
+    }
+
+    private static LockboxCommand? ReadEquivalentCommand(LockboxRequest item, string input, IReadOnlyList<Guid> targets)
+    {
+        var options = new List<string> { MachineIdOption + " " + string.Join(' ', targets) };
         string invocation;
-        if (item.Definition == WorkflowNames.PullerForceUpdate && item.Version == "2")
+        if (AgentStatus.Matches(item.Definition, item.Version))
         {
-            var puller = JsonSerializer.Deserialize<PullerForceUpdateInput>(input)!;
-            invocation = "dms machine box puller force-update";
-            options.Add("--puller " + Quote(puller.Puller));
-            if (puller.Image != null) options.Add("--image " + Quote(puller.Image));
+            AgentStatus.Definition.Validate(input);
+            invocation = AgentStatus.Invocation;
         }
-        else if (item.Definition == OperationsWorkflows.SshOpen.Name && item.Version == "1")
+        else if (PullerForceUpdate.Matches(item.Definition, item.Version))
         {
-            var lease = JsonSerializer.Deserialize<SshOpenInput>(input)!;
-            invocation = "dms machine ssh temp-allow-ssh";
-            options.Add($"--key-id {lease.KeyId}");
-            options.Add($"--minutes {lease.Minutes}");
-            if (lease.Sudo) options.Add("--sudo");
+            var puller = PullerForceUpdate.Definition.ReadInput(input);
+            invocation = PullerForceUpdate.Invocation;
+            options.Add(PullerOption + " " + Quote(puller.Puller));
+            if (puller.Image != null) options.Add(ImageOption + " " + Quote(puller.Image));
         }
-        else if (item.Definition == OperationsWorkflows.SshDisable.Name && item.Version == "1")
+        else if (SshOpen.Matches(item.Definition, item.Version) && targets.Count == 1)
         {
-            invocation = "dms machine ssh disable";
+            var lease = SshOpen.Definition.ReadInput(input);
+            invocation = SshOpen.Invocation;
+            options.Add($"{KeyIdOption} {lease.KeyId}");
+            options.Add(FormattableString.Invariant($"{MinutesOption} {lease.Minutes}"));
+            if (lease.Sudo) options.Add(SudoOption);
+        }
+        else if (SshDisable.Matches(item.Definition, item.Version) && targets.Count == 1)
+        {
+            SshDisable.Definition.Validate(input);
+            invocation = SshDisable.Invocation;
         }
         else
         {
             return null;
         }
-        options.Add("--reason " + Quote(item.Reason));
+        // Keep values that resemble an option or a response file in the option token.
+        var reasonSeparator = item.Reason.StartsWith('-') || item.Reason.StartsWith('@') ? "=" : " ";
+        options.Add(ReasonOption + reasonSeparator + Quote(item.Reason));
         return new LockboxCommand(invocation, string.Join(LockboxCommand.Continuation, options), IsEquivalentCli: true);
     }
 
