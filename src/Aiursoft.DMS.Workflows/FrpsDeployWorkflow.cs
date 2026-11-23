@@ -17,6 +17,10 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
     private const string UnitPath = "/etc/systemd/system/frps.service";
     private const string DefaultBinary = "/usr/local/bin/frps";
     private const string DefaultConfig = "/etc/frp/frps.toml";
+    private const string WrappedUnit = "turn.service";
+    private const string Wrapper = "/usr/bin/turn";
+    private const string WrappedBinary = "/usr/lib/turn/turn";
+    private const string WrappedConfig = "/etc/turn/turn.toml";
     private const string Release = "0.72.0";
     private const int MaxArchiveSize = 64 * 1024 * 1024;
     private const UnixFileMode PrivateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
@@ -47,31 +51,10 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         var host = agent.Operations ?? OperationHost.Default;
         await using var deploymentLock = new FileStream(host.FilePath("/run/aiursoft-dms-frps.lock"),
             FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-        var service = await host.RunAsync(new NativeCommand("systemctl", ["show", "-p", "LoadState", "-p", "ExecStart", Unit]), token);
-        var isNew = service.Output.Split('\n').Any(line => line.TrimEnd() == "LoadState=not-found");
-        if (!isNew && (service.ExitCode != 0 || !service.Output.Split('\n').Any(line => line.TrimEnd() == "LoadState=loaded")))
-            throw new InvalidOperationException("Could not determine the state of frps.service.");
-
-        var binary = DefaultBinary;
-        var config = DefaultConfig;
-        if (isNew)
-        {
-            if (new[] { DefaultBinary, "/usr/bin/frps", DefaultConfig, "/etc/frp/frps.ini", UnitPath, "/usr/lib/turn/turn" }
-                .Any(path => host.Exists(path) || new FileInfo(host.FilePath(path)).LinkTarget != null))
-                throw new InvalidOperationException("A partial or nonstandard FRPS installation exists. Adopt it as frps.service before deploying.");
-            if (input.ProtectedToken == null)
-                throw new InvalidOperationException("FRPS is not installed as frps.service. A nonempty --frps-token is required for installation.");
-        }
-        else
-        {
-            var entries = ExecStart().Matches(service.Output);
-            if (entries.Count != 1 ||
-                !string.Equals(Path.GetFileName(entries[0].Groups["binary"].Value), "frps", StringComparison.Ordinal) ||
-                entries[0].Groups["binary"].Value != entries[0].Groups["argv"].Value)
-                throw new InvalidOperationException("frps.service must use one absolute FRPS executable and an absolute configuration path.");
-            binary = entries[0].Groups["binary"].Value;
-            config = entries[0].Groups["config"].Value;
-        }
+        var deployment = await DetectInstallationAsync(host, token);
+        var (unit, binary, config, runtimeConfig, isNew) = deployment;
+        if (isNew && input.ProtectedToken == null)
+            throw new InvalidOperationException("FRPS is not installed. A nonempty --frps-token is required for installation.");
 
         var binaryPath = host.FilePath(binary);
         var configPath = host.FilePath(config);
@@ -81,8 +64,7 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         var oldVersion = isNew ? null : await ReadVersionAsync(host, binaryPath, token);
         if (oldVersion != null && System.Version.Parse(oldVersion) > System.Version.Parse(Release))
             throw new InvalidOperationException("The installed FRPS version is newer than the DMS release.");
-        var currentConfig = isNew ? null : await host.ReadAsync(config, token);
-        var wasActive = !isNew && await IsActiveAsync(host, token);
+        var wasActive = !isNew && await IsActiveAsync(host, unit, token);
         if (!isNew && oldVersion == Release && input.ProtectedToken == null && wasActive)
             return new FrpsDeployResult(oldVersion, Release, false, false);
 
@@ -97,7 +79,7 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
             if (newToken.Length == 0) throw new InvalidOperationException("The approved FRPS token is empty.");
             updatedConfig = isNew
                 ? $"bindPort = 7000\nkcpBindPort = 7000\nauth.method = \"token\"\nauth.token = {QuoteToken(newToken)}\n"
-                : RotateToken(currentConfig!, newToken);
+                : RotateToken(await host.ReadAsync(runtimeConfig ?? config, token), newToken);
         }
 
         var updateBinary = oldVersion != Release;
@@ -119,13 +101,23 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
                     throw new InvalidDataException("The FRPS release executable reported an unexpected version.");
             }
 
-            var candidateConfig = configPath;
+            var candidateConfig = runtimeConfig == null ? configPath : host.FilePath(runtimeConfig);
+            byte[]? configBytes = null;
             if (updatedConfig != null)
             {
                 candidateConfig = Path.Combine(staging.FullName, Path.GetFileName(config));
-                await WriteAsync(candidateConfig, System.Text.Encoding.UTF8.GetBytes(updatedConfig), PrivateMode, token);
+                configBytes = System.Text.Encoding.UTF8.GetBytes(updatedConfig);
+                await WriteAsync(candidateConfig, configBytes, PrivateMode, token);
             }
             await RequireAsync(host, candidate, ["verify", "-c", candidateConfig], "The FRPS release rejected the configuration.", token);
+            if (runtimeConfig != null && configBytes != null)
+            {
+                var encrypted = Path.Combine(staging.FullName, "encrypted.toml");
+                await RequireAsync(host, host.FilePath(Wrapper), ["--encrypt", candidateConfig, encrypted],
+                    "The existing FRPS wrapper could not protect the updated configuration.", token);
+                File.Delete(candidateConfig);
+                configBytes = await File.ReadAllBytesAsync(encrypted, token);
+            }
 
             var binaryChanged = false;
             var configChanged = false;
@@ -138,9 +130,9 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
                     await ReplaceAsync(binaryPath, nextBinary, binaryMode, token);
                     binaryChanged = true;
                 }
-                if (updatedConfig != null)
+                if (configBytes != null)
                 {
-                    await ReplaceAsync(configPath, System.Text.Encoding.UTF8.GetBytes(updatedConfig), configMode, token);
+                    await ReplaceAsync(configPath, configBytes, configMode, token);
                     configChanged = true;
                 }
                 if (isNew)
@@ -151,8 +143,8 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
                 }
 
                 serviceTouched = true;
-                await SystemctlAsync(host, isNew ? ["enable", "--now", Unit] : ["restart", Unit], token);
-                await CheckRunningAsync(host, token);
+                await SystemctlAsync(host, isNew ? ["enable", "--now", unit] : ["restart", unit], token);
+                await CheckRunningAsync(host, unit, token);
                 return new FrpsDeployResult(oldVersion, Release, isNew, updatedConfig != null);
             }
             catch
@@ -161,7 +153,7 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
                 try
                 {
                     if (isNew && serviceTouched)
-                        await SystemctlAsync(host, ["disable", "--now", Unit], recovery.Token);
+                        await SystemctlAsync(host, ["disable", "--now", unit], recovery.Token);
                     if (unitChanged)
                     {
                         File.Delete(unitPath);
@@ -179,8 +171,8 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
                     }
                     if (!isNew && serviceTouched)
                     {
-                        await SystemctlAsync(host, [wasActive ? "restart" : "stop", Unit], recovery.Token);
-                        if (wasActive) await CheckRunningAsync(host, recovery.Token);
+                        await SystemctlAsync(host, [wasActive ? "restart" : "stop", unit], recovery.Token);
+                        if (wasActive) await CheckRunningAsync(host, unit, recovery.Token);
                     }
                 }
                 catch
@@ -194,14 +186,64 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         finally { staging.Delete(recursive: true); }
     }
 
-    private static async Task CheckRunningAsync(OperationHost host, CancellationToken token)
+    private sealed record Installation(string Unit, string Binary, string Config, string? RuntimeConfig, bool IsNew);
+
+    private static async Task<Installation> DetectInstallationAsync(OperationHost host, CancellationToken token)
     {
-        await Task.Delay(TimeSpan.FromSeconds(2), token);
-        if (!await IsActiveAsync(host, token)) throw new InvalidOperationException("FRPS did not remain active after deployment.");
+        var standard = await DescribeAsync(host, Unit, token);
+        if (standard.Loaded)
+        {
+            if (Path.GetFileName(standard.Binary) != "frps")
+                throw new InvalidOperationException("frps.service must execute an FRPS binary directly.");
+            return new Installation(Unit, standard.Binary, standard.Config, null, false);
+        }
+
+        if (host.Exists(WrappedBinary))
+        {
+            var wrapped = await DescribeAsync(host, WrappedUnit, token);
+            if (!wrapped.Loaded || wrapped.Binary != Wrapper || wrapped.Config != WrappedConfig || wrapped.Pid <= 0 ||
+                !host.Exists(Wrapper) || !host.Exists(WrappedConfig))
+                throw new InvalidOperationException("The existing FRPS wrapper is not running in a supported layout.");
+            var executable = await host.RunAsync(new NativeCommand("readlink", [$"/proc/{wrapped.Pid}/exe"]), token);
+            var liveConfig = $"/proc/{wrapped.Pid}/fd/3";
+            var descriptor = await host.RunAsync(new NativeCommand("readlink", [liveConfig]), token);
+            if (executable.ExitCode != 0 || executable.Output.TrimEnd() != WrappedBinary ||
+                descriptor.ExitCode != 0 || descriptor.Output.TrimEnd() != "/memfd:turn.toml (deleted)")
+                throw new InvalidOperationException("The running FRPS wrapper could not be verified.");
+            return new Installation(WrappedUnit, WrappedBinary, WrappedConfig, liveConfig, false);
+        }
+
+        if (new[] { DefaultBinary, "/usr/bin/frps", DefaultConfig, "/etc/frp/frps.ini", UnitPath }
+            .Any(path => host.Exists(path) || new FileInfo(host.FilePath(path)).LinkTarget != null))
+            throw new InvalidOperationException("A partial FRPS installation exists. Restore its configuration and frps.service first.");
+        return new Installation(Unit, DefaultBinary, DefaultConfig, null, true);
     }
 
-    private static async Task<bool> IsActiveAsync(OperationHost host, CancellationToken token) =>
-        (await host.RunAsync(new NativeCommand("systemctl", ["is-active", "--quiet", Unit]), token)).ExitCode == 0;
+    private static async Task<(bool Loaded, string Binary, string Config, int Pid)> DescribeAsync(
+        OperationHost host, string unit, CancellationToken token)
+    {
+        var result = await host.RunAsync(new NativeCommand("systemctl",
+            ["show", "-p", "LoadState", "-p", "ExecStart", "-p", "MainPID", unit]), token);
+        var lines = result.Output.Split('\n', StringSplitOptions.TrimEntries);
+        if (lines.Contains("LoadState=not-found")) return (false, "", "", 0);
+        var entries = ExecStart().Matches(result.Output);
+        if (result.ExitCode != 0 || !lines.Contains("LoadState=loaded") || entries.Count != 1 ||
+            entries[0].Groups["binary"].Value != entries[0].Groups["argv"].Value)
+            throw new InvalidOperationException("The FRPS unit must use one absolute executable and configuration path.");
+
+        var pid = lines.FirstOrDefault(line => line.StartsWith("MainPID=", StringComparison.Ordinal));
+        _ = int.TryParse(pid?.Substring(8), out var mainPid);
+        return (true, entries[0].Groups["binary"].Value, entries[0].Groups["config"].Value, mainPid);
+    }
+
+    private static async Task CheckRunningAsync(OperationHost host, string unit, CancellationToken token)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2), token);
+        if (!await IsActiveAsync(host, unit, token)) throw new InvalidOperationException("FRPS did not remain active after deployment.");
+    }
+
+    private static async Task<bool> IsActiveAsync(OperationHost host, string unit, CancellationToken token) =>
+        (await host.RunAsync(new NativeCommand("systemctl", ["is-active", "--quiet", unit]), token)).ExitCode == 0;
 
     private static Task SystemctlAsync(OperationHost host, IReadOnlyList<string> arguments, CancellationToken token) =>
         RequireAsync(host, "systemctl", arguments, "Systemd could not apply the FRPS change.", token);

@@ -401,7 +401,7 @@ dms machine frps deploy --machine-id <machine-id> --frps-token "$frps_token" --r
 unset frps_token
 ```
 
-A fresh install creates `frps.service` and listens on TCP and UDP port 7000. An upgrade of an existing `frps.service` preserves the service definition and configuration when the token option is omitted or empty. To rotate an existing inline TOML token, supply the replacement. The Controller encrypts the token before saving the Lockbox and releases it only to the approved running Agent. An upgrade restarts FRPS and briefly interrupts its tunnels. Custom wrappers and external authentication require separate maintenance.
+A fresh install creates `frps.service` and listens on TCP and UDP port 7000. An upgrade of an existing `frps.service` or supported running `turn.service` installation preserves the service definition and configuration when the token option is omitted or empty. To rotate an existing inline TOML token, supply the replacement. The Controller encrypts the token before saving the Lockbox and releases it only to the approved running Agent. An upgrade restarts FRPS and briefly interrupts its tunnels. The supported wrapper retains its encrypted configuration, including when rotating the token. External authentication requires separate maintenance.
 
 ## Force a Box Puller mirror update
 

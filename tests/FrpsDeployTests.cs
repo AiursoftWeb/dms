@@ -92,26 +92,55 @@ public class FrpsDeployTests
         Assert.HasCount(2, machine.Commands.Where(line => line.Contains("restart", StringComparison.Ordinal)));
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task UpgradeRecognizedEncryptedWrapperInPlace(bool rotate)
+    {
+        if (!OperatingSystem.IsLinux())
+        {
+            Assert.Inconclusive("FRPS deployment requires Linux.");
+            return;
+        }
+
+        using var machine = new Fixture(ExistingConfig, wrapped: true);
+        var result = await machine.DeployAsync(rotate ? "rotated-token" : null);
+        Assert.IsFalse(result.Installed);
+        Assert.AreEqual(rotate, result.TokenChanged);
+        Assert.AreEqual("0.72.0", File.ReadAllText(machine.Binary));
+        Assert.AreEqual(rotate ? "replacement-ciphertext" : "original-ciphertext", File.ReadAllText(machine.Config));
+        Assert.IsTrue(machine.Commands.Contains("systemctl restart turn.service"));
+        Assert.IsFalse(File.Exists(machine.NewUnit));
+        Assert.IsFalse(machine.Commands.Any(c => c.Contains("rotated-token", StringComparison.Ordinal)));
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly string _root = Directory.CreateTempSubdirectory("dms-frps-test-").FullName;
-        public string Binary => _root + "/usr/local/bin/frps";
-        public string Config => _root + "/etc/frp/frps.toml";
+        public string Binary => _root + (_wrapped ? "/usr/lib/turn/turn" : "/usr/local/bin/frps");
+        public string Config => _root + (_wrapped ? "/etc/turn/turn.toml" : "/etc/frp/frps.toml");
         public string NewUnit => _root + "/etc/systemd/system/frps.service";
         private readonly bool _installed;
+        private readonly bool _wrapped;
         public int Downloads { get; private set; }
         public bool FailRestart { get; init; }
         public List<string> Commands { get; } = [];
 
-        public Fixture(string? configuration = null)
+        public Fixture(string? configuration = null, bool wrapped = false)
         {
             Directory.CreateDirectory(_root + "/run");
             _installed = configuration != null;
+            _wrapped = wrapped;
             if (configuration == null) return;
             Directory.CreateDirectory(Path.GetDirectoryName(Binary)!);
             Directory.CreateDirectory(Path.GetDirectoryName(Config)!);
             File.WriteAllText(Binary, "0.66.0");
-            File.WriteAllText(Config, configuration);
+            File.WriteAllText(Config, wrapped ? "original-ciphertext" : configuration);
+            if (!wrapped) return;
+            Directory.CreateDirectory(_root + "/usr/bin");
+            File.WriteAllText(_root + "/usr/bin/turn", "fixture-wrapper");
+            Directory.CreateDirectory(_root + "/proc/100/fd");
+            File.WriteAllText(_root + "/proc/100/fd/3", configuration);
         }
 
         public Task<FrpsDeployResult> DeployAsync(string? token)
@@ -131,9 +160,19 @@ public class FrpsDeployTests
         private Task<NativeResult> RunAsync(NativeCommand command, CancellationToken _)
         {
             Commands.Add(command.Executable + " " + string.Join(" ", command.Arguments));
+            if (command.Executable == "readlink")
+                return Task.FromResult(new NativeResult(0, command.Arguments[0].EndsWith("/exe", StringComparison.Ordinal)
+                    ? "/usr/lib/turn/turn" : "/memfd:turn.toml (deleted)", ""));
+            if (command.Arguments[0] == "--encrypt")
+            {
+                StringAssert.Contains(File.ReadAllText(command.Arguments[1]), "\"rotated-token\"");
+                File.WriteAllText(command.Arguments[2], "replacement-ciphertext");
+            }
             var output = command.Arguments[0] switch
             {
-                "show" when !_installed => "LoadState=not-found\n",
+                "show" when command.Arguments[^1] == "turn.service" && _wrapped =>
+                    "ExecStart={ path=/usr/bin/turn ; argv[]=/usr/bin/turn -c /etc/turn/turn.toml ; ignore_errors=no }\nLoadState=loaded\nMainPID=100\n",
+                "show" when !_installed || _wrapped => "LoadState=not-found\n",
                 "show" => "ExecStart={ path=/usr/local/bin/frps ; argv[]=/usr/local/bin/frps -c /etc/frp/frps.toml ; ignore_errors=no }\nLoadState=loaded\n",
                 "--version" => File.ReadAllText(command.Executable),
                 _ => ""
