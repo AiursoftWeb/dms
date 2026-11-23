@@ -57,11 +57,20 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>아직 검증되지 않음</value>
   </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>임시 SSH 요청</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 공개 키</value>
+  </data>
   <data name="Scheduled security baseline" xml:space="preserve">
     <value>예약된 보안 기준</value>
   </data>
   <data name="Started" xml:space="preserve">
     <value>시작됨</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>개인 공개 키를 확인한 후, 해당 키 ID를 사용하여 CLI에서 요청을 제출하세요.</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>실행 보기</value>

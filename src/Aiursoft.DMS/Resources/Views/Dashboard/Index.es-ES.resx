@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>Documentación Integral</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>Conectar DMS CLI a este Controlador</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>Validación de consistencia</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>Incluye documentación extensa y ejemplos prácticos para que puedas empezar rápidamente.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>Instale la CLI en su equipo e inicie sesión con una clave de API personal.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Gestión Integrada de Archivos</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Diseño Responsive</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>Revisar solicitudes de {0}</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>Revise la operación solicitada, los parámetros y los objetivos fijos. (solicitudes de {0})</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Revisar solicitudes de {0}</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Pruebas de integración robustas</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>Integración perfecta con cualquier proveedor de OpenID Connect, con sincronización automática de roles.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configurar DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>Sobrescrituras inteligentes de configuración</value>

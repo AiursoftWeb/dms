@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Todas as origens</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Todos os estados</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Aplicar filtros</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automático</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Cancelado</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Limpar filtros</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Apenas fluxos de trabalho do cluster</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Concluído com avisos</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controlador</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Criado</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Páginas de execução</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Estado de execução</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Falhado</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtrar</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Máquina</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Necessita verificação</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Seguinte</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Nenhuma execução corresponde a estes filtros.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Origem</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Fluxo de trabalho pai</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Anterior</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>Na fila</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Apenas execuções raiz</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Em execução</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Estado</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Concluído com sucesso</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Ver execução</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Fluxo de trabalho</value>

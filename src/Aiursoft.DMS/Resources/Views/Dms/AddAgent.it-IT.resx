@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Get a join key" xml:space="preserve">
+    <value>1. Ottieni una chiave di unione</value>
+  </data>
+  <data name="2. Install the Agent on the machine" xml:space="preserve">
+    <value>2. Installa l&apos;Agent sulla macchina</value>
+  </data>
+  <data name="3. Approve the registration and check the connection" xml:space="preserve">
+    <value>3. Approva la registrazione e verifica la connessione</value>
+  </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Aggiungi un computer</value>
+  </data>
+  <data name="After approval, the Agent connects automatically. Return to Machines and check that its status is Online." xml:space="preserve">
+    <value>Dopo l&apos;approvazione, l&apos;Agent si connette automaticamente. Torna a Macchine e verifica che il suo stato sia Online.</value>
+  </data>
+  <data name="Ask an administrator for a join key for this Controller. Administrators with Manage DMS access and permission to request Medium workflows can create one from their DMS CLI." xml:space="preserve">
+    <value>Chiedi a un amministratore una chiave di join per questo Controller. Gli amministratori con accesso alla gestione DMS e autorizzazione a richiedere flussi di lavoro Medium possono crearne una dalla loro DMS CLI.</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Torna alle macchine</value>
+  </data>
+  <data name="Bash, curl, systemd, and sudo access" xml:space="preserve">
+    <value>Accesso a Bash, curl, systemd e sudo</value>
+  </data>
+  <data name="If registration is pending, share its {0} ID with someone who can approve Medium workflows. To approve your own request, you also need self-approval permission." xml:space="preserve">
+    <value>Se la registrazione è in sospeso, condividi il suo ID {0} con qualcuno che può approvare i flussi di lavoro Medium. Per approvare la tua richiesta, devi anche avere il permesso di auto-approvazione.</value>
+  </data>
+  <data name="Install a DMS Agent to let this Controller manage a Linux machine." xml:space="preserve">
+    <value>Installa un agente DMS per consentire a questo Controller di gestire un computer Linux.</value>
+  </data>
+  <data name="Machine requirements" xml:space="preserve">
+    <value>Requisiti di sistema</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>Le mie approvazioni</value>
+  </data>
+  <data name="On the machine you want to manage, open Bash, replace the join key placeholder with your key, and run the command." xml:space="preserve">
+    <value>Sul computer che si desidera gestire, aprire Bash, sostituire il segnaposto della chiave di unione con la propria chiave ed eseguire il comando.</value>
+  </data>
+  <data name="Outbound access to this Controller" xml:space="preserve">
+    <value>Accesso in uscita a questo Controller</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configura DMS CLI</value>
+  </data>
+  <data name="The .NET 10 SDK, or an APT source that provides dotnet10" xml:space="preserve">
+    <value>Lo SDK .NET 10 o una fonte APT che fornisce dotnet10</value>
+  </data>
+  <data name="The installer downloads the Agent from this Controller, starts it as a systemd service, and prints the {0} ID for registration." xml:space="preserve">
+    <value>L&apos;installatore scarica l&apos;Agent da questo Controller, lo avvia come servizio systemd e stampa l&apos;ID {0} per la registrazione.</value>
+  </data>
+  <data name="Ubuntu or AnduinOS on x64 or arm64" xml:space="preserve">
+    <value>Ubuntu o AnduinOS su x64 o arm64</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>Visualizza macchine</value>
+  </data>
+
+</root>

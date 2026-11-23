@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>Соединение агента</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Версия агента</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Назад к машинам</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>История базовой линии</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>Создан</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Завершено</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Последний раз замечен</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Последнее выполнение</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>Идентификатор машины</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Машины</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>Сигнал активности не получен</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>Для этого компьютера не записано ни одного запланированного выполнения базовой линии.</value>
+  </data>
+  <data name="Not verified yet" xml:space="preserve">
+    <value>Пока не проверено</value>
+  </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>Запросить временный SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Публичные ключи SSH</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Запланированная базовая линия безопасности</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Запущен</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>Проверьте личный открытый ключ, затем используйте его идентификатор ключа для отправки запроса в CLI.</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Просмотр выполнения</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>История процессов</value>
+  </data>
+
+</root>

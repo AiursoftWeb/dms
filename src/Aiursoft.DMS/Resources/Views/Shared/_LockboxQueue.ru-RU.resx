@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Все {0} запросы</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Применить фильтры</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Одобрено</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Ожидает одобрения</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Отклонено</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Статус выполнения</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Высокий риск</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Низкий риск</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Средний риск</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Требуется новая заявка</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Нет ожидающих вашего рассмотрения {0} запросов.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>За этим набором фильтров не найдено ни одной заявки {0}.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Открытый workflow</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Предыдущая</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Готово к моему рассмотрению</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Рассмотреть</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Безопасный рабочий процесс</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Поиск по {0} запросам</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Просмотреть все ожидающие {0} запросы</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Показать</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Очень высокий риск</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>Просмотр запроса {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Отозвано</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Процесс, заявитель, причина или ID {0}</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>Страницы запросов: {0}</value>
+  </data>
+
+</root>

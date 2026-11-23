@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Chiunque può copiare una chiave pubblica. Questo passaggio dimostra che possiedi la sua chiave privata, che resta sul tuo computer.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Torna alle chiubi pubbliche SSH</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Annulla l&apos;aggiunta di questa chiave</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Comando copiato</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Copia comando</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Se scade il tempo, aggiungi di nuovo la chiave.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Se la tua chiave privata è memorizzata in un altro luogo, modifica il percorso dopo -f. Quindi incolla la firma completa stampata dal comando.</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>Firma SSH</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Ricomincia</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>Passo 2 di 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Comando del terminale</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>La firma non corrispondeva. Esegui il comando sopra con la chiave privata corrispondente a questa chiave pubblica e incolla il risultato completo.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Tempo rimanente</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>Per completare l&apos;aggiunta di questa chiave, esegui il comando seguente sul computer che ne detiene la chiave privata.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>Verifica scaduta. Questa chiave non è stata aggiunta.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>La verifica scade alle</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Verifica e aggiungi chiave</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Verifica la tua chiave pubblica SSH</value>
+  </data>
+
+</root>

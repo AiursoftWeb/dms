@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Apply security baseline" xml:space="preserve">
+    <value>Применить базовые параметры безопасности</value>
+  </data>
+  <data name="Check SSH lease" xml:space="preserve">
+    <value>Проверить SSH-аренду</value>
+  </data>
+  <data name="Disable SSH access" xml:space="preserve">
+    <value>Отключить доступ по SSH</value>
+  </data>
+  <data name="Open an SSH lease" xml:space="preserve">
+    <value>Открыть SSH-сессию</value>
+  </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>Просмотр изменений пакетов APT</value>
+  </data>
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>Обновить индексы пакетов APT</value>
+  </data>
+  <data name="Refresh images with Box Puller" xml:space="preserve">
+    <value>Обновить образы с помощью Box Puller</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>Удалить неиспользуемые пакеты APT</value>
+  </data>
+  <data name="Run a command in Docker" xml:space="preserve">
+    <value>Выполнить команду в Docker</value>
+  </data>
+  <data name="Run an uploaded script" xml:space="preserve">
+    <value>Запустить загруженный скрипт</value>
+  </data>
+  <data name="Upgrade DMS Agent" xml:space="preserve">
+    <value>Обновление агента DMS</value>
+  </data>
+  <data name="Upgrade available APT packages" xml:space="preserve">
+    <value>Обновить доступные пакеты APT</value>
+  </data>
+
+</root>
