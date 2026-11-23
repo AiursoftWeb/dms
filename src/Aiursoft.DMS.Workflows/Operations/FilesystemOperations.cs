@@ -1,4 +1,5 @@
 using System.Formats.Tar;
+using System.Globalization;
 using System.Security.Cryptography;
 using Aiursoft.DMS.Contracts;
 
@@ -68,30 +69,108 @@ public static class FilesystemOperations
         }
         return await OperationOutput.ReportAsync(context, $"Listed {rows.Count} entries; complete={complete}.", rows, complete);
     }
+    internal const string BoxSecretPathPattern = "/swarm-vol/boxfor*/.env.prod";
+    internal const string BoxSecretStagePattern = "/swarm-vol/boxfor*/.git/.dms-env-prod-*";
+
+    internal static void RequirePublicContentPath(string path)
+    {
+        if (System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(BoxSecretPathPattern, path, ignoreCase: true) ||
+            System.IO.Enumeration.FileSystemName.MatchesSimpleExpression(BoxSecretStagePattern, path, ignoreCase: true))
+            throw new IOException("Use the Box secret workflows to access .env.prod.");
+    }
+
     public static async Task<OperationResult> StatAsync(MachineWorkflowContext context, PathInput input, AgentEnvironment agent, CancellationToken token)
     {
         token.ThrowIfCancellationRequested(); input.Validate(); SafeOperationPaths.Check(input.Path, leafMayBeLink: true);
         var ownership = await OperationOutput.CommandAsync(context, agent, "stat", ["--printf=%u\t%U\t%g\t%G\t%i\t%h\t%s\t%a\t%F\n", "--", input.Path], token, traceOutput: false);
         return await OperationOutput.ReportAsync(context, "File metadata and ownership collected without dereferencing a leaf symlink.", new { Metadata = SafeOperationPaths.Metadata(input.Path), OwnershipAndInode = ownership.Output, Fields = "uid,user,gid,group,inode,links,size,mode,type" });
     }
-    public static Task<OperationResult> CatAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, false, token);
-    public static Task<OperationResult> TailAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, true, token);
-    private static async Task<OperationResult> TextAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, bool tail, CancellationToken token)
+    private const int PublicReadDenied = 77;
+    private const string StartPublicReader = """
+        if (( EUID == 0 )); then
+            exec /usr/bin/setpriv --reuid=65534 --regid=65534 --clear-groups \
+                --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs \
+                /bin/bash -c "$1" dms-reader "$2" "$3" "$4"
+        fi
+        exec /bin/bash -c "$1" dms-reader "$2" "$3" "$4"
+        """;
+
+    // Check and read the same open file. The pathname can change between operations.
+    private const string ReadPublicFile = """
+        path=$1
+        tool=$3
+        [[ -f "$path" && ! -L "$path" ]] || exit 77
+        { exec {file}<"$path"; } 2>/dev/null || exit 77
+        fd=/proc/self/fd/$file
+        [[ -f "$fd" ]] || exit 77
+        metadata=$(/usr/bin/stat -Lc '%a %s' -- "$fd") || exit 77
+        read -r mode size <<< "$metadata"
+        (( (8#$mode & 4) != 0 )) || exit 77
+        printf '%s\n' "$size"
+        exec /usr/bin/"$tool" --bytes="$2" <&"$file"
+        """;
+
+    private const string CheckPublicPath = """
+        path=$1
+        if [[ -d "$path" ]]; then
+            cd -- "$path" 2>/dev/null || exit 77
+            mode=$(/usr/bin/stat -Lc '%a' -- "$path") || exit 77
+            (( (8#$mode & 5) == 5 )) || exit 77
+            restricted=$(find . \( ! -perm -o=r -o -type d ! -perm -o=x \) -print -quit 2>/dev/null)
+            [[ -z "$restricted" ]] || exit 77
+        else
+            [[ -f "$path" && ! -L "$path" ]] || exit 77
+            { exec {file}<"$path"; } 2>/dev/null || exit 77
+            fd=/proc/self/fd/$file
+            [[ -f "$fd" ]] || exit 77
+            metadata=$(/usr/bin/stat -Lc '%a' -- "$fd") || exit 77
+            (( (8#$metadata & 4) != 0 )) || exit 77
+        fi
+        exit 0
+        """;
+
+    public static Task<OperationResult> CatAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: false, requireOtherRead: true, token);
+    public static Task<OperationResult> CatAsRootAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: false, requireOtherRead: false, token);
+    public static Task<OperationResult> TailAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: true, requireOtherRead: true, token);
+    public static Task<OperationResult> TailAsRootAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: true, requireOtherRead: false, token);
+
+    private static async Task<OperationResult> TextAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, bool tail, bool requireOtherRead, CancellationToken token)
     {
-        input.Validate(); SafeOperationPaths.Check(input.Path);
+        input.Validate(); RequirePublicContentPath(input.Path); SafeOperationPaths.Check(input.Path);
         if (Directory.Exists(input.Path)) throw new IOException("Reading a directory requires export with explicit recursion.");
-        var arguments = tail ? new[] { "--lines=" + input.Lines, "--bytes=" + input.MaxBytes, "--", input.Path }
-            : new[] { "--bytes=" + input.MaxBytes, "--", input.Path };
-        // Tail's final --bytes option bounds bytes; line limiting is applied after that bounded read.
-        var result = await OperationOutput.CommandAsync(context, agent, tail ? "tail" : "head", arguments, token, traceOutput: false);
-        if (result.Output.Contains('\0')) throw new IOException("The file contains binary data. Export it as an artifact.");
-        var endedWithNewline = result.Output.EndsWith('\n');
-        var lines = result.Output.Split('\n').AsEnumerable(); if (endedWithNewline) lines = lines.SkipLast(1);
+        var maxBytes = input.MaxBytes.ToString(CultureInfo.InvariantCulture);
+        string output;
+        long length;
+        if (requireOtherRead)
+        {
+            var tool = tail ? "tail" : "head";
+            var result = await OperationOutput.CommandAsync(context, agent, "bash",
+                ["-c", StartPublicReader, "dms-reader", ReadPublicFile, input.Path, maxBytes, tool], token,
+                traceOutput: false, allowedExitCodes: [0, PublicReadDenied]);
+            if (result.ExitCode == PublicReadDenied)
+                throw new IOException($"Cannot read this file as an unprivileged user. For a restricted file, use 'dms machine filesystem {(tail ? "tail-as-root" : "cat-as-root")}'.");
+            var separator = result.Output.IndexOf('\n');
+            if (separator < 0 || !long.TryParse(result.Output.AsSpan(0, separator), NumberStyles.None, CultureInfo.InvariantCulture, out length))
+                throw new IOException("The file reader did not report its size.");
+            output = result.Output[(separator + 1)..];
+        }
+        else
+        {
+            // Tail's final --bytes option bounds bytes; line limiting is applied after that bounded read.
+            var arguments = tail ? new[] { "--lines=" + input.Lines, "--bytes=" + maxBytes, "--", input.Path }
+                : new[] { "--bytes=" + maxBytes, "--", input.Path };
+            var result = await OperationOutput.CommandAsync(context, agent, tail ? "tail" : "head", arguments, token, traceOutput: false);
+            output = result.Output;
+            length = new FileInfo(input.Path).Length;
+        }
+        if (output.Contains('\0')) throw new IOException("The file contains binary data. Export it as an artifact.");
+        var endedWithNewline = output.EndsWith('\n');
+        var lines = output.Split('\n').AsEnumerable(); if (endedWithNewline) lines = lines.SkipLast(1);
         var allLines = lines.ToArray();
         var text = string.Join('\n', tail ? allLines.TakeLast(input.Lines) : allLines.Take(input.Lines));
         if (endedWithNewline && text.Length > 0) text += "\n";
         await OperationOutput.TraceTextAsync(context, text);
-        var complete = new FileInfo(input.Path).Length <= input.MaxBytes && (tail || allLines.Length <= input.Lines);
+        var complete = length <= input.MaxBytes && (tail || allLines.Length <= input.Lines);
         return await OperationOutput.ReportAsync(context, "Bounded text read completed.", new { input.Path, BytesRead = System.Text.Encoding.UTF8.GetByteCount(text), Bounded = !complete }, complete);
     }
     public static async Task<OperationResult> FindAsync(MachineWorkflowContext context, FindFilesInput input, AgentEnvironment agent, CancellationToken token)
@@ -133,6 +212,7 @@ public static class FilesystemOperations
     private static async Task<OperationResult> CopyAsync(MachineWorkflowContext context, CopyPathInput input, AgentEnvironment agent, bool move, CancellationToken token)
     {
         input.Validate(); SafeOperationPaths.Check(input.Source); SafeOperationPaths.Check(input.Destination);
+        RequirePublicContentPath(input.Destination);
         var directory = Directory.Exists(input.Source);
         if (directory && !input.Recursive) throw new IOException("Directory operations require explicit recursive approval.");
         if (!input.Overwrite && (Directory.Exists(input.Destination) || File.Exists(input.Destination))) throw new IOException("The destination exists; overwrite was not approved.");
@@ -149,27 +229,53 @@ public static class FilesystemOperations
     public static async Task ValidateTransferTreeAsync(MachineWorkflowContext context, string path, AgentEnvironment agent, CancellationToken token)
     {
         SafeOperationPaths.Check(path);
+        RequirePublicContentPath(path);
         if (Directory.Exists(path) && MountPoints().Any(mount => mount != path && mount.StartsWith(path.TrimEnd('/') + "/", StringComparison.Ordinal)))
             throw new IOException("Directory transfers refuse nested mounts; approve each mounted source separately.");
-        var result = await OperationOutput.CommandAsync(context, agent, "find", [path, "-xdev", "(", "-type", "l", "-o", "-type", "b", "-o", "-type", "c", "-o", "-type", "p", "-o", "-type", "s", ")", "-print", "-quit"], token, traceOutput: false);
-        if (!string.IsNullOrWhiteSpace(result.Output)) throw new IOException("File transfer accepts regular files and directories; links and special files are refused.");
+        var result = await OperationOutput.CommandAsync(context, agent, "find", [path, "-xdev", "(", "-type", "l", "-o", "-type", "b", "-o", "-type", "c", "-o", "-type", "p", "-o", "-type", "s", "-o", "-ipath", BoxSecretPathPattern, "-o", "-ipath", BoxSecretStagePattern, ")", "-print", "-quit"], token, traceOutput: false);
+        if (!string.IsNullOrWhiteSpace(result.Output)) throw new IOException("File transfer requires regular files or directories and excludes Box secrets, links and special files.");
     }
 
-    public static async Task<OperationResult> ExportAsync(MachineWorkflowContext context, ExportPathInput input, AgentEnvironment agent, CancellationToken token)
+    public static Task<OperationResult> ExportAsync(MachineWorkflowContext context, ExportPathInput input, AgentEnvironment agent, CancellationToken token) =>
+        ExportCoreAsync(context, input, agent, requireOtherRead: true, token);
+
+    public static Task<OperationResult> DownloadAsync(MachineWorkflowContext context, ExportPathInput input, AgentEnvironment agent, CancellationToken token) =>
+        ExportCoreAsync(context, input, agent, requireOtherRead: true, token);
+
+    public static Task<OperationResult> DownloadAsRootAsync(MachineWorkflowContext context, ExportPathInput input, AgentEnvironment agent, CancellationToken token) =>
+        ExportCoreAsync(context, input, agent, requireOtherRead: false, token);
+
+    private static async Task<OperationResult> ExportCoreAsync(MachineWorkflowContext context, ExportPathInput input, AgentEnvironment agent, bool requireOtherRead, CancellationToken token)
     {
         input.Validate();
+        RequirePublicContentPath(input.Path);
+        SafeOperationPaths.Check(input.Path);
         var artifacts = agent.Artifacts ?? throw new NotSupportedException("This Agent host has no artifact transport.");
         await ValidateTransferTreeAsync(context, input.Path, agent, token);
         var directory = Directory.Exists(input.Path);
         if (directory && !input.Recursive) throw new IOException("Directory export requires explicit recursive approval.");
+        if (requireOtherRead)
+        {
+            var check = await OperationOutput.CommandAsync(context, agent, "bash",
+                ["-c", StartPublicReader, "dms-checker", CheckPublicPath, input.Path], token,
+                traceOutput: false, allowedExitCodes: [0, PublicReadDenied]);
+            if (check.ExitCode == PublicReadDenied)
+                throw new IOException("Cannot read or export this path as an unprivileged user. For a restricted file or directory, use 'dms machine filesystem download-as-root'.");
+        }
         var temporary = SafeOperationPaths.TemporaryDirectory();
         try
         {
             var file = Path.Combine(temporary, "payload");
             var kind = directory ? "directory-tar" : "file";
-            var entries = directory ? await PackDirectoryAsync(input.Path, file, input.MaxBytes, token) : 1;
+            var entries = directory ? await PackDirectoryAsync(input.Path, file, input.MaxBytes, token, requireOtherRead) : 1;
             if (!directory)
             {
+                if (requireOtherRead && OperatingSystem.IsLinux())
+                {
+                    var mode = File.GetUnixFileMode(input.Path);
+                    if ((mode & UnixFileMode.OtherRead) == 0)
+                        throw new IOException($"Cannot export restricted file '{input.Path}'. For restricted files, use 'dms machine filesystem download-as-root'.");
+                }
                 if (new FileInfo(input.Path).Length > input.MaxBytes) throw new IOException("File exceeds the approved export limit.");
                 await CopyBoundedAsync(input.Path, file, input.MaxBytes, token);
             }
@@ -235,7 +341,7 @@ public static class FilesystemOperations
         }
         await output.FlushAsync(token);
     }
-    public static async Task<int> PackDirectoryAsync(string source, string archive, long maximum, CancellationToken token)
+    public static async Task<int> PackDirectoryAsync(string source, string archive, long maximum, CancellationToken token, bool requireOtherRead = false)
     {
         var queue = new Queue<string>(); queue.Enqueue(source);
         long total = 0; var entries = 0;
@@ -248,7 +354,22 @@ public static class FilesystemOperations
             {
                 token.ThrowIfCancellationRequested();
                 if (++entries > 10000 || mounts.Contains(path)) throw new IOException("Export refuses nested mounts or more than 10000 entries.");
+                RequirePublicContentPath(path);
                 SafeOperationPaths.Check(path);
+                if (requireOtherRead && OperatingSystem.IsLinux())
+                {
+                    var mode = File.GetUnixFileMode(path);
+                    if (Directory.Exists(path))
+                    {
+                        if ((mode & (UnixFileMode.OtherRead | UnixFileMode.OtherExecute)) != (UnixFileMode.OtherRead | UnixFileMode.OtherExecute))
+                            throw new IOException($"Cannot export restricted directory '{path}'. For restricted files, use 'dms machine filesystem download-as-root'.");
+                    }
+                    else
+                    {
+                        if ((mode & UnixFileMode.OtherRead) == 0)
+                            throw new IOException($"Cannot export restricted file '{path}'. For restricted files, use 'dms machine filesystem download-as-root'.");
+                    }
+                }
                 var relative = Path.GetRelativePath(source, path);
                 if (Directory.Exists(path))
                 {

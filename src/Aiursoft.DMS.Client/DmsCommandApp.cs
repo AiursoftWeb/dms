@@ -72,7 +72,11 @@ public static partial class DmsCommandApp
                 NewFilesystemLsCommand(),
                 NewFilesystemStatCommand(),
                 NewFilesystemCatCommand(),
+                NewFilesystemCatCommand(asRoot: true),
                 NewFilesystemTailCommand(),
+                NewFilesystemTailCommand(asRoot: true),
+                NewFilesystemDownloadCommand(),
+                NewFilesystemDownloadCommand(asRoot: true),
                 NewFilesystemFindCommand(),
                 NewFilesystemMkdirCommand(),
                 NewFilesystemCpCommand(),
@@ -88,6 +92,10 @@ public static partial class DmsCommandApp
                     MachineWorkflows.BoxInspect, _ => new EmptyInput()),
                 BoxConfigureGitCommand(),
                 BoxDeployCommand(),
+                new BoxSecretCommand(BoxSecretCommandKind.List),
+                new BoxSecretCommand(BoxSecretCommandKind.Summary),
+                new BoxSecretCommand(BoxSecretCommandKind.Set),
+                new BoxSecretCommand(BoxSecretCommandKind.Raw),
                 new Group(MachineWorkflowCli.Puller, "Refresh images with the Box Puller.",
                 [
                     PullerCommand()

@@ -101,6 +101,11 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     public Task<IActionResult> OpenResult(Guid id, CancellationToken token) =>
         Handle(async () => await workflows.WaitForOpenResultAsync(Actor, id, token));
 
+    [HttpGet("lockboxes/{id:guid}/box-secret-metadata")]
+    [HttpGet("lockboxes/lb/{id:guid}/box-secret-metadata")]
+    public Task<IActionResult> BoxSecretMetadata(Guid id, CancellationToken token) =>
+        Handle(async () => await workflows.WaitForBoxSecretMetadataAsync(Actor, id, token));
+
     [HttpGet("lockboxes/{id:guid}/clickhouse-result")]
     [HttpGet("lockboxes/lb/{id:guid}/clickhouse-result")]
     public Task<IActionResult> ClickHouseResult(Guid id, CancellationToken token) =>

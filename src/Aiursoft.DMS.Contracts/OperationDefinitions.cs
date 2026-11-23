@@ -83,14 +83,42 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<PathInput, OperationResult> FilesystemStat =
         new("machine.filesystem.stat", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemStat)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    // Use the v2 default so that v1 Agents cannot execute this Low-risk offer.
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemCat =
-        new("machine.filesystem.cat", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemCat)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+        new("machine.filesystem.cat", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemCat)), ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemCatAsRoot =
+        new("machine.filesystem.cat-as-root", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemCatAsRoot)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+
+    // Use the v2 default so that v1 Agents cannot execute this Low-risk offer.
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemTail =
         new("machine.filesystem.tail",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemTail)),
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemTailAsRoot =
+        new("machine.filesystem.tail-as-root",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemTailAsRoot)),
+            "1",
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.Low)]
+    public static readonly MachineWorkflowDefinition<ExportPathInput, OperationResult> FilesystemDownload =
+        new("machine.filesystem.download",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemDownload)),
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<ExportPathInput, OperationResult> FilesystemDownloadAsRoot =
+        new("machine.filesystem.download-as-root",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemDownloadAsRoot)),
             "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);

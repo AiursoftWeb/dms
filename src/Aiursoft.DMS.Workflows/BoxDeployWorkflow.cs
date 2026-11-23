@@ -12,11 +12,11 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
     // GitLab advertises this SSH endpoint; retain the existing HTTPS and SCP forms.
     internal const string OfficialOriginPattern = @"^(https://gitlab\.aiursoft\.com/aiursoft/|git@gitlab\.aiursoft\.com:aiursoft/|ssh://git@ssh\.aiursoft\.com:2202/aiursoft/)(boxfor[a-zA-Z0-9_-]+)(\.git)?$";
 
-    private const string Preflight = """
+    internal const string Preflight = """
         set -euo pipefail
         repository=$1
         git=$2
-        box_git() { "$git" -c "safe.directory=$repository" -C "$repository" "$@"; }
+        box_git() { "$git" --no-optional-locks -c "safe.directory=$repository" -c core.fsmonitor=false -C "$repository" "$@"; }
         [ "$(box_git rev-parse --show-toplevel)" = "$repository" ] || {
             echo 'The Box must be the root of its Git working tree.' >&2; exit 1;
         }
@@ -30,8 +30,8 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         if box_git ls-files --error-unmatch .env.prod >/dev/null 2>&1; then
             echo 'Private .env.prod must not be tracked by Git.' >&2; exit 1;
         fi
-        box_git diff --quiet --ignore-submodules -- || { echo 'The Box has local tracked changes.' >&2; exit 1; }
-        box_git diff --cached --quiet --ignore-submodules -- || { echo 'The Box has staged changes.' >&2; exit 1; }
+        box_git diff --quiet --no-ext-diff --no-textconv --ignore-submodules -- || { echo 'The Box has local tracked changes.' >&2; exit 1; }
+        box_git diff --cached --quiet --no-ext-diff --no-textconv --ignore-submodules -- || { echo 'The Box has staged changes.' >&2; exit 1; }
         box_git rev-parse --verify HEAD
         """;
 
@@ -108,7 +108,7 @@ public sealed partial class BoxDeployWorkflow(BoxDeployInput input, string root 
         return candidates[0];
     }
 
-    private static FileStream AcquireLock(string directory)
+    internal static FileStream AcquireLock(string directory)
     {
         try { return new FileStream(Path.Combine(directory, ".dms-box-deploy.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
         catch (IOException exception) { throw new InvalidOperationException("Cannot acquire the machine deployment lock. Another deployment or a filesystem error prevents this request. No update or deployment was started.", exception); }

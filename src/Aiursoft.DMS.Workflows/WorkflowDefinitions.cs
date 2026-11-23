@@ -3,6 +3,7 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
+// ReSharper disable NotAccessedPositionalProperty.Global
 public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents,
     Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null,
     IAgentArtifactTransport? Artifacts = null,
@@ -13,7 +14,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null,
     Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null,
     AptTransactionHook? AptTransactionHook = null,
-    Func<Guid, CancellationToken, Task<string>>? GetFrpsDeployToken = null);
+    Func<Guid, CancellationToken, Task<string>>? GetFrpsDeployToken = null,
+    IBoxSecretTransport? BoxSecrets = null);
 
 public sealed partial class MachineWorkflowRegistry
 {
@@ -34,6 +36,14 @@ public sealed partial class MachineWorkflowRegistry
         Register(MachineWorkflows.DirectoryUsage, (input, _) => new DirectoryUsageWorkflow(input));
         Register(MachineWorkflows.RemovePath, (input, _) => new RemovePathWorkflow(input));
         Register(MachineWorkflows.DockerDiskUsage, (_, _) => new DockerDiskUsageWorkflow());
+        Register(MachineWorkflows.BoxListSecret, (input, agent) => new BoxSecretWorkflow<EmptyInput, BoxSecretsResult>(
+            MachineWorkflows.BoxListSecret, input, agent.BoxSecrets, (file, _, _) => Task.FromResult(file.List())));
+        Register(MachineWorkflows.BoxGetSecretSummary, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretSummary>(
+            MachineWorkflows.BoxGetSecretSummary, input, agent.BoxSecrets, (file, _, _) => Task.FromResult(file.Summary(input.Name))));
+        Register(MachineWorkflows.BoxSetSecret, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretResult>(
+            MachineWorkflows.BoxSetSecret, input, agent.BoxSecrets, (file, id, token) => file.SetAsync(input.Name, id, token)));
+        Register(MachineWorkflows.BoxGetSecretRaw, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretResult>(
+            MachineWorkflows.BoxGetSecretRaw, input, agent.BoxSecrets, (file, id, token) => file.PublishAsync(input.Name, id, token)));
         Register(MachineWorkflows.BoxDeploy, (input, _) => new BoxDeployWorkflow(input));
         Register(MachineWorkflows.Performance, (_, _) => new PerformanceInfoWorkflow());
         Register(MachineWorkflows.Restart, (input, _) => new RestartServiceWorkflow(input.Service));

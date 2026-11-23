@@ -21,6 +21,29 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
     public Task<DmsResponse> SubmitAsync<TInput, TResult>(WorkflowDefinition<TInput, TResult> definition,
         TInput input, string reason, IEnumerable<Guid>? machines = null, bool allMachines = false,
         Guid? requestId = null) => SubmitAsync(definition.Request(input, reason, machines, allMachines, requestId));
+    public Task<DmsResponse> SetBoxSecretAsync(BoxSecretSubmission submission)
+    {
+        RequireSecretHttps();
+        return http.Post<DmsResponse>(Endpoint("box-secrets/set"), new AiurApiPayload(submission),
+            BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    }
+
+    public Task<DmsResponse> RevealBoxSecretAsync(LockboxId id)
+    {
+        RequireSecretHttps();
+        return http.Post<DmsResponse>(Endpoint($"box-secrets/{id.Value:D}/reveal"), new AiurApiPayload(new { }),
+            BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    }
+
+    public Task<DmsResponse> BoxSecretMetadataAsync(LockboxId id) =>
+        http.Get<DmsResponse>(Endpoint($"lockboxes/{id}/box-secret-metadata"), autoRetry: false, headers: Headers);
+
+    private void RequireSecretHttps()
+    {
+        if (new Uri(endpoint).Scheme != Uri.UriSchemeHttps)
+            throw new ArgumentException("Box secret transfer requires an HTTPS Controller.");
+    }
+
     public Task<DmsResponse> ListLockboxesAsync(int page = 0, DecisionState? decision = null) => http.Get<DmsResponse>(Endpoint("lockboxes", new { page, decision }), headers: Headers);
     public Task<DmsResponse> GetLockboxAsync(LockboxId id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}"), headers: Headers);
     public Task<DmsResponse> LockboxStatusAsync(LockboxId id) => http.Get<DmsResponse>(Endpoint($"lockboxes/{id}/status"), headers: Headers);

@@ -214,6 +214,40 @@ the deployment's trace. High requests/automatic approval/review use
 Update the Controller, CLI (1.2.2) and target Agent (1.3.2) before using these
 new commands. Unmodified older Agents cannot execute the new definitions.
 
+## Manage Box secrets
+
+These commands use the selected Box's existing private `.env.prod` on the Agent. Submit
+each request for one machine, with an audit reason and a key for single-key
+operations.
+
+```bash
+dms machine box list-secret --machine-id <id> --reason "Inventory Box secrets"
+dms machine box get-secret-summary --machine-id <id> --name CLOUDFLARE_API_TOKEN --reason "Check rotation"
+dms machine box set-secret --machine-id <id> --name CLOUDFLARE_API_TOKEN --reason "Rotate ACME credential"
+dms machine box get-secret-raw --machine-id <id> --name CLOUDFLARE_API_TOKEN --reason "Recover the approved credential"
+dms machine box get-secret-raw --reveal lb/<id>
+```
+
+List and summary are Low risk. Use `--result lb/<id>` on either command to read
+the completed result after approval. The summary fingerprint is keyed by the
+Agent and identifies changes to the same key on that installation.
+
+Set and raw are VeryHigh risk. Set prompts without echo or accepts one line via
+`--stdin` through HTTPS. The Controller holds the staged value encrypted in
+memory for up to 30 minutes. The approved Agent consumes it once and updates the
+file atomically under the Box deployment lock. Use the standard Box deployment
+workflow to apply the configuration.
+
+Raw always requires a different human approver. After the workflow succeeds,
+the original requester has five minutes from delivery to reveal the exact value
+once over HTTPS. Plaintext is returned to that CLI's standard output. Lockbox,
+workflow and audit records contain key names and metadata. A Controller restart
+clears pending secret transfers. An expired or consumed transfer requires a new
+request.
+
+Generic file reads, copies and exports refuse the Box private configuration,
+including recursive transfers containing it.
+
 ## Inspect a Box
 
 ```sh

@@ -359,6 +359,11 @@ public class ArtifactWorkflowTests : TestBase
         try
         {
             var source = Path.Combine(path, "source.bin"); var bytes = RandomNumberGenerator.GetBytes(9 * 1024 * 1024 + 7); await File.WriteAllBytesAsync(source, bytes);
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(path, (UnixFileMode)0x1ED);
+                File.SetUnixFileMode(source, (UnixFileMode)0x1A4);
+            }
             var box = await SubmitAsync(setup.User, OperationsWorkflows.FilesystemExport, new ExportPathInput(source), setup.Machine);
             using (var scope = Server!.Services.CreateScope())
             {

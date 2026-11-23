@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection, BoxSecretTransfers boxSecrets)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user) => gate.RunAsync(async () =>
     {
@@ -24,7 +24,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             var grant = DmsPermissions.ForRisk(principal, risk);
             definitions.Add(new WorkflowDefinitionSummary(definition.Name, definition.Version, definition.Location,
                 risk, definition.RequiresTargets, grant.CanRequest,
-                grant.AutoApprove && definition.Name != ClickHouseWorkflows.Execute.Name, grant.CanApprove));
+                CanAutoApprove(definition.Name, grant.AutoApprove), grant.CanApprove));
         }
         var selfApproval = DmsPermissions.CanApproveOwn(principal);
         access.Audit(user, "workflow.definitions");
@@ -33,6 +33,23 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     });
 
     public Task<LockboxRequest> SubmitAsync(string user, OperationRequest request) => gate.RunAsync(() => SubmitCoreAsync(user, request));
+
+    public Task<LockboxRequest> SubmitBoxSecretAsync(string user, BoxSecretSubmission submission)
+    {
+        if (submission.MachineId == Guid.Empty || submission.Key == null)
+            throw new DmsException(400, "Select one machine and one Box secret.");
+        try
+        {
+            submission.Key.Validate();
+            new BoxSecretValue(submission.Value).Validate();
+        }
+        catch (ArgumentException exception) { throw new DmsException(400, exception.Message); }
+        return gate.RunAsync(() => SubmitCoreAsync(user, MachineWorkflows.BoxSetSecret.Request(
+            submission.Key, submission.Reason, [submission.MachineId]), boxSecret: submission.Value));
+    }
+
+    private static bool CanAutoApprove(string definition, bool autoApprove) => autoApprove &&
+        definition != ClickHouseWorkflows.Execute.Name && !BoxSecretTransfers.RequiresIndependentApproval(definition);
 
     internal static AgentUpgradeInput ReadRequestedAgentUpgrade(LockboxRequest item) =>
         MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input);
@@ -61,7 +78,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         });
 
     // Enrollment uses the same approval path while holding ControllerGate and a database transaction.
-    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request, Guid? enrollmentId = null)
+    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request, Guid? enrollmentId = null, string? boxSecret = null)
     {
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
@@ -78,6 +95,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
         { throw new DmsException(400, "Invalid workflow input: " + exception.Message); }
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
+        if (request.Workflow == MachineWorkflows.BoxSetSecret.Name && boxSecret == null)
+            throw new DmsException(400, "Use the dedicated Box secret submission endpoint.");
         FrpsDeployInput? frpsInput = null;
         if (request.Workflow == MachineWorkflows.FrpsDeploy.Name)
         {
@@ -185,9 +204,11 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             Definition = request.Workflow, Risk = risk, Version = definition.Version, Parameters = JsonSerializer.Serialize(request),
             TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason
         };
+        if (boxSecret != null && !boxSecrets.Stage(user, request.RequestId, reveal: false, boxSecret))
+            throw new DmsException(503, "Box secret transfer storage is busy. Try again later.");
         db.Lockboxes.Add(lockbox);
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
-        if (grant.AutoApprove && definition.Name != ClickHouseWorkflows.Execute.Name)
+        if (CanAutoApprove(definition.Name, grant.AutoApprove))
             await ApproveAsync(lockbox, null, risk == RiskLevel.Open
                 ? "Automatic approval by the Open workflow policy."
                 : "Automatic approval by the requester's role permissions.", enrollmentId);
@@ -200,6 +221,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (reason == null || reason.Length > 2000) throw new DmsException(400, "Decision reason is too long.");
         var item = await db.Lockboxes.SingleOrDefaultAsync(l => l.Id == id) ?? throw new DmsException(404, "Lockbox not found.");
         var principal = await access.PrincipalAsync(user);
+        if (approve && BoxSecretTransfers.RequiresIndependentApproval(item.Definition) && item.RequesterId == user)
+            throw new DmsException(403, "Privileged as-root requests and raw Box secret requests require approval from another user.");
         if (!DmsPermissions.CanDecide(principal, item.Risk, item.RequesterId == user))
             throw new DmsException(403, "Approval permission for this risk level is required; your own Lockbox requests also require self-approval permission.");
         if (item.Decision != DecisionState.Pending) throw new DmsException(409, "This Lockbox request has already been decided.");
@@ -392,15 +415,22 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     public Task<OpenWorkflowResult> WaitForClickHouseResultAsync(string user, Guid id, CancellationToken token) =>
         WaitForLockboxResultAsync(user, id, clickHouse: true, token);
 
-    private async Task<OpenWorkflowResult> WaitForLockboxResultAsync(string user, Guid id, bool clickHouse, CancellationToken token)
+    public Task<OpenWorkflowResult> WaitForBoxSecretMetadataAsync(string user, Guid id, CancellationToken token) =>
+        WaitForLockboxResultAsync(user, id, clickHouse: false, token, boxMetadata: true);
+
+    private async Task<OpenWorkflowResult> WaitForLockboxResultAsync(
+        string user, Guid id, bool clickHouse, CancellationToken token, bool boxMetadata = false)
     {
         var principal = await access.PrincipalAsync(user);
-        if (!clickHouse && !DmsPermissions.ForRisk(principal, RiskLevel.Open).CanRequest)
+        if (!clickHouse && !boxMetadata && !DmsPermissions.ForRisk(principal, RiskLevel.Open).CanRequest)
             throw new DmsException(403, "Run open workflows permission is required.");
         var box = await db.Lockboxes.AsNoTracking().NotCacheable()
             .SingleOrDefaultAsync(item => item.Id == id && item.RequesterId == user &&
-                (clickHouse || item.Risk == RiskLevel.Open), token)
+                (clickHouse || boxMetadata || item.Risk == RiskLevel.Open), token)
             ?? throw new DmsException(404, "Lockbox result not found.");
+        if (boxMetadata && box.Definition != MachineWorkflows.BoxListSecret.Name &&
+            box.Definition != MachineWorkflows.BoxGetSecretSummary.Name)
+            throw new DmsException(404, "Box secret metadata result not found.");
         if (clickHouse && !ClickHouseWorkflows.IsClickHouse(box.Definition))
             throw new DmsException(404, "ClickHouse Lockbox result not found.");
         if (!DmsPermissions.ForRisk(principal, box.Risk).CanRequest)
@@ -421,7 +451,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             {
                 var succeeded = run.State is RunState.Succeeded or RunState.Warning;
                 var result = succeeded ? run.Result : null;
-                if (clickHouse)
+                if (clickHouse || boxMetadata)
                 {
                     var child = await db.WorkflowRuns.AsNoTracking().NotCacheable()
                         .Where(item => item.ParentId == workflowId && item.LockboxId == id && item.Definition == box.Definition)
