@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
@@ -298,7 +297,8 @@ public class DmsRolePermissionTests : TestBase
         await LoginAsAdmin();
         var id = Uri.EscapeDataString(new LockboxId(original.Id).ToString());
         var page = await Http.GetStringAsync($"/Dms/Lockbox?id={id}");
-        var preview = Regex.Match(page, @"<code data-command[^>]*><span>([^<]+)</span>([^<]*)</code>");
+        var preview = System.Text.RegularExpressions.Regex.Match(
+            page, @"<code data-command[^>]*><span>([^<]+)</span>([^<]*)</code>");
         Assert.IsTrue(preview.Success);
         StringAssert.Contains(page, "Equivalent DMS command");
         StringAssert.Contains(preview.Groups[1].Value, "dms machine agent status");
