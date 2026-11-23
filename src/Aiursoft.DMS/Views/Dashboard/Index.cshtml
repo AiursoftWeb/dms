@@ -1,17 +1,22 @@
 @using Aiursoft.DMS.Services.Dms
+@* ReSharper disable once Razor.SectionNotResolved *@
+@section styles {
+    <link rel="stylesheet" href="~/styles/dms-onboarding.css" asp-append-version="true" />
+}
+
 <h1>@Localizer["DMS"]</h1>
 <p>@Localizer["Manage servers through approved workflows."]</p>
 
 <section class="card border-primary-subtle" aria-labelledby="cli-setup-title">
     <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div>
-            <h2 id="cli-setup-title" class="h4">@Localizer["Connect DMS CLI to this Controller"]</h2>
-            <p class="mb-0">@Localizer["Install the CLI on your computer and sign in with a personal API key."]</p>
+        <div class="d-flex align-items-center gap-3">
+            <span class="dms-onboarding-icon dms-onboarding-icon-violet dms-onboarding-icon-lg" aria-hidden="true"><i data-lucide="terminal"></i></span>
+            <div>
+                <h2 id="cli-setup-title" class="h4">@Localizer["Connect DMS CLI to this Controller"]</h2>
+                <p class="mb-0">@Localizer["Install the CLI on your computer and sign in with a personal API key."]</p>
+            </div>
         </div>
-        <a asp-action="CliSetup" class="btn btn-primary">
-            <i data-lucide="terminal" aria-hidden="true"></i>
-            @Localizer["Set up DMS CLI"]
-        </a>
+        <a asp-action="CliSetup" class="btn btn-primary">@Localizer["Set up DMS CLI"]</a>
     </div>
 </section>
 
@@ -19,7 +24,10 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h2>@Localizer["Machines"]</h2>
+                <h2 class="d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-green" aria-hidden="true"><i data-lucide="server"></i></span>
+                    <span>@Localizer["Machines"]</span>
+                </h2>
                 <p>@Localizer["View Agent connectivity and machine history."]</p>
                 <a asp-controller="Dms" asp-action="Index" class="btn btn-primary">@Localizer["View machines"]</a>
             </div>
@@ -28,7 +36,10 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h2>@LockboxText.Name</h2>
+                <h2 class="d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-amber" aria-hidden="true"><i data-lucide="lock"></i></span>
+                    <span>@LockboxText.Name</span>
+                </h2>
                 <p>@LockboxText.Format(@Localizer["Review the operation, parameters and fixed targets in each {0} request."].Value)</p>
                 <a asp-controller="Dms" asp-action="Lockboxes" class="btn btn-primary">@LockboxText.Format(@Localizer["Review {0} requests"].Value)</a>
             </div>
@@ -37,7 +48,10 @@
     <div class="col-md-4">
         <div class="card">
             <div class="card-body">
-                <h2>@Localizer["Workflow history"]</h2>
+                <h2 class="d-flex align-items-center gap-2">
+                    <span class="dms-onboarding-icon dms-onboarding-icon-blue" aria-hidden="true"><i data-lucide="history"></i></span>
+                    <span>@Localizer["Workflow history"]</span>
+                </h2>
                 <p>@Localizer["Follow the callstack and inspect execution traces."]</p>
                 <a asp-controller="Dms" asp-action="Operations" class="btn btn-primary">@Localizer["View history"]</a>
             </div>

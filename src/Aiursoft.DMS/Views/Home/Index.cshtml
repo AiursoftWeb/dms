@@ -3,6 +3,7 @@
 @section styles {
     <link rel="stylesheet" href="~/styles/site.css" />
     <link rel="stylesheet" href="~/styles/marketing.css" />
+    <link rel="stylesheet" href="~/styles/dms-onboarding.css" asp-append-version="true" />
 }
 <vc:marketing-navbar></vc:marketing-navbar>
 <section class="landing-intro text-bg-dark py-5">
@@ -19,6 +20,7 @@
             <div class="col-md-4">
                 <article class="card h-100 mb-0">
                     <div class="card-body p-4">
+                        <span class="dms-onboarding-icon dms-onboarding-icon-blue dms-onboarding-icon-lg mb-3" aria-hidden="true"><i data-lucide="network"></i></span>
                         <h3 class="h5">DMS Controller</h3>
                         <p class="mb-0">@LockboxText.Format(@Localizer["The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows."].Value)</p>
                     </div>
@@ -27,6 +29,7 @@
             <div class="col-md-4">
                 <article class="card h-100 mb-0">
                     <div class="card-body p-4">
+                        <span class="dms-onboarding-icon dms-onboarding-icon-violet dms-onboarding-icon-lg mb-3" aria-hidden="true"><i data-lucide="terminal"></i></span>
                         <h3 class="h5">DMS CLI</h3>
                         <p class="mb-0">@Localizer["The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results."]</p>
                     </div>
@@ -35,6 +38,7 @@
             <div class="col-md-4">
                 <article class="card h-100 mb-0">
                     <div class="card-body p-4">
+                        <span class="dms-onboarding-icon dms-onboarding-icon-green dms-onboarding-icon-lg mb-3" aria-hidden="true"><i data-lucide="server"></i></span>
                         <h3 class="h5">DMS Agent</h3>
                         <p class="mb-0">@Localizer["The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally."]</p>
                     </div>
