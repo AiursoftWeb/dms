@@ -97,6 +97,12 @@ public sealed class GetMachinesWorkflow : ClusterWorkflow<EmptyInput, List<Machi
         context.WithInventoryAsync(db => MachineInventory.ReadAsync(db, token), token);
 }
 
+public sealed class ListArtifactsWorkflow(DmsArtifactStore artifacts) : ClusterWorkflow<ArtifactListInput, List<ArtifactListItem>>
+{
+    public override async Task<List<ArtifactListItem>> ExecuteAsync(WorkflowExecutionContext context, ArtifactListInput input,
+        CancellationToken token) => await artifacts.ListOwnedAsync(await context.GetRequesterAsync(token), input, token);
+}
+
 public sealed class AddMachineWorkflow() : TransactionalClusterWorkflow<AddMachineInput, AddMachineResult>(ClusterWorkflows.AddMachine)
 {
     protected override async Task<AddMachineResult> ExecuteAsync(ClusterWorkflowContext context, AddMachineInput input)

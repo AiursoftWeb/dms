@@ -21,6 +21,7 @@ public static class WorkflowNames
     public const string DiskFree = "machine.layout.df";
     public const string Process = "internal.process";
     public const string ListMachines = "cluster.get-machines";
+    public const string ListArtifacts = "cluster.artifact.ls";
     public const string AddMachine = "cluster.add-machine";
     public const string Kill = "operation.kill-workflow";
     public const string Version = "2";

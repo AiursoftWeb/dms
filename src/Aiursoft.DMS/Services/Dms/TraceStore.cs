@@ -62,6 +62,17 @@ public sealed partial class TraceDatabase(IConfiguration configuration) : Clickh
         r => new TraceEntry { EventId = r.GetString(0), WorkflowId = r.GetString(1), Time = r.GetDateTime(2), Source = r.GetString(3), Message = r.GetString(4),
             Origin = Enum.Parse<WorkflowOrigin>(r.GetString(5)), Trigger = Enum.Parse<WorkflowTrigger>(r.GetString(6)), ScheduleId = r.IsDBNull(7) ? null : r.GetString(7) },
         new Dictionary<string, object?> { ["workflows"] = workflowIds, ["limit"] = limit, ["skip"] = skip });
+
+    public Task<IReadOnlyList<TraceEntry>> ReadDataAsync(Guid workflowId, int limit) => QueryAsync(
+        """
+        SELECT EventId, Message
+        FROM DmsWorkflowTrace FINAL
+        WHERE WorkflowId = {workflow:String} AND Source = 'data'
+        ORDER BY EventId
+        LIMIT {limit:UInt32}
+        """,
+        reader => new TraceEntry { EventId = reader.GetString(0), Message = reader.GetString(1) },
+        new Dictionary<string, object?> { ["workflow"] = workflowId.ToString(), ["limit"] = limit });
 }
 
 public sealed class TraceStore(IConfiguration configuration)
@@ -100,6 +111,26 @@ public sealed class TraceStore(IConfiguration configuration)
             await database.InsertAsync(entry);
             File.Delete(file); // Repeated INSERT after a crash is collapsed by the query's FINAL.
         }
+    }
+
+    public async Task<List<TraceEntry>> ReadPendingDataAsync(Guid workflowId, int limit, CancellationToken token)
+    {
+        var entries = new List<TraceEntry>();
+        if (!Directory.Exists(_path)) return entries;
+        foreach (var file in Directory.EnumerateFiles(_path, $"{workflowId:N}-*.json"))
+        {
+            token.ThrowIfCancellationRequested();
+            try
+            {
+                await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                var entry = await JsonSerializer.DeserializeAsync<TraceEntry>(stream, cancellationToken: token);
+                if (entry?.Source != "data" || entry.WorkflowId != workflowId.ToString()) continue;
+                entries.Add(entry);
+                if (entries.Count >= limit) break;
+            }
+            catch (FileNotFoundException) { } // A concurrent flush has archived this entry.
+        }
+        return entries;
     }
 
     public int PendingCount => Directory.Exists(_path) ? Directory.EnumerateFiles(_path, "*.json").Count() : 0;
