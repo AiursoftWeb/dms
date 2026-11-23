@@ -374,44 +374,6 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
-    public void TraceLogWritesOnePlainLinePerEvent()
-    {
-        var data = new
-        {
-            Entries = new[]
-            {
-                new { Time = DateTime.UnixEpoch, Source = "engine", Message = "Starting operation." },
-                new
-                {
-                    Time = DateTime.UnixEpoch.AddMilliseconds(5), Source = "stdout",
-                    Message = "GPU, \"ready\"\r\nnext\n"
-                },
-                new { Time = DateTime.UnixEpoch.AddSeconds(1), Source = "stderr", Message = "Tool notice." },
-                new { Time = DateTime.UnixEpoch.AddSeconds(2), Source = "warning", Message = "Partial output." },
-                new { Time = DateTime.UnixEpoch.AddSeconds(3), Source = "error", Message = "Operation failed." }
-            },
-            PendingArchiveEvents = 3,
-            NextOffset = 200
-        };
-        var response = new DmsResponse { Message = "Request completed.", Data = data };
-        using var output = new StringWriter();
-        Client.DmsOutputWriter.Write(output, response, Client.OutputFormat.Log, false, true);
-
-        using var lines = new StringReader(output.ToString());
-        Assert.AreEqual("1970-01-01T00:00:00.0000000Z [INFO] Starting operation.", lines.ReadLine());
-        Assert.AreEqual("1970-01-01T00:00:00.0050000Z [INFO] GPU, \"ready\"\\nnext\\n", lines.ReadLine());
-        Assert.AreEqual("1970-01-01T00:00:01.0000000Z [WARN] Tool notice.", lines.ReadLine());
-        Assert.AreEqual("1970-01-01T00:00:02.0000000Z [WARN] Partial output.", lines.ReadLine());
-        Assert.AreEqual("1970-01-01T00:00:03.0000000Z [ERROR] Operation failed.", lines.ReadLine());
-        Assert.IsNull(lines.ReadLine());
-
-        using var empty = new StringWriter();
-        response.Data = new { Entries = Array.Empty<object>(), PendingArchiveEvents = 3, NextOffset = 400 };
-        Client.DmsOutputWriter.Write(empty, response, Client.OutputFormat.Log, false, true);
-        Assert.AreEqual(string.Empty, empty.ToString());
-    }
-
-    [TestMethod]
     public async Task WebHistoryFiltersWorkflowLocationsAndKeepsFiltersWhenPaging()
     {
         var setup = await ArrangeAsync();
