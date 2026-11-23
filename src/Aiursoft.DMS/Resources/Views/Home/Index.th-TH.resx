@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>ตรวจสอบลินต์</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} บันทึกว่าใครเป็นผู้ขอทำงาน เป้าหมายของงาน และผลการอนุมัติ</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>สัญญาอนุญาต MIT</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>ปรัชญา</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>แอปพลิเคชันเว็บและ API หลัก ติดตามเครื่อง จัดการการอนุมัติ {0} และประสานงานเวิร์กโฟลว์</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>เครื่องมือบรรทัดคำสั่งที่คุณเรียกใช้บนคอมพิวเตอร์ของคุณเอง มันเชื่อมต่อไปยัง Controller เพื่อให้คุณขอการดำเนินการและตรวจสอบผลลัพธ์ thereof</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>พื้นฐานองค์กร .NET ที่เป็นที่สุดและผ่านการทดสอบในสนามรบแล้ว ตั้งแต่การยืนยันตัวตน (Auth) ไปจนถึงปัญญาประดิษฐ์ (AI) เราได้แก้ปัญหาที่ยากลำบากแล้ว เพื่อให้คุณไม่ต้องทำเอง</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>แถบนำทางจะปรับเปลี่ยนโดยอัตโนมัติตามบทบาทและสิทธิ์ของผู้ใช้</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>บริการที่คุณติดตั้งบนแต่ละเครื่องที่ถูกจัดการ มันเชื่อมต่อกับ Controller รายงานสถานะ และทำงานเวิร์กโฟลว์ที่ได้รับการอนุมัติในเครื่อง</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>เทมเพลตนี้ถูกสร้างขึ้นเพื่อให้การปรับใช้เป็นเรื่องง่าย โดยมีระบบรองรับ Docker เต็มรูปแบบ ทำให้คุณสามารถสร้างคอนเทนเนอร์สำหรับแอปพลิเคชันและรันได้ทุกที่ นอกจากนี้คุณยังสามารถปรับใช้โดยตรงไปยัง IIS, Azure App Service หรือเซิร์ฟเวอร์ใดๆ ที่รองรับ ASP.NET Core ได้อีกด้วย</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>สามส่วนประกอบของ DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>นี่คือโครงการต้นแบบ</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>ดูบน GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>ดูรายการเครื่องของคุณ การเชื่อมต่อของ Agent เวอร์ชัน และประวัติการดำเนินงาน</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>มี WebApplicationFactory</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>มี java.time API ให้ใช้</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} บันทึกว่าใครเป็นผู้ขอทำงาน เป้าหมายของงาน และผลการอนุมัติ</value>
   </data>
 
 </root>

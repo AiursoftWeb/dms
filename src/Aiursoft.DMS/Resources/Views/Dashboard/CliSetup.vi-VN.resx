@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. Cài đặt CLI</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. Tạo khóa API cá nhân</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. Đăng nhập vào Controller này</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. Xác minh kết nối</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>Quay lại DMS</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>Kiểm tra tài khoản và quyền mà CLI đang sử dụng.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>Các biến môi trường DMS_SERVER và DMS_API_KEY hiện có sẽ ghi đè lên thông tin đăng nhập đã lưu của bạn. Hãy xóa chúng để sử dụng các cài đặt đã lưu.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>Đặt tên cho khóa và sao chép ngay khi nó xuất hiện. DMS chỉ hiển thị nó một lần.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>Nếu CLI đã được cài đặt, hãy cập nhật nó bằng lệnh bên dưới.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Nếu bạn có quyền chạy các luồng công việc Open, hãy thử liệt kê các máy bằng CLI.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>Hãy cài đặt .NET 10 SDK trước, sau đó chạy lệnh này trong terminal của bạn.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>Mở Chìa khóa API</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>Chạy lệnh đăng nhập, dán khóa API cá nhân tại vị trí nhập ẩn và nhấn Enter.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>Chạy các lệnh này trên máy tính của bạn để kết nối với DMS Controller này.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Cài đặt DMS CLI</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>CLI lưu trữ địa chỉ này và khóa API cá nhân của bạn trên máy tính của bạn.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>Bộ điều khiển này</value>
+  </data>
+
+</root>

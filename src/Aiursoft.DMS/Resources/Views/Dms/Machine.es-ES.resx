@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>Conexión del agente</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Versión del agente</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Volver a las máquinas</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>Historial de la línea base</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>Creado</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Finalizado</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Última vez que se vio</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Última ejecución</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>ID de máquina</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Máquinas</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>No se ha recibido latido</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>No se ha registrado ninguna ejecución programada de la línea base para este equipo.</value>
+  </data>
+  <data name="Not verified yet" xml:space="preserve">
+    <value>Aún no verificado</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Línea base de seguridad programada</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Iniciado</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Ver ejecución</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Historial del flujo de trabajo</value>
+  </data>
+
+</root>

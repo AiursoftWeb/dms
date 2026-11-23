@@ -18,14 +18,53 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="APT package plan" xml:space="preserve">
+    <value>แผนแพ็กเกจ APT</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>การอัปเดตเพิ่มเติมในแผนที่จะลบแพ็กเกจ</value>
+  </data>
+  <data name="All enabled machines at submission" xml:space="preserve">
+    <value>เครื่องที่เปิดใช้งานทั้งหมด ณ เวลาที่ยื่นคำขอ</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>อนุมัติ</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>อนุมัติแล้ว</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>เครื่องเป้าหมายที่ได้รับการอนุมัติ</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>อนุมัติ · รอการดำเนินการ</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>รหัสผู้อนุมัติ</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>การอนุมัติโดยอัตโนมัติ</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>กำลังรอการอนุมัติ</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>กลับไปที่การอนุมัติ</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>คำสั่ง</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>คัดลอกคำสั่งแล้ว</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>คัดลอก</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>สร้างเมื่อ</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>แพ็กเกจ Agent ที่พร้อมใช้งานในปัจจุบัน</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>การตัดสินใจ</value>
@@ -33,11 +72,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>เหตุผลในการตัดสินใจ</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>ถูกปฏิเสธ</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>ปฏิเสธ</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>คำสั่ง Docker ในคำขอ {0} นี้</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>คำสั่ง DMS ที่เทียบเท่า</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>สถานะการดำเนินการ</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>สถานะการดำเนินการไม่พร้อมใช้งาน</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>ไฟล์อินพุตที่ถูกแช่แข็ง</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>ความเสี่ยงสูง</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>เวิร์กโฟลว์การอนุมัติทางประวัติศาสตร์</value>
@@ -45,14 +102,128 @@
   <data name="ID" xml:space="preserve">
     <value>รหัสประจำตัว</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>ภาพ</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>ขอบเขตของภาพ</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>ความเสี่ยงต่ำ</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>ความเสี่ยงปานกลาง</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>ต้องส่งคำขอใหม่</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>ไม่มีผู้อนุมัติที่มีสิทธิ์ในขณะนี้</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>ไม่มีเป้าหมายของเครื่อง</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>ไม่มีการเปลี่ยนแปลงแพ็กเกจที่กำหนดไว้</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์แบบเปิด</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>พารามิเตอร์</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>สร้างใหม่จากข้อมูลอินพุตที่บันทึกไว้และเครื่องเป้าหมาย</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>แพ็กเกจ Agent ที่ร้องขอ</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>ตรวจสอบแพ็กเกจปัจจุบันและส่งคำขอใหม่สำหรับเครื่องเดิม</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>ตรวจสอบเนื้อหาที่ส่งเข้าระบบอย่างละเอียดก่อนดำเนินการ</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>ความเสี่ยง</value>
   </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์ที่ปลอดภัย</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>ส่งคำขออัปเกรดใหม่</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>เครื่องเป้าหมาย</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>แพ็กเกจ Agent ไม่พร้อมใช้งานชั่วคราว กรุณาลองใหม่อีกครั้งในภายหลัง</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>แพ็กเกจ Agent ปัจจุบันมีการเปลี่ยนแปลงอีกครั้ง กรุณาตรวจสอบก่อนส่ง</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>แพ็กเกจ Agent เดิมพร้อมใช้งานอีกครั้ง โปรดตรวจสอบคำขอเดิม</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>การดูตัวอย่างไม่พร้อมใช้งานสำหรับเครื่องนี้</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>ผู้ขอต้องส่งคำขออัปเกรดใหม่</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>แพ็กเกจ Agent ที่เลือกไว้ถูกแทนที่แล้ว การอัปเกรดยังไม่เริ่มต้น</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>เวิร์กโฟลว์นี้ไม่รับพารามิเตอร์</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>อัปเกรด DMS Agent บน {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>ความเสี่ยงสูงมาก</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>ดูการดำเนินการของเวิร์กโฟลว์</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>ใครสามารถอนุมัติได้</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>ถูกถอน</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>เวิร์กโฟลว์</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>เวอร์ชันเวิร์กโฟลว์</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>บทบาทปัจจุบันของคุณไม่อนุญาตให้คุณขออัปเกรดนี้</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>ไบต์</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>ตัวระบุคำขอ {0} และข้อมูลดิบ</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>เหตุผลในการขอ {0}</value>
+  </data>
+  <data name="{0} request time" xml:space="preserve">
+    <value>{0} เวลาขอ</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>ผู้ขอ {0}</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} ID ผู้ร้องขอ</value>
   </data>
 
 </root>

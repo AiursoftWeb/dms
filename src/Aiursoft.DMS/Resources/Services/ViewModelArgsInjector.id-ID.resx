@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Akses Ditolak</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Tambahkan mesin</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Tambahkan kunci publik SSH</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Kunci publik SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Set up DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Pengaturan</value>

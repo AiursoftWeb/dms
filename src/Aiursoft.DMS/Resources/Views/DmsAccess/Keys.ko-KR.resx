@@ -39,6 +39,9 @@
   <data name="Revoke" xml:space="preserve">
     <value>취소</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI 설정</value>
+  </data>
   <data name="Valid days" xml:space="preserve">
     <value>유효 기간</value>
   </data>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. CLI installieren</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. Persönlichen API-Schlüssel erstellen</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. Bei diesem Controller anmelden</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. Verbindung überprüfen</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>Zurück zum DMS</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>Prüfen Sie, welches Konto und welche Berechtigungen die CLI verwendet.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>Vorhandene Umgebungsvariablen DMS_SERVER und DMS_API_KEY überschreiben Ihre gespeicherten Anmeldeinformationen. Löschen Sie diese, um die gespeicherten Einstellungen zu verwenden.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>Nennen Sie den Schlüssel und kopieren Sie ihn sofort, sobald er angezeigt wird. DMS zeigt ihn nur einmal an.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>Falls die CLI bereits installiert ist, aktualisieren Sie sie mit dem folgenden Befehl.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Falls Sie die Berechtigung zum Ausführen von offenen Workflows haben, versuchen Sie, die Maschinen mit der CLI aufzulisten.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>Installieren Sie zuerst das .NET 10 SDK und führen Sie dies dann in Ihrem Terminal aus.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>API-Schlüssel öffnen</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>Führen Sie den Anmeldebefehl aus, fügen Sie den persönlichen API-Schlüssel an der versteckten Eingabeaufforderung ein und drücken Sie die Eingabetaste.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>Führen Sie diese Befehle auf Ihrem Computer aus, um sich mit diesem DMS-Controller zu verbinden.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI einrichten</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>Die CLI speichert diese Adresse und Ihren persönlichen API-Schlüssel auf Ihrem Computer.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>Dieser Controller</value>
+  </data>
+
+</root>

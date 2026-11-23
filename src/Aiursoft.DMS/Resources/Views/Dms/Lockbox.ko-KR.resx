@@ -18,7 +18,13 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All enabled machines at submission" xml:space="preserve">
+      <data name="APT package plan" xml:space="preserve">
+    <value>APT 패키지 계획</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>패키지를 제거하는 플랜에 포함된 추가 업그레이드</value>
+  </data>
+  <data name="All enabled machines at submission" xml:space="preserve">
     <value>제출 시점에 활성 상태인 모든 머신</value>
   </data>
   <data name="Approve" xml:space="preserve">
@@ -117,6 +123,9 @@
   <data name="No machine targets" xml:space="preserve">
     <value>대상 머신이 없습니다</value>
   </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>패키지 변경 사항이 없습니다.</value>
+  </data>
   <data name="Open workflow" xml:space="preserve">
     <value>열린 워크플로</value>
   </data>
@@ -161,6 +170,9 @@
   </data>
   <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
     <value>원래 Agent 패키지가 다시 사용할 수 있습니다. 원래 요청을 검토하세요.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>이 컴퓨터에서는 미리보기가 사용할 수 없습니다.</value>
   </data>
   <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
     <value>요청자가 새로운 업그레이드 요청을 제출해야 합니다.</value>

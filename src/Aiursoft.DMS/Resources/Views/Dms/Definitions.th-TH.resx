@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>เกี่ยวกับสิทธิ์เหล่านี้</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>ใช้</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>อนุมัติโดยอัตโนมัติ</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>คลัสเตอร์</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>สถานที่ดำเนินการ</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>สูง</value>
@@ -57,13 +63,22 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>ยังไม่มีเวิร์กโฟลว์มาตรฐานสาธารณะที่ลงทะเบียนอยู่</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>เปิด</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>ต้องระบุเป้าหมายของเครื่อง</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>ความเสี่ยง</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>ความเสี่ยง (สูงไปต่ำ)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>ความเสี่ยง (ต่ำสุดก่อน)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>สิทธิ์ของบทบาทใช้กับทุกเครื่องในอินสแตนซ์ DMS นี้และระดับความเสี่ยงของแต่ละเวิร์กโฟลว์ การอนุมัติอัตโนมัติต้องการสิทธิ์ในการขอ  การอนุมัติคำขอ {0}ของตัวเองยังต้องการสิทธิ์การอนุมัติตนเองด้วย</value>
   </data>
   <data name="Safe" xml:space="preserve">
@@ -72,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>แสดงเวิร์กโฟลว์</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>เรียงตาม</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>เวิร์กโฟลว์มาตรฐาน</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>แคตตาล็อกนี้ระบุเวิร์กโฟลว์มาตรฐานสาธารณะที่มีอยู่บน Controller การมีอยู่ของ Agent และเวอร์ชันที่รองรับจะได้รับการตรวจสอบระหว่างดำเนินการ การควบคุมพิเศษและซับเวิร์กโฟลว์ภายในจะไม่ถูกระบุในรายการ</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>ไม่ทราบ</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>เวอร์ชัน</value>
@@ -86,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>เวิร์กโฟลว์</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>ชื่อเวิร์กโฟลว์ (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>ชื่อ Workflow (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>ใช่</value>

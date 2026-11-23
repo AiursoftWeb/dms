@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>ใครก็คัดลอกคีย์สาธารณะได้ ขั้นตอนนี้พิสูจน์ว่าคุณถือคีย์ส่วนตัว ซึ่งเก็บอยู่ในคอมพิวเตอร์ของคุณ</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>กลับไปที่คีย์สาธารณะ SSH</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>ยกเลิกการเพิ่มคีย์นี้</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>คัดลอกคำสั่งแล้ว</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>คัดลอกคำสั่ง</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>หากหมดเวลา กรุณาเพิ่มคีย์ใหม่อีกครั้ง</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>หากคีย์ส่วนตัวของคุณถูกจัดเก็บไว้ที่อื่น ให้เปลี่ยนเส้นทางหลัง -f จากนั้นวางลายเซ็นเต็มรูปแบบที่คำสั่งพิมพ์ออกมา</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>ลายเซ็น SSH</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>เริ่มต้นใหม่</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>ขั้นตอนที่ 2 จาก 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>คำสั่งเทอร์มินัล</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>ลายเซ็นไม่ตรงกัน รันคำสั่งด้านบนโดยใช้คีย์ส่วนตัวสำหรับคีย์สาธารณะนี้ และวางผลลัพธ์ทั้งหมด</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>เวลาที่เหลือ</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>เพื่อเสร็จสิ้นการเพิ่มคีย์นี้ ให้รันคำสั่งด้านล่างบนคอมพิวเตอร์ที่เก็บคีย์ส่วนตัวของมัน</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>การตรวจสอบหมดอายุแล้ว คีย์นี้ไม่ถูกเพิ่ม</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>การยืนยันหมดอายุเวลา</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>ตรวจสอบและเพิ่มคีย์</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>ตรวจสอบคีย์สาธารณะ SSH ของคุณ</value>
+  </data>
+
+</root>

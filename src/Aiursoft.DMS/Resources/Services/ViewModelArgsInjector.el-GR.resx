@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Πρόσβαση απαγορευμένη</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Προσθήκη μηχανής</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Προσθήκη δημόσιου κλειδιού SSH</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Δημόσια κλειδιά SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Ρύθμιση DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Ρυθμίσεις</value>

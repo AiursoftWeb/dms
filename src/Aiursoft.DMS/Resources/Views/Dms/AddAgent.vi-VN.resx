@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Get a join key" xml:space="preserve">
+    <value>1. Lấy khóa tham gia</value>
+  </data>
+  <data name="2. Install the Agent on the machine" xml:space="preserve">
+    <value>2. Cài đặt Agent trên máy</value>
+  </data>
+  <data name="3. Approve the registration and check the connection" xml:space="preserve">
+    <value>3. Phê duyệt đăng ký và kiểm tra kết nối</value>
+  </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Thêm một máy</value>
+  </data>
+  <data name="After approval, the Agent connects automatically. Return to Machines and check that its status is Online." xml:space="preserve">
+    <value>Sau khi được phê duyệt, Agent sẽ tự động kết nối. Quay lại Machines và kiểm tra xem trạng thái của nó có phải là Online hay không.</value>
+  </data>
+  <data name="Ask an administrator for a join key for this Controller. Administrators with Manage DMS access and permission to request Medium workflows can create one from their DMS CLI." xml:space="preserve">
+    <value>Hãy yêu cầu quản trị viên cấp một khóa tham gia cho Controller này. Các quản trị viên có quyền truy cập Quản lý DMS và quyền yêu cầu các luồng công việc Medium có thể tạo một khóa từ DMS CLI của họ.</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Quay lại máy</value>
+  </data>
+  <data name="Bash, curl, systemd, and sudo access" xml:space="preserve">
+    <value>Truy cập Bash, curl, systemd và sudo</value>
+  </data>
+  <data name="If registration is pending, share its {0} ID with someone who can approve Medium workflows. To approve your own request, you also need self-approval permission." xml:space="preserve">
+    <value>Nếu đăng ký đang ở trạng thái chờ, hãy chia sẻ ID {0} của nó với người có thể phê duyệt các luồng công việc Medium. Để phê duyệt yêu cầu của chính bạn, bạn cũng cần quyền tự phê duyệt.</value>
+  </data>
+  <data name="Install a DMS Agent to let this Controller manage a Linux machine." xml:space="preserve">
+    <value>Cài đặt một DMS Agent để cho phép Controller này quản lý một máy Linux.</value>
+  </data>
+  <data name="Machine requirements" xml:space="preserve">
+    <value>Yêu cầu đối với máy</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>Phê duyệt của tôi</value>
+  </data>
+  <data name="On the machine you want to manage, open Bash, replace the join key placeholder with your key, and run the command." xml:space="preserve">
+    <value>Trên máy bạn muốn quản lý, mở Bash, thay thế phần giữ chỗ của khóa tham gia bằng khóa của bạn và chạy lệnh.</value>
+  </data>
+  <data name="Outbound access to this Controller" xml:space="preserve">
+    <value>Truy cập ra ngoài tới Controller này</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Cài đặt DMS CLI</value>
+  </data>
+  <data name="The .NET 10 SDK, or an APT source that provides dotnet10" xml:space="preserve">
+    <value>Bộ SDK .NET 10, hoặc một nguồn APT cung cấp dotnet10</value>
+  </data>
+  <data name="The installer downloads the Agent from this Controller, starts it as a systemd service, and prints the {0} ID for registration." xml:space="preserve">
+    <value>Trình cài đặt sẽ tải Agent từ Controller này, khởi chạy nó như một dịch vụ systemd và in ra ID {0} để đăng ký.</value>
+  </data>
+  <data name="Ubuntu or AnduinOS on x64 or arm64" xml:space="preserve">
+    <value>Ubuntu hoặc AnduinOS trên x64 hoặc arm64</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>Xem các máy</value>
+  </data>
+
+</root>

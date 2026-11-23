@@ -36,6 +36,9 @@
   <data name="ID" xml:space="preserve">
     <value>รหัสประจำตัว</value>
   </data>
+  <data name="Retained for approval audit" xml:space="preserve">
+    <value>เก็บรักษาไว้เพื่อตรวจสอบการอนุมัติ</value>
+  </data>
   <data name="Retention" xml:space="preserve">
     <value>การเก็บรักษา</value>
   </data>

@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>Documentation complète</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>Connecter DMS CLI à ce contrôleur</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>Validation de cohérence</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>Comprend une documentation exhaustive et des exemples pratiques pour vous permettre de démarrer rapidement.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>Installez le CLI sur votre ordinateur et connectez-vous avec une clé API personnelle.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Gestion intégrée des fichiers</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Conception adaptative</value>
   </data>
+  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
+    <value>Consultez l&apos;opération demandée, les paramètres et les cibles définies. (demandes {0})</value>
+  </data>
   <data name="Review {0} requests" xml:space="preserve">
     <value>Consulter les demandes {0}</value>
-  </data>
-  <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
-    <value>Consultez l'opération demandée, les paramètres et les cibles définies. (demandes {0})</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Tests d&apos;intégration robustes</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>Intégration transparente avec n&apos;importe quel fournisseur OpenID Connect, avec synchronisation automatique des rôles.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configurer DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>Remplacements intelligents de configuration</value>

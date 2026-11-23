@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Agent version" xml:space="preserve">
+      <data name="Add a machine" xml:space="preserve">
+    <value>マシンの追加</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
     <value>エージェントバージョン</value>
   </data>
   <data name="All states" xml:space="preserve">
@@ -62,6 +65,9 @@
   </data>
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>表示できるマシンがありません。クラスタへのアクセスを設定し、CLIを使用してマシンの登録を要求してください。</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>まだマシンが参加していません。</value>
   </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>マシンが参加していません。参加キーを使用してAgentの登録をリクエストしてください。</value>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Get a join key" xml:space="preserve">
+    <value>1. รับคีย์เข้าร่วม</value>
+  </data>
+  <data name="2. Install the Agent on the machine" xml:space="preserve">
+    <value>2. ติดตั้ง Agent บนเครื่อง</value>
+  </data>
+  <data name="3. Approve the registration and check the connection" xml:space="preserve">
+    <value>3. อนุมัติการลงทะเบียนและตรวจสอบการเชื่อมต่อ</value>
+  </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>เพิ่มเครื่อง</value>
+  </data>
+  <data name="After approval, the Agent connects automatically. Return to Machines and check that its status is Online." xml:space="preserve">
+    <value>หลังจากได้รับการอนุมัติ Agent จะเชื่อมต่อโดยอัตโนมัติ กลับไปที่ Machines และตรวจสอบว่าสถานะเป็น Online</value>
+  </data>
+  <data name="Ask an administrator for a join key for this Controller. Administrators with Manage DMS access and permission to request Medium workflows can create one from their DMS CLI." xml:space="preserve">
+    <value>ขอคีย์เข้าร่วม (join key) สำหรับ Controller นี้จากผู้ดูแลระบบ ผู้ดูแลระบบที่มีสิทธิ์เข้าถึงการจัดการ DMS และสิทธิ์ในการร้องขอ workflow ระดับกลาง (Medium) สามารถสร้างคีย์ดังกล่าวได้จาก DMS CLI ของพวกเขา</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>กลับไปยังเครื่อง</value>
+  </data>
+  <data name="Bash, curl, systemd, and sudo access" xml:space="preserve">
+    <value>การเข้าถึง Bash, curl, systemd และ sudo</value>
+  </data>
+  <data name="If registration is pending, share its {0} ID with someone who can approve Medium workflows. To approve your own request, you also need self-approval permission." xml:space="preserve">
+    <value>หากการลงทะเบียนยังอยู่ระหว่างรออนุมัติ ให้แชร์ {0} ID ของการลงทะเบียนนั้นให้บุคคลที่สามารถอนุมัติเวิร์กโฟลว์ระดับ Medium ได้ หากต้องการอนุมัติคำขอของคุณเอง คุณต้องมีสิทธิ์ในการอนุมัติตนเองด้วย</value>
+  </data>
+  <data name="Install a DMS Agent to let this Controller manage a Linux machine." xml:space="preserve">
+    <value>ติดตั้ง DMS Agent เพื่อให้ Controller นี้จัดการเครื่อง Linux</value>
+  </data>
+  <data name="Machine requirements" xml:space="preserve">
+    <value>ข้อกำหนดของเครื่อง</value>
+  </data>
+  <data name="My approvals" xml:space="preserve">
+    <value>การอนุมัติของฉัน</value>
+  </data>
+  <data name="On the machine you want to manage, open Bash, replace the join key placeholder with your key, and run the command." xml:space="preserve">
+    <value>บนเครื่องที่คุณต้องการจัดการ ให้เปิด Bash แทนที่ค่ากำหนดของคีย์เข้าร่วมด้วยคีย์ของคุณ แล้วรันคำสั่ง</value>
+  </data>
+  <data name="Outbound access to this Controller" xml:space="preserve">
+    <value>การเข้าถึงแบบ outbound ไปยัง Controller นี้</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>ตั้งค่า DMS CLI</value>
+  </data>
+  <data name="The .NET 10 SDK, or an APT source that provides dotnet10" xml:space="preserve">
+    <value>.NET 10 SDK หรือแหล่ง APT ที่ให้ dotnet10</value>
+  </data>
+  <data name="The installer downloads the Agent from this Controller, starts it as a systemd service, and prints the {0} ID for registration." xml:space="preserve">
+    <value>โปรแกรมติดตั้งจะดาวน์โหลด Agent จาก Controller นี้ เริ่มทำงานเป็นบริการ systemd และแสดง {0} ID สำหรับการใช้งาน</value>
+  </data>
+  <data name="Ubuntu or AnduinOS on x64 or arm64" xml:space="preserve">
+    <value>Ubuntu หรือ AnduinOS บน x64 หรือ arm64</value>
+  </data>
+  <data name="View machines" xml:space="preserve">
+    <value>ดูเครื่อง</value>
+  </data>
+
+</root>

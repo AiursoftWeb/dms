@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. CLI 설치</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. 개인 API 키 생성</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. 이 컨트롤러에 로그인</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. 연결 확인</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>DMS로 돌아가기</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>CLI에서 사용 중인 계정과 권한을 확인하세요.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>기존의 DMS_SERVER 및 DMS_API_KEY 환경 변수는 저장된 로그인 정보를 덮어씁니다. 저장된 설정을 사용하려면 이 변수들을 제거하세요.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>키에 이름을 지정하고 표시되는 즉시 복사하세요. DMS는 키를 한 번만 표시합니다.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>CLI가 이미 설치된 경우, 아래 명령어로 업데이트하세요.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Open 워크플로우 실행 권한이 있는 경우, CLI를 사용하여 머신 목록을 가져오도록 시도해 보세요.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>.NET 10 SDK를 먼저 설치한 후 터미널에서 다음을 실행하세요.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>API 키 열기</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>로그인 명령을 실행하고, 숨김 프롬프트에 개인 API 키를 붙여넣은 후 Enter 키를 누르세요.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>이 DMS 컨트롤러에 연결하려면 컴퓨터에서 다음 명령을 실행하세요.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI 설정</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>CLI는 이 주소와 개인 API 키를 컴퓨터에 저장합니다.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>이 컨트롤러</value>
+  </data>
+
+</root>

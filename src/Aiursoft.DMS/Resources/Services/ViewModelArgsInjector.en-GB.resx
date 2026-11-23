@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>Account Settings</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Add a machine</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Add an SSH public key</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH public keys</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Set up DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Settings</value>
