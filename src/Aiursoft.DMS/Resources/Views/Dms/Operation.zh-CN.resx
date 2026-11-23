@@ -99,5 +99,32 @@
   <data name="{0} request" xml:space="preserve">
     <value>{0} 请求</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>检查时间</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>已建立的 OpenSSH 连接</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH 监听器</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>其余连接详情</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>剩余监听器详细信息</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH 关闭需要验证</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSH 服务和套接字已被屏蔽并停止。</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>本次运行没有记录任何监听器或连接数。</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>查看 SSH 验证日志</value>
+  </data>
 
 </root>

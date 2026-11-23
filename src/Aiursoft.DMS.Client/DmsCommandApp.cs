@@ -244,7 +244,7 @@ public static partial class DmsCommandApp
             [
                 NewSshOpenCommand(),
                 StandardCommand(MachineWorkflowCli.SshDisable.Name,
-                    "Close SSH access, disconnect sessions, and remove the temporary lease.",
+                    "Stop SSH, revoke the temporary lease, and verify closure. Existing ordinary SSH sessions may remain.",
                     MachineWorkflowCli.SshDisable.Definition, _ => new EmptyInput())
             ]),
             new Group("security", "Check host security controls and authentication events.",

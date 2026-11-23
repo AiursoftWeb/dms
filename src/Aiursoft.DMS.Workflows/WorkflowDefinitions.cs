@@ -104,4 +104,5 @@ public sealed class WorkflowNeedsVerificationException(Guid workflowId)
     : Exception($"Workflow {workflowId} needs verification; its execution outcome is unknown.")
 {
     public Guid WorkflowId { get; } = workflowId;
+    internal string Result { get; init; } = "";
 }

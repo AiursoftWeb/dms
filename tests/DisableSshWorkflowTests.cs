@@ -49,6 +49,33 @@ public class DisableSshWorkflowTests
     }
 
     [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public async Task IncompleteClosureReportsListenersAndConnectionsSeparately(bool listener, bool connection)
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH disable runs on Linux.");
+        using var fixture = new Fixture
+        {
+            RemainingListener = listener ? "LISTEN 0 128 0.0.0.0:2222 0.0.0.0:* users:((\"sshd\",pid=101,fd=3))" : "",
+            RemainingConnection = connection ? "0 0 192.0.2.10:22 192.0.2.11:42000 users:((\"sshd-session\",pid=102,fd=4))" : ""
+        };
+        var workflow = Guid.NewGuid();
+        await Assert.ThrowsAsync<WorkflowNeedsVerificationException>(() => fixture.RunAsync(workflow));
+
+        var outcome = fixture.Events.Single(item => item.WorkflowId == workflow && item.State == RunState.NeedsVerification);
+        var result = JsonSerializer.Deserialize<OperationResult>(outcome.Result)!;
+        Assert.IsFalse(result.Complete);
+        Assert.IsFalse(fixture.State().GetProperty("Healthy").GetBoolean());
+        StringAssert.Contains(result.Summary, "masked and stopped");
+        var check = result.Facts!.Value.Deserialize<SshClosureCheck>()!;
+        Assert.AreEqual(listener ? 1 : 0, check.ListenerCount);
+        Assert.AreEqual(connection ? 1 : 0, check.EstablishedConnectionCount);
+        if (listener) StringAssert.Contains(check.ListenerSamples.Single(), ":2222");
+        if (connection) StringAssert.Contains(check.EstablishedConnectionSamples.Single(), "192.0.2.11:42000");
+    }
+
+    [TestMethod]
     public async Task DelayedRecoveryCannotCloseANewerLease()
     {
         if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH disable runs on Linux.");
@@ -188,6 +215,8 @@ public class DisableSshWorkflowTests
         public bool BlockPolicyReadAfterUfwChange { get; set; }
         private bool _policyBlocked;
         public bool FailFirewall { get; set; }
+        public string RemainingListener { get; init; } = "";
+        public string RemainingConnection { get; init; } = "";
         public System.Collections.Concurrent.ConcurrentQueue<WorkflowEvent> Events { get; } = new();
         private string StatePath => Path.Combine(_root.FullName, "var/lib/aiursoft-dms-ssh/state.json");
 
@@ -275,8 +304,10 @@ public class DisableSshWorkflowTests
                     return new NativeResult(0, SshListening
                         ? "LoadState=loaded\nActiveState=active\n"
                         : "LoadState=masked\nActiveState=inactive\n", "");
+                case "ss" when command.Arguments[0] == "-Hltnp":
+                    return new NativeResult(0, SshListening ? "LISTEN users:((\"sshd\",pid=123,fd=3))" : RemainingListener, "");
                 case "ss":
-                    return new NativeResult(0, SshListening ? "LISTEN users:((\"sshd\",pid=123,fd=3))" : "", "");
+                    return new NativeResult(0, RemainingConnection, "");
                 case "loginctl":
                     return new NativeResult(0, "", "");
                 case "pkill":

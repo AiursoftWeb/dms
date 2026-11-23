@@ -302,10 +302,16 @@ dms machine ssh disable --machine-id "$MACHINE_ID" --reason "Close remote SSH ac
 This is a medium-risk Lockbox request. The target Agent masks and stops the
 system OpenSSH service and socket. When a DMS SSH lease exists, the workflow
 terminates its sessions and removes the lease's temporary account, home, sudo
-grant and tracked firewall rules. The Agent verifies closure before it
-reports success. Use the operation callstack to find the machine workflow
-and read its trace if cleanup needs verification. A new approved disable
-can finish cleanup after the underlying problem has been resolved.
+grant and tracked firewall rules. Ordinary SSH sessions may outlive the system
+service. The Agent checks for both remaining listeners and established OpenSSH
+connections before reporting success.
+
+Use `dms workflow status <WorkflowId>` or the workflow details page to see the
+closure result. A run marked NeedsVerification can show separate listener
+and connection counts and a sample of the endpoints and processes found.
+Open the execution log for the last completed step and its diagnostics.
+A new approved disable can verify closure after the remaining listener or
+connection is gone.
 
 ## Open a temporary SSH lease
 
