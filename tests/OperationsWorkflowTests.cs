@@ -245,10 +245,75 @@ public class OperationsWorkflowTests
     public void ReadOnlySqlRefusesMutationAndExternalExecutionConstructs(string sql) => Assert.Throws<ArgumentException>(() => ReadOnlySql.Validate(sql));
 
     [TestMethod]
+    [DataRow("SELECT count() FROM logs.events", RiskLevel.Low)]
+    [DataRow("-- change investigation\nWITH t AS (SELECT 'DELETE; ALTER' AS verb) SELECT verb FROM t;", RiskLevel.Low)]
+    [DataRow("INSERT INTO logs.events (id, message) VALUES (1, 'read; write');", RiskLevel.High)]
+    [DataRow("UPDATE logs.events SET message = 'updated' WHERE id = 1", RiskLevel.High)]
+    [DataRow("DELETE FROM logs.events WHERE id = 1", RiskLevel.High)]
+    [DataRow("ALTER TABLE logs.events UPDATE message = 'updated' WHERE id = 1", RiskLevel.High)]
+    [DataRow("ALTER TABLE logs.events ADD COLUMN labels Array(String)", RiskLevel.High)]
+    public void ClickHouseSqlClassifiesOneBoundedStatement(string sql, RiskLevel risk) =>
+        Assert.AreEqual(risk, ClickHouseSql.Classify(sql));
+
+    [TestMethod]
+    [DataRow("SELECT 1; INSERT INTO logs.events VALUES (1)")]
+    [DataRow("INSERT INTO logs.events VALUES (1); SELECT 1")]
+    [DataRow("SELECT count() FROM remote('example.test', 'logs', 'events')")]
+    [DataRow("ALTER TABLE logs.events ON CLUSTER fixture ADD COLUMN n UInt8")]
+    [DataRow("ALTER TABLE logs.events DELETE WHERE id = 1, DROP PARTITION '202611'")]
+    [DataRow("ALTER TABLE logs.events ADD COLUMN n UInt8, DROP PARTITION '202611'")]
+    [DataRow("DROP TABLE logs.events")]
+    [DataRow("GRANT SELECT ON logs.events TO example")]
+    public void ClickHouseSqlRejectsUnsupportedOrMixedStatements(string sql) =>
+        Assert.Throws<ArgumentException>(() => ClickHouseSql.Classify(sql));
+
+    [TestMethod]
+    public async Task ClickHouseMetadataFindsUniqueMirroredContainerAndReturnsPrivateRows()
+    {
+        var id = new string('a', 64);
+        var commands = new List<NativeCommand>();
+        var host = new OperationHost(native: (command, _) =>
+        {
+            commands.Add(command);
+            return Task.FromResult(commands.Count == 1
+                ? new NativeResult(0, $"{id}\tregistry.test/clickhouse/clickhouse-server:latest\tlogs\n", "")
+                : new NativeResult(0, "{\"name\":\"log_table\"}\n", ""));
+        });
+        var (result, events) = await RunAsync(ClickHouseWorkflows.ListTables,
+            new ClickHouseDatabaseInput("logs"), EnvironmentFor(host));
+        Assert.HasCount(2, commands);
+        CollectionAssert.Contains(commands[1].Arguments.ToArray(), id);
+        CollectionAssert.Contains(commands[1].Arguments.ToArray(), "clickhouse-client");
+        CollectionAssert.Contains(commands[1].Arguments.ToArray(), "--readonly=1");
+        Assert.AreEqual("SHOW TABLES FROM `logs`", commands[1].StandardInput);
+        Assert.AreEqual("log_table", result.Facts!.Value[0].GetProperty("name").GetString());
+        Assert.DoesNotContain("log_table", Trace(events));
+    }
+
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(2)]
+    public async Task ClickHouseContainerDiscoveryFailsForZeroOrMultipleMatches(int count)
+    {
+        var commands = new List<NativeCommand>();
+        var rows = string.Join('\n', Enumerable.Range(0, count)
+            .Select(i => $"{new string((char)('a' + i), 64)}\tclickhouse/clickhouse-server:latest\tfixture-{i}"));
+        var host = new OperationHost(native: (command, _) =>
+        {
+            commands.Add(command);
+            return Task.FromResult(new NativeResult(0, rows, ""));
+        });
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            RunAsync(ClickHouseWorkflows.ListDatabases, new EmptyInput(), EnvironmentFor(host)));
+        StringAssert.Contains(error.Message, count == 0 ? "No running ClickHouse" : "Exactly one is required");
+        Assert.HasCount(1, commands);
+    }
+
+    [TestMethod]
     public void TypedDatabaseFilterValuesCannotBecomeSqlSyntax()
     {
         var filter = new DatabaseFilter("name", "eq", JsonSerializer.SerializeToElement("x'; DROP TABLE data; --"));
-        foreach (var engine in new[] { "mysql", "postgresql", "clickhouse" })
+        foreach (var engine in new[] { "mysql", "postgresql" })
         {
             var sql = DatabaseOperations.FilterSql(engine, filter);
             Assert.DoesNotContain("DROP TABLE", sql); Assert.DoesNotContain("x'; DROP", sql);

@@ -364,6 +364,24 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 SystemOperations.SystemExecuteScriptAsync,
                 agent));
+        Register(ClickHouseWorkflows.FindContainer,
+            (input, agent) => new OperationWorkflow<EmptyInput>(ClickHouseWorkflows.FindContainer,
+                input, ClickHouseOperations.FindAsync, agent));
+        Register(ClickHouseWorkflows.ListDatabases,
+            (input, agent) => new OperationWorkflow<EmptyInput>(ClickHouseWorkflows.ListDatabases,
+                input, ClickHouseOperations.ListDatabasesAsync, agent));
+        Register(ClickHouseWorkflows.ListTables,
+            (input, agent) => new OperationWorkflow<ClickHouseDatabaseInput>(ClickHouseWorkflows.ListTables,
+                input, ClickHouseOperations.ListTablesAsync, agent));
+        Register(ClickHouseWorkflows.DescribeTable,
+            (input, agent) => new OperationWorkflow<ClickHouseTableInput>(ClickHouseWorkflows.DescribeTable,
+                input, ClickHouseOperations.DescribeTableAsync, agent));
+        Register(ClickHouseWorkflows.Query,
+            (input, agent) => new OperationWorkflow<ClickHouseSqlInput>(ClickHouseWorkflows.Query,
+                input, ClickHouseOperations.QueryAsync, agent));
+        Register(ClickHouseWorkflows.Execute,
+            (input, agent) => new OperationWorkflow<ClickHouseSqlInput>(ClickHouseWorkflows.Execute,
+                input, ClickHouseOperations.ExecuteAsync, agent));
         Register(OperationsWorkflows.DatabaseDiscover,
             (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.DatabaseDiscover,
                 input,

@@ -201,7 +201,7 @@ public static partial class DmsCommandApp
                 NewAptInstallCommand(),
                 NewAptUpgradeCommand()
             ]),
-            new Group("database", "Inspect and query configured database connections on a machine.",
+            new Group("database", "Inspect and query configured database containers on a machine.",
             [
                 NewDatabaseDiscoverCommand(),
                 NewDatabaseListDatabasesCommand(),
@@ -212,6 +212,7 @@ public static partial class DmsCommandApp
                 NewDatabaseExecuteSqlCommand(),
                 NewDatabaseDiagnosticsCommand()
             ]),
+            ClickHouseCommands(),
             new Group("networking", "Inspect interfaces, routes, firewall rules, and connectivity.",
             [
                 NewNetworkingInterfacesCommand(),
@@ -512,7 +513,7 @@ public static partial class DmsCommandApp
             return command;
         }
 
-        private bool UsesLockboxId => action is "lockbox-status" or "get" or "approve" or "deny" or "withdraw";
+        private bool UsesLockboxId => action is "lockbox-status" or "get" or "approve" or "deny" or "withdraw" or "clickhouse-result";
         private bool UsesId => UsesLockboxId || action is "workflow" or "callstack" or "trace" || inputFromWorkflowId != null;
         private bool IsSubmission => definition != null;
         protected override string Name => name;
@@ -708,6 +709,12 @@ public static partial class DmsCommandApp
                 if (ShouldWaitForOpenResult(context))
                     response = await ReadOpenResultAsync(client, response, requestId, context);
             }
+            else if (action == "clickhouse-result")
+            {
+                var (reply, result) = await ReadClickHouseResultAsync(client, lockboxId, context.InvocationConfiguration.Error);
+                reply.Data = ClickHouseOutput(result);
+                response = reply;
+            }
             else
                 response = action switch
                 {
@@ -745,7 +752,7 @@ public static partial class DmsCommandApp
 
         protected override void WriteResponse(ParseResult context, DmsResponse response, OutputFormat format, bool color, int width)
         {
-            if (ShouldWaitForOpenResult(context))
+            if (ShouldWaitForOpenResult(context) || action == "clickhouse-result")
                 DmsOutputWriter.WriteResult(context.InvocationConfiguration.Output, response.Data!, format, color, width);
             else
                 base.WriteResponse(context, response, format, color, width);
@@ -760,6 +767,12 @@ public static partial class DmsCommandApp
                 $"Lockbox {receipt.LockboxId} has no approved execution. Check its status before submitting a new request.");
             try
             {
+                if (ClickHouseWorkflows.IsClickHouse(action))
+                {
+                    var (clickHouse, result) = await ReadClickHouseResultAsync(client, receipt.LockboxId, context.InvocationConfiguration.Error);
+                    clickHouse.Data = ClickHouseOutput(result);
+                    return clickHouse;
+                }
                 var reply = await client.WaitForOpenResultAsync(receipt.LockboxId);
                 var run = (reply.Data as JObject)?.ToObject<OpenWorkflowResult>();
                 if (run == null || run.WorkflowId != workflowId)

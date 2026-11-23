@@ -441,13 +441,12 @@ public static class OperationsWorkflows
 
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> DatabaseDiscover =
-        new("machine.database.discover", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseDiscover)), "1", PublicEntry: true);
+        new("machine.database.discover", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseDiscover)), PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DatabaseInput, OperationResult> DatabaseListDatabases =
         new("machine.database.list-databases",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseListDatabases)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
@@ -455,7 +454,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<DatabaseNameInput, OperationResult> DatabaseListTables =
         new("machine.database.list-tables",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseListTables)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
@@ -463,7 +461,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<DatabaseTableInput, OperationResult> DatabaseDescribeTable =
         new("machine.database.describe-table",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseDescribeTable)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
@@ -471,7 +468,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<DatabaseQueryInput, OperationResult> DatabaseQueryTable =
         new("machine.database.query-table",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseQueryTable)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
@@ -479,7 +475,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<DatabaseSqlInput, OperationResult> DatabaseQuerySql =
         new("machine.database.query-sql",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseQuerySql)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
@@ -487,7 +482,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<DatabaseSqlInput, OperationResult> DatabaseExecuteSql =
         new("machine.database.execute-sql",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseExecuteSql)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
@@ -495,7 +489,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<DatabaseInput, OperationResult> DatabaseDiagnostics =
         new("machine.database.diagnostics",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseDiagnostics)),
-            "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 

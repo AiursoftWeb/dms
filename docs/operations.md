@@ -204,9 +204,9 @@ System/clock/boot observations, systemd state/journal/timers, package inspection
 | `system reboot` | High | `--delay-seconds=15` |
 | `system execute-script` | VeryHigh | `--language` required; `--script-file` required; `--timeout-seconds=60` |
 
-### Databases (8)
+### Database containers (8)
 
-One public command family supports registered MySQL, PostgreSQL and ClickHouse profiles. Passwords stay in private machine files. Database discovery reports observed targets; metadata/query commands authenticate a particular connection.
+The `machine database` commands use registered MySQL and PostgreSQL containers on the target machine. Database discovery lists local containers and the configured connection names.
 
 | Command | Risk | Options |
 | --- | --- | --- |
@@ -218,6 +218,19 @@ One public command family supports registered MySQL, PostgreSQL and ClickHouse p
 | `database query-sql` | High | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
 | `database execute-sql` | VeryHigh | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
 | `database diagnostics` | Medium | `--connection` required |
+
+### ClickHouse (6)
+
+The Agent finds the unique local ClickHouse server container and runs its native client. See [ClickHouse setup and usage](#clickhouse-setup-and-usage).
+
+| Command | Risk | Options |
+| --- | --- | --- |
+| `clickhouse find-container` | Open | — |
+| `clickhouse list-databases` | Open | — |
+| `clickhouse list-tables` | Open | `--database` required |
+| `clickhouse describe-table` | Open | `--database` and `--table` required |
+| `clickhouse sql` (read) | Low | `--sql`, `--sql-file`, or standard input; `--timeout-seconds=30`; `--max-rows=100` |
+| `clickhouse sql` (write) | High | Same SQL sources; `--reason` required |
 
 ### Networking (8)
 
@@ -289,14 +302,14 @@ An administrator registers connections in `/etc/aiursoft-dms-agent/database-conn
     "PasswordFile": "/etc/aiursoft-dms-agent/reporting-read.password",
     "ReadOnly": true,
     "Tls": true,
-    "Container": null
+    "Container": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
   }
 ]
 ```
 
-Engines are `mysql`, `postgresql` or `clickhouse`. TLS is enabled by default and verifies the host/certificate through the native client or HTTPS. Explicitly disabling TLS should be limited to an appropriate trusted deployment. MySQL/PostgreSQL profiles may specify a complete local container ID to use its installed native client; host, port and database then refer to that container's network view. ClickHouse uses a reachable HTTP(S) endpoint and does not accept `Container`. A PostgreSQL connection names one database; register separate profiles for other databases.
+Use `mysql` or `postgresql` and the full ID of a local database container. DMS starts the native client in that container. Set `Host` to an address reachable from the container, normally `127.0.0.1` for its own database server. TLS is enabled by default and verifies the configured identity. Each PostgreSQL profile names one database. Update the stored ID when a database container is recreated. Existing profiles with no container ID or a ClickHouse HTTP endpoint need to migrate before using the new Agent.
 
-Profiles name business database targets. Machine workflows do not receive the Controller's inventory database context. `diagnostics` queries engine activity, locks, storage and available slow-query statistics. MySQL uses performance_schema digest statistics, PostgreSQL uses the optional pg_stat_statements extension, and ClickHouse uses system.query_log. Missing privileges/extensions are explicit warnings; DMS does not install them in a diagnostic. Slow-query metadata excludes raw statement text.
+Database diagnostics cover activity, locks, storage and available slow-query statistics. MySQL uses performance_schema digest statistics. PostgreSQL uses the optional pg_stat_statements extension. Missing privileges or extensions appear as warnings. Slow-query metadata excludes raw statements.
 
 Read workflows require a dedicated `ReadOnly: true` profile. MySQL readers may have only direct SELECT/SHOW VIEW/USAGE/PROCESS grants; role-based and privileged grants are refused. PostgreSQL readers cannot be superusers, create roles/databases, bypass RLS or use server-file/program roles. Read-only sessions, statement deadlines, output/row limits and an SQL grammar/function allowlist are additional restrictions. Configure the underlying database account with the required least privileges; a profile flag alone does not create database grants. Diagnostic system tables may require separate read grants, and unavailable sources are warnings.
 
@@ -309,7 +322,31 @@ dms machine database execute-sql --connection reporting-write --sql-file ./chang
 
 Typed filters accept `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `contains` and `is-null`, joined with AND. Identifiers are validated and values are encoded as data. Arbitrary WHERE text belongs in the High-risk `query-sql` command. SQL files are bounded UTF-8 input (128 KiB); they are uploaded before submission and remain visible from the Web Lockbox's frozen-input link. Query text is not repeated into general trace. Results still may contain sensitive business values, so grant investigation access accordingly.
 
-`execute-sql` is VeryHigh and may use a separately registered write profile. It can perform DML/DDL and multiple statements. Engine transaction rules apply: no generic rollback is promised. ClickHouse mutations wait for completion on active replicas within the approved timeout; an unavailable response or incomplete mutation can still mean changes occurred. Failed/interrupted writes become `NeedsVerification` and are not retried. The command does not interpret MySQL/psql shell escape commands. Credentials and SQL text are not placed in process arguments.
+`execute-sql` is VeryHigh and may use a separately registered write profile. It can perform DML/DDL and multiple statements. Engine transaction rules apply. Failed or interrupted writes become `NeedsVerification`. Credentials and SQL text are excluded from process arguments.
+
+## ClickHouse setup and usage
+
+Tell DMS which machine to use. The Agent uses Docker to look for exactly one running server container whose image repository ends in `clickhouse-server`. This covers official and registry-mirrored images. If the number of matches differs from one, the command reports the count and candidate names. The Agent runs `clickhouse-client` against the loopback server inside the selected container with no shell.
+
+Provision private native-client configuration files inside that container. The files must be readable by its execution user.
+
+- `/etc/aiursoft-dms/clickhouse-read.xml` authenticates a dedicated account with the minimum metadata and SELECT grants for the relevant databases and tables.
+- `/etc/aiursoft-dms/clickhouse-write.xml` authenticates a separate account with only the INSERT, mutation and ALTER COLUMN privileges required for the approved tables. Mount this file only when the machine should support writes.
+
+Each file uses ClickHouse client XML with a `<config>` root and the required `<user>`, `<password>`, `<port>`, or other connection settings. Keep the files private and outside source control. The workflow enforces loopback, output format and resource limits independently of the profile.
+
+```sh
+dms machine clickhouse list-databases --machine-id "$MACHINE_ID"
+dms machine clickhouse list-tables --machine-id "$MACHINE_ID" --database logs
+dms machine clickhouse describe-table --machine-id "$MACHINE_ID" --database logs --table events
+dms machine clickhouse sql --machine-id "$MACHINE_ID" --sql 'SELECT count() FROM logs.events' --output-format json
+dms machine clickhouse sql --machine-id "$MACHINE_ID" --sql-file ./change.sql --reason "Apply the reviewed change"
+dms machine clickhouse result "lb/<UUID>" --output-format json
+```
+
+For piped SQL, omit both flags. Each submission holds one bounded UTF-8 statement. The Controller classifies the frozen SQL, and the Agent checks it again before execution. Structure commands are fixed Open workflows and return rows directly to callers with Open permission. Investigation queries use a bounded read-only ClickHouse session and the normal Low role permissions. With Low automatic approval, the CLI waits briefly for results. Pending Low requests return a Lockbox receipt. After approval, use `clickhouse result` with your Lockbox ID. Query rows stay out of ordinary workflow traces and investigation results.
+
+Supported High operations include INSERT, UPDATE and DELETE, and common ALTER TABLE column changes. These requests require an approval decision under High permissions, even for roles that automatically approve other High workflows. The approval freezes the full container ID and SQL bytes. If the container is replaced, submit a new request against the current container. Unsupported or mixed statements are rejected at submission. A write that cannot confirm completion needs verification before retrying.
 
 ## Service updates, packages and reboot
 
