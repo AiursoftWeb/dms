@@ -53,6 +53,10 @@
     var parameters = snapshot.Input.ValueKind == JsonValueKind.Object
         ? snapshot.Input.EnumerateObject().ToArray()
         : Array.Empty<JsonProperty>();
+    var hasCommandArtifact = Model.InputArtifacts.Count != 0 &&
+                             (item.Definition == OperationsWorkflows.SystemExecuteScript.Name ||
+                              item.Definition == OperationsWorkflows.DatabaseQuerySql.Name ||
+                              item.Definition == OperationsWorkflows.DatabaseExecuteSql.Name);
     const string timestampFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     var requestedAt = status.RequestedAt.ToString(timestampFormat, CultureInfo.InvariantCulture);
 }
@@ -282,50 +286,41 @@
                 }
                 else
                 {
-                    <section class="card lockbox-panel" aria-labelledby="lockbox-command-heading">
-                        <div class="card-body">
-                            <h2 id="lockbox-command-heading"><i data-lucide="terminal" aria-hidden="true"></i>@Localizer["Command"]</h2>
-                            @if (snapshot.Command is { } command)
-                            {
-                                <div class="lockbox-terminal" data-lockbox-terminal>
-                                    <div class="lockbox-terminal-bar">
-                                        <span>@(command.IsEquivalentCli ? @Localizer["Equivalent DMS command"] : @LockboxText.Format(@Localizer["Docker command in this {0} request"].Value))</span>
-                                        <button class="btn btn-sm lockbox-copy" type="button" data-copy-command hidden>
-                                            <i data-lucide="copy" aria-hidden="true"></i><span>@Localizer["Copy"]</span>
-                                        </button>
-                                        <span hidden data-key="command-copied">@Localizer["Command copied"]</span>
+                    @if (snapshot.Command is not null || hasCommandArtifact)
+                    {
+                        <section class="card lockbox-panel" aria-labelledby="lockbox-command-heading">
+                            <div class="card-body">
+                                <h2 id="lockbox-command-heading"><i data-lucide="terminal" aria-hidden="true"></i>@Localizer["Command"]</h2>
+                                @if (snapshot.Command is { } command)
+                                {
+                                    <div class="lockbox-terminal" data-lockbox-terminal>
+                                        <div class="lockbox-terminal-bar">
+                                            <span>@(command.IsEquivalentCli ? @Localizer["Equivalent DMS command"] : @LockboxText.Format(@Localizer["Docker command in this {0} request"].Value))</span>
+                                            <button class="btn btn-sm lockbox-copy" type="button" data-copy-command hidden>
+                                                <i data-lucide="copy" aria-hidden="true"></i><span>@Localizer["Copy"]</span>
+                                            </button>
+                                            <span hidden data-key="command-copied">@Localizer["Command copied"]</span>
+                                        </div>
+                                        <pre tabindex="0"><code data-command><span>@command.Invocation</span>@command.Separator@command.Arguments</code></pre>
                                     </div>
-                                    <pre tabindex="0"><code data-command><span>@command.Invocation</span>@command.Separator@command.Arguments</code></pre>
-                                </div>
-                                @if (command.IsEquivalentCli)
-                                {
-                                    <p class="lockbox-note">@Localizer["Reconstructed from the saved input and target machines."]</p>
+                                    @if (command.IsEquivalentCli)
+                                    {
+                                        <p class="lockbox-note">@Localizer["Reconstructed from the saved input and target machines."]</p>
+                                    }
                                 }
-                            }
-                            else if (Model.InputArtifacts.Count != 0 &&
-                                     (item.Definition == OperationsWorkflows.SystemExecuteScript.Name ||
-                                      item.Definition == OperationsWorkflows.DatabaseQuerySql.Name ||
-                                      item.Definition == OperationsWorkflows.DatabaseExecuteSql.Name))
-                            {
-                                <p class="text-body-secondary mb-2">@Localizer["Review the exact contents submitted for execution."]</p>
-                                @foreach (var artifact in Model.InputArtifacts)
+                                else
                                 {
-                                    <a class="lockbox-artifact-command" asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">
-                                        <i data-lucide="file-code" aria-hidden="true"></i>@artifact.Name
-                                    </a>
+                                    <p class="text-body-secondary mb-2">@Localizer["Review the exact contents submitted for execution."]</p>
+                                    @foreach (var artifact in Model.InputArtifacts)
+                                    {
+                                        <a class="lockbox-artifact-command" asp-controller="Dms" asp-action="Artifact" asp-route-id="@artifact.Id">
+                                            <i data-lucide="file-code" aria-hidden="true"></i>@artifact.Name
+                                        </a>
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                <div class="lockbox-terminal">
-                                    <div class="lockbox-terminal-bar">@LockboxText.Format(@Localizer["Saved {0} request"].Value)</div>
-                                    <pre><code><span>POST /api/v1/dms/lockboxes</span>
-Workflow: @item.Definition</code></pre>
-                                </div>
-                                <p class="lockbox-note">@LockboxText.Format(@Localizer["Use the frozen parameters below to review this {0} request."].Value)</p>
-                            }
-                        </div>
-                    </section>
+                            </div>
+                        </section>
+                    }
 
                     <section class="card lockbox-panel" aria-labelledby="lockbox-parameters-heading">
                         <div class="card-body">
@@ -470,6 +465,7 @@ Workflow: @item.Definition</code></pre>
                         <div><dt>@Localizer["Target machines"]</dt><dd><code>@string.Join(", ", snapshot.Targets)</code></dd></div>
                     }
                 </dl>
+                <p><code>POST /api/v1/dms/lockboxes</code></p>
                 <pre class="lockbox-json">@snapshot.RequestJson</pre>
                 @if (needsResubmission)
                 {
