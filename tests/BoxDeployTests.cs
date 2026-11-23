@@ -272,12 +272,12 @@ public class BoxDeployTests
         using var box = new Box();
 
         // Add sample stages and stacks
-        System.IO.Directory.CreateDirectory(box.PathOf("stage0/registry"));
-        System.IO.Directory.CreateDirectory(box.PathOf("stage2/stacks/incoming"));
-        System.IO.Directory.CreateDirectory(box.PathOf("stage3/stacks/authentik"));
-        System.IO.Directory.CreateDirectory(box.PathOf("stage3/stacks/zot"));
-        System.IO.Directory.CreateDirectory(box.PathOf("stage4/stacks/dms"));
-        System.IO.Directory.CreateDirectory(box.PathOf("stage4/stacks/alertcenter"));
+        Directory.CreateDirectory(box.PathOf("stage0/registry"));
+        Directory.CreateDirectory(box.PathOf("stage2/stacks/incoming"));
+        Directory.CreateDirectory(box.PathOf("stage3/stacks/authentik"));
+        Directory.CreateDirectory(box.PathOf("stage3/stacks/zot"));
+        Directory.CreateDirectory(box.PathOf("stage4/stacks/dms"));
+        Directory.CreateDirectory(box.PathOf("stage4/stacks/alertcenter"));
         File.WriteAllText(box.PathOf("stage4/stacks/dms/docker-compose.yml"), "services:\n  web:\n    image: dms\n");
         box.Git(box.Repository, "add", ".");
         box.Git(box.Repository, "commit", "-m", "Add stages and stacks");
