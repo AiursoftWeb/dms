@@ -58,7 +58,7 @@
     <value>未收到心跳</value>
   </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
-    <value>此機器尚未記錄任何排程的基線執行。</value>
+    <value>此機器尚未記錄任何排程的基準執行。</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>尚未驗證</value>
@@ -93,5 +93,37 @@
   <data name="Workflow history" xml:space="preserve">
     <value>工作流程歷史</value>
   </data>
-
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Agent 升級歷程記錄</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>停用 SSH 可能會中斷工作階段，並在執行時撤銷任何現有的租約。</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>停用 SSH 歷程記錄</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>原因</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>申請停用 SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>請求停用 SSH 需要 DMS 權限以提交中風險工作流程。</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH 租約檢查歷程記錄</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH 管理</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>提交 {0} 請求</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>SSH 狀態已變更。在提交新請求之前，請先檢視目前狀態。</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>在請求存取權限之前，請先驗證您的個人 SSH 金鑰。CLI 預設使用您所有已驗證的金鑰。</value>
+  </data>
 </root>

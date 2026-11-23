@@ -109,7 +109,7 @@
             @if (Model.SshBaselineFailure is { } sshFailure &&
                  Model.MachineName(sshFailure.MachineId) is { } sshMachine)
             {
-                <partial name="_DmsSshLeaseFailure" model="sshMachine" />
+                <partial name="_DmsSshLeaseFailure" model="@(new DmsSshLeaseFailure(sshMachine, sshFailure.MachineId))" />
             }
             else if (Model.SshClosureFailure is { } sshClosure)
             {

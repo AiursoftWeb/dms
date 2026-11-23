@@ -27,5 +27,10 @@
   <data name="{0} is not ready for temporary SSH" xml:space="preserve">
     <value>{0} 尚未準備好臨時 SSH</value>
   </data>
-
+  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
+    <value>DMS 必須先驗證 SSH 基線，然後才能簽發臨時租約。</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>打開 SSH 管理</value>
+  </data>
 </root>

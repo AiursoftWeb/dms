@@ -316,10 +316,11 @@ connection is gone.
 
 ## Open a temporary SSH lease
 
-Open the target's details from **DMS → Machines** to check its temporary SSH
-readiness. If the machine needs setup or its readiness is unknown, ask the
-machine administrator to confirm the SSH setup. The administrator can use the
-approved disable workflow to establish the managed closed state.
+Open the target's **SSH management** section from **DMS → Machines**. It shows
+observed access, temporary lease readiness, and links to SSH workflow
+history. Expand **Request Disable SSH** to submit the existing Medium risk
+Lockbox request from the machine page when DMS observes ordinary access or
+an unverified baseline. A temporary SSH lease requires verified closure.
 Verify at least one personal key on **SSH public keys**, then submit a
 very-high-risk request for one machine.
 

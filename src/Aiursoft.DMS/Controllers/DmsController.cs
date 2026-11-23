@@ -52,6 +52,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         return this.StackView(new DmsMachinesViewModel
         {
             PageTitle = "Machines", Machines = visible, Search = search, SshStates = ssh.ToDictionary(row => row.MachineId),
+            ScheduledSshMachines = await sshOverview.ReadScheduledTargetsAsync(),
             Connection = connection, Page = page, HasNextPage = rows.Count > MachinePageSize
         });
     }
@@ -80,13 +81,39 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
                 run.ParentId == null && run.Origin == WorkflowOrigin.Automatic)
             .OrderByDescending(run => run.CreatedAt).ThenByDescending(run => run.Id)
             .NotCacheable().FirstOrDefaultAsync();
+        var ssh = (await sshOverview.ReadAsync([machine], HttpContext.RequestAborted)).Single();
+        var readiness = MachineSshOverview.Classify(ssh.Observation, machine.Connection == MachineConnection.Online);
+        var scheduled = await sshOverview.ReadScheduledTargetsAsync();
         return this.StackView(new DmsMachineViewModel
         {
-            Machine = machine, BaselineRun = baseline,
-            SshLeaseReadiness = await sshOverview.ReadReadinessAsync(id, HttpContext.RequestAborted),
+            Machine = machine, BaselineRun = baseline, SshAccess = ssh,
+            SshLeaseReadiness = readiness, ScheduledSshEnabled = scheduled?.Contains(id),
+            CanRequestSshDisable = DmsPermissions.ForRisk(User, OperationsWorkflows.SshDisable.Risk).CanRequest,
             CanRequestSshLease = DmsPermissions.ForRisk(User, OperationsWorkflows.SshOpen.Risk).CanRequest,
+            SshStateChanged = TempData["SshStateChanged"] as bool? == true,
             PageTitle = machine.Name
         });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> RequestSshDisable(Guid id, Guid requestId, string? reason, bool confirm)
+    {
+        if (!ModelState.IsValid || id == Guid.Empty || requestId == Guid.Empty || !confirm ||
+            string.IsNullOrWhiteSpace(reason) || reason.Length > 2000) return BadRequest();
+        var definition = OperationsWorkflows.SshDisable;
+        if (!DmsPermissions.ForRisk(User, definition.Risk).CanRequest) return Forbid();
+        var readiness = await sshOverview.ReadReadinessAsync(id, HttpContext.RequestAborted);
+        if (readiness is not (SshLeaseReadiness.OrdinaryOpen or SshLeaseReadiness.NeedsSetup))
+        {
+            TempData["SshStateChanged"] = true;
+            return RedirectToAction(nameof(Machine), controllerName: null, routeValues: new { id }, fragment: "ssh-management");
+        }
+        try
+        {
+            var item = await workflows.SubmitAsync(Actor, definition.Request(new EmptyInput(), reason.Trim(), [id], requestId: requestId));
+            return RedirectToAction(nameof(DmsAccessController.MyLockbox), "DmsAccess", new { id = new LockboxId(item.Id) });
+        }
+        catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
 
     private IQueryable<DmsMachineRow> MachineRows()

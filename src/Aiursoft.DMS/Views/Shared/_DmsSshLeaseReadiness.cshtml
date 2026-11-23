@@ -1,23 +1,33 @@
 @using Aiursoft.DMS.Models.DmsViewModels
 @model SshLeaseReadiness
-@{
-    var (tone, heading, guidance) = Model switch
-    {
-        SshLeaseReadiness.Ready => ("success", "Temporary SSH is ready to request", ""),
-        SshLeaseReadiness.NeedsSetup => ("warning", "This machine needs SSH setup",
-            "Ask the machine administrator to check SSH setup before requesting or approving a lease."),
-        SshLeaseReadiness.InUse => ("warning", "A temporary SSH lease is active",
-            "Wait for the current lease to end before requesting another one."),
-        _ => ("secondary", "Temporary SSH readiness is awaiting confirmation",
-            "Ask the machine administrator to confirm readiness before relying on temporary SSH.")
-    };
-}
-<div class="alert alert-@tone mb-0">
+
+<div class="alert alert-@(Model == SshLeaseReadiness.Ready ? "success" : "warning") mb-0">
     <div class="alert-message">
-        <strong>@Localizer[heading]</strong>
-        @if (guidance.Length != 0)
+        @switch (Model)
         {
-            <p class="mb-0">@Localizer[guidance]</p>
+            case SshLeaseReadiness.Ready:
+                <strong>@Localizer["Temporary SSH is ready to request"]</strong>
+                break;
+            case SshLeaseReadiness.OrdinaryOpen:
+                <strong>@Localizer["Ordinary SSH is still listening"]</strong>
+                <p class="mb-0">@Localizer["To switch this machine to temporary SSH, run Disable SSH in DMS first."]</p>
+                break;
+            case SshLeaseReadiness.NeedsSetup:
+                <strong>@Localizer["DMS has not verified SSH shutdown"]</strong>
+                <p class="mb-0">@Localizer["Review the Disable SSH workflow result in DMS before requesting another lease."]</p>
+                break;
+            case SshLeaseReadiness.InUse:
+                <strong>@Localizer["A temporary SSH lease is active"]</strong>
+                <p class="mb-0">@Localizer["Wait for the current lease to end before requesting another one."]</p>
+                break;
+            case SshLeaseReadiness.AgentDisconnected:
+                <strong>@Localizer["The Agent is disconnected"]</strong>
+                <p class="mb-0">@Localizer["DMS can check SSH when the Agent reconnects."]</p>
+                break;
+            default:
+                <strong>@Localizer["DMS has no recent SSH observation"]</strong>
+                <p class="mb-0">@Localizer["Check the SSH lease history and the Agent version in DMS."]</p>
+                break;
         }
     </div>
 </div>

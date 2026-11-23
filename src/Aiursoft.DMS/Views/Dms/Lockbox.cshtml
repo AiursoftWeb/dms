@@ -146,10 +146,15 @@
             @if (Model.PendingSshLeaseReadiness is { } sshReadiness)
             {
                 <div class="mt-3"><partial name="_DmsSshLeaseReadiness" model="sshReadiness" /></div>
+                @if (Model.CanViewOperations)
+                {
+                    <a class="d-inline-block mt-2" asp-controller="Dms" asp-action="Machine" asp-route-id="@snapshot.Targets[0]" asp-fragment="ssh-management">@Localizer["Open SSH management"]</a>
+                }
             }
             else if (Model.SshBaselineFailureMachine is { } sshMachine)
             {
-                <div class="mt-3"><partial name="_DmsSshLeaseFailure" model="sshMachine" /></div>
+                var linkTarget = Model.CanViewOperations ? (Guid?)snapshot.Targets[0] : null;
+                <div class="mt-3"><partial name="_DmsSshLeaseFailure" model="@(new DmsSshLeaseFailure(sshMachine, linkTarget))" /></div>
             }
 
             <div class="lockbox-contract-banner alert alert-info mt-3 mb-0 d-flex align-items-center gap-2">

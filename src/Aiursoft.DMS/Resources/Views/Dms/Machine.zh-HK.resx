@@ -19,28 +19,34 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
       <data name="Agent connection" xml:space="preserve">
-    <value>代理連線</value>
+    <value>代理連接</value>
   </data>
   <data name="Agent version" xml:space="preserve">
     <value>代理版本</value>
   </data>
   <data name="Back to machines" xml:space="preserve">
-    <value>返回機器</value>
+    <value>返回機器清單</value>
   </data>
   <data name="Baseline history" xml:space="preserve">
-    <value>基準歷史</value>
+    <value>基準線歷史</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>連線狀態</value>
   </data>
   <data name="Created" xml:space="preserve">
-    <value>建立時間</value>
+    <value>建立</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>已停用</value>
   </data>
   <data name="Finished" xml:space="preserve">
-    <value>已完成</value>
+    <value>完成</value>
   </data>
   <data name="Last seen" xml:space="preserve">
-    <value>最後連線時間</value>
+    <value>最後連接時間</value>
   </data>
   <data name="Latest execution" xml:space="preserve">
-    <value>最近執行</value>
+    <value>最新執行</value>
   </data>
   <data name="Machine ID" xml:space="preserve">
     <value>機器 ID</value>
@@ -52,10 +58,16 @@
     <value>未收到心跳</value>
   </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
-    <value>此機器沒有記錄任何排程基準執行。</value>
+    <value>此機器尚未記錄任何計劃的基準執行。</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>尚未驗證</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>離線</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>線上</value>
   </data>
   <data name="Request temporary SSH" xml:space="preserve">
     <value>申請臨時 SSH</value>
@@ -64,19 +76,54 @@
     <value>SSH 公鑰</value>
   </data>
   <data name="Scheduled security baseline" xml:space="preserve">
-    <value>排程安全基準</value>
+    <value>計劃安全基準</value>
   </data>
   <data name="Started" xml:space="preserve">
-    <value>已開始</value>
+    <value>已啟動</value>
   </data>
   <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
     <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 提交申請。</value>
+  </data>
+  <data name="Version" xml:space="preserve">
+    <value>版本</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>檢視執行</value>
   </data>
   <data name="Workflow history" xml:space="preserve">
-    <value>工作流程記錄</value>
+    <value>工作流程歷史</value>
   </data>
-
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Agent 升級歷史</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>停用 SSH 可能會中斷會話，並在運行時撤銷任何現有的租約。</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>停用 SSH 歷史</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>原因</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>申請停用 SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>請求停用 SSH 需要 DMS 權限以提交中風險工作流程。</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH 租約檢查歷史</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH 管理</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>提交 {0} 請求</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>SSH 狀態已更改。在提交新請求之前，請先檢視目前狀態。</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>在請求存取權限之前，請先驗證您的個人 SSH 密鑰。CLI 預設使用您所有已驗證的密鑰。</value>
+  </data>
 </root>

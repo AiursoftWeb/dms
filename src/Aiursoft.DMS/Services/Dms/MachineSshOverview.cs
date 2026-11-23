@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
@@ -7,9 +8,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class MachineSshOverview(TemplateDbContext db)
+public sealed class MachineSshOverview(TemplateDbContext db, GlobalSettingsService settings)
 {
     public static readonly TimeSpan Freshness = TimeSpan.FromMinutes(6);
+
+    public async Task<IReadOnlySet<Guid>?> ReadScheduledTargetsAsync()
+    {
+        var value = await settings.GetSettingValueAsync(SettingsMap.ScheduledSecurityBaseline);
+        try { return ScheduledSecurityBaselineSettings.Parse(value)?.MachineIds.ToHashSet() ?? []; }
+        catch (Exception exception) when (exception is JsonException or ArgumentException) { return null; }
+    }
 
     public async Task<IReadOnlyList<DmsMachineSshRow>> ReadAsync(IReadOnlyList<DmsMachineRow> machines, CancellationToken token)
     {
@@ -50,17 +58,22 @@ public sealed class MachineSshOverview(TemplateDbContext db)
         var onlineAfter = DateTime.UtcNow.AddSeconds(-45);
         var online = await db.Machines.AsNoTracking().NotCacheable()
             .AnyAsync(machine => machine.Id == id && !machine.Disabled && machine.LastSeen > onlineAfter, token);
-        if (!online) return SshLeaseReadiness.Unknown;
+        if (!online) return SshLeaseReadiness.AgentDisconnected;
 
         var observed = await ReadObservationsAsync([id], token);
-        return observed.GetValueOrDefault(id) switch
+        return Classify(observed.GetValueOrDefault(id), online);
+    }
+
+    public static SshLeaseReadiness Classify(SshHostObservation? observation, bool online) => !online
+        ? SshLeaseReadiness.AgentDisconnected
+        : observation switch
         {
             { LeaseId: not null, ExpiresAtUtc: { } until } when until > DateTimeOffset.UtcNow => SshLeaseReadiness.InUse,
-            { BaselineReady: false } or { OrdinaryOpen: true } => SshLeaseReadiness.NeedsSetup,
+            { OrdinaryOpen: true } => SshLeaseReadiness.OrdinaryOpen,
+            { BaselineReady: false } => SshLeaseReadiness.NeedsSetup,
             { BaselineReady: true, OrdinaryOpen: false, LeaseKnown: true, LeaseId: null } => SshLeaseReadiness.Ready,
             _ => SshLeaseReadiness.Unknown
         };
-    }
 
     private async Task<Dictionary<Guid, SshHostObservation>> ReadObservationsAsync(Guid[] online, CancellationToken token)
     {

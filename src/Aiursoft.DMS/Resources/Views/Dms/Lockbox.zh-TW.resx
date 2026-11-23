@@ -244,4 +244,7 @@
     <value>{0} 請求者 ID</value>
   </data>
 
+  <data name="Open SSH management" xml:space="preserve">
+    <value>開啟 SSH 管理</value>
+  </data>
 </root>
