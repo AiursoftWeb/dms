@@ -284,7 +284,7 @@ public class DmsRolePermissionTests : TestBase
     [DataRow(false, "@lockbox-preview.rsp")]
     public async Task HistoricalAgentStatusPreviewSubmitsTheSameFrozenOperation(bool allMachines, string reason)
     {
-        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Low), DmsPermissions.Request(RiskLevel.Safe));
         using var scope = Server!.Services.CreateScope();
         var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var original = await workflows.SubmitAsync(setup.User, MachineWorkflows.AgentStatus.Request(
@@ -384,6 +384,37 @@ public class DmsRolePermissionTests : TestBase
                 "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
         Assert.AreEqual(0, status.ProgramReturn, status.StdErr);
         Assert.IsNull(JObject.Parse(status.StdOut)["Data"]!["EquivalentCommand"]);
+    }
+
+    [TestMethod]
+    public async Task LockboxReviewPageExposesExecutionContractAndAntiSpoofingWarning()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Low), DmsPermissions.Request(RiskLevel.Safe));
+        using var scope = Server!.Services.CreateScope();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var request = MachineWorkflows.ServiceStatus.Request(new ServiceInput("sshd.service"), "I am just listing files", [setup.First]);
+        var box = await workflows.SubmitAsync(setup.User, request);
+
+        await LoginAsAdmin();
+        var id = Uri.EscapeDataString(new LockboxId(box.Id).ToString());
+        var page = await Http.GetStringAsync($"/Dms/Lockbox?id={id}");
+
+        // Authoritative execution contract is exposed in the hero section
+        StringAssert.Contains(page, "Authoritative Execution Contract:");
+        StringAssert.Contains(page, MachineWorkflows.ServiceStatus.Name);
+        StringAssert.Contains(page, setup.First.ToString());
+        StringAssert.Contains(page, "sshd.service");
+        StringAssert.Contains(page, "Raw Input JSON");
+
+        // Applicant's reason is clearly marked as an unverified statement with anti-spoofing warning
+        StringAssert.Contains(page, "I am just listing files");
+        StringAssert.Contains(page, "Unverified applicant claim");
+        StringAssert.Contains(page, "Anti-spoofing verification:");
+
+        // Low-level audit details remain inside collapsed details
+        var audit = page.IndexOf("<details class=\"card lockbox-audit\">", StringComparison.Ordinal);
+        Assert.IsGreaterThan(0, audit);
+        StringAssert.Contains(page[audit..], "POST /api/v1/dms/lockboxes");
     }
 
     [TestMethod]
