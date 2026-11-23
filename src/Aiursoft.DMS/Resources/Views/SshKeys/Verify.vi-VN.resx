@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Sao chép lệnh</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Tôi có một YubiKey / khóa phần cứng</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Tôi sử dụng tệp khóa riêng tư</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>Nếu hết thời gian, hãy thêm khóa một lần nữa.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>Nếu khóa riêng của bạn được lưu ở nơi khác, hãy thay đổi đường dẫn sau -f. Sau đó, dán toàn bộ chữ ký do lệnh in ra.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Hãy đảm bảo khóa của bạn đã được nạp vào SSH agent (ví dụ bằng cách chạy ssh-add -K cho khóa cư trú), sau đó chạy:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>Chữ ký SSH</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>Để hoàn tất việc thêm khóa này, hãy chạy lệnh bên dưới trên máy tính chứa khóa riêng tương ứng.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Chạm vào YubiKey của bạn khi nó nhấp nháy để hoàn tất việc ký. Sau đó, dán chữ ký hoàn chỉnh được in ra bởi lệnh.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>Xác minh đã hết hạn. Khóa này chưa được thêm.</value>

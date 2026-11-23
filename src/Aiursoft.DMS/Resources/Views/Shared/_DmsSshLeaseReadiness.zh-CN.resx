@@ -27,19 +27,6 @@
   <data name="Ask the machine administrator to confirm readiness before relying on temporary SSH." xml:space="preserve">
     <value>需要使用临时 SSH 时，请先联系机器管理员确认机器已准备好。</value>
   </data>
-  <data name="Temporary SSH is ready to request" xml:space="preserve">
-    <value>可以申请临时 SSH</value>
-  </data>
-  <data name="Temporary SSH readiness is awaiting confirmation" xml:space="preserve">
-    <value>临时 SSH 准备状态待确认</value>
-  </data>
-  <data name="This machine needs SSH setup" xml:space="preserve">
-    <value>这台机器尚未准备好临时 SSH</value>
-  </data>
-  <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
-    <value>请等当前租约结束后再申请。</value>
-  </data>
-
   <data name="Check the SSH lease history and the Agent version in DMS." xml:space="preserve">
     <value>请在 DMS 中检查 SSH 租约历史和 Agent 版本。</value>
   </data>
@@ -58,10 +45,23 @@
   <data name="Review the Disable SSH workflow result in DMS before requesting another lease." xml:space="preserve">
     <value>在申请另一个租约之前，请先在 DMS 中查看“禁用 SSH”工作流的结果。</value>
   </data>
+  <data name="Temporary SSH is ready to request" xml:space="preserve">
+    <value>可以申请临时 SSH</value>
+  </data>
+  <data name="Temporary SSH readiness is awaiting confirmation" xml:space="preserve">
+    <value>临时 SSH 准备状态待确认</value>
+  </data>
   <data name="The Agent is disconnected" xml:space="preserve">
     <value>代理已断开连接</value>
+  </data>
+  <data name="This machine needs SSH setup" xml:space="preserve">
+    <value>这台机器尚未准备好临时 SSH</value>
   </data>
   <data name="To switch this machine to temporary SSH, run Disable SSH in DMS first." xml:space="preserve">
     <value>要将此机器切换到临时 SSH，请先在 DMS 中运行“禁用 SSH”。</value>
   </data>
+  <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
+    <value>请等当前租约结束后再申请。</value>
+  </data>
+
 </root>

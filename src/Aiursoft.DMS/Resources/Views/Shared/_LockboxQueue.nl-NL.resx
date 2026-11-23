@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Alle {0} verzoeken</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Filters toepassen</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Goedgekeurd</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>In afwachting van goedkeuring</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Wissen</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Geweigerd</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Uitvoeringsstatus</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Hoger risico</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Laag risico</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Gemiddeld risico</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Nieuwe aanvraag vereist</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Volgende</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Er wachten geen {0}-verzoeken op uw beoordeling.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Geen {0}-verzoeken komen overeen met deze filters.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Open workflow</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Vorige</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Klaar voor mijn beoordeling</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Beoordelen</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Veilige workflow</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Zoek {0} verzoeken</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Bekijk alle openstaande {0}-verzoeken</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Toon</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Zeer hoog risico</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>{0} aanvraag bekijken</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Ingetrokken</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Workflow, aanvrager, reden of {0}-ID</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} verzoekpagina&apos;s</value>
+  </data>
+
+</root>

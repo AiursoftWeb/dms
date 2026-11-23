@@ -21,11 +21,17 @@
       <data name="Automatic" xml:space="preserve">
     <value>自动</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>检查时间</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>控制器</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>持续时间</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>已建立的 OpenSSH 连接</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>执行标识符和触发器</value>
@@ -54,6 +60,9 @@
   <data name="Not started" xml:space="preserve">
     <value>未开始</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH 监听器</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>来源</value>
   </data>
@@ -66,8 +75,17 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>原始执行结果</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>其余连接详情</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>剩余监听器详细信息</value>
+  </data>
   <data name="Root workflow" xml:space="preserve">
     <value>根工作流</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH 关闭需要验证</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>查看所有执行步骤</value>
@@ -84,11 +102,20 @@
   <data name="Target machines" xml:space="preserve">
     <value>目标机器</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSH 服务和套接字已被屏蔽并停止。</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>执行日志不可用。待处理事件仍保留在存储中。</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>此页面上没有已归档的事件。</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>本次运行没有记录任何监听器或连接数。</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>查看 SSH 验证日志</value>
   </data>
   <data name="Workflow ID" xml:space="preserve">
     <value>工作流 ID</value>
@@ -98,33 +125,6 @@
   </data>
   <data name="{0} request" xml:space="preserve">
     <value>{0} 请求</value>
-  </data>
-  <data name="Checked" xml:space="preserve">
-    <value>检查时间</value>
-  </data>
-  <data name="Established OpenSSH connections" xml:space="preserve">
-    <value>已建立的 OpenSSH 连接</value>
-  </data>
-  <data name="OpenSSH listeners" xml:space="preserve">
-    <value>OpenSSH 监听器</value>
-  </data>
-  <data name="Remaining connection details" xml:space="preserve">
-    <value>其余连接详情</value>
-  </data>
-  <data name="Remaining listener details" xml:space="preserve">
-    <value>剩余监听器详细信息</value>
-  </data>
-  <data name="SSH closure needs verification" xml:space="preserve">
-    <value>SSH 关闭需要验证</value>
-  </data>
-  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
-    <value>SSH 服务和套接字已被屏蔽并停止。</value>
-  </data>
-  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
-    <value>本次运行没有记录任何监听器或连接数。</value>
-  </data>
-  <data name="View the SSH verification log" xml:space="preserve">
-    <value>查看 SSH 验证日志</value>
   </data>
 
 </root>

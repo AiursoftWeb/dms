@@ -21,6 +21,9 @@
       <data name="Agent connection" xml:space="preserve">
     <value>Соединение агента</value>
   </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>История обновлений агента</value>
+  </data>
   <data name="Agent version" xml:space="preserve">
     <value>Версия агента</value>
   </data>
@@ -32,6 +35,12 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>Создан</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>Отключение SSH может разорвать сеансы и отозвать любой действующий лизинг.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>История отключения SSH</value>
   </data>
   <data name="Finished" xml:space="preserve">
     <value>Завершено</value>
@@ -57,8 +66,23 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>Пока не проверено</value>
   </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Причина</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>Запрос на отключение SSH</value>
+  </data>
   <data name="Request temporary SSH" xml:space="preserve">
     <value>Запросить временный SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Для запроса отключения SSH требуется разрешение DMS на отправку рабочих процессов со средним уровнем риска.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>История проверки аренды SSH</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>Управление SSH</value>
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Публичные ключи SSH</value>
@@ -69,8 +93,20 @@
   <data name="Started" xml:space="preserve">
     <value>Запущен</value>
   </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>Отправить запрос {0}</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>Состояние SSH изменилось. Проверьте текущий статус перед отправкой нового запроса.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Используйте --key-id, чтобы выбрать один проверенный ключ.</value>
+  </data>
   <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
     <value>Проверьте личный открытый ключ, затем используйте его идентификатор ключа для отправки запроса в CLI.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Проверьте свои личные SSH-ключи перед запросом доступа. CLI по умолчанию использует все ваши проверенные ключи.</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Просмотр выполнения</value>

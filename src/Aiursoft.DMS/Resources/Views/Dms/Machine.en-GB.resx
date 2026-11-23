@@ -21,6 +21,9 @@
       <data name="Agent connection" xml:space="preserve">
     <value>Agent connection</value>
   </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Agent upgrade history</value>
+  </data>
   <data name="Agent version" xml:space="preserve">
     <value>Agent version</value>
   </data>
@@ -35,6 +38,12 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>Created</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>Disabling SSH can disconnect sessions and revoke any lease present when it runs.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>Disable SSH history</value>
   </data>
   <data name="Disabled" xml:space="preserve">
     <value>Disabled</value>
@@ -69,8 +78,23 @@
   <data name="Online" xml:space="preserve">
     <value>Online</value>
   </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>Request to disable SSH</value>
+  </data>
   <data name="Request temporary SSH" xml:space="preserve">
     <value>Request temporary SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Requesting Disable SSH requires DMS permission to submit Medium risk workflows.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH lease-check history</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH management</value>
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH public keys</value>
@@ -81,8 +105,20 @@
   <data name="Started" xml:space="preserve">
     <value>Started</value>
   </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>Submit {0} request</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>The SSH state has changed. Review the current status before submitting a new request.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Use --key-id to select a single verified key.</value>
+  </data>
   <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
     <value>Verify a personal public key, then use its key ID to submit your request in the CLI.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default.</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>

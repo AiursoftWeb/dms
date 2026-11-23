@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Copier la commande</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>J&apos;ai une clé YubiKey / clé matérielle</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>J&apos;utilise un fichier de clé privée</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>Si le temps s&apos;écoule, ajoutez à nouveau la clé.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>Si votre clé privée est stockée ailleurs, modifiez le chemin après -f. Puis collez la signature complète imprimée par la commande.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Assurez-vous que votre clé est chargée dans votre agent SSH (par exemple en exécutant ssh-add -K pour les clés résidentes), puis exécutez :</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>Signature SSH</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>Pour terminer l&apos;ajout de cette clé, exécutez la commande ci-dessous sur l&apos;ordinateur qui détient sa clé privée.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Touchez votre YubiKey lorsqu&apos;il clignote pour finaliser la signature. Puis collez la signature complète affichée par la commande.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>Vérification expirée. Cette clé n&apos;a pas été ajoutée.</value>

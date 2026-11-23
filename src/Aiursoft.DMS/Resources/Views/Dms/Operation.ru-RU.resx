@@ -27,11 +27,17 @@
   <data name="Callstack" xml:space="preserve">
     <value>Стек вызовов</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Проверено</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>Контроллер</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>Длительность</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Установленные подключения OpenSSH</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>Идентификаторы выполнения и триггер</value>
@@ -60,6 +66,9 @@
   <data name="Not started" xml:space="preserve">
     <value>Не запущено</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>Слушатели OpenSSH</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>Источник</value>
   </data>
@@ -75,11 +84,20 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>Сыровой результат выполнения</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Остальные сведения о подключениях</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Детали оставшихся слушателей</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Результат</value>
   </data>
   <data name="Root workflow" xml:space="preserve">
     <value>Корневой workflow</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>Закрытие SSH требует проверки</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>Смотреть все шаги выполнения</value>
@@ -99,17 +117,26 @@
   <data name="Target machines" xml:space="preserve">
     <value>Целевые машины</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>Служба SSH и сокет были замаскированы и остановлены.</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>Журнал выполнения недоступен. Ожидающие события остаются сохранёнными.</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>На этой странице нет архивных событий.</value>
   </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>В этом запуске нет записанных данных о количестве слушателей или соединений.</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>Трассировка</value>
   </data>
   <data name="Trigger" xml:space="preserve">
     <value>Триггер</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Просмотреть журнал проверки SSH</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Процесс</value>

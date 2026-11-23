@@ -27,11 +27,17 @@
   <data name="Callstack" xml:space="preserve">
     <value>Gọi chồng</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Đã kiểm tra</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>Máy điều khiển</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>Thời lượng</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Kết nối OpenSSH đã thiết lập</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>Định danh thực thi và bộ kích hoạt</value>
@@ -60,6 +66,9 @@
   <data name="Not started" xml:space="preserve">
     <value>Chưa bắt đầu</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>Trình lắng nghe OpenSSH</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>Nguồn gốc</value>
   </data>
@@ -75,11 +84,20 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>Kết quả thực thi thô</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Chi tiết kết nối còn lại</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Chi tiết listener còn lại</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Kết quả</value>
   </data>
   <data name="Root workflow" xml:space="preserve">
     <value>Quy trình gốc</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>Việc đóng SSH cần được xác minh</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>Xem tất cả các bước thực thi</value>
@@ -99,17 +117,26 @@
   <data name="Target machines" xml:space="preserve">
     <value>Máy đích</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>Dịch vụ và socket SSH đã bị che và dừng.</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>Nhật ký thực thi không khả dụng. Các sự kiện chờ vẫn được lưu trữ.</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>Không có sự kiện nào được lưu trữ trên trang này.</value>
   </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Chạy này không có số lượng listener hoặc kết nối nào được ghi lại.</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>Theo dõi</value>
   </data>
   <data name="Trigger" xml:space="preserve">
     <value>Trình kích hoạt</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Xem nhật ký xác minh SSH</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Quy trình</value>

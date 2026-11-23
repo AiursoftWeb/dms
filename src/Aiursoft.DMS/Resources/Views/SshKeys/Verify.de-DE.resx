@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Befehl kopieren</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Ich habe einen YubiKey / Hardware-Schlüssel</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Ich verwende eine private Schlüsseldatei</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>Wenn die Zeit abläuft, fügen Sie den Schlüssel erneut hinzu.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>Falls Ihr privater Schlüssel an einem anderen Ort gespeichert ist, ändern Sie den Pfad nach -f. Fügen Sie dann die vollständige Signatur ein, die durch den Befehl ausgegeben wird.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Stellen Sie sicher, dass Ihr Schlüssel in Ihrem SSH-Agent geladen ist (zum Beispiel durch Ausführen von ssh-add -K für Resident Keys), und führen Sie dann aus:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH-Signatur</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>Um das Hinzufügen dieses Schlüssels abzuschließen, führen Sie den untenstehenden Befehl auf dem Computer aus, auf dem sich sein privater Schlüssel befindet.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Berühren Sie Ihren YubiKey, wenn er blinkt, um die Signierung abzuschließen. Fügen Sie dann die vollständige Signatur ein, die durch den Befehl ausgegeben wurde.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>Die Überprüfung ist abgelaufen. Dieser Schlüssel wurde nicht hinzugefügt.</value>

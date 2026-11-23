@@ -18,11 +18,29 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Agent version" xml:space="preserve">
+      <data name="Add a machine" xml:space="preserve">
+    <value>إضافة جهاز</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
     <value>إصدار الوكيل</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>جميع الحالات</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>تطبيق عوامل التصفية</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>مسح عوامل التصفية</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>مجموعة</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>حالة الاتصال</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>معطّل</value>
   </data>
   <data name="Last seen" xml:space="preserve">
     <value>آخر ظهور</value>
@@ -30,14 +48,41 @@
   <data name="Machine" xml:space="preserve">
     <value>الآلة</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>اسم الجهاز</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>صفحات الأجهزة</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>الآلات</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>لم يتم الاتصال أبداً</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>التالي</value>
   </data>
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>لا توجد أجهزة ظاهرة. اضبط إمكانية الوصول إلى المجموعة، ثم استخدم واجهة سطر الأوامر لطلب تسجيل الجهاز.</value>
   </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>لم تنضم أي أجهزة بعد.</value>
+  </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>لم تنضم أي أجهزة. استخدم مفتاح الانضمام لطلب تسجيل الوكيل.</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>لا تطابق أي أجهزة هذه المرشحات.</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>غير متصل</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>متصل</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>السابق</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>الحالة</value>

@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>コマンドをコピー</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>YubiKey / ハードウェアキーを持っています</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>秘密鍵ファイルを使用しています</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>時間が経過した場合は、キーを再度追加してください。</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>秘密鍵が他の場所にある場合は、-f の後のパスを変更してください。その後、コマンドで出力された完全な署名を貼り付けてください。</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>SSHエージェントにキーが読み込まれていることを確認してください（例: リジデントキーの場合は ssh-add -K を実行する）。その後、次のコマンドを実行します:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH 署名</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>このキーの追加を完了するには、秘密鍵を保持しているコンピュータで、以下のコマンドを実行してください。</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>YubiKeyが点滅したら、それを触って署名を完了してください。その後、コマンドで出力された完全な署名を貼り付けてください。</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>検証の有効期限が切れました。このキーは追加されませんでした。</value>

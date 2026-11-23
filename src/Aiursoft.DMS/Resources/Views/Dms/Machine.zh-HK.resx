@@ -21,6 +21,9 @@
       <data name="Agent connection" xml:space="preserve">
     <value>代理連線</value>
   </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>代理升級記錄</value>
+  </data>
   <data name="Agent version" xml:space="preserve">
     <value>代理版本</value>
   </data>
@@ -32,6 +35,12 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>建立時間</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>停用 SSH 可能會中斷現有連線，並撤銷執行時存在的任何租約。</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>停用 SSH 歷史</value>
   </data>
   <data name="Finished" xml:space="preserve">
     <value>已完成</value>
@@ -57,8 +66,23 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>尚未驗證</value>
   </data>
+  <data name="Reason" xml:space="preserve">
+    <value>原因</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>申請停用 SSH</value>
+  </data>
   <data name="Request temporary SSH" xml:space="preserve">
     <value>申請臨時 SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>申請停用 SSH 需要 DMS 權限以提交中等風險工作流。</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH 租約檢查記錄</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH 管理</value>
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH 公鑰</value>
@@ -69,8 +93,20 @@
   <data name="Started" xml:space="preserve">
     <value>已開始</value>
   </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>提交 {0} 請求</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>SSH 狀態已變更。請在提交新請求前檢視目前狀態。</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>使用 --key-id 選擇單一已驗證的金鑰。</value>
+  </data>
   <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
     <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 提交申請。</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>請在申請存取權限前核實您嘅個人 SSH 金鑰。CLI 預設會使用您所有已核實嘅金鑰。</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>檢視執行</value>

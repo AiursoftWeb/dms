@@ -27,11 +27,17 @@
   <data name="Callstack" xml:space="preserve">
     <value>呼叫堆疊</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>已檢查</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>控制器</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>持續時間</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>已建立的 OpenSSH 連線</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>執行標識符及觸發器</value>
@@ -60,6 +66,9 @@
   <data name="Not started" xml:space="preserve">
     <value>未開始</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH 監聽器</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>來源</value>
   </data>
@@ -75,11 +84,20 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>原始執行結果</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>其餘連線詳情</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>剩餘監聽器詳情</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>結果</value>
   </data>
   <data name="Root workflow" xml:space="preserve">
     <value>根工作流</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH 關閉需要驗證</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>查看所有執行步驟</value>
@@ -99,17 +117,26 @@
   <data name="Target machines" xml:space="preserve">
     <value>目標機器</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSH 服務及套接字已被遮蔽並停止。</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>執行日誌無法使用。待處理事件仍會儲存。</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>此頁面沒有已存檔的事件。</value>
   </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>此執行沒有記錄任何監聽器或連線數。</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>追蹤</value>
   </data>
   <data name="Trigger" xml:space="preserve">
     <value>觸發</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>檢視 SSH 驗證日誌</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流程</value>

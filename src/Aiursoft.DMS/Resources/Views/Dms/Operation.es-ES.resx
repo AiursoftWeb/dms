@@ -27,11 +27,17 @@
   <data name="Callstack" xml:space="preserve">
     <value>Pila de llamadas</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Comprobado</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>Controlador</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>Duración</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Conexiones OpenSSH establecidas</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>Identificadores de ejecución y disparador</value>
@@ -60,6 +66,9 @@
   <data name="Not started" xml:space="preserve">
     <value>No iniciado</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>Escuchadores de OpenSSH</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>Origen</value>
   </data>
@@ -75,11 +84,20 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>Resultado de ejecución en bruto</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Detalles de las conexiones restantes</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Detalles de los listeners restantes</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Resultado</value>
   </data>
   <data name="Root workflow" xml:space="preserve">
     <value>Flujo de trabajo raíz</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>El cierre de SSH requiere verificación</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>Ver todos los pasos de ejecución</value>
@@ -99,17 +117,26 @@
   <data name="Target machines" xml:space="preserve">
     <value>Máquinas objetivo</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>El servicio y el socket de SSH se enmascararon y detuvieron.</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>El registro de ejecución no está disponible. Los eventos pendientes siguen almacenados.</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>No hay eventos archivados en esta página.</value>
   </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Esta ejecución no tiene contadores de listeners ni de conexiones registrados.</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>Pista</value>
   </data>
   <data name="Trigger" xml:space="preserve">
     <value>Disparador</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Ver el registro de verificación SSH</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flujo de trabajo</value>

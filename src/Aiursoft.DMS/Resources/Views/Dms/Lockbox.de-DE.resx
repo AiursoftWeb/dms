@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="APT package plan" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>ALLE AKTIVIERTEN MASCHINEN</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
     <value>APT-Paketplan</value>
   </data>
   <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
@@ -26,6 +29,9 @@
   </data>
   <data name="All enabled machines at submission" xml:space="preserve">
     <value>Alle aktiven Maschinen zum Zeitpunkt der Einreichung</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>Fälschungsschutzprüfung:</value>
   </data>
   <data name="Approve" xml:space="preserve">
     <value>Genehmigen</value>
@@ -41,6 +47,9 @@
   </data>
   <data name="Approver ID" xml:space="preserve">
     <value>Genehmiger-ID</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>Authoritativer Ausführungsvertrag:</value>
   </data>
   <data name="Automatic approval" xml:space="preserve">
     <value>Automatische Genehmigung</value>
@@ -126,6 +135,12 @@
   <data name="No package changes planned." xml:space="preserve">
     <value>Keine Paketänderungen geplant.</value>
   </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>Der Antragsteller hat keinen Grund angegeben.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>SSH-Verwaltung öffnen</value>
+  </data>
   <data name="Open workflow" xml:space="preserve">
     <value>Offener Workflow</value>
   </data>
@@ -134,6 +149,9 @@
   </data>
   <data name="Puller" xml:space="preserve">
     <value>Puller</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>Roh-JSON-Eingabe</value>
   </data>
   <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
     <value>Rekonstruiert aus den gespeicherten Eingaben und Zielmaschinen.</value>
@@ -147,8 +165,14 @@
   <data name="Review the exact contents submitted for execution." xml:space="preserve">
     <value>Prüfen Sie den genauen Inhalt, der zur Ausführung eingereicht wurde.</value>
   </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>Prüfer müssen sicherstellen, dass der vom Antragsteller angegebene Grund exakt mit der autoritativen Workflow-Definition, den Zielgeräten und den eingefrorenen Eingabeparametern unten übereinstimmt. Genehmigen Sie nicht nur auf Grundlage dieses Textes.</value>
+  </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>
+  </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH-Schlüssel-Fingerabdrücke</value>
   </data>
   <data name="Safe workflow" xml:space="preserve">
     <value>Sicherer Workflow</value>
@@ -161,6 +185,9 @@
   </data>
   <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
     <value>Das Agent-Paket ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>Die unten aufgeführten Workflow-Definition, Zielsysteme und Eingabeparameter sind eingefroren und maßgeblich. Sie stellen genau dar, was nach Genehmigung ausgeführt wird.</value>
   </data>
   <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
     <value>Das aktuelle Agent-Paket wurde erneut geändert. Überprüfen Sie es vor der Übermittlung.</value>
@@ -180,6 +207,12 @@
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Dieser Workflow hat keine Parameter.</value>
   </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>Unbekannte Maschine</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>Nicht verifizierte Behauptung des Antragstellers</value>
+  </data>
   <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
     <value>DMS-Agent auf {0} aktualisieren</value>
   </data>
@@ -197,6 +230,9 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Workflow</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>Workflow-Definition</value>
   </data>
   <data name="Workflow version" xml:space="preserve">
     <value>Workflow-Version</value>

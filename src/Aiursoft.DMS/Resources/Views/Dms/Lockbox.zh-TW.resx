@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="APT package plan" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>所有已啟用的機器</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
     <value>APT 套件計畫</value>
   </data>
   <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
@@ -26,6 +29,9 @@
   </data>
   <data name="All enabled machines at submission" xml:space="preserve">
     <value>提交時所有已啟用的機器</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>防偽驗證：</value>
   </data>
   <data name="Approve" xml:space="preserve">
     <value>核准</value>
@@ -41,6 +47,9 @@
   </data>
   <data name="Approver ID" xml:space="preserve">
     <value>核准者 ID</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>權威執行合約：</value>
   </data>
   <data name="Automatic approval" xml:space="preserve">
     <value>自動核准</value>
@@ -129,6 +138,12 @@
   <data name="No package changes planned." xml:space="preserve">
     <value>沒有計畫變更的套件。</value>
   </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>申請人未提供任何理由。</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>開啟 SSH 管理</value>
+  </data>
   <data name="Open workflow" xml:space="preserve">
     <value>開放工作流程</value>
   </data>
@@ -137,6 +152,9 @@
   </data>
   <data name="Puller" xml:space="preserve">
     <value>拉取器</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>原始輸入 JSON</value>
   </data>
   <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
     <value>由儲存的輸入和目標機器重新建構。</value>
@@ -156,8 +174,14 @@
   <data name="Review the exact contents submitted for execution." xml:space="preserve">
     <value>請檢視提交執行的確切內容。</value>
   </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>審查者必須核實申請者所述理由與下方權威的 Workflow 定義、Target Machines 及 Frozen Input 參數完全一致。請勿僅憑此文字即予以核准。</value>
+  </data>
   <data name="Risk" xml:space="preserve">
     <value>風險</value>
+  </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH 金鑰指紋</value>
   </data>
   <data name="Safe workflow" xml:space="preserve">
     <value>安全工作流程</value>
@@ -173,6 +197,9 @@
   </data>
   <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
     <value>Agent 套件暫時無法使用，請稍後再試。</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>以下的工作流程定義、目標機器和輸入參數已凍結且具有權威性。它們精確代表核准後將執行的內容。</value>
   </data>
   <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
     <value>目前的 Agent 套件已再次變更。提交前請重新檢視。</value>
@@ -191,6 +218,12 @@
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>此工作流程不需要任何參數。</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>未知機器</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>未經驗證的申請人聲明</value>
   </data>
   <data name="Upgrade" xml:space="preserve">
     <value>升級</value>
@@ -215,6 +248,9 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>工作流</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>工作流定義</value>
   </data>
   <data name="Workflow version" xml:space="preserve">
     <value>工作流程版本</value>

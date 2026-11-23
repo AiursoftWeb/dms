@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>Goedkeuringscontext</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatisch</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Aanroepstack</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Gecontroleerd</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controller</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Duur</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Vestigde OpenSSH-verbindingen</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Uitvoeringsidentifiers en trigger</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Uitvoeringslogboek</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Logbladzijden</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Navigatie van uitvoering</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Uitvoerstappen</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Afgerond</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Machine</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Volgende</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Niet gestart</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH-listeners</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Herkomst</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>Bovenliggend</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Ouderworkflow</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Vorige</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Ruwe uitvoeringsresultaat</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Overige verbindingsgegevens</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Overige listenerdetails</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Resultaat</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Hoofdwerkflow</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH-sluiting vereist verificatie</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Bekijk alle uitvoeringsstappen</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Gestart</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Status</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Stappen die aandacht vereisen</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Systeemplanning</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Doelcomputers</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>De SSH-service en de socket werden gemaskeerd en gestopt.</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Het uitvoeringslog is niet beschikbaar. In afwachting zijnde gebeurtenissen blijven opgeslagen.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>Er zijn geen gearchiveerde gebeurtenissen op deze pagina.</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Deze run heeft geen geregistreerde luisteraars- of verbindingstellingen.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Tracering</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>Trigger</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Bekijk de SSH-verificatielog</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Werkstroom</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>Workflow-ID</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Workflowgeschiedenis</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} verzoek</value>
   </data>
 
 </root>

@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>توثيق شامل</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>اتصال DMS CLI بهذا المتحكم</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>التحقق من الاتساق</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>يحتوي على وثائق شاملة وأمثلة عملية لمساعدتك على البدء بسرعة.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>قم بتثبيت واجهة سطر الأوامر على جهازك وتسجّل الدخول باستخدام مفتاح API شخصي.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>إدارة الملفات المتكاملة</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>تصميم متجاوب</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>مراجعة الطلبات {0}</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>راجع العملية المطلوبة والمعلمات والأهداف الثابتة. (طلبات {0})</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>مراجعة الطلبات {0}</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>اختبارات دمج قوية</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>التكامل السلس مع أي موفر OpenID Connect، مع مزامنة تلقائية للأدوار.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>إعداد DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>الإعادة تعيين الإعدادات الذكية</value>

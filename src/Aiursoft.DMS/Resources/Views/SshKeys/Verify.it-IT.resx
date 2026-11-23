@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Copia comando</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Ho una YubiKey / chiave hardware</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Utilizzo un file di chiave privata</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>Se scade il tempo, aggiungi di nuovo la chiave.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>Se la tua chiave privata è memorizzata in un altro luogo, modifica il percorso dopo -f. Quindi incolla la firma completa stampata dal comando.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Assicurati che la tua chiave sia caricata nel tuo agente SSH (ad esempio eseguendo ssh-add -K per le chiavi residenti), quindi esegui:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>Firma SSH</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>Per completare l&apos;aggiunta di questa chiave, esegui il comando seguente sul computer che ne detiene la chiave privata.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Tocca la YubiKey quando lampeggia per completare la firma. Quindi incolla la firma completa stampata dal comando.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>Verifica scaduta. Questa chiave non è stata aggiunta.</value>

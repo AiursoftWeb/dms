@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>جميع المصادر</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>جميع الحالات</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>تطبيق عوامل التصفية</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>تلقائي</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>ملغي</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>مسح عوامل التصفية</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>عنقود</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>سير العمل في المجموعة فقط</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>مكتمل مع تحذيرات</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>المُتحكِّم</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>تاريخ الإنشاء</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>صفحات التنفيذ</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>حالة التنفيذ</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>فشل</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>تصفية</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>الجهاز</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>يدوي</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>يتطلب التحقق</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>التالي</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>لا توجد عمليات تنفيذ تطابق هذه المرشحات.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>المصدر</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>سير العمل الأب</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>السابق</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>في قائمة الانتظار</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>تنفيذات الجذر فقط</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>قيد التشغيل</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>الحالة</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>نجح</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>عرض التنفيذ</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>سير العمل</value>

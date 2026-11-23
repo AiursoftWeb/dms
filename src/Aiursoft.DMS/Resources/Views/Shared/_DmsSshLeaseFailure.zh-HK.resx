@@ -21,6 +21,12 @@
       <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
     <value>請聯絡機器管理員檢查 SSH 設定。管理員確認機器準備好後，請重新提出申請。</value>
   </data>
+  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
+    <value>DMS 必須先驗證 SSH 基準，才能發出臨時租約。</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>開啟 SSH 管理</value>
+  </data>
   <data name="The request was approved, and execution stopped before creating a lease." xml:space="preserve">
     <value>申請已獲核准，執行在建立租約前停止。</value>
   </data>

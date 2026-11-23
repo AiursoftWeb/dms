@@ -21,6 +21,12 @@
       <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
     <value>머신 관리자에게 SSH 설정을 확인하도록 요청하십시오. 머신이 준비되면 새 요청을 제출하십시오.</value>
   </data>
+  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
+    <value>DMS는 임시 리스를 발급하기 전에 SSH 베이스라인을 확인해야 합니다.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>SSH 관리 열기</value>
+  </data>
   <data name="The request was approved, and execution stopped before creating a lease." xml:space="preserve">
     <value>요청이 승인되었으나, 리스 생성 전에 실행이 중단되었습니다.</value>
   </data>
