@@ -162,6 +162,10 @@ public sealed class OpenTemporarySshWorkflow(SshOpenInput input, AgentEnvironmen
         var user = SshLease.UserName(context.Id);
         return OperationOutput.ReportAsync(context, replayed ? "Returning the recorded opening result." :
                 $"The temporary SSH lease is open. Connect with ssh -p {SshPort} {user}@<machine-address>.",
-            new { LeaseId = context.Id, User = user, Port = SshPort, ExpiresAtUtc = expiry, value.Sudo, value.Fingerprint, Replayed = replayed });
+            new
+            {
+                LeaseId = context.Id, User = user, Port = SshPort, ExpiresAtUtc = expiry, value.Sudo, value.Fingerprint, Replayed = replayed,
+                SshObservation = replayed ? null : new SshHostObservation(DateTimeOffset.UtcNow, OrdinaryOpen: false, LeaseKnown: true, context.Id, expiry)
+            });
     }
 }

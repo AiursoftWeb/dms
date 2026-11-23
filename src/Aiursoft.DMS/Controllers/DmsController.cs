@@ -18,8 +18,9 @@ namespace Aiursoft.DMS.Controllers;
 [Authorize(Policy = AppPermissionNames.CanReadDmsOperations)]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class DmsController(TemplateDbContext db, AccessService access, WorkflowService workflows, TraceDatabase traces, WorkflowInvestigation investigation,
-    DmsArtifactAccess artifacts, DmsArtifactStore artifactStore, LockboxPages lockboxPages) : Controller
+    DmsArtifactAccess artifacts, DmsArtifactStore artifactStore, LockboxPages lockboxPages, MachineSshOverview sshOverview) : Controller
 {
+    private const int MachinePageSize = 50;
     private string Actor => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -34,24 +35,33 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     {
         if (!ModelState.IsValid || (connection.HasValue && !Enum.IsDefined(connection.Value)) || q?.Length > 100)
             return BadRequest();
-        const int pageSize = 50;
         page = Math.Clamp(page, 0, 100000);
         var search = q?.Trim() ?? string.Empty;
         var machines = MachineRows();
         if (connection != null) machines = machines.Where(machine => machine.Connection == connection);
 
         var ordered = machines.OrderBy(machine => machine.Name).ThenBy(machine => machine.Id).NotCacheable();
-        var skip = page * pageSize;
+        var skip = page * MachinePageSize;
         var rows = search.Length == 0
-            ? await ordered.Skip(skip).Take(pageSize + 1).ToListAsync(HttpContext.RequestAborted)
+            ? await ordered.Skip(skip).Take(MachinePageSize + 1).ToListAsync(HttpContext.RequestAborted)
             : await ordered.AsAsyncEnumerable()
                 .Where(machine => machine.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
-                .Skip(skip).Take(pageSize + 1).ToListAsync(HttpContext.RequestAborted);
+                .Skip(skip).Take(MachinePageSize + 1).ToListAsync(HttpContext.RequestAborted);
+        var visible = rows.Take(MachinePageSize).ToList();
+        var ssh = await sshOverview.ReadAsync(visible, HttpContext.RequestAborted);
         return this.StackView(new DmsMachinesViewModel
         {
-            PageTitle = "Machines", Machines = rows.Take(pageSize).ToList(), Search = search,
-            Connection = connection, Page = page, HasNextPage = rows.Count > pageSize
+            PageTitle = "Machines", Machines = visible, Search = search, SshStates = ssh.ToDictionary(row => row.MachineId),
+            Connection = connection, Page = page, HasNextPage = rows.Count > MachinePageSize
         });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> MachineSshStates([FromQuery] Guid[] id)
+    {
+        if (!ModelState.IsValid || id.Length is < 1 or > MachinePageSize) return BadRequest();
+        var rows = await MachineRows().Where(row => id.Contains(row.Id)).NotCacheable().ToListAsync(HttpContext.RequestAborted);
+        return PartialView("_DmsMachineSshStates", await sshOverview.ReadAsync(rows, HttpContext.RequestAborted));
     }
 
     [HttpGet]

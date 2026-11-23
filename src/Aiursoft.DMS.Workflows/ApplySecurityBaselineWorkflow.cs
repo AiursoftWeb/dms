@@ -21,7 +21,8 @@ public sealed class ApplySecurityBaselineWorkflow : MachineWorkflow
 
         policy.Validate();
         await context.TraceAsync($"Applying scheduled security baseline version {policy.Version}.");
-        var ssh = await context.CallAsync(OperationsWorkflows.SshCheckLease, new SshLeaseCheckInput(CloseSshWhenNoLease: true), token);
+        var ssh = await context.CallAsync(OperationsWorkflows.SshCheckLease,
+            new SshLeaseCheckInput(CloseSshWhenNoLease: true) { ReportStatus = true }, token);
         await context.TraceAsync(ssh.Summary);
 
         if (policy.RequireFail2ban)
