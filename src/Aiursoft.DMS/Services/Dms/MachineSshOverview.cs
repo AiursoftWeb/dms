@@ -16,6 +16,54 @@ public sealed class MachineSshOverview(TemplateDbContext db)
         var online = machines.Where(machine => machine.Connection == MachineConnection.Online).Select(machine => machine.Id).ToArray();
         if (online.Length == 0) return machines.Select(machine => new DmsMachineSshRow(machine.Id)).ToList();
 
+        var observed = await ReadObservationsAsync(online, token);
+        var leaseIds = observed.Values.Where(status => status.LeaseId != null).Select(status => status.LeaseId!.Value).Distinct().ToArray();
+        if (leaseIds.Length == 0)
+            return machines.Select(machine => new DmsMachineSshRow(machine.Id, observed.GetValueOrDefault(machine.Id))).ToList();
+
+        var leases = OperationsWorkflows.SshOpen.Name;
+        var requests = await (from run in db.WorkflowRuns.AsNoTracking()
+                join box in db.Lockboxes.AsNoTracking() on run.LockboxId equals box.Id
+                where leaseIds.Contains(run.Id) && run.Definition == leases && run.State == RunState.Succeeded &&
+                    box.Definition == leases && box.Decision == DecisionState.Approved
+                select new { run.Id, run.MachineId, LockboxId = box.Id, box.RequesterId }).NotCacheable()
+            .ToDictionaryAsync(item => item.Id, token);
+        var requesterIds = requests.Values.Select(item => item.RequesterId).Distinct().ToArray();
+        if (requesterIds.Length == 0)
+            return machines.Select(machine => new DmsMachineSshRow(machine.Id, observed.GetValueOrDefault(machine.Id))).ToList();
+
+        var people = await db.Users.AsNoTracking().NotCacheable().Where(person => requesterIds.Contains(person.Id))
+            .Select(person => new { person.Id, person.DisplayName, person.UserName })
+            .ToDictionaryAsync(person => person.Id, person => AccessService.PersonName(person.DisplayName, person.UserName), token);
+
+        return machines.Select(machine =>
+        {
+            var status = observed.GetValueOrDefault(machine.Id);
+            if (status?.LeaseId is { } leaseId && requests.TryGetValue(leaseId, out var request) && request.MachineId == machine.Id)
+                return new DmsMachineSshRow(machine.Id, status, people.GetValueOrDefault(request.RequesterId), request.LockboxId);
+            return new DmsMachineSshRow(machine.Id, status);
+        }).ToList();
+    }
+
+    public async Task<SshLeaseReadiness> ReadReadinessAsync(Guid id, CancellationToken token)
+    {
+        var onlineAfter = DateTime.UtcNow.AddSeconds(-45);
+        var online = await db.Machines.AsNoTracking().NotCacheable()
+            .AnyAsync(machine => machine.Id == id && !machine.Disabled && machine.LastSeen > onlineAfter, token);
+        if (!online) return SshLeaseReadiness.Unknown;
+
+        var observed = await ReadObservationsAsync([id], token);
+        return observed.GetValueOrDefault(id) switch
+        {
+            { LeaseId: not null, ExpiresAtUtc: { } until } when until > DateTimeOffset.UtcNow => SshLeaseReadiness.InUse,
+            { BaselineReady: false } or { OrdinaryOpen: true } => SshLeaseReadiness.NeedsSetup,
+            { BaselineReady: true, OrdinaryOpen: false, LeaseKnown: true, LeaseId: null } => SshLeaseReadiness.Ready,
+            _ => SshLeaseReadiness.Unknown
+        };
+    }
+
+    private async Task<Dictionary<Guid, SshHostObservation>> ReadObservationsAsync(Guid[] online, CancellationToken token)
+    {
         var now = DateTimeOffset.UtcNow;
         var earliest = now.UtcDateTime - Freshness - TimeSpan.FromMinutes(3);
         var leases = OperationsWorkflows.SshOpen.Name;
@@ -48,31 +96,7 @@ public sealed class MachineSshOverview(TemplateDbContext db)
             observed.Add(group.Key, latest);
         }
 
-        var leaseIds = observed.Values.Where(status => status.LeaseId != null).Select(status => status.LeaseId!.Value).Distinct().ToArray();
-        if (leaseIds.Length == 0)
-            return machines.Select(machine => new DmsMachineSshRow(machine.Id, observed.GetValueOrDefault(machine.Id))).ToList();
-
-        var requests = await (from run in db.WorkflowRuns.AsNoTracking()
-                join box in db.Lockboxes.AsNoTracking() on run.LockboxId equals box.Id
-                where leaseIds.Contains(run.Id) && run.Definition == leases && run.State == RunState.Succeeded &&
-                    box.Definition == leases && box.Decision == DecisionState.Approved
-                select new { run.Id, run.MachineId, LockboxId = box.Id, box.RequesterId }).NotCacheable()
-            .ToDictionaryAsync(item => item.Id, token);
-        var requesterIds = requests.Values.Select(item => item.RequesterId).Distinct().ToArray();
-        if (requesterIds.Length == 0)
-            return machines.Select(machine => new DmsMachineSshRow(machine.Id, observed.GetValueOrDefault(machine.Id))).ToList();
-
-        var people = await db.Users.AsNoTracking().NotCacheable().Where(person => requesterIds.Contains(person.Id))
-            .Select(person => new { person.Id, person.DisplayName, person.UserName })
-            .ToDictionaryAsync(person => person.Id, person => AccessService.PersonName(person.DisplayName, person.UserName), token);
-
-        return machines.Select(machine =>
-        {
-            var status = observed.GetValueOrDefault(machine.Id);
-            if (status?.LeaseId is { } leaseId && requests.TryGetValue(leaseId, out var request) && request.MachineId == machine.Id)
-                return new DmsMachineSshRow(machine.Id, status, people.GetValueOrDefault(request.RequesterId), request.LockboxId);
-            return new DmsMachineSshRow(machine.Id, status);
-        }).ToList();
+        return observed;
     }
 
     private static SshHostObservation? Parse(string? result, bool leaseCheck)

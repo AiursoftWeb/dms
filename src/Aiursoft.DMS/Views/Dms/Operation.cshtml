@@ -106,7 +106,12 @@
                 </div>
             </dl>
 
-            @if (Model.ResultSummary is { } result)
+            @if (Model.SshBaselineFailure is { } sshFailure &&
+                 Model.MachineName(sshFailure.MachineId) is { } sshMachine)
+            {
+                <partial name="_DmsSshLeaseFailure" model="sshMachine" />
+            }
+            else if (Model.ResultSummary is { } result)
             {
                 var tone = run.State == RunState.Failed ? "danger" : run.State is RunState.Warning or RunState.NeedsVerification ? "warning" : "secondary";
                 <div class="dms-run-message bg-@(tone)-subtle text-@(tone)-emphasis">

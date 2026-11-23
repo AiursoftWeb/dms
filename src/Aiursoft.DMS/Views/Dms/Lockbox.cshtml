@@ -141,6 +141,15 @@
                 </div>
             }
 
+            @if (Model.PendingSshLeaseReadiness is { } sshReadiness)
+            {
+                <partial name="_DmsSshLeaseReadiness" model="sshReadiness" />
+            }
+            else if (Model.SshBaselineFailureMachine is { } sshMachine)
+            {
+                <partial name="_DmsSshLeaseFailure" model="sshMachine" />
+            }
+
             <dl class="lockbox-context">
                 <div>
                     <dt><i data-lucide="user" aria-hidden="true"></i>@LockboxText.Format(@Localizer["{0} requester"].Value)</dt>

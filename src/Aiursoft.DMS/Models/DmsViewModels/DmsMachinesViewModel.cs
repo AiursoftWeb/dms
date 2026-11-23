@@ -4,6 +4,7 @@ using Aiursoft.UiStack.Layout;
 namespace Aiursoft.DMS.Models.DmsViewModels;
 
 public enum MachineConnection { Online, Offline, NeverConnected, Disabled }
+public enum SshLeaseReadiness { Unknown, Ready, NeedsSetup, InUse }
 
 public sealed record DmsMachineSshRow(Guid MachineId, SshHostObservation? Observation = null,
     string? Requester = null, Guid? LockboxId = null);

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.UiStack.Layout;
@@ -17,6 +18,11 @@ public sealed class OperationViewModel : UiStackLayoutViewModel
     public int TracePage { get; init; }
     public bool HasNextTracePage { get; set; }
     public string? ResultSummary => ReadSummary(Run.Result);
+    public WorkflowRun? SshBaselineFailure => Steps.FirstOrDefault(IsSshBaselineFailure);
+
+    internal static bool IsSshBaselineFailure(WorkflowRun run) =>
+        run.Definition == OperationsWorkflows.SshOpen.Name && run.State == RunState.Failed &&
+        ReadSummary(run.Result) == SshOpenInput.BaselineRequiredError;
     public string? MachineName(Guid? id) => id.HasValue ? MachineNames.GetValueOrDefault(id.Value, id.Value.ToString()) : null;
 
     public IEnumerable<(WorkflowRun Step, int Depth)> OrderedSteps()

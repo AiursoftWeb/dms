@@ -30,7 +30,7 @@ public sealed class OpenTemporarySshWorkflow(SshOpenInput input, AgentEnvironmen
         if (state?.Lease is { } current)
             throw new InvalidOperationException($"Lease {current.Id} belongs to {current.RequesterId} and expires at {current.ExpiresAtUtc:u}. Close it before opening another lease.");
         if (state is not { Healthy: true })
-            throw new InvalidOperationException("Run the SSH disable workflow successfully before opening a temporary lease.");
+            throw new InvalidOperationException(SshOpenInput.BaselineRequiredError);
 
         await VerifyUnitsAsync(host, token);
         await VerifyConnectionsAsync(host, token);

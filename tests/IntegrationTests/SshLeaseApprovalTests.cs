@@ -74,6 +74,86 @@ public sealed class SshLeaseApprovalTests : TestBase
         Assert.AreEqual(HttpStatusCode.Conflict, after.StatusCode);
     }
 
+    [TestMethod]
+    public async Task LeasePagesShowReadinessAndExplainTheHistoricalBaselineFailure()
+    {
+        await LoginAsAdmin();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var now = DateTimeOffset.UtcNow;
+        var machine = new Machine { Name = "gx10-test", KeyHash = "lease-fixture", LastSeen = now.UtcDateTime };
+        var user = new User { UserName = "readiness-owner", DisplayName = "SSH requester" };
+        db.Machines.Add(machine);
+        db.Users.Add(user);
+        var definition = OperationsWorkflows.SshOpen;
+        var request = definition.Request(new SshOpenInput(Guid.NewGuid()), "Check readiness", [machine.Id]);
+        var box = new LockboxRequest
+        {
+            Definition = definition.Name, Version = definition.Version, Risk = RiskLevel.VeryHigh,
+            RequesterId = user.Id, ClientRequestId = request.RequestId, Reason = request.Reason,
+            Parameters = JsonSerializer.Serialize(request), TargetMachines = JsonSerializer.Serialize(request.MachineIds)
+        };
+        db.Lockboxes.Add(box);
+        var observation = new WorkflowRun
+        {
+            Definition = OperationsWorkflows.SshCheckLease.Name, MachineId = machine.Id, State = RunState.Succeeded,
+            CreatedAt = now.UtcDateTime, FinishedAt = now.UtcDateTime
+        };
+        db.WorkflowRuns.Add(observation);
+        string Report(bool? ready, DateTimeOffset observedAt) =>
+            JsonSerializer.Serialize(new SshLeaseCheckResult("SSH poll", null)
+            {
+                Observation = new SshHostObservation(observedAt, OrdinaryOpen: false, LeaseKnown: true)
+                {
+                    BaselineReady = ready
+                }
+            });
+        async Task<string> Page(string route) => WebUtility.HtmlDecode(await Http.GetStringAsync(route));
+
+        var machinePage = $"/Dms/Machine/{machine.Id}";
+        var approvalPage = $"/Dms/Lockbox/{box.Id}";
+        (bool? Ready, DateTimeOffset Time, string Heading)[] cases =
+        [
+            (false, now, "This machine needs SSH setup"),
+            (true, now, "Temporary SSH is ready to request"),
+            (null, now, "Temporary SSH readiness is awaiting confirmation"),
+            (true, now.AddMinutes(-7), "Temporary SSH readiness is awaiting confirmation")
+        ];
+        foreach (var (ready, time, heading) in cases)
+        {
+            observation.Result = Report(ready, time);
+            await db.SaveChangesAsync();
+            StringAssert.Contains(await Page(machinePage), heading);
+            StringAssert.Contains(await Page(approvalPage), heading);
+        }
+
+        var run = new WorkflowRun { Definition = WorkflowNames.Batch, State = RunState.Failed, LockboxId = box.Id };
+        run.RootId = run.Id;
+        var failed = new WorkflowRun
+        {
+            Definition = definition.Name, State = RunState.Failed, MachineId = machine.Id, LockboxId = box.Id,
+            RootId = run.Id, ParentId = run.Id, IsMachineTask = true,
+            Result = JsonSerializer.Serialize(new { Error = SshOpenInput.BaselineRequiredError })
+        };
+        box.WorkflowId = run.Id;
+        box.Decision = DecisionState.Approved;
+        box.DecidedAt = now.UtcDateTime;
+        db.WorkflowRuns.AddRange(run, failed);
+        await db.SaveChangesAsync();
+
+        foreach (var route in new[] { approvalPage, $"/Dms/Operation/{run.Id}", $"/Dms/Operation/{failed.Id}" })
+        {
+            var page = await Page(route);
+            StringAssert.Contains(page, "gx10-test is not ready for temporary SSH");
+            StringAssert.Contains(page, "Submit a new request once the machine is ready.");
+        }
+
+        var childPage = await Page($"/Dms/Operation/{failed.Id}");
+        StringAssert.Contains(childPage, SshOpenInput.BaselineRequiredError);
+        Assert.IsTrue(childPage.IndexOf("gx10-test is not ready for temporary SSH", StringComparison.Ordinal) <
+            childPage.IndexOf(SshOpenInput.BaselineRequiredError, StringComparison.Ordinal));
+    }
+
     private async Task<HttpResponseMessage> AuthorizeAsync(Guid task, string key)
     {
         using var message = new HttpRequestMessage(HttpMethod.Post, $"/api/agent/ssh-leases/{task:D}/authorize");

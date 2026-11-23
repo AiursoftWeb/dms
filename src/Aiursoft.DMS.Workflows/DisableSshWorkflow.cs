@@ -184,7 +184,7 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             throw new IOException("The SSH service and socket are not both masked and stopped.");
     }
 
-    private static async Task<bool> UnitsMaskedAndStoppedAsync(OperationHost host, CancellationToken token)
+    internal static async Task<bool> UnitsMaskedAndStoppedAsync(OperationHost host, CancellationToken token)
     {
         foreach (var unit in SshUnits)
         {
@@ -204,7 +204,7 @@ public sealed class DisableSshWorkflow(EmptyInput input, AgentEnvironment enviro
             throw new IOException("An OpenSSH listener or established connection remains.");
     }
 
-    private static async Task<bool> HasOpenSshConnectionsAsync(OperationHost host, CancellationToken token)
+    internal static async Task<bool> HasOpenSshConnectionsAsync(OperationHost host, CancellationToken token)
     {
         foreach (var args in new[] { new[] { "-Hltnp" }, ["-Htnp", "state", "established"] })
         {

@@ -1,5 +1,6 @@
 @using System.Globalization
 @using Aiursoft.DMS.Contracts
+@using Aiursoft.DMS.Models.DmsViewModels
 @using Aiursoft.WebTools
 @model Aiursoft.DMS.Models.DmsViewModels.DmsMachineViewModel
 @{
@@ -22,6 +23,19 @@
         </div>
         <a asp-action="Operations" asp-route-machineId="@machine.Id" class="btn btn-outline-secondary"><i data-lucide="history" aria-hidden="true"></i> @Localizer["Workflow history"]</a>
     </header>
+
+    <section class="card dms-detail-card" aria-labelledby="temporary-ssh-heading">
+        <div class="card-body">
+            <h2 id="temporary-ssh-heading"><i data-lucide="key-round" aria-hidden="true"></i> @Localizer["Request temporary SSH"]</h2>
+            <partial name="_DmsSshLeaseReadiness" model="Model.SshLeaseReadiness" />
+            @if (Model.CanRequestSshLease && Model.SshLeaseReadiness is SshLeaseReadiness.Ready or SshLeaseReadiness.Unknown)
+            {
+                <p class="mt-3 mb-2">@Localizer["Verify a personal public key, then use its key ID to submit your request in the CLI."]</p>
+                <a asp-controller="SshKeys" asp-action="Index" class="fw-semibold">@Localizer["SSH public keys"]</a>
+                <pre class="dms-payload mt-2 mb-0" tabindex="0"><code>dms machine ssh temp-allow-ssh --machine-id @machine.Id --key-id "$KEY_ID" --reason "$REASON"</code></pre>
+            }
+        </div>
+    </section>
 
     <div class="row g-3 mb-3">
         <section class="col-lg-5" aria-labelledby="connection-heading">

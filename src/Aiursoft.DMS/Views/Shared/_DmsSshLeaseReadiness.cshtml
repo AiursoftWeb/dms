@@ -1,0 +1,23 @@
+@using Aiursoft.DMS.Models.DmsViewModels
+@model SshLeaseReadiness
+@{
+    var (tone, heading, guidance) = Model switch
+    {
+        SshLeaseReadiness.Ready => ("success", "Temporary SSH is ready to request", ""),
+        SshLeaseReadiness.NeedsSetup => ("warning", "This machine needs SSH setup",
+            "Ask the machine administrator to check SSH setup before requesting or approving a lease."),
+        SshLeaseReadiness.InUse => ("warning", "A temporary SSH lease is active",
+            "Wait for the current lease to end before requesting another one."),
+        _ => ("secondary", "Temporary SSH readiness is awaiting confirmation",
+            "Ask the machine administrator to confirm readiness before relying on temporary SSH.")
+    };
+}
+<div class="alert alert-@tone mb-0">
+    <div class="alert-message">
+        <strong>@Localizer[heading]</strong>
+        @if (guidance.Length != 0)
+        {
+            <p class="mb-0">@Localizer[guidance]</p>
+        }
+    </div>
+</div>
