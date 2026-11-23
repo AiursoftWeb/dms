@@ -232,6 +232,11 @@ public static class OperationsWorkflows
         new("machine.nvidia.smi", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NvidiaSmi)), "1", PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.Low)]
+    public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> NvidiaOverview =
+        new("machine.nvidia.overview", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NvidiaOverview)),
+            "1", PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> NvidiaProcesses =
         new("machine.nvidia.processes", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NvidiaProcesses)), "1", PublicEntry: true);
 
