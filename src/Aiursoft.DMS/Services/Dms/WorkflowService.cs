@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Aiursoft.DMS.Authorization;
@@ -21,7 +22,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             var risk = definition.Risk;
             var grant = DmsPermissions.ForRisk(principal, risk);
             definitions.Add(new WorkflowDefinitionSummary(definition.Name, definition.Version, definition.Location,
-                risk, definition.RequiresTargets, grant.CanRequest, grant.AutoApprove, grant.CanApprove));
+                risk, definition.RequiresTargets, grant.CanRequest,
+                grant.AutoApprove && definition.Name != ClickHouseWorkflows.Execute.Name, grant.CanApprove));
         }
         var selfApproval = DmsPermissions.CanApproveOwn(principal);
         access.Audit(user, "workflow.definitions");
@@ -63,6 +65,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
+        if (request.Workflow == ClickHouseWorkflows.SqlSubmission ||
+            request.Workflow == ClickHouseWorkflows.Query.Name || request.Workflow == ClickHouseWorkflows.Execute.Name)
+            await SelectClickHouseWorkflowAsync(user, request);
         var definition = catalog.Find(request.Workflow);
         try
         {
@@ -158,7 +163,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         };
         db.Lockboxes.Add(lockbox);
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
-        if (grant.AutoApprove)
+        if (grant.AutoApprove && definition.Name != ClickHouseWorkflows.Execute.Name)
             await ApproveAsync(lockbox, null, risk == RiskLevel.Open
                 ? "Automatic approval by the Open workflow policy."
                 : "Automatic approval by the requester's role permissions.", enrollmentId);
@@ -266,6 +271,37 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         return new LockboxPage(items.Take(50).Select(b => b.Details()).ToList(), page, items.Count > 50);
     });
 
+    private async Task SelectClickHouseWorkflowAsync(string user, OperationRequest request)
+    {
+        try
+        {
+            var input = ClickHouseWorkflows.Query.ReadInput(request.Input);
+            var artifact = input.Artifact;
+            var stored = artifacts.Get(artifact.Id);
+            if (stored.OwnerId != user) throw new DmsException(403, "Workflow input artifacts must belong to the requester.");
+            if (!DmsArtifactAccess.Matches(stored.Reference, artifact))
+                throw new DmsException(409, "Input artifact differs from its immutable uploaded metadata.");
+            await using var stream = artifacts.Open(artifact.Id);
+            if (stream.Length != artifact.Length)
+                throw new DmsException(409, "The uploaded ClickHouse SQL size changed.");
+            var bytes = new byte[(int)artifact.Length];
+            await stream.ReadExactlyAsync(bytes);
+            if (!string.Equals(Convert.ToHexStringLower(SHA256.HashData(bytes)), artifact.Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new DmsException(409, "The uploaded ClickHouse SQL checksum changed.");
+            var risk = ClickHouseSql.Classify(ClickHouseSql.Decode(bytes));
+            var selected = risk == RiskLevel.Low ? ClickHouseWorkflows.Query : ClickHouseWorkflows.Execute;
+            if (request.Workflow != ClickHouseWorkflows.SqlSubmission && request.Workflow != selected.Name)
+                throw new DmsException(400, "The SQL does not match the requested ClickHouse workflow.");
+            if ((risk == RiskLevel.High) != (input.ContainerId != null))
+                throw new DmsException(400, "ClickHouse writes require the resolved full container ID. Read queries resolve it during execution.");
+            request.Workflow = selected.Name;
+        }
+        catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidDataException)
+        {
+            throw new DmsException(400, "Invalid ClickHouse SQL input: " + exception.Message);
+        }
+    }
+
     private async Task RequireArtifactsAsync(WorkflowDefinition? definition, string input, string owner)
     {
         foreach (var reference in definition?.Artifacts(input) ?? [])
@@ -326,13 +362,25 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             decidedBy, item.Automatic, approvers, item.WorkflowId);
     }
 
-    public async Task<OpenWorkflowResult> WaitForOpenResultAsync(string user, Guid id, CancellationToken token)
+    public Task<OpenWorkflowResult> WaitForOpenResultAsync(string user, Guid id, CancellationToken token) =>
+        WaitForLockboxResultAsync(user, id, clickHouse: false, token);
+
+    public Task<OpenWorkflowResult> WaitForClickHouseResultAsync(string user, Guid id, CancellationToken token) =>
+        WaitForLockboxResultAsync(user, id, clickHouse: true, token);
+
+    private async Task<OpenWorkflowResult> WaitForLockboxResultAsync(string user, Guid id, bool clickHouse, CancellationToken token)
     {
-        if (!DmsPermissions.ForRisk(await access.PrincipalAsync(user), RiskLevel.Open).CanRequest)
+        var principal = await access.PrincipalAsync(user);
+        if (!clickHouse && !DmsPermissions.ForRisk(principal, RiskLevel.Open).CanRequest)
             throw new DmsException(403, "Run open workflows permission is required.");
         var box = await db.Lockboxes.AsNoTracking().NotCacheable()
-            .SingleOrDefaultAsync(item => item.Id == id && item.RequesterId == user && item.Risk == RiskLevel.Open, token)
-            ?? throw new DmsException(404, "Open Lockbox not found.");
+            .SingleOrDefaultAsync(item => item.Id == id && item.RequesterId == user &&
+                (clickHouse || item.Risk == RiskLevel.Open), token)
+            ?? throw new DmsException(404, "Lockbox result not found.");
+        if (clickHouse && !ClickHouseWorkflows.IsClickHouse(box.Definition))
+            throw new DmsException(404, "ClickHouse Lockbox result not found.");
+        if (!DmsPermissions.ForRisk(principal, box.Risk).CanRequest)
+            throw new DmsException(403, "Request permission for this workflow risk level is required.");
         if (box.Decision != DecisionState.Approved || box.WorkflowId is not { } workflowId)
             throw new DmsException(409, "The Lockbox has no approved execution.");
 
@@ -348,9 +396,23 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
                 elapsed.Elapsed >= TimeSpan.FromSeconds(10))
             {
                 var succeeded = run.State is RunState.Succeeded or RunState.Warning;
+                var result = succeeded ? run.Result : null;
+                if (clickHouse)
+                {
+                    var child = await db.WorkflowRuns.AsNoTracking().NotCacheable()
+                        .Where(item => item.ParentId == workflowId && item.LockboxId == id && item.Definition == box.Definition)
+                        .Select(item => new { item.State, item.Result }).SingleOrDefaultAsync(token);
+                    if (child != null && (child.State.Terminal() || child.State == RunState.NeedsVerification))
+                    {
+                        access.Audit(user, "lockbox.result", id);
+                        await db.SaveChangesAsync(token);
+                        return new OpenWorkflowResult(workflowId, child.State, child.Result);
+                    }
+                    result = !succeeded ? run.Result : null;
+                }
                 access.Audit(user, "lockbox.result", id);
                 await db.SaveChangesAsync(token);
-                return new OpenWorkflowResult(workflowId, run.State, succeeded ? run.Result : null);
+                return new OpenWorkflowResult(workflowId, run.State, result);
             }
             await Task.Delay(TimeSpan.FromMilliseconds(200), token);
         }
@@ -381,9 +443,11 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         return tree;
     });
 
-    // The owner's Open Lockbox result endpoint is the only reader of this private payload.
+    // Dedicated result endpoints enforce ownership for artifact lists and ClickHouse rows.
     private static string InvestigationResult(WorkflowRun run) =>
-        run.Definition == WorkflowNames.ListArtifacts ? string.Empty : run.Result;
+        run.Definition == WorkflowNames.ListArtifacts ||
+        (ClickHouseWorkflows.HasPrivateResult(run.Definition) && run.State is RunState.Succeeded or RunState.Warning)
+            ? string.Empty : run.Result;
 
     public async Task<IReadOnlyDictionary<string, string>> TraceScopeAsync(string user, Guid id, bool recursive)
     {
