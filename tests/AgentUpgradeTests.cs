@@ -62,6 +62,53 @@ public class AgentUpgradeTests
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task ScheduledUpgradeRestartsIdleWaitingButConfirmsOnlyTheRecordedRelease(bool matches)
+    {
+        var state = Directory.CreateTempSubdirectory("dms-scheduled-upgrade-recovery-").FullName;
+        var journalPath = Path.Combine(state, "journal");
+        var machine = Guid.NewGuid();
+        var release = new AgentRelease(AgentUpgrade.Architecture, AgentUpgrade.Version, new string('a', 64), new string('b', 64));
+        var scheduled = new ScheduledInvocation(ScheduledAgentUpgradeWorkflow.DefinitionName, "0 */8 * * *",
+            new DateTime(2026, 11, 23, 8, 0, 0, DateTimeKind.Utc), WorkflowTrigger.Cron);
+        Guid id;
+        try
+        {
+            using (var journal = new TaskJournal(journalPath))
+            {
+                id = journal.AcceptScheduled(ScheduledAgentUpgradeWorkflow.DefinitionName,
+                    ScheduledAgentUpgradeWorkflow.DefinitionVersion, scheduled)!.Id;
+                Assert.IsNotNull(journal.Start(id));
+            }
+            using (var waiting = new TaskJournal(journalPath))
+            {
+                Assert.AreEqual(RunState.Accepted, waiting.Snapshot().Single().State);
+                var task = waiting.Start(id)!;
+                // The durable task and updater handoff are the only state the new process sees.
+                task.ScheduledUpgradeRelease = matches ? release : release with { ArchiveSha256 = new string('c', 64) };
+                await waiting.ReportAsync(id, new WorkflowEvent { WorkflowId = id, IsTrace = true });
+                new AgentConfiguration("http://controller", Guid.NewGuid(), waiting.InstallationId, "test", "", "dmsa_test", machine).Save(state);
+                using var assembly = File.OpenRead(typeof(AgentUpgrade).Assembly.Location);
+                var hash = Convert.ToHexStringLower(SHA256.HashData(assembly));
+                File.WriteAllText(Path.Combine(state, "upgrade.json"), JsonSerializer.Serialize(new UpgradeHandoff(id, id, null,
+                    waiting.InstallationId, machine, release, "1.10.1.0", DateTime.UtcNow.AddMinutes(10), "installed", hash)));
+            }
+            using var recovered = new TaskJournal(journalPath);
+            Assert.AreEqual(RunState.NeedsVerification, recovered.Snapshot().Single().State);
+            await new AgentUpgrade(state, recovered).ConfirmAsync();
+            var result = recovered.Snapshot().Single();
+            Assert.AreEqual(matches ? RunState.Succeeded : RunState.NeedsVerification, result.State);
+            var final = result.Pending.Last();
+            Assert.AreEqual(id, final.WorkflowId);
+            Assert.AreEqual(ScheduledAgentUpgradeWorkflow.DefinitionName, final.Definition);
+            Assert.AreEqual(ScheduledAgentUpgradeWorkflow.DefinitionVersion, final.Version);
+            Assert.IsNull(final.ParentId);
+        }
+        finally { Directory.Delete(state, true); }
+    }
+
+    [TestMethod]
     public async Task RecoveryWaitsForTheInFlightUpdaterWithoutStartingAnyTask()
     {
         var state = Path.Combine(Path.GetTempPath(), "dms-upgrade-wait-" + Guid.NewGuid().ToString("N"));

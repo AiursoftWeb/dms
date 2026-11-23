@@ -12,7 +12,7 @@ namespace Aiursoft.DMS.Agent;
 public sealed record UpgradeHandoff(Guid TaskId, Guid WorkflowId, Guid? ParentId, Guid InstallationId, Guid MachineId,
     AgentRelease Release, string PreviousVersion, DateTime Deadline, string Phase, string? ToolAssemblySha256 = null, string? Failure = null);
 
-// Only an approved compiled workflow can prepare this handoff. The one-shot systemd unit survives its Agent.
+// Manual Lockbox approval or the Agent's scheduled policy authorizes preparation. The systemd unit survives its Agent.
 public sealed class AgentUpgrade(string state, TaskJournal journal)
 {
     private static readonly HttpClient Downloads = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromMinutes(3) };
@@ -134,8 +134,16 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         var task = journal.Snapshot().SingleOrDefault(t => t.Id == handoff.TaskId);
         if (task == null || task.State.Terminal()) return;
         var config = AgentConfiguration.Load(state);
-        var recorded = handoff.WorkflowId == task.Id
-            ? task.Definition == WorkflowNames.AgentUpgrade && MachineWorkflows.AgentUpgrade.ReadInput(task.Input).Releases.Contains(handoff.Release)
+        var isRoot = handoff.WorkflowId == task.Id;
+        var definition = isRoot ? task.Definition : WorkflowNames.AgentUpgrade;
+        var version = isRoot ? task.Version : MachineWorkflows.AgentUpgrade.Version;
+        var recorded = isRoot
+            ? task.Definition switch
+            {
+                WorkflowNames.AgentUpgrade => MachineWorkflows.AgentUpgrade.ReadInput(task.Input).Releases.Contains(handoff.Release),
+                ScheduledAgentUpgradeWorkflow.DefinitionName => task.Schedule != null && task.ScheduledUpgradeRelease == handoff.Release,
+                _ => false
+            }
             : handoff.ParentId != null; // The durable handoff was written by the actual child context before restart.
         var matches = recorded && handoff.Phase == "installed" && handoff.Deadline > DateTime.UtcNow
             && config?.InstallationId == handoff.InstallationId && config.MachineId == handoff.MachineId
@@ -148,13 +156,13 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         if (matches)
         {
             await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = handoff.WorkflowId, ParentId = handoff.ParentId,
-                Definition = WorkflowNames.AgentUpgrade, Version = MachineWorkflows.AgentUpgrade.Version, State = RunState.Succeeded,
+                Definition = definition, Version = version, State = RunState.Succeeded,
                 Result = JsonSerializer.Serialize(new AgentUpgradeResult(handoff.PreviousVersion, Version, Architecture, handoff.Release.ArchiveSha256, journal.InstallationId)) });
         }
         else
         {
             await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = handoff.WorkflowId, ParentId = handoff.ParentId,
-                Definition = WorkflowNames.AgentUpgrade, Version = MachineWorkflows.AgentUpgrade.Version, State = RunState.NeedsVerification });
+                Definition = definition, Version = version, State = RunState.NeedsVerification });
         }
         Save(Marker, handoff with { Phase = matches ? "confirmed" : "uncertain" });
         // No task is re-executed and no C# parent stack is resumed by this confirmation.
@@ -207,10 +215,12 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             {
                 using (var journal = new TaskJournal(Path.Combine(state, "journal")))
                 {
+                    var task = journal.Snapshot().Single(item => item.Id == handoff.TaskId);
                     await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
                         IsTrace = true, Source = "updater", Message = "Agent Tool update requires verification: " + failure });
                     await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
-                        Definition = WorkflowNames.AgentUpgrade, Version = MachineWorkflows.AgentUpgrade.Version, State = RunState.NeedsVerification });
+                        Definition = id == task.Id ? task.Definition : WorkflowNames.AgentUpgrade,
+                        Version = id == task.Id ? task.Version : MachineWorkflows.AgentUpgrade.Version, State = RunState.NeedsVerification });
                 }
                 // Restore service availability where possible, without replaying the operation.
                 try

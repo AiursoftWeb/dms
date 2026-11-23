@@ -30,7 +30,7 @@ public class GlobalSettingsService(
     public async Task<string> GetSettingValueAsync(string key)
     {
         var cacheKey = GetCacheKey(key);
-        var cacheable = key != SettingsMap.ScheduledSecurityBaseline;
+        var cacheable = key is not (SettingsMap.ScheduledSecurityBaseline or SettingsMap.ScheduledAgentUpgrade);
         if (cacheable && cache.TryGetValue(cacheKey, out string? cachedValue) && cachedValue != null)
         {
             return cachedValue;
@@ -148,6 +148,14 @@ public class GlobalSettingsService(
                 throw new InvalidOperationException("Invalid scheduled security baseline configuration.", error);
             }
         }
+        if (key == SettingsMap.ScheduledAgentUpgrade)
+        {
+            try { ScheduledAgentUpgradeSettings.Parse(value); }
+            catch (Exception error) when (error is ArgumentException or JsonException)
+            {
+                throw new InvalidOperationException("Invalid scheduled Agent upgrade configuration.", error);
+            }
+        }
 
         var storedValue = ProtectSecretIfNeeded(definition, value);
         var dbSetting = await dbContext.GlobalSettings.FirstOrDefaultAsync(s => s.Key == key);
@@ -173,7 +181,8 @@ public class GlobalSettingsService(
             if (!exists)
             {
                 // Configuration overrides are read directly and must not be copied into the database.
-                var initialValue = definition.Type == SettingType.Secret || definition.Key == SettingsMap.ScheduledSecurityBaseline
+                var initialValue = definition.Type == SettingType.Secret ||
+                    definition.Key is SettingsMap.ScheduledSecurityBaseline or SettingsMap.ScheduledAgentUpgrade
                     ? definition.DefaultValue
                     : configuration[$"GlobalSettings:{definition.Key}"]
                       ?? configuration[definition.Key]

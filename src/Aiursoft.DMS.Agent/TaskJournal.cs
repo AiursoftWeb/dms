@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
+using Aiursoft.DMS.Workflows;
 
 namespace Aiursoft.DMS.Agent;
 
@@ -13,6 +14,7 @@ public sealed class JournalTask
     public RunState State { get; set; } = RunState.Accepted;
     public long Sequence { get; set; }
     public List<WorkflowEvent> Pending { get; set; } = [];
+    public AgentRelease? ScheduledUpgradeRelease { get; set; }
 }
 
 public sealed class TaskJournal : IDisposable
@@ -41,6 +43,13 @@ public sealed class TaskJournal : IDisposable
             ?? throw new InvalidDataException("Invalid task journal.")).ToDictionary(t => t.Id);
         foreach (var task in _tasks.Values.Where(t => t.State is RunState.Running or RunState.CancelRequested))
         {
+            if (task.State == RunState.Running && task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName && task.Schedule != null &&
+                task.ScheduledUpgradeRelease == null)
+            {
+                task.State = RunState.Accepted;
+                Save(task);
+                continue;
+            }
             task.State = RunState.NeedsVerification;
             Append(task, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition, State = RunState.NeedsVerification });
         }
@@ -49,6 +58,25 @@ public sealed class TaskJournal : IDisposable
     public IReadOnlyList<JournalTask> Snapshot(bool activeOnly = false)
     {
         lock (_gate) return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(t => JsonSerializer.Deserialize<JournalTask>(JsonSerializer.Serialize(t))!).ToList();
+    }
+
+    internal bool HasUnsettledWork(Guid except)
+    {
+        lock (_gate) return _tasks.Values.Any(task => task.Id != except &&
+            task.State is RunState.Running or RunState.NeedsVerification or RunState.CancelRequested);
+    }
+
+    internal void SetScheduledUpgradeRelease(Guid taskId, AgentRelease release)
+    {
+        lock (_gate)
+        {
+            var task = _tasks[taskId];
+            if (task.Definition != ScheduledAgentUpgradeWorkflow.DefinitionName || task.Schedule == null || task.State != RunState.Running ||
+                task.ScheduledUpgradeRelease != null)
+                throw new InvalidOperationException("The scheduled upgrade is no longer waiting for a release.");
+            task.ScheduledUpgradeRelease = release;
+            Save(task);
+        }
     }
 
     public JournalTask? AcceptScheduled(string definition, string version, ScheduledInvocation occurrence, bool reconcileAfterInterruption = false)
