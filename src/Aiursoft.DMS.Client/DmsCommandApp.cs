@@ -195,6 +195,7 @@ public static partial class DmsCommandApp
                 NewSystemJournalCommand(),
                 NewSystemTimersCommand(),
                 NewSystemRebootCommand(),
+                NewSystemPoweroffCommand(),
                 NewSystemExecuteScriptCommand(),
                 KernelEventsCommand()
             ]),

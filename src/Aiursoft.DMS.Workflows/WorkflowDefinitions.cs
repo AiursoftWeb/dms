@@ -7,6 +7,7 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null,
     IAgentArtifactTransport? Artifacts = null,
     Func<MachineWorkflowContext, RebootInput, CancellationToken, Task<OperationResult>>? Reboot = null,
+    Func<MachineWorkflowContext, PoweroffInput, CancellationToken, Task<OperationResult>>? Poweroff = null,
     OperationHost? Operations = null,
     Func<Guid, CancellationToken, Task<SshLeaseAuthorization>>? AuthorizeSshLease = null,
     Func<CancellationToken, Task<SecurityBaselinePolicy?>>? GetSecurityBaselinePolicy = null,

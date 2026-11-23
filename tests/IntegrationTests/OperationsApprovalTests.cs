@@ -149,6 +149,8 @@ public class OperationsApprovalTests : TestBase
         yield return (OperationsWorkflows.AptUpgrade, new PackageUpgradeInput(["fixture-package=1.0"]), RiskLevel.High,
             "machine apt upgrade");
         yield return (OperationsWorkflows.SystemReboot, new RebootInput(), RiskLevel.High, "machine system reboot");
+        yield return (OperationsWorkflows.SystemPoweroff, new PoweroffInput(), RiskLevel.VeryHigh,
+            "machine system poweroff");
         yield return (OperationsWorkflows.SystemExecuteScript, new ScriptInput("bash", artifact), RiskLevel.VeryHigh,
             "machine system execute-script");
         yield return (OperationsWorkflows.DatabaseDiscover, new EmptyInput(), RiskLevel.Low,
@@ -249,8 +251,8 @@ public class OperationsApprovalTests : TestBase
         await store.AppendUploadAsync(artifact.Id, 0, new MemoryStream(bytes), CancellationToken.None);
         await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
         var cases = Cases(artifact).ToArray();
-        Assert.HasCount(97, cases);
-        Assert.AreEqual(97, cases.Select(c => c.Definition.Name).Distinct().Count());
+        Assert.HasCount(98, cases);
+        Assert.AreEqual(98, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var allMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", allMachines: true);
         var multipleMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", [machine.Id, Guid.NewGuid()]);

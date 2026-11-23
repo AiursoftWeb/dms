@@ -216,6 +216,7 @@ System/clock/boot observations, systemd state/journal/timers, package inspection
 | `apt upgrade-all` | Low (preview), High (apply) | `--dry-run` or `--plan <preview-workflow-id>` |
 | `apt autoremove` | Low (preview), High (apply) | `--dry-run` or `--plan <preview-workflow-id>`; `--purge` |
 | `system reboot` | High | `--delay-seconds=15` |
+| `system poweroff` | VeryHigh | `--delay-seconds=15` (alias `--countdown-seconds`) |
 | `system execute-script` | VeryHigh | `--language` required; `--script-file` required; `--timeout-seconds=60` |
 
 ### Database containers (8)
@@ -403,6 +404,8 @@ dms machine system reboot --delay-seconds 5 --machine-id "$MACHINE_ID" --reason 
 ```
 
 Reboot requires an installed Agent identity and durable journal. It records the old kernel boot ID before handing the reboot to systemd. The same installation must reconnect with a new boot ID within 15 minutes to confirm success. A successful scheduling command alone is insufficient. No new boot ID, expired confirmation, changed identity or uncertain outcome remains `NeedsVerification`; a reboot is never replayed. A reboot subworkflow gets its own ID; a lost parent C# stack cannot be resumed after the machine restarts.
+
+Poweroff (`dms machine system poweroff` or alias `shutdown`) is a VeryHigh risk operation. It schedules a system poweroff with a configurable countdown (`--delay-seconds` or `--countdown-seconds`, 5 to 3600 seconds, default 15s) using systemd. Unlike reboot, the machine powers off permanently and the Agent will stop and cannot be restarted remotely through DMS.
 
 `system execute-script --language bash|python --script-file ./task --timeout-seconds 60` is the explicit VeryHigh escape hatch. The actual frozen source is available to the authorized approver on the Web. Its output uses normal workflow trace. It does not grant lower-risk operations an arbitrary shell option.
 

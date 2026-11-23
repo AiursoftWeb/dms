@@ -399,6 +399,14 @@ public sealed record RebootInput(int DelaySeconds = 15) : IOperationInput
     }
 }
 
+public sealed record PoweroffInput(int DelaySeconds = 15) : IOperationInput
+{
+    public void Validate()
+    {
+        if (DelaySeconds is < 5 or > 3600) throw new ArgumentException("Poweroff delay must be 5 to 3600 seconds.");
+    }
+}
+
 public sealed record ScriptInput(string Language, ArtifactReference Artifact, int TimeoutSeconds = 60)
     : IOperationInput, IAuditTextInput
 {
