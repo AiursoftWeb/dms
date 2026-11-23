@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Tutte le richieste {0}</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Applica filtri</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Approvato</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>In attesa di approvazione</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Cancella</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Rifiutato</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Stato di esecuzione</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Rischio elevato</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Rischio basso</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Rischio medio</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Richiede una nuova richiesta</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Successivo</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Nessuna richiesta {0} è in attesa della tua revisione.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Nessuna richiesta {0} corrisponde a questi filtri.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Workflow aperto</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Precedente</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Pronti per la mia revisione</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Rivedi</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Workflow sicuro</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Cerca richieste {0}</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Visualizza tutte le richieste {0} in sospeso</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Mostra</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Rischio molto elevato</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>Visualizza richiesta {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Ritirato</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Workflow, richiedente, motivo o ID {0}</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>Pagine delle richieste {0}</value>
+  </data>
+
+</root>

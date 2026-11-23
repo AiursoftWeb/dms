@@ -57,11 +57,20 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>尚未驗證</value>
   </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>申請臨時 SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公鑰</value>
+  </data>
   <data name="Scheduled security baseline" xml:space="preserve">
     <value>排程安全基準</value>
   </data>
   <data name="Started" xml:space="preserve">
     <value>已開始</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 提交申請。</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>檢視執行</value>
@@ -70,13 +79,4 @@
     <value>工作流程記錄</value>
   </data>
 
-  <data name="Request temporary SSH" xml:space="preserve">
-    <value>申請臨時 SSH</value>
-  </data>
-  <data name="SSH public keys" xml:space="preserve">
-    <value>SSH 公鑰</value>
-  </data>
-  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
-    <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 提交申請。</value>
-  </data>
 </root>

@@ -69,11 +69,20 @@
   <data name="Online" xml:space="preserve">
     <value>線上</value>
   </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>申請臨時 SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公鑰</value>
+  </data>
   <data name="Scheduled security baseline" xml:space="preserve">
     <value>排程安全基準</value>
   </data>
   <data name="Started" xml:space="preserve">
     <value>已啟動</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 送出申請。</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>版本</value>
@@ -85,13 +94,4 @@
     <value>工作流程歷史</value>
   </data>
 
-  <data name="Request temporary SSH" xml:space="preserve">
-    <value>申請臨時 SSH</value>
-  </data>
-  <data name="SSH public keys" xml:space="preserve">
-    <value>SSH 公鑰</value>
-  </data>
-  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
-    <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 送出申請。</value>
-  </data>
 </root>

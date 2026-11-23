@@ -21,8 +21,44 @@
       <data name="Approval context" xml:space="preserve">
     <value>Контекст утверждения</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Автоматически</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Стек вызовов</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Контроллер</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Идентификаторы выполнения и триггер</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Журнал выполнения</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Страницы журнала выполнения</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Навигация по выполнению</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Шаги выполнения</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Завершено</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Машин</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далее</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Не запущено</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Источник</value>
@@ -30,14 +66,44 @@
   <data name="Parent" xml:space="preserve">
     <value>Родительский</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Родительский workflow</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Предыдущая</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Сыровой результат выполнения</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Результат</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Корневой workflow</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Смотреть все шаги выполнения</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Запущено</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Состояние</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Шаги, требующие внимания</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Системное расписание</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Целевые машины</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Журнал выполнения недоступен. Ожидающие события остаются сохранёнными.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>На этой странице нет архивных событий.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Трассировка</value>
@@ -47,6 +113,15 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Процесс</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID рабочего процесса</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>История рабочих процессов</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>Запрос {0}</value>
   </data>
 
 </root>

@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Об этих разрешениях</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Применить</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Автоматическое утверждение</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Кластер</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Место выполнения</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Высокий</value>
@@ -57,13 +63,22 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Публичные стандартные рабочие процессы не зарегистрированы.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Открытый</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Требуется указание машин</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Риск</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Риск (от наибольшего к наименьшему)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Риск (сначала наименьший)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Права ролей применяются ко всем машинам в этом экземпляре DMS и к уровню риска каждого рабочего процесса. Для автоматического утверждения требуется разрешение на подачу запроса {0}. Для утверждения собственного запроса также требуется разрешение на самоутверждение.</value>
   </data>
   <data name="Safe" xml:space="preserve">
@@ -72,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>Показать рабочие процессы</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Сортировать по</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Стандартные рабочие процессы</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>В этом каталоге перечислены общедоступные стандартные рабочие процессы, доступные на Контроллере. Наличие агентов и поддерживаемые версии проверяются во время выполнения. Специальные управляющие операции и внутренние подпроцессы не перечислены.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Неизвестно</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Версия</value>
@@ -86,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Рабочий процесс</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Название рабочего процесса (А–Я)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Название рабочего процесса (Я–А)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Да</value>

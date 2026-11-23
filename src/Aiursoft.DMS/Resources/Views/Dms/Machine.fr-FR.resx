@@ -57,11 +57,20 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>Pas encore vérifié</value>
   </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>Demander un accès SSH temporaire</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Clés publiques SSH</value>
+  </data>
   <data name="Scheduled security baseline" xml:space="preserve">
     <value>Ligne de base de sécurité planifiée</value>
   </data>
   <data name="Started" xml:space="preserve">
     <value>Démarré</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>Vérifiez une clé publique personnelle, puis utilisez son identifiant de clé pour soumettre votre demande dans l&apos;interface en ligne de commande.</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Afficher l&apos;exécution</value>

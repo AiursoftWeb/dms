@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Cualquiera puede copiar una clave pública. Este paso demuestra que posees su clave privada, que permanece en tu ordenador.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Volver a las claves públicas SSH</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Cancelar la adición de esta clave</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Comando copiado</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Copiar comando</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Si el tiempo se agota, añade la clave de nuevo.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Si su clave privada se guarda en otro lugar, cambie la ruta que sigue a -f. A continuación, pegue la firma completa que imprima el comando.</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>Firma SSH</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Empezar de nuevo</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>Paso 2 de 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Comando de terminal</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>La firma no coincidía. Ejecute el comando anterior con la clave privada de esta clave pública y pegue el resultado completo.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Tiempo restante</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>Para finalizar la adición de esta clave, ejecuta el siguiente comando en el equipo que contiene su clave privada.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>La verificación ha caducado. Esta clave no se ha añadido.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>La verificación caduca a las</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Verificar y añadir clave</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Verifique su clave pública SSH</value>
+  </data>
+
+</root>

@@ -18,13 +18,14 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="{0} is not ready for temporary SSH" xml:space="preserve">
-    <value>{0} 尚未准备好临时 SSH</value>
+      <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
+    <value>请联系机器管理员检查 SSH 设置。管理员确认机器准备好后，请重新提交申请。</value>
   </data>
   <data name="The request was approved, and execution stopped before creating a lease." xml:space="preserve">
     <value>申请已获批准，执行在创建租约前停止。</value>
   </data>
-  <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
-    <value>请联系机器管理员检查 SSH 设置。管理员确认机器准备好后，请重新提交申请。</value>
+  <data name="{0} is not ready for temporary SSH" xml:space="preserve">
+    <value>{0} 尚未准备好临时 SSH</value>
   </data>
+
 </root>

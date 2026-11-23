@@ -69,11 +69,20 @@
   <data name="Online" xml:space="preserve">
     <value>Online</value>
   </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>Request temporary SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH public keys</value>
+  </data>
   <data name="Scheduled security baseline" xml:space="preserve">
     <value>Scheduled security baseline</value>
   </data>
   <data name="Started" xml:space="preserve">
     <value>Started</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>Verify a personal public key, then use its key ID to submit your request in the CLI.</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>

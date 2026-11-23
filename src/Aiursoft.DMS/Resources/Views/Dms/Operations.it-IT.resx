@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Tutte le origini</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Tutti gli stati</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Applica filtri</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatico</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Annullato</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Cancella filtri</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Solo workflow del cluster</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Completato con avvisi</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controller</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Creato</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Pagine di esecuzione</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Stato di esecuzione</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Non riuscito</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtra</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Macchina</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manuale</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Richiede verifica</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Successiva</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Nessuna esecuzione corrisponde a questi filtri.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Origine</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Workflow genitore</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Precedente</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>In coda</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Solo esecuzioni radice</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>In esecuzione</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Stato</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Completato</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Visualizza esecuzione</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flusso di lavoro</value>

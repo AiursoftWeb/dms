@@ -57,11 +57,20 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>Chưa được xác minh</value>
   </data>
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>Yêu cầu SSH tạm thời</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Chìa khóa công khai SSH</value>
+  </data>
   <data name="Scheduled security baseline" xml:space="preserve">
     <value>Mốc chuẩn bảo mật được lên lịch</value>
   </data>
   <data name="Started" xml:space="preserve">
     <value>Đã bắt đầu</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>Xác minh khóa công khai cá nhân, sau đó sử dụng ID khóa của nó để gửi yêu cầu của bạn trong CLI.</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Xem thực thi</value>

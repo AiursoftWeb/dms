@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Все источники</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Все состояния</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Применить фильтры</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Автоматический</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Отменено</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Сбросить фильтры</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Кластер</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Только кластерные рабочие процессы</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Завершено с предупреждениями</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Контроллер</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Создан</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Страницы выполнения</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Состояние выполнения</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Сбой</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Фильтр</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Машина</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Ручной</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Требует проверки</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Далее</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Нет выполнений, соответствующих этим фильтрам.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Источник</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Родительский workflow</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Предыдущая</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>В очереди</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Только корневые выполнения</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Выполняется</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Состояние</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Успешно завершено</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Просмотр выполнения</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Workflow</value>

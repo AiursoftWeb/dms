@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Sobre estas permissões</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Aplicar</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Aprovar automaticamente</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Localização de execução</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Alto</value>
@@ -57,13 +63,22 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Nenhum fluxo de trabalho padrão público está registrado.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Aberto</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Requer alvos de máquina</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risco</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Risco (maior primeiro)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Risco (menor primeiro)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>As permissões de papel se aplicam a cada máquina nesta instância do DMS e ao nível de risco de cada fluxo de trabalho. A aprovação automática requer permissão para solicitar. Aprovar seu próprio pedido do {0} também requer permissão de autoaprovação.</value>
   </data>
   <data name="Safe" xml:space="preserve">
@@ -72,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>Mostrar fluxos de trabalho</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Ordenar por</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Fluxos de trabalho padrão</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Este catálogo lista os fluxos de trabalho padrão públicos disponíveis no Controller. A disponibilidade dos agentes e as versões compatíveis são verificadas durante a execução. Operações especiais de controle e subfluxos de trabalho internos não são listados.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Desconhecido</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Versão</value>
@@ -86,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Fluxo de trabalho</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Nome do fluxo de trabalho (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Nome do fluxo de trabalho (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Sim</value>

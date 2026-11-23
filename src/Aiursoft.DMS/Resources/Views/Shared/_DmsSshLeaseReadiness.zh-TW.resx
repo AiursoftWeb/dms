@@ -18,25 +18,26 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Temporary SSH is ready to request" xml:space="preserve">
-    <value>可以申請臨時 SSH</value>
-  </data>
-  <data name="This machine needs SSH setup" xml:space="preserve">
-    <value>這台機器尚未準備好臨時 SSH</value>
+      <data name="A temporary SSH lease is active" xml:space="preserve">
+    <value>目前已有臨時 SSH 租約</value>
   </data>
   <data name="Ask the machine administrator to check SSH setup before requesting or approving a lease." xml:space="preserve">
     <value>請聯絡機器管理員確認 SSH 設定，準備好後再申請或核准租約。</value>
   </data>
-  <data name="A temporary SSH lease is active" xml:space="preserve">
-    <value>目前已有臨時 SSH 租約</value>
+  <data name="Ask the machine administrator to confirm readiness before relying on temporary SSH." xml:space="preserve">
+    <value>需要使用臨時 SSH 時，請先聯絡機器管理員確認機器已準備好。</value>
   </data>
-  <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
-    <value>請等目前的租約結束後再申請。</value>
+  <data name="Temporary SSH is ready to request" xml:space="preserve">
+    <value>可以申請臨時 SSH</value>
   </data>
   <data name="Temporary SSH readiness is awaiting confirmation" xml:space="preserve">
     <value>臨時 SSH 準備狀態待確認</value>
   </data>
-  <data name="Ask the machine administrator to confirm readiness before relying on temporary SSH." xml:space="preserve">
-    <value>需要使用臨時 SSH 時，請先聯絡機器管理員確認機器已準備好。</value>
+  <data name="This machine needs SSH setup" xml:space="preserve">
+    <value>這台機器尚未準備好臨時 SSH</value>
   </data>
+  <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
+    <value>請等目前的租約結束後再申請。</value>
+  </data>
+
 </root>
