@@ -781,7 +781,8 @@ public class DmsRolePermissionTests : TestBase
     [TestMethod]
     [DataRow("du", RiskLevel.Low)]
     [DataRow("docker", RiskLevel.Low)]
-    [DataRow("git", RiskLevel.High)]
+    [DataRow("set-git-ssh-identity", RiskLevel.High)]
+    [DataRow("configure-git", RiskLevel.High)]
     [DataRow("rm", RiskLevel.High)]
     public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
     {
@@ -791,7 +792,7 @@ public class DmsRolePermissionTests : TestBase
             "du" => ["machine", "filesystem", "du", "--path", "/swarm-vol", "--depth", "2"],
             "docker" => ["machine", "docker", "system", "df"],
             "rm" => ["machine", "filesystem", "rm", "--path", "/tmp/reviewed cleanup", "--recursive"],
-            _ => ["machine", "box", "configure-git", "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
+            _ => ["machine", "box", operation, "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
         };
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--machine-id", setup.First.ToString(),
             "--reason", "Approved machine maintenance scope", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
@@ -810,7 +811,11 @@ public class DmsRolePermissionTests : TestBase
         if (operation == "du") Assert.AreEqual(new DirectoryUsageInput("/swarm-vol", 2), MachineWorkflows.DirectoryUsage.ReadInput(request.Input));
         if (operation == "docker") Assert.AreEqual("{}", request.Input);
         if (operation == "rm") Assert.AreEqual(new RemovePathInput("/tmp/reviewed cleanup", true), MachineWorkflows.RemovePath.ReadInput(request.Input));
-        if (operation == "git") Assert.AreEqual(new BoxGitInput("/home/anduin/.ssh/id_ed25519", "/home/anduin/.ssh/known_hosts"), MachineWorkflows.BoxConfigureGit.ReadInput(request.Input));
+        if (operation is "set-git-ssh-identity" or "configure-git")
+        {
+            Assert.AreEqual(MachineWorkflows.BoxConfigureGit.Name, box.Definition);
+            Assert.AreEqual(new BoxGitInput("/home/anduin/.ssh/id_ed25519", "/home/anduin/.ssh/known_hosts"), MachineWorkflows.BoxConfigureGit.ReadInput(request.Input));
+        }
     }
 
     [TestMethod]

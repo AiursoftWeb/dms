@@ -12,6 +12,7 @@ public class DmsCliHelpTests
     [DataRow("artifact", "verify its SHA-256 checksum")]
     [DataRow("lockbox", "eligible approvers")]
     [DataRow("machine filesystem", "Permanently remove")]
+    [DataRow("machine box", "set-git-ssh-identity")]
     [DataRow("machine swarm service", "Scale a replicated Swarm service to zero")]
     public async Task NavigationShowsHelpWithoutRequiringASubcommand(string path, string description)
     {

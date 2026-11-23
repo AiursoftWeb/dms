@@ -90,7 +90,7 @@ public static partial class DmsCommandApp
                 StandardCommand("inspect",
                     "Check the local Box repository's branch, commit, and working tree.",
                     MachineWorkflows.BoxInspect, _ => new EmptyInput()),
-                BoxConfigureGitCommand(),
+                BoxSetGitSshIdentityCommand(),
                 BoxDeployCommand(),
                 new BoxSecretCommand(BoxSecretCommandKind.List),
                 new BoxSecretCommand(BoxSecretCommandKind.Summary),
@@ -396,18 +396,20 @@ public static partial class DmsCommandApp
             recursive);
     }
 
-    private static ActionCommand BoxConfigureGitCommand()
+    private static ActionCommand BoxSetGitSshIdentityCommand()
     {
         var identity = new Option<string>("--identity-file")
             { Required = true, Description = "Existing machine-local, private, read-only Box deployment key file." };
         var hosts = new Option<string>("--known-hosts-file")
             { Required = true, Description = "Existing machine-local file containing verified GitLab host keys." };
-        return StandardCommand("configure-git",
-            "Configure the local SSH key and known hosts used to pull Box updates.",
+        var command = StandardCommand("set-git-ssh-identity",
+            "Select the existing machine-local SSH key and known-hosts file for Box Git pulls.",
             MachineWorkflows.BoxConfigureGit,
             context => new BoxGitInput(context.GetValue(identity)!, context.GetValue(hosts)!),
             identity,
             hosts);
+        command.CommandAliases = ["configure-git"];
+        return command;
     }
 
     private static ActionCommand PullerCommand()
