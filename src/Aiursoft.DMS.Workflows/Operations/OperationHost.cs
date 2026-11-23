@@ -116,8 +116,9 @@ public sealed class OperationWorkflow<TInput>(MachineWorkflowDefinition<TInput, 
             SampleInput sample => sample.Seconds + 10, SmartTestInput smart => smart.WaitSeconds + 90,
             ScriptInput script => script.TimeoutSeconds + 10, DatabaseSqlInput sql => sql.TimeoutSeconds + 30,
             SwarmChangeInput service => service.TimeoutSeconds + 90, RebootInput => 960,
-            PackageInput or PackageUpgradeInput => 1830, CopyPathInput or ImportPathInput or ContainerCopyInput => 660,
-            ExportPathInput or ContainerExportInput => 900, _ => 180
+            PackageInput or PackageUpgradeInput or AptApplyInput => 1980, CopyPathInput or ImportPathInput or ContainerCopyInput => 660,
+            ExportPathInput or ContainerExportInput => 900,
+            _ when Name == OperationsWorkflows.AptUpdate.Name => 630, _ => 180
         };
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token); deadline.CancelAfter(TimeSpan.FromSeconds(seconds));
         var elapsed = Stopwatch.StartNew();

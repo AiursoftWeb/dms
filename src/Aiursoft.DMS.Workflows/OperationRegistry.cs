@@ -354,6 +354,13 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 SystemOperations.AptUpgradeAsync,
                 agent));
+        Register(OperationsWorkflows.AptUpdate,
+            (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.AptUpdate, input, AptMaintenanceOperations.UpdateAsync, agent));
+        Register(OperationsWorkflows.AptPlan, (input, agent) => new AptPlanWorkflow(input, agent));
+        Register(OperationsWorkflows.AptUpgradeAll,
+            (input, agent) => new OperationWorkflow<AptApplyInput>(OperationsWorkflows.AptUpgradeAll, input, AptMaintenanceOperations.UpgradeAsync, agent));
+        Register(OperationsWorkflows.AptAutoremove,
+            (input, agent) => new OperationWorkflow<AptApplyInput>(OperationsWorkflows.AptAutoremove, input, AptMaintenanceOperations.AutoremoveAsync, agent));
         Register(OperationsWorkflows.SystemReboot,
             (input, agent) => new OperationWorkflow<RebootInput>(OperationsWorkflows.SystemReboot,
                 input,
