@@ -19,7 +19,7 @@ public sealed class AgentFrpsDeployController(TemplateDbContext db, IDataProtect
         var definition = MachineWorkflows.FrpsDeploy;
         var task = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(t => t.Id == taskId && t.MachineId == machine
             && t.IsMachineTask && t.Origin == WorkflowOrigin.Manual && t.Definition == definition.Name
-            && t.Version == definition.Version && t.State == RunState.Running, token);
+            && t.Version == definition.Version, token);
         if (task == null) return Forbid(DmsKeyAuthenticationHandler.SchemeName);
 
         var launch = await db.WorkflowLaunches.AsNoTracking().SingleOrDefaultAsync(x => x.RootId == task.RootId, token);
@@ -29,6 +29,11 @@ public sealed class AgentFrpsDeployController(TemplateDbContext db, IDataProtect
             return Forbid(DmsKeyAuthenticationHandler.SchemeName);
 
         if (definition.ReadInput(task.Input).ProtectedToken is not { } encrypted)
+            return Forbid(DmsKeyAuthenticationHandler.SchemeName);
+
+        if (task.State is RunState.Offered or RunState.Accepted)
+            return Conflict();
+        if (task.State != RunState.Running)
             return Forbid(DmsKeyAuthenticationHandler.SchemeName);
 
         return Ok(new FrpsDeployToken(protection.CreateProtector(FrpsDeployInput.ProtectionPurpose).Unprotect(encrypted)));

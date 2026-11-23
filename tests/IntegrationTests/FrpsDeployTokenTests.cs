@@ -53,7 +53,7 @@ public sealed class FrpsDeployTokenTests : TestBase
         db.WorkflowRuns.Add(task);
         await db.SaveChangesAsync();
         using var before = await ReadAsync(task.Id, agent);
-        Assert.AreEqual(HttpStatusCode.Forbidden, before.StatusCode);
+        Assert.AreEqual(HttpStatusCode.Conflict, before.StatusCode);
         task.State = RunState.Running;
         await db.SaveChangesAsync();
         using var foreign = await ReadAsync(task.Id, otherAgent);
