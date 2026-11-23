@@ -22,6 +22,8 @@ public sealed class LockboxViewModel : UiStackLayoutViewModel
     public AgentUpgradeReview? AgentUpgrade { get; init; }
     public IReadOnlyDictionary<Guid, AptPlanResult>? AptPlans { get; init; }
     public bool CanResubmit { get; init; }
+    public SshLeaseReadiness? PendingSshLeaseReadiness { get; init; }
+    public string? SshBaselineFailureMachine { get; init; }
 }
 
 public sealed record AgentUpgradeReview(IReadOnlyList<AgentRelease> Requested, IReadOnlyList<AgentRelease>? Available)

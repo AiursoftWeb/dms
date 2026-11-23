@@ -1,0 +1,8 @@
+@model string
+<div class="alert alert-warning mb-0">
+    <div class="alert-message">
+        <strong>@Localizer["{0} is not ready for temporary SSH", Model]</strong>
+        <p class="mb-0">@Localizer["The request was approved, and execution stopped before creating a lease."]</p>
+        <p class="mb-0">@Localizer["Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready."]</p>
+    </div>
+</div>

@@ -7,5 +7,7 @@ public class DmsMachineViewModel : UiStackLayoutViewModel
 {
     public required DmsMachineRow Machine { get; init; }
     public WorkflowRun? BaselineRun { get; init; }
+    public SshLeaseReadiness SshLeaseReadiness { get; init; }
+    public bool CanRequestSshLease { get; init; }
     public string? BaselineSummary => OperationViewModel.ReadSummary(BaselineRun?.Result);
 }

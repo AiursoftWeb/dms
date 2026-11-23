@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Aiursoft.DMS.Services.Dms;
 
 public sealed class LockboxPages(TemplateDbContext db, AccessService access, WorkflowService workflows,
-    DmsArtifactAccess artifacts, AgentReleaseStore releases)
+    DmsArtifactAccess artifacts, AgentReleaseStore releases, MachineSshOverview sshOverview)
 {
     public async Task<LockboxQueueViewModel> ListAsync(string actor, bool ownRequests, string? scope, string? query, int page, string? notice = null)
     {
@@ -82,7 +82,8 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         };
     }
 
-    public async Task<LockboxViewModel> DetailAsync(string actor, LockboxId id, bool ownRequestView, string? notice)
+    public async Task<LockboxViewModel> DetailAsync(string actor, LockboxId id, bool ownRequestView, string? notice,
+        CancellationToken token)
     {
         var item = ownRequestView
             ? await workflows.GetOwnedLockboxAsync(actor, id.Value)
@@ -103,13 +104,33 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var aptPlanUnavailable = aptPlans != null && aptPlans.Count != snapshot.Targets.Count;
         var canDecide = canViewOperations && item.Decision == DecisionState.Pending && !needsResubmission && !aptPlanUnavailable &&
             DmsPermissions.CanDecide(principal, item.Risk, ownRequest);
+        var names = await MachineNamesAsync(snapshot.Targets);
+        SshLeaseReadiness? sshReadiness = null;
+        string? sshBaselineFailure = null;
+        if (item.Definition == OperationsWorkflows.SshOpen.Name && snapshot.Targets.Count == 1)
+        {
+            var machineId = snapshot.Targets[0];
+            if (item.Decision == DecisionState.Pending)
+                sshReadiness = await sshOverview.ReadReadinessAsync(machineId, token);
+            else if (item.Decision == DecisionState.Approved && item.WorkflowId is { } rootId)
+            {
+                var failures = await db.WorkflowRuns.AsNoTracking().NotCacheable()
+                    .Where(run => run.ParentId == rootId && run.MachineId == machineId &&
+                        run.Definition == OperationsWorkflows.SshOpen.Name && run.State == RunState.Failed)
+                    .ToListAsync(token);
+                if (failures.Any(OperationViewModel.IsSshBaselineFailure))
+                    sshBaselineFailure = names.GetValueOrDefault(machineId, machineId.ToString());
+            }
+        }
+
         return new LockboxViewModel
         {
             PageTitle = LockboxText.Name,
             Item = item,
             Status = await workflows.DescribeLockboxAsync(item),
             Snapshot = snapshot,
-            MachineNames = await MachineNamesAsync(snapshot.Targets),
+            MachineNames = names,
+            PendingSshLeaseReadiness = sshReadiness, SshBaselineFailureMachine = sshBaselineFailure,
             Notice = needsResubmission && notice == AgentReleaseStore.ChangedMessage ? null : notice,
             InputArtifacts = canViewOperations ? artifacts.Inputs(item) : [],
             CanWithdraw = item.Decision == DecisionState.Pending && ownRequest,

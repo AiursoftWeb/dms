@@ -83,6 +83,8 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         return this.StackView(new DmsMachineViewModel
         {
             Machine = machine, BaselineRun = baseline,
+            SshLeaseReadiness = await sshOverview.ReadReadinessAsync(id, HttpContext.RequestAborted),
+            CanRequestSshLease = DmsPermissions.ForRisk(User, OperationsWorkflows.SshOpen.Risk).CanRequest,
             PageTitle = machine.Name
         });
     }
@@ -165,7 +167,8 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         try
         {
             if (!ModelState.IsValid) return BadRequest();
-            return this.StackView(await lockboxPages.DetailAsync(Actor, id, ownRequestView: false, TempData["DmsNotice"] as string));
+            return this.StackView(await lockboxPages.DetailAsync(Actor, id, ownRequestView: false,
+                TempData["DmsNotice"] as string, HttpContext.RequestAborted));
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }

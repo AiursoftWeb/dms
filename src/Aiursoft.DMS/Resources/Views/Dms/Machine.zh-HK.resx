@@ -70,4 +70,13 @@
     <value>工作流程記錄</value>
   </data>
 
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>申請臨時 SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公鑰</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>驗證個人公鑰後，在 CLI 中使用公鑰 ID 提交申請。</value>
+  </data>
 </root>

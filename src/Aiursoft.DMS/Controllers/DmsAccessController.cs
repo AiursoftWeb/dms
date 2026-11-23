@@ -42,7 +42,8 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Loc
         try
         {
             if (!ModelState.IsValid) return BadRequest();
-            var model = await lockboxPages.DetailAsync(Actor, id, ownRequestView: true, TempData["DmsNotice"] as string);
+            var model = await lockboxPages.DetailAsync(Actor, id, ownRequestView: true,
+                TempData["DmsNotice"] as string, HttpContext.RequestAborted);
             return this.StackView(model, "~/Views/Dms/Lockbox.cshtml");
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }

@@ -7,7 +7,8 @@ namespace Aiursoft.DMS.Workflows.Operations;
 
 internal static partial class SshHostStatus
 {
-    internal static SshHostObservation Closed() => new(DateTimeOffset.UtcNow, OrdinaryOpen: false, LeaseKnown: true);
+    internal static SshHostObservation Closed() =>
+        new(DateTimeOffset.UtcNow, OrdinaryOpen: false, LeaseKnown: true) { BaselineReady = true };
 
     internal static async Task<SshHostObservation> ObserveAsync(OperationHost host, SshLeaseStore store,
         bool alreadyLocked, CancellationToken token)
@@ -41,7 +42,12 @@ internal static partial class SshHostStatus
                 leasePid is { } pid && sshPids.Contains(pid) && !await SshLeaseStore.ShouldRecoverAsync(host, state, lease, probe))
                 return new SshHostObservation(observedAt, ordinaryOpen, LeaseKnown: true, lease.Id, expiry);
 
-            return new SshHostObservation(observedAt, ordinaryOpen, LeaseKnown: lease == null && state?.Healthy != false);
+            bool? baselineReady = lease != null ? null : state?.Healthy == true && ordinaryOpen == false &&
+                await UnitsMaskedAndStoppedAsync(host, probe) && !await HasOpenSshConnectionsAsync(host, probe);
+            return new SshHostObservation(observedAt, ordinaryOpen, LeaseKnown: lease == null && state?.Healthy != false)
+            {
+                BaselineReady = baselineReady
+            };
         }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)
         {

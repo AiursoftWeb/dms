@@ -85,4 +85,13 @@
     <value>工作流历史</value>
   </data>
 
+  <data name="Request temporary SSH" xml:space="preserve">
+    <value>申请临时 SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH 公钥</value>
+  </data>
+  <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
+    <value>验证个人公钥后，在 CLI 中使用它的公钥 ID 提交申请。</value>
+  </data>
 </root>
