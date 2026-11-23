@@ -132,6 +132,14 @@ public static class DmsOutputWriter
         if (summary["WorkflowId"]?.Type is JTokenType.String or JTokenType.Guid)
             rows.Add(["Workflow ID", Cell(summary["WorkflowId"])]);
         WriteRows(output, ["Property", "Value"], rows, width, false);
+
+        if (summary["EquivalentCommand"] is JValue { Value: string command } &&
+            command.Length > 0 && !command.Any(char.IsControl))
+        {
+            output.WriteLine();
+            output.WriteLine("Equivalent DMS command");
+            output.WriteLine(command);
+        }
     }
 
     private static string TerminalText(string? text) => text == null ? "-" :

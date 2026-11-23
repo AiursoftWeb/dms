@@ -286,7 +286,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var status = await DescribeLockboxAsync(item);
         access.Audit(user, "lockbox.get", id);
         await db.SaveChangesAsync();
-        return status;
+        return status with { EquivalentCommand = LockboxSnapshot.ReadStatusCommand(item) };
     });
 
     internal async Task<LockboxStatus> DescribeLockboxAsync(LockboxRequest item)

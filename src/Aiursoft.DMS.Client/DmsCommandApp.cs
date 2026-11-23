@@ -246,7 +246,7 @@ public static partial class DmsCommandApp
         [
             new ActionCommand("list", "List Lockbox requests, optionally filtered by decision.", "lockboxes"),
             new ActionCommand("status",
-                "Show the requester, decision, and eligible approvers for a Lockbox.",
+                "Show the requester, decision, eligible approvers, and equivalent command when available.",
                 "lockbox-status", positionalOnly: true),
             new ActionCommand("get", "Read the full Lockbox record, including the submitted parameters.", "get"),
             new ActionCommand("approve", "Approve a pending Lockbox and queue its workflow.", "approve"),

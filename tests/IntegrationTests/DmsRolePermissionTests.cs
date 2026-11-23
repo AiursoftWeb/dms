@@ -304,10 +304,27 @@ public class DmsRolePermissionTests : TestBase
         StringAssert.Contains(preview.Groups[1].Value, "dms machine agent status");
         Assert.DoesNotContain("--all-machines", preview.Value);
 
+        var command = WebUtility.HtmlDecode(preview.Groups[1].Value + preview.Groups[2].Value)
+            .ReplaceLineEndings("\n").Replace(" \\\n  ", " ");
+        var statusArgs = new[] { "lockbox", "status", new LockboxId(original.Id).ToString(),
+            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(statusArgs);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        Assert.Contains(command, table.StdOut.ReplaceLineEndings("\n").Split('\n'));
+
+        var json = await Client.DmsCommandApp.Create().TestRunAsync([.. statusArgs, "--output-format", "json"]);
+        Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
+        var summary = JObject.Parse(json.StdOut)["Data"]!.ToObject<LockboxStatus>()!;
+        Assert.AreEqual(command, summary.EquivalentCommand);
+
+        var csv = await Client.DmsCommandApp.Create().TestRunAsync([.. statusArgs, "--output-format", "csv"]);
+        Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
+        StringAssert.Contains(csv.StdOut, "EquivalentCommand");
+        StringAssert.Contains(csv.StdOut, command);
+
         // These cases use single-word reasons so the literal shell quoting can
         // be removed before passing the resulting argument list to the CLI.
-        var arguments = WebUtility.HtmlDecode(preview.Groups[1].Value + preview.Groups[2].Value)
-            .ReplaceLineEndings("\n").Replace(" \\\n  ", " ").Replace("'", "").Split(' ');
+        var arguments = command.Replace("'", "").Split(' ');
         var result = await Client.DmsCommandApp.Create().TestRunAsync(
             [.. arguments.Skip(1), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
         Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
@@ -350,6 +367,12 @@ public class DmsRolePermissionTests : TestBase
         Assert.DoesNotContain("POST /api/v1/dms/lockboxes", page[..audit]);
         StringAssert.Contains(page[..audit], unknownVersion ? "This workflow takes no parameters." : "dms-example.service");
         StringAssert.Contains(page[audit..], "POST /api/v1/dms/lockboxes");
+
+        var status = await Client.DmsCommandApp.Create().TestRunAsync(
+            ["lockbox", "status", new LockboxId(box.Id).ToString(), "--output-format", "json",
+                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+        Assert.AreEqual(0, status.ProgramReturn, status.StdErr);
+        Assert.IsNull(JObject.Parse(status.StdOut)["Data"]!["EquivalentCommand"]);
     }
 
     [TestMethod]
@@ -474,6 +497,10 @@ public class DmsRolePermissionTests : TestBase
         await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Safe), true);
         var automatic = await SubmitAsync();
         StringAssert.Contains(await Cli(setup.Key, "lockbox", "status", automatic.Id.ToString()), "System (automatic approval)");
+        var unsafeReason = await workflows.SubmitAsync(setup.User, MachineWorkflows.AgentStatus.Request(
+            new EmptyInput(), "Reason \u001b[2J", [setup.First]));
+        var unsafeStatus = await Cli(setup.Key, "lockbox", "status", unsafeReason.Id.ToString(), "--output-format", "json");
+        Assert.IsNull(JObject.Parse(unsafeStatus)["Data"]!["EquivalentCommand"]);
         StringAssert.Contains(await Cli(setup.Key, "lockbox", "get", "--id", id), "ClientRequestId");
         StringAssert.Contains(await Cli(setup.Key, "workflow", "status", approved.WorkflowId.Value.ToString()), "WorkflowId");
         var workflowId = approved.WorkflowId.Value.ToString();
