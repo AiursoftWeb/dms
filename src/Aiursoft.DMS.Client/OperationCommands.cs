@@ -1011,7 +1011,7 @@ public static partial class DmsCommandApp
             rows.Add(JObject.FromObject(new
             {
                 Machine = machine, State = state, Action = change?.Action.ToString(),
-                Package = change?.Package, From = change?.FromVersion, To = change?.ToVersion
+                PackageName = change?.Package, From = change?.FromVersion, To = change?.ToVersion
             }));
     }
 
