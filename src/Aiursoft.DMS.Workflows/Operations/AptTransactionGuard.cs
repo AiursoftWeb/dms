@@ -29,7 +29,7 @@ public static class AptTransactionGuard
             while ((line = reader.ReadLine()) != null)
             {
                 // Version 3 has eight fixed fields, followed by the action or the complete .deb path.
-                var fields = line.Split(' ', 9, StringSplitOptions.None);
+                var fields = line.Split(' ', 9);
                 if (fields.Length != 9 || fields.Take(8).Any(string.IsNullOrEmpty))
                     throw new InvalidDataException("APT sent an unrecognized transaction action.");
                 var before = fields[1] == "-" ? null : fields[1];
@@ -70,7 +70,7 @@ public static class AptTransactionGuard
             ? package[..package.LastIndexOf(':')]
             : package;
 
-    internal static string Difference(IEnumerable<AptPackageChange> expected, IEnumerable<AptPackageChange> actual) =>
+    internal static string Difference(IReadOnlyCollection<AptPackageChange> expected, IReadOnlyCollection<AptPackageChange> actual) =>
         string.Join('\n', expected.Except(actual).Select(change => "Approved only: " + Describe(change))
             .Concat(actual.Except(expected).Select(change => "Current only: " + Describe(change))));
 

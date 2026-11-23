@@ -1,6 +1,5 @@
 using System.CommandLine;
 using System.Text.Json;
-using Aiursoft.AiurProtocol;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
 using Newtonsoft.Json.Linq;
@@ -977,9 +976,6 @@ public static partial class DmsCommandApp
             }, targetDescription: "Target machine IDs. With --plan, omit target flags to reuse the preview's targets.");
     }
 
-    private sealed record AptPlanRow(string Machine, string State, string? Action = null,
-        string? Package = null, string? From = null, string? To = null);
-
     private static async Task<DmsResponse> ReadAptPlanAsync(DmsApiClient client, Guid previewId)
     {
         var response = await client.CallstackAsync(previewId);
@@ -989,27 +985,34 @@ public static partial class DmsCommandApp
         if (nodes is not { Length: > 0 })
             throw new ArgumentException("No APT preview results found. Check that you supplied the preview's root workflow ID and it has started.");
 
-        var rows = new List<AptPlanRow>();
+        var rows = new JArray();
         foreach (var node in nodes.OrderBy(node => node.Value<string>("MachineId"), StringComparer.Ordinal))
         {
             var machine = node.Value<string>("MachineId")!;
             var state = (RunState)node.Value<int>("State");
             if (state != RunState.Succeeded)
             {
-                rows.Add(new AptPlanRow(machine, state.ToString()));
+                AddRow(machine, state.ToString());
                 continue;
             }
 
             var plan = OperationsWorkflows.AptPlan.ReadResult(node.Value<string>("Result")!);
-            if (plan.Changes.Length == 0) rows.Add(new AptPlanRow(machine, "No changes planned"));
+            if (plan.Changes.Length == 0) AddRow(machine, "No changes planned");
             foreach (var change in plan.Changes)
-                rows.Add(new AptPlanRow(machine, "Planned", change.Action.ToString(), change.Package, change.FromVersion, change.ToVersion));
+                AddRow(machine, "Planned", change);
             foreach (var change in plan.AdditionalUpgradesRequiringReview)
-                rows.Add(new AptPlanRow(machine, "Excluded (removals)", change.Action.ToString(), change.Package, change.FromVersion, change.ToVersion));
+                AddRow(machine, "Excluded (removals)", change);
         }
 
         response.Data = rows;
         return response;
+
+        void AddRow(string machine, string state, AptPackageChange? change = null) =>
+            rows.Add(JObject.FromObject(new
+            {
+                Machine = machine, State = state, Action = change?.Action.ToString(),
+                Package = change?.Package, From = change?.FromVersion, To = change?.ToVersion
+            }));
     }
 
     private static ActionCommand NewSystemRebootCommand()

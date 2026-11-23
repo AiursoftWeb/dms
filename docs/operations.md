@@ -185,7 +185,7 @@ Manager-local operations. Changes require an expected service version and the ex
 | `swarm service update` | High | `--service` required; `--expected-version` required; `--node-id` required; `--image` required; `--timeout-seconds=120` |
 | `swarm service rollback` | High | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
 
-### System, systemd and APT (16)
+### System, systemd and APT (15)
 
 System/clock/boot observations, systemd state/journal/timers, package inspection and approved changes. Agent lifecycle uses its dedicated workflow. Reboot confirmation and arbitrary script execution have the additional rules below.
 
