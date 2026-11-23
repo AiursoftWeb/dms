@@ -336,7 +336,7 @@
         --dms-definition-name-width: min(48vw, 12rem);
         inline-size: var(--dms-definition-name-width);
         min-inline-size: var(--dms-definition-name-width);
-        max-inline-size: 12rem;
+        max-inline-size: var(--dms-definition-name-width);
     }
 }
 
