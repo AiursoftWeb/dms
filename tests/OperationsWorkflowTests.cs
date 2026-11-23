@@ -88,6 +88,11 @@ public class OperationsWorkflowTests
         {
             var source = Path.Combine(directory, "source;$(touch nope)");
             await File.WriteAllTextAsync(source, "first\nsecond\nthird\n");
+            if (OperatingSystem.IsLinux())
+            {
+                File.SetUnixFileMode(directory, (UnixFileMode)0x1ED); // 0755
+                File.SetUnixFileMode(source, (UnixFileMode)0x1A4); // 0644
+            }
             var list = await RunAsync(OperationsWorkflows.FilesystemLs, new ListPathInput(directory));
             StringAssert.Contains(Trace(list.Events), source);
             var stat = await RunAsync(OperationsWorkflows.FilesystemStat, new PathInput(source));
@@ -111,6 +116,37 @@ public class OperationsWorkflowTests
             await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemCp, new CopyPathInput(source, moved)));
         }
         finally { Directory.Delete(directory, true); }
+    }
+
+    [TestMethod]
+    [DataRow("600")]
+    [DataRow("700")]
+    [DataRow("640")]
+    [DataRow("641")]
+    public async Task CatRequiresOtherReadEvenWhenTheAgentCanReadTheFile(string mode)
+    {
+        if (!OperatingSystem.IsLinux()) return;
+        var directory = Directory.CreateTempSubdirectory("dms-ops-cat-");
+        try
+        {
+            File.SetUnixFileMode(directory.FullName, (UnixFileMode)Convert.ToInt32("755", 8));
+            var path = Path.Combine(directory.FullName, "restricted file");
+            const string contents = "private fixture contents";
+            await File.WriteAllTextAsync(path, contents);
+            File.SetUnixFileMode(path, (UnixFileMode)Convert.ToInt32(mode, 8));
+            var input = new TextFileInput(path);
+            var error = await Assert.ThrowsAsync<IOException>(() => RunAsync(OperationsWorkflows.FilesystemCat, input));
+            StringAssert.Contains(error.Message, "dms machine filesystem cat-as-root");
+            var elevated = await RunAsync(OperationsWorkflows.FilesystemCatAsRoot, input);
+            StringAssert.Contains(Trace(elevated.Events), contents);
+
+            File.SetUnixFileMode(path, (UnixFileMode)Convert.ToInt32("644", 8));
+            var ordinary = await RunAsync(OperationsWorkflows.FilesystemCat, input with { MaxBytes = 7 });
+            StringAssert.Contains(Trace(ordinary.Events), "private");
+            Assert.DoesNotContain(contents, Trace(ordinary.Events));
+            Assert.IsFalse(ordinary.Result.Complete);
+        }
+        finally { directory.Delete(recursive: true); }
     }
 
     [TestMethod]

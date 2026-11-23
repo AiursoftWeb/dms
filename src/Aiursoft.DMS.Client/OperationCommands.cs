@@ -35,7 +35,7 @@ public static partial class DmsCommandApp
             path);
     }
 
-    private static ActionCommand NewFilesystemCatCommand()
+    private static ActionCommand NewFilesystemCatCommand(bool asRoot = false)
     {
         var path = new Option<string>("--path")
             { Required = true, Description = "Absolute path on the selected machine." };
@@ -43,9 +43,9 @@ public static partial class DmsCommandApp
             { DefaultValueFactory = _ => 100, Description = "Maximum number of lines to read from the beginning." };
         var maxBytes = new Option<int>("--max-bytes")
             { DefaultValueFactory = _ => 65536, Description = "Maximum number of file bytes to read." };
-        return StandardCommand("cat",
-            "Read the first lines of a text file.",
-            OperationsWorkflows.FilesystemCat,
+        return StandardCommand(asRoot ? "cat-as-root" : "cat",
+            asRoot ? "Read the first lines of a text file with Agent privileges." : "Read the first lines of a text file readable by other users.",
+            asRoot ? OperationsWorkflows.FilesystemCatAsRoot : OperationsWorkflows.FilesystemCat,
             p => new TextFileInput(p.GetValue(path)!, p.GetValue(lines), p.GetValue(maxBytes)),
             path,
             lines,

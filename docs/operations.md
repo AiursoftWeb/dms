@@ -2,7 +2,7 @@
 
 [Back to CLI setup](cli-and-agent.md) · [Role permissions](permissions.md) · [Author a workflow](authoring-workflows.md)
 
-Client 1.3.0 and Agent 1.4.0 add 86 public Machine workflows in ten categories. Update the Controller, CLI and selected Agents before using these definitions. Existing commands keep their workflow names and risk. Hardware-specific tools must already be installed on the target Ubuntu/AnduinOS host; a diagnostic never installs software implicitly.
+Client 1.3.0 and Agent 1.4.0 add 86 public Machine workflows in ten categories. Update the Controller, CLI and selected Agents before using these definitions. Hardware-specific tools must already be installed on the target Ubuntu/AnduinOS host; a diagnostic never installs software implicitly.
 
 ## Submit and investigate
 
@@ -50,7 +50,7 @@ Risk permissions remain the existing five independent request/automatic/approval
 
 Paths in this table follow `dms machine`. All listed options are operation-specific; common submission, authentication and formatting options are described above. `required` marks mandatory options; `=value` shows a default. Run the command with `--help` for the complete syntax. Repeated package/node/column options accept multiple arguments.
 
-### Filesystem (10)
+### Filesystem (11)
 
 Literal paths, bounded text reads and explicit directory recursion. File transfers reject links and special entries. `mkdir --mode` is a decimal permission bitmask: the default 448 means octal 0700.
 
@@ -58,7 +58,8 @@ Literal paths, bounded text reads and explicit directory recursion. File transfe
 | --- | --- | --- |
 | `filesystem ls` | Low | `--path` required; `--limit=200`; `--depth=1` |
 | `filesystem stat` | Low | `--path` required |
-| `filesystem cat` | High | `--path` required; `--lines=100`; `--max-bytes=65536` |
+| `filesystem cat` | Low | `--path` required; `--lines=100`; `--max-bytes=65536`; requires read permission for other users |
+| `filesystem cat-as-root` | VeryHigh | `--path` required; `--lines=100`; `--max-bytes=65536`; reads with Agent privileges |
 | `filesystem tail` | High | `--path` required; `--lines=100`; `--max-bytes=65536` |
 | `filesystem find` | Low | `--path` required; `--name`; `--min-bytes`; `--modified-after`; `--limit=200`; `--depth=5` |
 | `filesystem mkdir` | High | `--path` required; `--parents`; `--mode=448` |
@@ -66,6 +67,8 @@ Literal paths, bounded text reads and explicit directory recursion. File transfe
 | `filesystem mv` | VeryHigh | `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 | `filesystem export` | High | `--path` required; `--recursive`; `--max-bytes=268435456` |
 | `filesystem import` | VeryHigh | `--artifact-id` required; `--path` required; `--overwrite` |
+
+A root Agent drops privileges for `filesystem cat`. Files such as `0600` and `0700` require `filesystem cat-as-root`. Both commands direct Box `.env.prod` reads to the dedicated `box get-secret-raw` workflow.
 
 ### Layout and storage (8)
 

@@ -60,7 +60,8 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Sample Docker resource usage | `machine.docker.stats-sample` | `dms machine docker stats-sample` (Low) | — | Sample Docker container CPU, memory, and I/O usage. |
 | Stop a Docker container | `machine.docker.stop` | `dms machine docker stop` (High) | — | Gracefully stop a standalone container. |
 | Inspect Docker storage usage | `machine.docker.system.df` | `dms machine docker system df` (Low) | — | Show disk space used by Docker images, containers, volumes, and build cache. |
-| Read the start of a file | `machine.filesystem.cat` | `dms machine filesystem cat` (High) | — | Read the first lines of a text file. |
+| Read the start of a public file | `machine.filesystem.cat` | `dms machine filesystem cat` (Low) | — | Read the first lines of a file readable by other users. |
+| Read the start of a file with Agent privileges | `machine.filesystem.cat-as-root` | `dms machine filesystem cat-as-root` (VeryHigh) | — | Read the first lines of a file using the Agent's privileges. |
 | Copy files | `machine.filesystem.cp` | `dms machine filesystem cp` (VeryHigh) | — | Copy a file or directory on the same machine. |
 | Collect machine disk usage | `machine.filesystem.disk-usage` | Fleet disk-usage workflow (Safe) | — | Collects filesystem capacity and usage for one machine and returns its observations to the fleet disk-usage workflow. |
 | Measure directory disk usage | `machine.filesystem.du` | `dms machine filesystem du` (Low) | — | Measure disk usage under a directory. |

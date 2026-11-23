@@ -72,6 +72,7 @@ public static partial class DmsCommandApp
                 NewFilesystemLsCommand(),
                 NewFilesystemStatCommand(),
                 NewFilesystemCatCommand(),
+                NewFilesystemCatCommand(asRoot: true),
                 NewFilesystemTailCommand(),
                 NewFilesystemFindCommand(),
                 NewFilesystemMkdirCommand(),

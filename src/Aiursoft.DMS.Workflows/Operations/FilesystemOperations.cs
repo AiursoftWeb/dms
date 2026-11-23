@@ -1,4 +1,5 @@
 using System.Formats.Tar;
+using System.Globalization;
 using System.Security.Cryptography;
 using Aiursoft.DMS.Contracts;
 
@@ -84,24 +85,70 @@ public static class FilesystemOperations
         var ownership = await OperationOutput.CommandAsync(context, agent, "stat", ["--printf=%u\t%U\t%g\t%G\t%i\t%h\t%s\t%a\t%F\n", "--", input.Path], token, traceOutput: false);
         return await OperationOutput.ReportAsync(context, "File metadata and ownership collected without dereferencing a leaf symlink.", new { Metadata = SafeOperationPaths.Metadata(input.Path), OwnershipAndInode = ownership.Output, Fields = "uid,user,gid,group,inode,links,size,mode,type" });
     }
-    public static Task<OperationResult> CatAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, false, token);
-    public static Task<OperationResult> TailAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, true, token);
-    private static async Task<OperationResult> TextAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, bool tail, CancellationToken token)
+    private const int PublicReadDenied = 77;
+    private const string StartPublicReader = """
+        if (( EUID == 0 )); then
+            exec /usr/bin/setpriv --reuid=65534 --regid=65534 --clear-groups \
+                --inh-caps=-all --ambient-caps=-all --bounding-set=-all --no-new-privs \
+                /bin/bash -c "$1" dms-cat "$2" "$3"
+        fi
+        exec /bin/bash -c "$1" dms-cat "$2" "$3"
+        """;
+
+    // Check and read the same open file. The pathname can change between operations.
+    private const string ReadPublicFile = """
+        path=$1
+        [[ -f "$path" && ! -L "$path" ]] || exit 77
+        { exec {file}<"$path"; } 2>/dev/null || exit 77
+        fd=/proc/self/fd/$file
+        [[ -f "$fd" ]] || exit 77
+        metadata=$(/usr/bin/stat -Lc '%a %s' -- "$fd") || exit 77
+        read -r mode size <<< "$metadata"
+        (( (8#$mode & 4) != 0 )) || exit 77
+        printf '%s\n' "$size"
+        exec /usr/bin/head --bytes="$2" <&"$file"
+        """;
+
+    public static Task<OperationResult> CatAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: false, requireOtherRead: true, token);
+    public static Task<OperationResult> CatAsRootAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: false, requireOtherRead: false, token);
+    public static Task<OperationResult> TailAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, CancellationToken token) => TextAsync(context, input, agent, tail: true, requireOtherRead: false, token);
+
+    private static async Task<OperationResult> TextAsync(MachineWorkflowContext context, TextFileInput input, AgentEnvironment agent, bool tail, bool requireOtherRead, CancellationToken token)
     {
         input.Validate(); RequirePublicContentPath(input.Path); SafeOperationPaths.Check(input.Path);
         if (Directory.Exists(input.Path)) throw new IOException("Reading a directory requires export with explicit recursion.");
-        var arguments = tail ? new[] { "--lines=" + input.Lines, "--bytes=" + input.MaxBytes, "--", input.Path }
-            : new[] { "--bytes=" + input.MaxBytes, "--", input.Path };
-        // Tail's final --bytes option bounds bytes; line limiting is applied after that bounded read.
-        var result = await OperationOutput.CommandAsync(context, agent, tail ? "tail" : "head", arguments, token, traceOutput: false);
-        if (result.Output.Contains('\0')) throw new IOException("The file contains binary data. Export it as an artifact.");
-        var endedWithNewline = result.Output.EndsWith('\n');
-        var lines = result.Output.Split('\n').AsEnumerable(); if (endedWithNewline) lines = lines.SkipLast(1);
+        var maxBytes = input.MaxBytes.ToString(CultureInfo.InvariantCulture);
+        string output;
+        long length;
+        if (requireOtherRead)
+        {
+            var result = await OperationOutput.CommandAsync(context, agent, "bash",
+                ["-c", StartPublicReader, "dms-cat", ReadPublicFile, input.Path, maxBytes], token,
+                traceOutput: false, allowedExitCodes: [0, PublicReadDenied]);
+            if (result.ExitCode == PublicReadDenied)
+                throw new IOException("Cannot read this file as an unprivileged user. For a restricted file, use 'dms machine filesystem cat-as-root'.");
+            var separator = result.Output.IndexOf('\n');
+            if (separator < 0 || !long.TryParse(result.Output.AsSpan(0, separator), NumberStyles.None, CultureInfo.InvariantCulture, out length))
+                throw new IOException("The file reader did not report its size.");
+            output = result.Output[(separator + 1)..];
+        }
+        else
+        {
+            // Tail's final --bytes option bounds bytes; line limiting is applied after that bounded read.
+            var arguments = tail ? new[] { "--lines=" + input.Lines, "--bytes=" + maxBytes, "--", input.Path }
+                : new[] { "--bytes=" + maxBytes, "--", input.Path };
+            var result = await OperationOutput.CommandAsync(context, agent, tail ? "tail" : "head", arguments, token, traceOutput: false);
+            output = result.Output;
+            length = new FileInfo(input.Path).Length;
+        }
+        if (output.Contains('\0')) throw new IOException("The file contains binary data. Export it as an artifact.");
+        var endedWithNewline = output.EndsWith('\n');
+        var lines = output.Split('\n').AsEnumerable(); if (endedWithNewline) lines = lines.SkipLast(1);
         var allLines = lines.ToArray();
         var text = string.Join('\n', tail ? allLines.TakeLast(input.Lines) : allLines.Take(input.Lines));
         if (endedWithNewline && text.Length > 0) text += "\n";
         await OperationOutput.TraceTextAsync(context, text);
-        var complete = new FileInfo(input.Path).Length <= input.MaxBytes && (tail || allLines.Length <= input.Lines);
+        var complete = length <= input.MaxBytes && (tail || allLines.Length <= input.Lines);
         return await OperationOutput.ReportAsync(context, "Bounded text read completed.", new { input.Path, BytesRead = System.Text.Encoding.UTF8.GetByteCount(text), Bounded = !complete }, complete);
     }
     public static async Task<OperationResult> FindAsync(MachineWorkflowContext context, FindFilesInput input, AgentEnvironment agent, CancellationToken token)

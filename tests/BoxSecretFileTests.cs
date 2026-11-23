@@ -68,9 +68,13 @@ public sealed class BoxSecretFileTests
     {
         var agent = new AgentEnvironment(Guid.Empty, "", 0, 0);
         var context = new MachineWorkflowContext(Guid.NewGuid(), null, _ => Task.CompletedTask);
+        var input = new TextFileInput("/swarm-vol/BoxForMoog/.env.prod");
         var failure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.CatAsync(context,
-            new TextFileInput("/swarm-vol/BoxForMoog/.env.prod"), agent, CancellationToken.None));
+            input, agent, CancellationToken.None));
         StringAssert.Contains(failure.Message, "Box secret workflows");
+        var elevatedFailure = await Assert.ThrowsAsync<IOException>(() => FilesystemOperations.CatAsRootAsync(context,
+            input, agent, CancellationToken.None));
+        StringAssert.Contains(elevatedFailure.Message, "Box secret workflows");
     }
 
     private sealed class Fixture : IDisposable

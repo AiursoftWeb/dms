@@ -83,9 +83,14 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<PathInput, OperationResult> FilesystemStat =
         new("machine.filesystem.stat", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemStat)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    // Version 1 Agents can read with elevated privileges. They must reject Low-risk offers.
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemCat =
-        new("machine.filesystem.cat", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemCat)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
+        new("machine.filesystem.cat", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemCat)), "2", ValidateInput: input => input.Validate(), PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.VeryHigh)]
+    public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemCatAsRoot =
+        new("machine.filesystem.cat-as-root", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemCatAsRoot)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<TextFileInput, OperationResult> FilesystemTail =

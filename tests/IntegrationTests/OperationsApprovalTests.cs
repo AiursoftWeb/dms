@@ -36,8 +36,10 @@ public class OperationsApprovalTests : TestBase
             "machine filesystem ls");
         yield return (OperationsWorkflows.FilesystemStat, new PathInput("/tmp/dms-test"), RiskLevel.Low,
             "machine filesystem stat");
-        yield return (OperationsWorkflows.FilesystemCat, new TextFileInput("/tmp/dms-test/file"), RiskLevel.High,
+        yield return (OperationsWorkflows.FilesystemCat, new TextFileInput("/tmp/dms-test/file"), RiskLevel.Low,
             "machine filesystem cat");
+        yield return (OperationsWorkflows.FilesystemCatAsRoot, new TextFileInput("/tmp/dms-test/file"), RiskLevel.VeryHigh,
+            "machine filesystem cat-as-root");
         yield return (OperationsWorkflows.FilesystemTail, new TextFileInput("/tmp/dms-test/file"), RiskLevel.High,
             "machine filesystem tail");
         yield return (OperationsWorkflows.FilesystemFind, new FindFilesInput("/tmp/dms-test"), RiskLevel.Low,
@@ -249,8 +251,8 @@ public class OperationsApprovalTests : TestBase
         await store.AppendUploadAsync(artifact.Id, 0, new MemoryStream(bytes), CancellationToken.None);
         await store.CompleteUploadAsync(artifact.Id, CancellationToken.None);
         var cases = Cases(artifact).ToArray();
-        Assert.HasCount(97, cases);
-        Assert.AreEqual(97, cases.Select(c => c.Definition.Name).Distinct().Count());
+        Assert.HasCount(98, cases);
+        Assert.AreEqual(98, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var allMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", allMachines: true);
         var multipleMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", [machine.Id, Guid.NewGuid()]);

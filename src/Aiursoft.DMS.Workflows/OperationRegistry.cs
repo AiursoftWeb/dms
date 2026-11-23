@@ -68,6 +68,11 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 FilesystemOperations.CatAsync,
                 agent));
+        Register(OperationsWorkflows.FilesystemCatAsRoot,
+            (input, agent) => new OperationWorkflow<TextFileInput>(OperationsWorkflows.FilesystemCatAsRoot,
+                input,
+                FilesystemOperations.CatAsRootAsync,
+                agent));
         Register(OperationsWorkflows.FilesystemTail,
             (input, agent) => new OperationWorkflow<TextFileInput>(OperationsWorkflows.FilesystemTail,
                 input,
