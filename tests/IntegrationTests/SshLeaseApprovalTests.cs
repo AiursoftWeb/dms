@@ -1,10 +1,12 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
+using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
 
@@ -202,10 +204,10 @@ public sealed class SshLeaseApprovalTests : TestBase
             CreatedAt = now.UtcDateTime, FinishedAt = now.UtcDateTime
         };
         db.WorkflowRuns.Add(observation);
-        string Report(bool? ready, DateTimeOffset observedAt) =>
+        string Report(bool? ready, DateTimeOffset observedAt, bool ordinaryOpen) =>
             JsonSerializer.Serialize(new SshLeaseCheckResult("SSH poll", null)
             {
-                Observation = new SshHostObservation(observedAt, OrdinaryOpen: false, LeaseKnown: true)
+                Observation = new SshHostObservation(observedAt, ordinaryOpen, LeaseKnown: true)
                 {
                     BaselineReady = ready
                 }
@@ -214,20 +216,25 @@ public sealed class SshLeaseApprovalTests : TestBase
 
         var machinePage = $"/Dms/Machine/{machine.Id}";
         var approvalPage = $"/Dms/Lockbox/{box.Id}";
-        (bool? Ready, DateTimeOffset Time, string Heading)[] cases =
+        (bool? Ready, DateTimeOffset Time, bool OrdinaryOpen, string Heading)[] cases =
         [
-            (false, now, "This machine needs SSH setup"),
-            (true, now, "Temporary SSH is ready to request"),
-            (null, now, "Temporary SSH readiness is awaiting confirmation"),
-            (true, now.AddMinutes(-7), "Temporary SSH readiness is awaiting confirmation")
+            (false, now, false, "DMS has not verified SSH shutdown"),
+            (false, now, true, "Ordinary SSH is still listening"),
+            (true, now, false, "Temporary SSH is ready to request"),
+            (null, now, false, "DMS has no recent SSH observation"),
+            (true, now.AddMinutes(-7), false, "DMS has no recent SSH observation")
         ];
-        foreach (var (ready, time, heading) in cases)
+        foreach (var (ready, time, ordinaryOpen, heading) in cases)
         {
-            observation.Result = Report(ready, time);
+            observation.Result = Report(ready, time, ordinaryOpen);
             await db.SaveChangesAsync();
             StringAssert.Contains(await Page(machinePage), heading);
             StringAssert.Contains(await Page(approvalPage), heading);
         }
+        machine.LastSeen = now.AddMinutes(-2).UtcDateTime;
+        await db.SaveChangesAsync();
+        StringAssert.Contains(await Page(machinePage), "The Agent is disconnected");
+        StringAssert.Contains(await Page(approvalPage), "The Agent is disconnected");
 
         var run = new WorkflowRun { Definition = WorkflowNames.Batch, State = RunState.Failed, LockboxId = box.Id };
         run.RootId = run.Id;
@@ -247,13 +254,77 @@ public sealed class SshLeaseApprovalTests : TestBase
         {
             var page = await Page(route);
             StringAssert.Contains(page, "gx10-test is not ready for temporary SSH");
-            StringAssert.Contains(page, "Submit a new request once the machine is ready.");
+            StringAssert.Contains(page, "DMS must verify the SSH baseline before it can issue a temporary lease.");
+            StringAssert.Contains(page, "#ssh-management");
+            Assert.DoesNotContain("Ask the machine administrator", page);
         }
 
         var childPage = await Page($"/Dms/Operation/{failed.Id}");
         StringAssert.Contains(childPage, SshOpenInput.BaselineRequiredError);
         Assert.IsTrue(childPage.IndexOf("gx10-test is not ready for temporary SSH", StringComparison.Ordinal) <
             childPage.IndexOf(SshOpenInput.BaselineRequiredError, StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public async Task MachineSshManagementShowsScheduledScopeAndSubmitsOnlyAConfirmedDisable()
+    {
+        await LoginAsAdmin();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var now = DateTimeOffset.UtcNow;
+        var machine = new Machine { Name = "SSH in policy", KeyHash = "ssh-in-policy", LastSeen = now.UtcDateTime };
+        var outside = new Machine { Name = "SSH outside policy", KeyHash = "ssh-outside-policy", LastSeen = now.UtcDateTime };
+        db.Machines.AddRange(machine, outside);
+        var policy = await db.GlobalSettings.FindAsync(SettingsMap.ScheduledSecurityBaseline);
+        if (policy == null)
+        {
+            policy = new GlobalSetting { Key = SettingsMap.ScheduledSecurityBaseline };
+            db.GlobalSettings.Add(policy);
+        }
+        policy.Value = JsonSerializer.Serialize(new ScheduledSecurityBaselineSettings([machine.Id], new SecurityBaselinePolicy("test")));
+        var observation = new WorkflowRun
+        {
+            Definition = OperationsWorkflows.SshCheckLease.Name, MachineId = machine.Id,
+            State = RunState.Succeeded, CreatedAt = now.UtcDateTime, FinishedAt = now.UtcDateTime
+        };
+        db.WorkflowRuns.Add(observation);
+        SetObservation(new SshHostObservation(now, OrdinaryOpen: true, LeaseKnown: true));
+        await db.SaveChangesAsync();
+
+        var page = $"/Dms/Machine/{machine.Id}";
+        StringAssert.Contains(await Http.GetStringAsync(page), "Included in scheduled SSH baseline");
+        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{outside.Id}"), "Outside scheduled SSH baseline");
+        StringAssert.Contains(await Http.GetStringAsync("/Dms/Index?q=SSH+in+policy"), "Included in scheduled SSH baseline");
+        StringAssert.Contains(await Http.GetStringAsync(page), "Request Disable SSH");
+        var token = await GetAntiCsrfToken(page);
+        var requestId = Guid.NewGuid();
+        var form = new Dictionary<string, string>
+        {
+            ["id"] = machine.Id.ToString(), ["requestId"] = requestId.ToString(), ["reason"] = "Establish managed closure",
+            ["__RequestVerificationToken"] = token
+        };
+        using var unconfirmed = await PostForm("/Dms/RequestSshDisable", form, includeToken: false);
+        Assert.AreEqual(HttpStatusCode.BadRequest, unconfirmed.StatusCode);
+
+        form["confirm"] = "true";
+        SetObservation(new SshHostObservation(now, OrdinaryOpen: false, LeaseKnown: true, Guid.NewGuid(), now.AddMinutes(30)));
+        await db.SaveChangesAsync();
+        Assert.DoesNotContain("Request Disable SSH", await Http.GetStringAsync(page));
+        using var changed = await PostForm("/Dms/RequestSshDisable", form, includeToken: false);
+        AssertRedirect(changed, "/Dms/Machine", exact: false);
+        Assert.IsFalse(await db.Lockboxes.AnyAsync(box => box.ClientRequestId == requestId));
+
+        SetObservation(new SshHostObservation(now, OrdinaryOpen: true, LeaseKnown: true));
+        await db.SaveChangesAsync();
+        using var posted = await PostForm("/Dms/RequestSshDisable", form, includeToken: false);
+        AssertRedirect(posted, "/DmsAccess/MyLockbox", exact: false);
+        var item = await db.Lockboxes.SingleAsync(box => box.ClientRequestId == requestId);
+        Assert.AreEqual(OperationsWorkflows.SshDisable.Name, item.Definition);
+        Assert.AreEqual(RiskLevel.Medium, item.Risk);
+        CollectionAssert.AreEqual(new[] { machine.Id }, LockboxSnapshot.Read(item).Targets.ToArray());
+
+        void SetObservation(SshHostObservation ssh) =>
+            observation.Result = JsonSerializer.Serialize(new SshLeaseCheckResult("SSH poll", null) { Observation = ssh });
     }
 
     private async Task<HttpResponseMessage> AuthorizeAsync(Guid task, string key)

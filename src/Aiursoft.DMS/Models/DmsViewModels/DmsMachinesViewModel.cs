@@ -4,7 +4,9 @@ using Aiursoft.UiStack.Layout;
 namespace Aiursoft.DMS.Models.DmsViewModels;
 
 public enum MachineConnection { Online, Offline, NeverConnected, Disabled }
-public enum SshLeaseReadiness { Unknown, Ready, NeedsSetup, InUse }
+public enum SshLeaseReadiness { Unknown, Ready, NeedsSetup, InUse, OrdinaryOpen, AgentDisconnected }
+
+public sealed record DmsSshLeaseFailure(string MachineName, Guid? MachineId);
 
 public sealed record DmsMachineSshRow(Guid MachineId, SshHostObservation? Observation = null,
     string? Requester = null, Guid? LockboxId = null);
@@ -22,6 +24,7 @@ public sealed class DmsMachinesViewModel : UiStackLayoutViewModel
 {
     public required IReadOnlyList<DmsMachineRow> Machines { get; init; }
     public IReadOnlyDictionary<Guid, DmsMachineSshRow> SshStates { get; init; } = new Dictionary<Guid, DmsMachineSshRow>();
+    public IReadOnlySet<Guid>? ScheduledSshMachines { get; init; }
     public required string Search { get; init; }
     public MachineConnection? Connection { get; init; }
     public int Page { get; init; }
