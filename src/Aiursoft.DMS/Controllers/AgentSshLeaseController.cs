@@ -29,14 +29,22 @@ public sealed class AgentSshLeaseController(TemplateDbContext db, ControllerGate
 
         var approvedInput = launch.ReadParameters().Input;
         var input = definition.ReadInput(approvedInput);
-        if (approvedInput != task.Input || input.Fingerprint == null)
+        var approvedKeys = input.ApprovedKeys();
+        if (approvedInput != task.Input || approvedKeys.Length == 0)
             return Forbid(DmsKeyAuthenticationHandler.SchemeName);
 
         try
         {
             await access.PrincipalAsync(launch.RequesterId);
-            var key = await keys.RequireVerifiedAsync(launch.RequesterId, input.KeyId, input.Fingerprint, token);
-            return Ok(new SshLeaseAuthorization(key.Id, launch.RequesterId, key.PublicKey));
+            var authorized = new List<SshAuthorizedKey>(approvedKeys.Length);
+            foreach (var approved in approvedKeys)
+            {
+                var key = await keys.RequireVerifiedAsync(launch.RequesterId, approved.Id, approved.Fingerprint, token);
+                authorized.Add(new SshAuthorizedKey(key.Id, key.PublicKey));
+            }
+            return Ok(input.Keys != null
+                ? new SshLeaseAuthorization(Guid.Empty, launch.RequesterId, "") { Keys = authorized.ToArray() }
+                : new SshLeaseAuthorization(authorized[0].Id, launch.RequesterId, authorized[0].PublicKey));
         }
         catch (DmsException error)
         {

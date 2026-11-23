@@ -94,4 +94,10 @@
     <value>工作流历史</value>
   </data>
 
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>使用 --key-id 选择单个已验证的密钥。</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>在请求访问权限之前，请先验证您的个人 SSH 密钥。CLI 默认使用您所有已验证的密钥。</value>
+  </data>
 </root>

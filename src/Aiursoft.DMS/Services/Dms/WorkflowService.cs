@@ -122,7 +122,13 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             {
                 var open = OperationsWorkflows.SshOpen.ReadInput(request.Input);
                 var approved = OperationsWorkflows.SshOpen.ReadInput(frozen.Input);
-                request.Input = OperationsWorkflows.SshOpen.Serialize(open with { Fingerprint = open.Fingerprint ?? approved.Fingerprint });
+                if (open.Keys != null || open.KeyId != approved.KeyId)
+                    throw new DmsException(409, "Request ID already belongs to different parameters.");
+                request.Input = OperationsWorkflows.SshOpen.Serialize(open with
+                {
+                    Fingerprint = open.Fingerprint ?? approved.Fingerprint, Keys = approved.Keys
+                });
+                frozen.Input = OperationsWorkflows.SshOpen.Serialize(approved);
             }
             if (frpsInput != null && frozen.Workflow == request.Workflow)
             {
@@ -189,8 +195,21 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.Workflow == OperationsWorkflows.SshOpen.Name)
         {
             var input = OperationsWorkflows.SshOpen.ReadInput(request.Input);
-            var key = await sshKeys.RequireVerifiedAsync(user, input.KeyId, input.Fingerprint, CancellationToken.None);
-            request.Input = OperationsWorkflows.SshOpen.Serialize(input with { Fingerprint = key.Fingerprint });
+            if (input.Keys != null)
+                throw new DmsException(400, "The Controller selects the approved SSH keys for this request.");
+            if (input.KeyId == Guid.Empty)
+            {
+                var keys = await sshKeys.ListAsync(user);
+                if (keys.Count == 0)
+                    throw new DmsException(409, "Verify at least one personal SSH key before requesting a lease.");
+                input = input with { Keys = keys.Select(key => new SshApprovedKey(key.Id, key.Fingerprint)).ToArray() };
+            }
+            else
+            {
+                var key = await sshKeys.RequireVerifiedAsync(user, input.KeyId, input.Fingerprint, CancellationToken.None);
+                input = input with { Fingerprint = key.Fingerprint };
+            }
+            request.Input = OperationsWorkflows.SshOpen.Serialize(input);
         }
         if (frpsInput?.FrpsToken is { } frpsToken)
         {

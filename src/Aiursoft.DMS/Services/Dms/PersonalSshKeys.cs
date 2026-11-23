@@ -12,8 +12,10 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
     public static string Challenge(Guid id) => $"{SignatureNamespace}/{id:D}";
     public static DateTime ExpiresAt(PersonalSshKey key) => key.CreatedAt + VerificationLifetime;
 
-    public Task<List<PersonalSshKey>> ListAsync(string user) => db.PersonalSshKeys.AsNoTracking()
-        .Where(k => k.UserId == user && k.Slot > 0).OrderBy(k => k.Slot).ToListAsync();
+    public Task<List<PersonalSshKey>> ListAsync(string user) => VerifiedKeys(user).OrderBy(k => k.Slot).ToListAsync();
+
+    private IQueryable<PersonalSshKey> VerifiedKeys(string user) => db.PersonalSshKeys.AsNoTracking()
+        .Where(k => k.UserId == user && k.Slot > 0 && k.VerifiedAt != null && k.RevokedAt == null);
 
     public Task<PersonalSshKey?> GetPendingAsync(string user, Guid? id = null, CancellationToken token = default)
     {
@@ -30,7 +32,7 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
         try { (canonical, fingerprint) = SshPublicKey.Parse(publicKey); }
         catch (ArgumentException error) { throw new DmsException(400, error.Message); }
         var keys = await db.PersonalSshKeys.Where(k => k.UserId == user && k.Slot != null).ToListAsync();
-        if (keys.Count(k => k.VerifiedAt != null) >= 3)
+        if (keys.Count(k => k.VerifiedAt != null) >= SshPublicKey.MaxVerifiedPerUser)
             throw new DmsException(409, "Revoke a key before adding another.");
         if (keys.Any(k => k.VerifiedAt != null && k.PublicKey == canonical))
             throw new DmsException(409, "This key is already registered.");
@@ -63,7 +65,7 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
             if (key == null || ExpiresAt(key) <= DateTime.UtcNow)
                 throw new DmsException(409, "Request a new signing challenge.");
             var occupied = await db.PersonalSshKeys.Where(k => k.UserId == user && k.Slot > 0).Select(k => k.Slot).ToListAsync(token);
-            var slot = Enumerable.Range(1, 3).FirstOrDefault(s => !occupied.Contains(s));
+            var slot = Enumerable.Range(1, SshPublicKey.MaxVerifiedPerUser).FirstOrDefault(s => !occupied.Contains(s));
             if (slot == 0) throw new DmsException(409, "Revoke a key before adding another.");
             key.Slot = slot;
             key.VerifiedAt = DateTime.UtcNow;
@@ -133,8 +135,7 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
 
     public async Task<PersonalSshKey> RequireVerifiedAsync(string user, Guid id, string? fingerprint, CancellationToken token)
     {
-        var key = await db.PersonalSshKeys.AsNoTracking().SingleOrDefaultAsync(k => k.UserId == user &&
-            k.Id == id && k.Slot > 0 && k.VerifiedAt != null && k.RevokedAt == null, token);
+        var key = await VerifiedKeys(user).SingleOrDefaultAsync(k => k.Id == id, token);
         if (key == null || (fingerprint != null && !string.Equals(key.Fingerprint, fingerprint, StringComparison.Ordinal)))
             throw new DmsException(409, "The selected key is unavailable. Submit a new request.");
         return key;

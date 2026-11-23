@@ -30,9 +30,10 @@
             <partial name="_DmsSshLeaseReadiness" model="Model.SshLeaseReadiness" />
             @if (Model.CanRequestSshLease && Model.SshLeaseReadiness is SshLeaseReadiness.Ready or SshLeaseReadiness.Unknown)
             {
-                <p class="mt-3 mb-2">@Localizer["Verify a personal public key, then use its key ID to submit your request in the CLI."]</p>
+                <p class="mt-3 mb-2">@Localizer["Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default."]</p>
                 <a asp-controller="SshKeys" asp-action="Index" class="fw-semibold">@Localizer["SSH public keys"]</a>
-                <pre class="dms-payload mt-2 mb-0" tabindex="0"><code>dms machine ssh temp-allow-ssh --machine-id @machine.Id --key-id "$KEY_ID" --reason "$REASON"</code></pre>
+                <pre class="dms-payload mt-2 mb-0" tabindex="0"><code>dms machine ssh temp-allow-ssh --machine-id @machine.Id --reason "$REASON"</code></pre>
+                <p class="form-text mb-0">@Localizer["Use --key-id to select a single verified key."]</p>
             }
         </div>
     </section>

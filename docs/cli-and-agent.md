@@ -319,20 +319,23 @@ Open the target's details from **DMS → Machines** to check its temporary SSH
 readiness. If the machine needs setup or its readiness is unknown, ask the
 machine administrator to confirm the SSH setup. The administrator can use the
 approved disable workflow to establish the managed closed state.
-Verify a personal key on **SSH public keys**, copy its ID, and submit a
+Verify at least one personal key on **SSH public keys**, then submit a
 very-high-risk request for one machine.
 
 ```sh
-dms machine ssh temp-allow-ssh --machine-id "$MACHINE_ID" --key-id "$KEY_ID" \
+dms machine ssh temp-allow-ssh --machine-id "$MACHINE_ID" \
   --minutes 30 --reason "Temporary maintenance access"
 ```
 
-The approval records the selected key fingerprint, target, duration and
-sudo choice. The Agent rechecks the selected key with the Controller at
-execution. A revoked key requires a new request. The lease accepts only the
-selected public key for the temporary account. Use `--sudo` only when the
-approved request needs passwordless sudo. The default duration is 30 minutes,
-with a supported range of 30 to 270 minutes.
+By default, the request includes all of your verified, unrevoked keys at the
+time of submission. Add `--key-id "$KEY_ID"` to select one verified key.
+The Lockbox records the key fingerprints, target, duration and sudo choice.
+The Agent rechecks every frozen key with the Controller at execution. A key
+registered later cannot enter that lease, and revoking a selected key before
+execution requires a new request. The temporary account accepts the frozen
+public keys. Use `--sudo` only when the approved request needs passwordless sudo.
+The default duration is 30 minutes, with a supported range of 30 to 270 minutes.
+Update the Controller and Agent before using the default key selection.
 
 Get the connection username, port and UTC deadline from the machine
 workflow's result or trace. The network and firewall must already permit

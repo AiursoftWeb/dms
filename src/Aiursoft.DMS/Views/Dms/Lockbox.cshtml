@@ -330,6 +330,27 @@
                                 <dl class="lockbox-parameters mb-0">
                                     @foreach (var parameter in parameters)
                                     {
+                                        if (item.Definition == OperationsWorkflows.SshOpen.Name &&
+                                            parameter.NameEquals(nameof(SshOpenInput.Keys)) &&
+                                            parameter.Value.ValueKind == JsonValueKind.Array)
+                                        {
+                                            <div>
+                                                <dt>@Localizer["SSH key fingerprints"]</dt>
+                                                <dd>
+                                                    <ul class="list-unstyled mb-0">
+                                                        @foreach (var key in parameter.Value.EnumerateArray())
+                                                        {
+                                                            if (key.ValueKind == JsonValueKind.Object &&
+                                                                key.TryGetProperty(nameof(SshApprovedKey.Fingerprint), out var fingerprint))
+                                                            {
+                                                                <li><code>@fingerprint</code></li>
+                                                            }
+                                                        }
+                                                    </ul>
+                                                </dd>
+                                            </div>
+                                            continue;
+                                        }
                                         <div>
                                             <dt>@(item.Definition == WorkflowNames.PullerForceUpdate ? parameter.Name switch
                                             {

@@ -46,9 +46,18 @@ public sealed class OpenTemporarySshWorkflow(SshOpenInput input, AgentEnvironmen
         var confirm = environment.AuthorizeSshLease
             ?? throw new InvalidOperationException("This Agent cannot verify approved SSH keys.");
         var authorization = await confirm(context.Id, token);
-        var (key, fingerprint) = SshPublicKey.Parse(authorization.PublicKey);
-        if (authorization.KeyId != value.KeyId || fingerprint != value.Fingerprint || string.IsNullOrWhiteSpace(authorization.RequesterId))
-            throw new InvalidDataException("The Controller returned a different SSH key than the approved selection.");
+        var approved = value.ApprovedKeys();
+        var supplied = authorization.Keys ?? [new SshAuthorizedKey(authorization.KeyId, authorization.PublicKey)];
+        if (approved.Length == 0 || approved.Length != supplied.Length || string.IsNullOrWhiteSpace(authorization.RequesterId))
+            throw new InvalidDataException("The Controller returned different SSH keys than the approved selection.");
+        var publicKeys = new string[approved.Length];
+        for (var index = 0; index < approved.Length; index++)
+        {
+            var (key, fingerprint) = SshPublicKey.Parse(supplied[index].PublicKey);
+            if (supplied[index].Id != approved[index].Id || fingerprint != approved[index].Fingerprint)
+                throw new InvalidDataException("The Controller returned different SSH keys than the approved selection.");
+            publicKeys[index] = key;
+        }
         lease = lease with { RequesterId = authorization.RequesterId };
 
         store.SaveOpening(context.Id, new SshOpening(null));
@@ -68,7 +77,7 @@ public sealed class OpenTemporarySshWorkflow(SshOpenInput input, AgentEnvironmen
 
             step = "validate the temporary SSH configuration";
             const UnixFileMode publicKeyMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
-            await WriteNewAsync(host.FilePath(lease.AuthorizedKeyPath), key + "\n", publicKeyMode, token);
+            await WriteNewAsync(host.FilePath(lease.AuthorizedKeyPath), string.Join('\n', publicKeys) + "\n", publicKeyMode, token);
             const UnixFileMode configMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
             await WriteNewAsync(host.FilePath(lease.ConfigPath), Configuration(lease), configMode, token);
 
@@ -164,7 +173,8 @@ public sealed class OpenTemporarySshWorkflow(SshOpenInput input, AgentEnvironmen
                 $"The temporary SSH lease is open. Connect with ssh -p {SshPort} {user}@<machine-address>.",
             new
             {
-                LeaseId = context.Id, User = user, Port = SshPort, ExpiresAtUtc = expiry, value.Sudo, value.Fingerprint, Replayed = replayed,
+                LeaseId = context.Id, User = user, Port = SshPort, ExpiresAtUtc = expiry, value.Sudo, value.Fingerprint,
+                Fingerprints = value.ApprovedKeys().Select(key => key.Fingerprint), Replayed = replayed,
                 SshObservation = replayed ? null : new SshHostObservation(DateTimeOffset.UtcNow, OrdinaryOpen: false, LeaseKnown: true, context.Id, expiry)
             });
     }
