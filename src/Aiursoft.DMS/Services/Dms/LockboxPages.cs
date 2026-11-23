@@ -95,8 +95,13 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
             ? new AgentUpgradeReview(WorkflowService.ReadRequestedAgentUpgrade(item).Releases,
                 item.Decision == DecisionState.Pending ? releases.ReadAvailable() : null)
             : null;
+        var aptPlans = AptPlans.IsApply(item.Definition)
+            ? await AptPlans.ReadAsync(db,
+                AptPlans.ApplyDefinition(item.Definition).ReadInput(snapshot.Input.GetRawText()).PlanId, snapshot.Targets)
+            : null;
         var needsResubmission = upgrade?.RequiresResubmission == true;
-        var canDecide = canViewOperations && item.Decision == DecisionState.Pending && !needsResubmission &&
+        var aptPlanUnavailable = aptPlans != null && aptPlans.Count != snapshot.Targets.Count;
+        var canDecide = canViewOperations && item.Decision == DecisionState.Pending && !needsResubmission && !aptPlanUnavailable &&
             DmsPermissions.CanDecide(principal, item.Risk, ownRequest);
         return new LockboxViewModel
         {
@@ -110,6 +115,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
             CanWithdraw = item.Decision == DecisionState.Pending && ownRequest,
             CanDecide = canDecide,
             AgentUpgrade = upgrade,
+            AptPlans = aptPlans,
             CanResubmit = needsResubmission && ownRequest && DmsPermissions.ForRisk(principal, MachineWorkflows.AgentUpgrade.Risk).CanRequest,
             OwnRequestView = ownRequestView,
             CanViewOperations = canViewOperations,
