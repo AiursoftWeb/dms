@@ -36,6 +36,12 @@
   <data name="Copy command" xml:space="preserve">
     <value>复制命令</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>我携带 YubiKey / 硬件密钥</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>我使用文件保存私钥</value>
+  </data>
   <data name="If the timer runs out, this setup is discarded and you can start again." xml:space="preserve">
     <value>如果计时器超时，此设置将被丢弃，您可以重新开始。</value>
   </data>
@@ -44,6 +50,9 @@
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>如果私钥存储在其他位置，请更改 -f 后面的路径。然后粘贴该命令打印的完整签名。</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>请先确保密钥已加载到 SSH agent（例如针对 Resident 密钥运行 ssh-add -K），然后运行：</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH 签名</value>
@@ -65,6 +74,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>要完成此密钥的添加，请在持有其私钥的计算机上运行以下命令。</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>当 YubiKey 闪烁时轻触它以完成签名。然后粘贴该命令打印的完整签名。</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>验证已过期。此密钥未被添加。</value>

@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Copy command</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>I have a YubiKey / Hardware key</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>I use a private key file</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>If time runs out, add the key again.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH signature</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>To finish adding this key, run the command below on the computer that holds its private key.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>Verification expired. This key was not added.</value>

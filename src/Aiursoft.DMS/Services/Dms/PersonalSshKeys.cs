@@ -12,6 +12,41 @@ public sealed class PersonalSshKeys(TemplateDbContext db, ControllerGate gate, A
     public static string Challenge(Guid id) => $"{SignatureNamespace}/{id:D}";
     public static DateTime ExpiresAt(PersonalSshKey key) => key.CreatedAt + VerificationLifetime;
 
+    public static string DefaultPrivateKeyPath(string publicKey)
+    {
+        var type = publicKey.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries)[0];
+        return type switch
+        {
+            "sk-ecdsa-sha2-nistp256@openssh.com" => "$HOME/.ssh/id_ecdsa_sk",
+            "sk-ssh-ed25519@openssh.com" => "$HOME/.ssh/id_ed25519_sk",
+            "ecdsa-sha2-nistp256" or "ecdsa-sha2-nistp384" or "ecdsa-sha2-nistp521" => "$HOME/.ssh/id_ecdsa",
+            "ssh-rsa" => "$HOME/.ssh/id_rsa",
+            _ => "$HOME/.ssh/id_ed25519"
+        };
+    }
+
+    public static string SshAgentGrepPattern(string publicKey)
+    {
+        var type = publicKey.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries)[0];
+        return type switch
+        {
+            "sk-ecdsa-sha2-nistp256@openssh.com" => "sk-ecdsa",
+            "sk-ssh-ed25519@openssh.com" => "sk-ssh-ed25519",
+            "ecdsa-sha2-nistp256" or "ecdsa-sha2-nistp384" or "ecdsa-sha2-nistp521" => "ecdsa-sha2",
+            "ssh-rsa" => "ssh-rsa",
+            _ => "ssh-ed25519"
+        };
+    }
+
+    public static bool IsSecurityKey(string publicKey) =>
+        publicKey.TrimStart().StartsWith("sk-", StringComparison.Ordinal);
+
+    public static string SignWithFileCommand(Guid id, string publicKey) =>
+        $"printf '%s' '{Challenge(id)}' | ssh-keygen -Y sign -n {SignatureNamespace} -f \"{DefaultPrivateKeyPath(publicKey)}\"";
+
+    public static string SignWithAgentCommand(Guid id, string publicKey) =>
+        $"printf '%s' '{Challenge(id)}' | ssh-keygen -Y sign -n {SignatureNamespace} -f <(ssh-add -L | grep '{SshAgentGrepPattern(publicKey)}')";
+
     public Task<List<PersonalSshKey>> ListAsync(string user) => db.PersonalSshKeys.AsNoTracking()
         .Where(k => k.UserId == user && k.Slot > 0).OrderBy(k => k.Slot).ToListAsync();
 

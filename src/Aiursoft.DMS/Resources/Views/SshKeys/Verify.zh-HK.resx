@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>複製指令</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>我攜帶 YubiKey / 硬件密鑰</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>我使用檔案儲存私鑰</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>如果時間到期，請重新添加金鑰。</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>如果你嘅私鑰儲存喺其他地方，請更改 -f 後面嘅路徑。然後將指令輸出嘅完整簽名貼上。</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>請先確保密鑰已載入到 SSH agent（例如針對 Resident 密鑰執行 ssh-add -K），然後執行：</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH 簽名</value>
@@ -58,10 +67,13 @@
     <value>剩餘時間</value>
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
-    <value>要完成新增此金鑰，請在儲存其私鑰嘅電腦上執行以下指令。</value>
+    <value>要完成此密鑰的添加，請在持有其私鑰的電腦上運行以下指令。</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>當 YubiKey 閃爍時輕觸它以完成簽名。然後貼上該命令打印的完整簽名。</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
-    <value>驗證已過期。此金鑰未加入。</value>
+    <value>驗證已過期。此金鑰未被新增。</value>
   </data>
   <data name="Verification expires at" xml:space="preserve">
     <value>驗證將於</value>
@@ -70,7 +82,7 @@
     <value>驗證並新增金鑰</value>
   </data>
   <data name="Verify your SSH public key" xml:space="preserve">
-    <value>驗證你嘅 SSH 公鑰</value>
+    <value>驗證你的 SSH 公鑰</value>
   </data>
 
 </root>

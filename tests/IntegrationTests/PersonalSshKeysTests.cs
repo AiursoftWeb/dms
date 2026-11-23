@@ -9,6 +9,7 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 public class PersonalSshKeysTests : TestBase
 {
     private const string PublicKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHpyp+C8Ia2B6RVM1UCr5HG+EtGR2xz5OF05P9kPz84D";
+    private const string SecurityPublicKey = "sk-ecdsa-sha2-nistp256@openssh.com AAAAInNrLWVjZHNhLXNoYTItbmlzdHAyNTZAb3BlbnNzaC5jb20AAAAIbmlzdHAyNTYAAABBBEbXA8Mv12Gy8kZvkkxQCtJ9anxg2L9298CzeLCbzq4AVyMoB/nhXWyufkNVxDFtw+rdLhph+g9ERo4VPaaoh1kAAAAJc3NoOnVsdHJh";
 
     [TestMethod]
     public async Task EmployeeCanResumeAndAbandonTheirOwnKeySetup()
@@ -30,8 +31,13 @@ public class PersonalSshKeysTests : TestBase
         Assert.AreEqual(PublicKey, old.PublicKey);
         Assert.IsEmpty(await keys.ListAsync(userId));
         var html = await Http.GetStringAsync(verifyPath);
+        var decoded = WebUtility.HtmlDecode(html);
         StringAssert.Contains(html, PersonalSshKeys.Challenge(old.Id));
         StringAssert.Contains(html, old.Fingerprint);
+        StringAssert.Contains(html, "id=\"yubikey-pane\"");
+        StringAssert.Contains(html, "id=\"file-pane\"");
+        StringAssert.Contains(decoded, PersonalSshKeys.SignWithAgentCommand(old.Id, old.PublicKey));
+        StringAssert.Contains(decoded, PersonalSshKeys.SignWithFileCommand(old.Id, old.PublicKey));
         Assert.DoesNotContain("name=\"publicKey\"", html);
         AssertRedirect(await Http.GetAsync("/SshKeys/Add"), verifyPath);
         AssertRedirect(await PostForm("/SshKeys/Register", new() { ["name"] = "duplicate submit", ["publicKey"] = PublicKey }, verifyPath), verifyPath);
@@ -46,6 +52,58 @@ public class PersonalSshKeysTests : TestBase
         await Assert.ThrowsAsync<DmsException>(() => keys.VerifyAsync(userId, old.Id, "stale signature", default));
         await Assert.ThrowsAsync<DmsException>(() => keys.VerifyAsync("another employee", newer.Id, "foreign signature", default));
         await Assert.ThrowsAsync<DmsException>(() => keys.BeginAsync(userId, "invalid", "command=\"echo\" " + PublicKey));
+    }
+
+    [TestMethod]
+    public async Task SecurityKeyVerificationSelectsYubikeyTabByDefault()
+    {
+        var (email, _) = await RegisterAndLoginAsync();
+        var reg = await PostForm("/SshKeys/Register", new() { ["name"] = "yubikey", ["publicKey"] = SecurityPublicKey }, "/SshKeys/Add");
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var keys = scope.ServiceProvider.GetRequiredService<PersonalSshKeys>();
+        var userId = await db.Users.Where(u => u.Email == email).Select(u => u.Id).SingleAsync();
+        var pending = await keys.GetPendingAsync(userId);
+        Assert.IsNotNull(pending);
+        var verifyPath = $"/SshKeys/Verify/{pending.Id}";
+        AssertRedirect(reg, verifyPath);
+        var html = await Http.GetStringAsync(verifyPath);
+        var decoded = WebUtility.HtmlDecode(html);
+        StringAssert.Contains(html, "id=\"yubikey-tab\" data-bs-toggle=\"tab\"");
+        StringAssert.Contains(html, "id=\"yubikey-tab\" data-bs-toggle=\"tab\" data-bs-target=\"#yubikey-pane\" type=\"button\" role=\"tab\" aria-controls=\"yubikey-pane\" aria-selected=\"true\"");
+        StringAssert.Contains(decoded, "<(ssh-add -L | grep 'sk-ecdsa')");
+        StringAssert.Contains(decoded, "$HOME/.ssh/id_ecdsa_sk");
+    }
+
+    [TestMethod]
+    public void VerifyCommandsAndKeyTypeAdaptation()
+    {
+        var id = Guid.NewGuid();
+        var ed25519 = PublicKey;
+        var rsa = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...";
+        var skEcdsa = SecurityPublicKey;
+        var skEd25519 = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAI...";
+
+        Assert.IsFalse(PersonalSshKeys.IsSecurityKey(ed25519));
+        Assert.IsFalse(PersonalSshKeys.IsSecurityKey(rsa));
+        Assert.IsTrue(PersonalSshKeys.IsSecurityKey(skEcdsa));
+        Assert.IsTrue(PersonalSshKeys.IsSecurityKey(skEd25519));
+
+        Assert.AreEqual("$HOME/.ssh/id_ed25519", PersonalSshKeys.DefaultPrivateKeyPath(ed25519));
+        Assert.AreEqual("$HOME/.ssh/id_rsa", PersonalSshKeys.DefaultPrivateKeyPath(rsa));
+        Assert.AreEqual("$HOME/.ssh/id_ecdsa_sk", PersonalSshKeys.DefaultPrivateKeyPath(skEcdsa));
+        Assert.AreEqual("$HOME/.ssh/id_ed25519_sk", PersonalSshKeys.DefaultPrivateKeyPath(skEd25519));
+
+        Assert.AreEqual("ssh-ed25519", PersonalSshKeys.SshAgentGrepPattern(ed25519));
+        Assert.AreEqual("sk-ecdsa", PersonalSshKeys.SshAgentGrepPattern(skEcdsa));
+        Assert.AreEqual("sk-ssh-ed25519", PersonalSshKeys.SshAgentGrepPattern(skEd25519));
+
+        var skAgentCmd = PersonalSshKeys.SignWithAgentCommand(id, skEcdsa);
+        StringAssert.Contains(skAgentCmd, "ssh-keygen -Y sign -n aiursoft-dms-key-registration");
+        StringAssert.Contains(skAgentCmd, "<(ssh-add -L | grep 'sk-ecdsa')");
+
+        var skFileCmd = PersonalSshKeys.SignWithFileCommand(id, skEcdsa);
+        StringAssert.Contains(skFileCmd, "-f \"$HOME/.ssh/id_ecdsa_sk\"");
     }
 
     [TestMethod]

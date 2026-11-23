@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>複製指令</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>我攜帶 YubiKey / 硬體金鑰</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>我使用檔案儲存私鑰</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>如果時間耗盡，請重新新增金鑰。</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
-    <value>如果您的私金鑰儲存在其他位置，請變更 -f 之後的路徑。然後貼上該命令列印出的完整簽章。</value>
+    <value>如果您的私密金鑰儲存在其他位置，請變更 -f 之後的路徑。然後貼上該命令列印出的完整簽章。</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>請先確保金鑰已載入到 SSH agent（例如針對 Resident 金鑰執行 ssh-add -K），然後執行：</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH 簽章</value>
@@ -52,16 +61,19 @@
     <value>終端機指令</value>
   </data>
   <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
-    <value>簽章不符。請使用此公金鑰對應的私鑰執行上述指令，並貼上完整的結果。</value>
+    <value>簽章不符。請使用此公開金鑰對應的私鑰執行上述指令，並貼上完整的結果。</value>
   </data>
   <data name="Time remaining" xml:space="preserve">
     <value>剩餘時間</value>
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
-    <value>要完成新增此金鑰，請在持有其私密金鑰的電腦上執行下方的指令。</value>
+    <value>要完成此金鑰的添加，請在持有其私鑰的電腦上執行以下命令。</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>當 YubiKey 閃爍時輕觸它以完成簽署。然後貼上該命令輸出的完整簽署。</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
-    <value>驗證已過期。此金鑰未新增。</value>
+    <value>驗證已過期。此金鑰未被新增。</value>
   </data>
   <data name="Verification expires at" xml:space="preserve">
     <value>驗證將於</value>

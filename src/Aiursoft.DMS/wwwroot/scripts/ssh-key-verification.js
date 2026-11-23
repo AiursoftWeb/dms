@@ -19,19 +19,24 @@ function updateCountdown() {
 
 updateCountdown();
 
-const copyCommand = verification.querySelector('[data-copy-command]');
 if (navigator.clipboard) {
-    copyCommand.hidden = false;
-    copyCommand.addEventListener('click', async () => {
-        const command = verification.querySelector('[data-sign-command]');
-        try {
-            await navigator.clipboard.writeText(command.textContent);
-            copyCommand.textContent = verification.querySelector('[data-copy-label]').textContent;
-        } catch {
-            const range = document.createRange();
-            range.selectNodeContents(command);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-        }
+    verification.querySelectorAll('[data-copy-command]').forEach(copyCommand => {
+        copyCommand.hidden = false;
+        copyCommand.addEventListener('click', async () => {
+            const container = copyCommand.closest('[data-command-box]') || verification;
+            const command = container.querySelector('[data-sign-command]');
+            const label = container.querySelector('[data-copy-label]') || verification.querySelector('[data-copy-label]');
+            try {
+                await navigator.clipboard.writeText(command.textContent.trim());
+                const originalText = copyCommand.textContent;
+                copyCommand.textContent = label ? label.textContent : 'Copied';
+                setTimeout(() => { copyCommand.textContent = originalText; }, 2000);
+            } catch {
+                const range = document.createRange();
+                range.selectNodeContents(command);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+            }
+        });
     });
 }
