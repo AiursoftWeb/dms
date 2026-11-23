@@ -186,7 +186,7 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         finally { staging.Delete(recursive: true); }
     }
 
-    private sealed record Installation(string Unit, string Binary, string Config, string? RuntimeConfig, bool IsNew);
+    private sealed record Installation(string ServiceName, string Binary, string Config, string? RuntimeConfig, bool IsNew);
 
     private static async Task<Installation> DetectInstallationAsync(OperationHost host, CancellationToken token)
     {
