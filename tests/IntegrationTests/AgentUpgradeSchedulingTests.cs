@@ -2,10 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Aiursoft.DMS.Agent;
-using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
-using Aiursoft.DMS.Services;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Workflows;
@@ -118,30 +116,37 @@ public class AgentUpgradeSchedulingTests : TestBase
         var version = new Version(Version.Parse(AgentUpgrade.Version).Major + 1, 0, 0, 0).ToString();
         var candidate = new AgentRelease("linux-x64", version, new string('a', 64), new string('b', 64));
         var releases = new List<AgentRelease> { candidate, candidate with { Architecture = "linux-arm64" } };
-        File.WriteAllText(metadata, JsonSerializer.Serialize(releases));
         var key = DmsKeyAuthenticationHandler.CreateKey(true);
-        var excludedKey = DmsKeyAuthenticationHandler.CreateKey(true);
+        var secondKey = DmsKeyAuthenticationHandler.CreateKey(true);
+        var disabledKey = DmsKeyAuthenticationHandler.CreateKey(true);
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(65));
         using var scope = Server.Services.CreateScope();
-        var settings = scope.ServiceProvider.GetRequiredService<GlobalSettingsService>();
         try
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
             var machine = new Machine { Name = "Scheduled upgrade test", KeyHash = DmsKeyAuthenticationHandler.Hash(key) };
-            var excluded = new Machine { Name = "Manual upgrades only", KeyHash = DmsKeyAuthenticationHandler.Hash(excludedKey) };
+            var second = new Machine { Name = "Another managed machine", KeyHash = DmsKeyAuthenticationHandler.Hash(secondKey) };
+            var disabled = new Machine { Name = "Disabled machine", KeyHash = DmsKeyAuthenticationHandler.Hash(disabledKey), Disabled = true };
             var user = new User { Id = Guid.NewGuid().ToString(), UserName = Guid.NewGuid().ToString(), DisplayName = "Test operator" };
-            db.Machines.AddRange(machine, excluded);
+            db.Machines.AddRange(machine, second, disabled);
             db.Users.Add(user);
             DmsTestPermissions.Risk(db, user.Id, RiskLevel.Safe, request: true, automatic: true, approve: false);
             await db.SaveChangesAsync();
-            await settings.UpdateSettingAsync(SettingsMap.ScheduledAgentUpgrade, JsonSerializer.Serialize(new[] { machine.Id }));
-
             using var anonymous = await Http.GetAsync("/api/agent/scheduled-upgrade", stop.Token);
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
-            using var request = new HttpRequestMessage(HttpMethod.Get, "/api/agent/scheduled-upgrade");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", excludedKey);
-            using var excludedResult = await Http.SendAsync(request, stop.Token);
-            Assert.AreEqual(HttpStatusCode.NoContent, excludedResult.StatusCode);
+            using var beforeRelease = new HttpRequestMessage(HttpMethod.Get, "/api/agent/scheduled-upgrade");
+            beforeRelease.Headers.Authorization = new AuthenticationHeaderValue("Bearer", secondKey);
+            using var unavailable = await Http.SendAsync(beforeRelease, stop.Token);
+            Assert.AreEqual(HttpStatusCode.ServiceUnavailable, unavailable.StatusCode);
+
+            File.WriteAllText(metadata, JsonSerializer.Serialize(releases));
+            foreach (var (machineKey, status) in new[] { (secondKey, HttpStatusCode.OK), (disabledKey, HttpStatusCode.Unauthorized) })
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/api/agent/scheduled-upgrade");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", machineKey);
+                using var result = await Http.SendAsync(request, stop.Token);
+                Assert.AreEqual(status, result.StatusCode);
+            }
 
             var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
             await workflows.SubmitAsync(user.Id, hold.Request(new EmptyInput(), "Simulate active work", [machine.Id]));
@@ -198,7 +203,6 @@ public class AgentUpgradeSchedulingTests : TestBase
         }
         finally
         {
-            await settings.UpdateSettingAsync(SettingsMap.ScheduledAgentUpgrade, "");
             File.Delete(metadata);
             Directory.Delete(path, true);
         }

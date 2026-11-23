@@ -12,7 +12,7 @@ namespace Aiursoft.DMS.Agent;
 public sealed record UpgradeHandoff(Guid TaskId, Guid WorkflowId, Guid? ParentId, Guid InstallationId, Guid MachineId,
     AgentRelease Release, string PreviousVersion, DateTime Deadline, string Phase, string? ToolAssemblySha256 = null, string? Failure = null);
 
-// Manual Lockbox approval or the Agent's scheduled policy authorizes preparation. The systemd unit survives its Agent.
+// Manual Lockbox approval or the managed Agent's schedule initiates preparation. The systemd unit survives its Agent.
 public sealed class AgentUpgrade(string state, TaskJournal journal)
 {
     private static readonly HttpClient Downloads = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromMinutes(3) };

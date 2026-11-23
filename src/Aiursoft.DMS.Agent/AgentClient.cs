@@ -202,10 +202,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
 
     private async Task<string> ScheduledUpgradeAsync(Guid taskId, MachineWorkflowContext context, CancellationToken token)
     {
-        var input = await AgentScheduledUpgradePolicy.GetAsync(controller, key, token);
-        if (input == null)
-            return JsonSerializer.Serialize(new OperationResult("Scheduled Agent upgrades are disabled for this machine."));
-
+        var input = await AgentUpgradeManifest.GetAsync(controller, key, token);
         var release = input.Releases.Single(item => item.Architecture == AgentUpgrade.Architecture);
         if (Version.Parse(release.Version) <= Version.Parse(AgentUpgrade.Version))
             return JsonSerializer.Serialize(new OperationResult("No newer Agent release is available."));
@@ -214,9 +211,9 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         if (!await TryReserveUpgradeWindowAsync(taskId, token))
             return JsonSerializer.Serialize(new OperationResult("Another Agent maintenance operation took precedence."));
 
-        var current = await AgentScheduledUpgradePolicy.GetAsync(controller, key, token);
-        if (current == null || current.Releases.Single(item => item.Architecture == release.Architecture) != release)
-            return JsonSerializer.Serialize(new OperationResult("The scheduled upgrade policy or Agent release changed while waiting."));
+        var current = await AgentUpgradeManifest.GetAsync(controller, key, token);
+        if (current.Releases.Single(item => item.Architecture == release.Architecture) != release)
+            return JsonSerializer.Serialize(new OperationResult("The Agent release changed while waiting."));
 
         journal.SetScheduledUpgradeRelease(taskId, release);
         await context.TraceAsync("The Agent has been idle for 10 seconds. Starting the scheduled upgrade.");

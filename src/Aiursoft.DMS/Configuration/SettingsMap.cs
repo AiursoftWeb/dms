@@ -11,7 +11,6 @@ public class SettingsMap
     public const string AllowUserAdjustNickname = "Allow_User_Adjust_Nickname";
     public const string Icp = "Icp";
     public const string ScheduledSecurityBaseline = "ScheduledSecurityBaseline";
-    public const string ScheduledAgentUpgrade = "ScheduledAgentUpgrade";
     public const string DummyNumber = "DummyNumber";
     public const string DummyChoice = "DummyChoice";
 
@@ -80,14 +79,6 @@ public class SettingsMap
             Key = ScheduledSecurityBaseline,
             Name = Localizer["Scheduled Security Baseline"],
             Description = Localizer["Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists."],
-            Type = SettingType.Text,
-            DefaultValue = ""
-        },
-        new GlobalSettingDefinition
-        {
-            Key = ScheduledAgentUpgrade,
-            Name = Localizer["Scheduled Agent Upgrades"],
-            Description = Localizer["Enter a JSON array of machine IDs allowed to install newer Controller releases every eight hours."],
             Type = SettingType.Text,
             DefaultValue = ""
         },
