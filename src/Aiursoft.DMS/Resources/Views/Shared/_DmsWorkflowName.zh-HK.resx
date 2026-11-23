@@ -43,4 +43,16 @@
     <value>升級 DMS Agent</value>
   </data>
 
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>重新整理 APT 套件索引</value>
+  </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>預覽 APT 套件變更</value>
+  </data>
+  <data name="Upgrade available APT packages" xml:space="preserve">
+    <value>批次升級 APT 套件</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>移除不再需要的 APT 套件</value>
+  </data>
 </root>
