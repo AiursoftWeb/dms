@@ -68,7 +68,7 @@ dms access whoami
 dms machine list
 ```
 
-The CLI uses table output by default; add `--output-format json` or `csv` for structured output. Identity and administrative inspection queries do not create Lockboxes. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
+Trace commands default to plain log output. Other commands with `--output-format` default to tables. Use `--output-format json` or `csv` for structured output. Identity and administrative inspection queries do not create Lockboxes. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. See [CLI and Agent setup](https://github.com/aiursoftweb/dms/blob/master/docs/cli-and-agent.md) for PATH configuration, authentication, approvals and operation examples.
 
 ### SDK
 
@@ -170,7 +170,7 @@ dms access whoami
 dms machine list
 ```
 
-`access whoami` shows your effective role permissions. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. Other server operations follow the configured request and approval permissions for their risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Supported commands use table output by default, with `--output-format json` or `csv` for export.
+`access whoami` shows your effective role permissions. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. Other server operations follow the configured request and approval permissions for their risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Trace commands default to plain logs and accept `--output-format Table` to display trace metadata.
 
 ### Join and manage machines
 

@@ -101,18 +101,34 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Standard workflows", LinkOrder = 4)]
-    public async Task<IActionResult> Definitions()
+    public async Task<IActionResult> Definitions(WorkflowDefinitionSort sort = WorkflowDefinitionSort.Name)
     {
+        if (!ModelState.IsValid || !Enum.IsDefined(sort))
+            return BadRequest();
+
         try
         {
-            return this.StackView(new DmsViewModel
+            var catalog = await workflows.ListDefinitionsAsync(Actor);
+            var definitions = sort switch
+            {
+                WorkflowDefinitionSort.NameDescending => catalog.Definitions.OrderByDescending(item => item.Name, StringComparer.Ordinal),
+                WorkflowDefinitionSort.RiskAscending => catalog.Definitions.OrderBy(item => RiskRank(item.Risk)).ThenBy(item => item.Name, StringComparer.Ordinal),
+                WorkflowDefinitionSort.RiskDescending => catalog.Definitions.OrderByDescending(item => RiskRank(item.Risk)).ThenBy(item => item.Name, StringComparer.Ordinal),
+                WorkflowDefinitionSort.Location => catalog.Definitions.OrderBy(item => item.Location).ThenBy(item => item.Name, StringComparer.Ordinal),
+                _ => null
+            };
+            return this.StackView(new DmsDefinitionsViewModel
             {
                 PageTitle = "Standard workflows",
-                Catalog = await workflows.ListDefinitionsAsync(Actor)
+                Catalog = definitions == null ? catalog : catalog with { Definitions = definitions.ToList() },
+                Sort = sort
             });
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
+
+    // Open was appended to the wire enum but is the lowest risk in the catalog.
+    private static int RiskRank(RiskLevel risk) => risk == RiskLevel.Open ? -1 : (int)risk;
 
     [RenderInNavBar(NavGroupName = LockboxText.Name, NavGroupOrder = 1, CascadedLinksGroupName = LockboxText.Name, CascadedLinksIcon = "lock", LinkText = "My approvals", LinkOrder = 2)]
     public async Task<IActionResult> Lockboxes(int page = 0, string? scope = null, string? q = null)

@@ -57,13 +57,16 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Không có quy trình chuẩn công khai nào được đăng ký.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Mở</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Yêu cầu các mục tiêu máy</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Rủi ro</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Quyền phân vai áp dụng cho mọi máy trong instance DMS này và mức độ rủi ro của từng quy trình làm việc. Phê duyệt tự động yêu cầu {0} quyền yêu cầu. Việc phê duyệt yêu cầu của chính bạn cũng yêu cầu quyền tự phê duyệt.</value>
   </data>
   <data name="Safe" xml:space="preserve">

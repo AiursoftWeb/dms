@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Client;
 
-public enum OutputFormat { Table, Json, Csv }
+public enum OutputFormat { Table, Json, Csv, Log }
 
 public static class DmsOutputWriter
 {
@@ -17,6 +17,11 @@ public static class DmsOutputWriter
             return;
         }
         var data = response.Data as JToken ?? (response.Data == null ? JValue.CreateNull() : JToken.FromObject(response.Data));
+        if (format == OutputFormat.Log)
+        {
+            WriteTraceLog(output, data);
+            return;
+        }
         if (audit && data is JObject page && page["Entries"] is JArray events)
         {
             var flat = new JArray(events.OfType<JObject>().Select(item => new JObject(
@@ -101,11 +106,11 @@ public static class DmsOutputWriter
                 error.WriteLine($"{result.WorkflowId}: {result.State} ({result.Machines.Count} machine results).");
         }
         else
-            output.WriteLine($"{TerminalName(result.Path)} [{result.State}]");
+            output.WriteLine($"{TerminalText(result.Path)} [{result.State}]");
 
         foreach (var machine in result.Machines)
         {
-            var name = TerminalName(machine.Machine);
+            var name = TerminalText(machine.Machine);
             var summary = machine.Entries switch
             {
                 null when machine.State is RunState.Succeeded or RunState.Warning => "directory entries unavailable",
@@ -127,9 +132,31 @@ public static class DmsOutputWriter
             {
                 entry.SymbolicLink ? "link" : entry.Directory ? "dir" : "file",
                 entry.Bytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
-                entry.LinkTarget == null ? TerminalName(entry.Path) : $"{TerminalName(entry.Path)} -> {TerminalName(entry.LinkTarget)}"
+                entry.LinkTarget == null ? TerminalText(entry.Path) : $"{TerminalText(entry.Path)} -> {TerminalText(entry.LinkTarget)}"
             }).ToList();
             WriteRows(output, ["Type", "Bytes", "Path"], rows, width, color, [4, 20, width - 28]);
+        }
+    }
+
+    private static void WriteTraceLog(TextWriter output, JToken data)
+    {
+        if (data is not JObject page || page["Entries"] is not JArray entries)
+            throw new ArgumentException("The Controller returned an invalid trace page.");
+
+        foreach (var entry in entries.OfType<JObject>())
+        {
+            // Archived events store the source instead of a separate severity.
+            var level = Cell(entry["Source"]).ToLowerInvariant() switch
+            {
+                "trace" => "TRACE",
+                "debug" => "DEBUG",
+                "warn" or "warning" or "stderr" => "WARN",
+                "error" => "ERROR",
+                "critical" or "fatal" => "FATAL",
+                _ => "INFO"
+            };
+            var message = TerminalText(Cell(entry["Message"]).ReplaceLineEndings("\\n"));
+            output.WriteLine($"{Cell(entry["Time"])} [{level}] {message}");
         }
     }
 
@@ -140,7 +167,7 @@ public static class DmsOutputWriter
         List<string[]> rows =
         [
             ["Lockbox ID", Cell(summary["LockboxId"])],
-            ["Requested by", TerminalName(Cell(summary["RequestedBy"]))],
+            ["Requested by", TerminalText(Cell(summary["RequestedBy"]))],
             ["Requested at", HumanScalar("RequestedAt", summary["RequestedAt"])],
             ["Status", decision switch
             {
@@ -154,16 +181,17 @@ public static class DmsOutputWriter
             var verb = decision == DecisionState.Denied ? "Rejected" : decision.ToString();
             rows.Add([$"{verb} at", HumanScalar("DecidedAt", summary["DecidedAt"])]);
             rows.Add([$"{verb} by", summary["Automatic"]?.Value<bool>() == true
-                ? "System (automatic approval)" : TerminalName(HumanScalar("DecidedBy", summary["DecidedBy"]))]);
+                ? "System (automatic approval)" : TerminalText(HumanScalar("DecidedBy", summary["DecidedBy"]))]);
         }
-        rows.Add(["Eligible approvers now", approvers.Length == 0 ? "None" : string.Join('\n', approvers.Select(TerminalName))]);
+        rows.Add(["Eligible approvers now",
+            approvers.Length == 0 ? "None" : string.Join('\n', approvers.Select(TerminalText))]);
         if (summary["WorkflowId"]?.Type is JTokenType.String or JTokenType.Guid)
             rows.Add(["Workflow ID", Cell(summary["WorkflowId"])]);
         WriteRows(output, ["Property", "Value"], rows, width, false);
     }
 
-    private static string TerminalName(string? name) => name == null ? "-" :
-        new string(name.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
+    private static string TerminalText(string? text) => text == null ? "-" :
+        new string(text.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
 
     private static void WriteHuman(TextWriter output, JToken value, int width, bool color, bool workflowMetadata = false)
     {
