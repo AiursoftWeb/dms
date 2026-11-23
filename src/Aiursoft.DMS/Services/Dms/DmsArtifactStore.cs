@@ -27,6 +27,36 @@ public sealed partial class DmsArtifactStore(IConfiguration configuration)
         return value;
     }
     public FileStream Open(Guid id) => new(Path.Combine(DirectoryFor(id), "payload"), FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+
+    public async Task<List<ArtifactListItem>> ListOwnedAsync(string owner, ArtifactListInput input, CancellationToken token)
+    {
+        await _writes.WaitAsync(token);
+        try
+        {
+            if (!Directory.Exists(_root)) return [];
+            var now = DateTime.UtcNow;
+            var owned = new List<StoredDmsArtifact>();
+            foreach (var directory in Directory.EnumerateDirectories(_root))
+            {
+                token.ThrowIfCancellationRequested();
+                if (!Guid.TryParseExact(Path.GetFileName(directory), "N", out var id)) continue;
+                var file = Path.Combine(directory, "artifact.json");
+                if (!File.Exists(file)) continue;
+                await using var stream = File.OpenRead(file);
+                var artifact = await JsonSerializer.DeserializeAsync<StoredDmsArtifact>(stream, cancellationToken: token);
+                if (artifact is not null && artifact.OwnerId == owner && artifact.Reference.Id == id && artifact.ExpiresAt > now)
+                    owned.Add(artifact);
+            }
+
+            return owned.OrderByDescending(artifact => artifact.CreatedAt).ThenBy(artifact => artifact.Reference.Id)
+                .Skip(input.Offset).Take(input.Limit)
+                .Select(artifact => new ArtifactListItem(artifact.Reference.Id, artifact.Reference.Name,
+                    artifact.Reference.Length, artifact.AuditInput ? null : artifact.ExpiresAt))
+                .ToList();
+        }
+        finally { _writes.Release(); }
+    }
+
     private void Expire()
     {
         foreach (var directory in Directory.EnumerateDirectories(_root))
