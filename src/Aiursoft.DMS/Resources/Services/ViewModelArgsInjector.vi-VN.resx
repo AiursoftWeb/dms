@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>Cài đặt Tài khoản</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Thêm một máy</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Thêm một khóa công khai SSH</value>
   </data>
@@ -182,6 +185,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Khóa công khai SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Cài đặt DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Cài đặt</value>

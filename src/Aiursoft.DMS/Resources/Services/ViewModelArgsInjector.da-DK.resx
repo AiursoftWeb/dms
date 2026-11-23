@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Adgang nægtet</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Tilføj en maskine</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Tilføj en SSH offentlig nøgle</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH-øffentlige nøgler</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Indstil DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Indstillinger</value>

@@ -30,9 +30,6 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Beliebiges Genehmigungsmodus</value>
   </data>
-  <data name="{0} request" xml:space="preserve">
-    <value>{0}-Anfrage</value>
-  </data>
   <data name="Approver" xml:space="preserve">
     <value>Genehmiger</value>
   </data>
@@ -62,9 +59,6 @@
   </data>
   <data name="Investigation" xml:space="preserve">
     <value>Untersuchung</value>
-  </data>
-  <data name="{0} ID" xml:space="preserve">
-    <value>{0}-ID</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Maschine</value>
@@ -105,18 +99,6 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Aufgezeichnet bis (exklusiv, UTC)</value>
   </data>
-  <data name="Workflow in the {0} request" xml:space="preserve">
-    <value>Angefordert ({0}-Anfragen)</value>
-  </data>
-  <data name="Workflow type in the {0} request" xml:space="preserve">
-    <value>Angefragter Workflowtyp ({0}-Anfragen)</value>
-  </data>
-  <data name="{0} requester" xml:space="preserve">
-    <value>Antragsteller ({0}-Anfragen)</value>
-  </data>
-  <data name="{0} requester ID" xml:space="preserve">
-    <value>Anfragender-ID ({0}-Anfragen)</value>
-  </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Root-Workflow-ID</value>
   </data>
@@ -141,11 +123,29 @@
   <data name="Workflow ID" xml:space="preserve">
     <value>Workflow-ID</value>
   </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Angefordert ({0}-Anfragen)</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Angefragter Workflowtyp ({0}-Anfragen)</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
   </data>
   <data name="You do not have access to any clusters." xml:space="preserve">
     <value>Sie haben keinen Zugriff auf Cluster.</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0}-ID</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0}-Anfrage</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Antragsteller ({0}-Anfragen)</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>Anfragender-ID ({0}-Anfragen)</value>
   </data>
 
 </root>

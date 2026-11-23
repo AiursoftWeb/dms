@@ -36,6 +36,9 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Retained for approval audit" xml:space="preserve">
+    <value>Conservé pour l&apos;audit d&apos;approbation</value>
+  </data>
   <data name="Retention" xml:space="preserve">
     <value>Rétention</value>
   </data>

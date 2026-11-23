@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>แหล่งกำเนิดทั้งหมด</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>สถานะทั้งหมด</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>ใช้ตัวกรอง</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>อัตโนมัติ</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>ยกเลิกแล้ว</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>ล้างตัวกรอง</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>คลัสเตอร์</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>เฉพาะเวิร์กโฟลว์ของคลัสเตอร์</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>เสร็จสิ้นพร้อมคำเตือน</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>คอนโทรลเลอร์</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>สร้างเมื่อ</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>หน้าการดำเนินการ</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>สถานะการดำเนินการ</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>ล้มเหลว</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>กรอง</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>เครื่อง</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>ด้วยตนเอง</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>ต้องตรวจสอบ</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>ถัดไป</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>ไม่มีการทำงานที่ตรงกับตัวกรองเหล่านี้</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>แหล่งที่มา</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์หลัก</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>ก่อนหน้า</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>อยู่ในคิว</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>เฉพาะการดำเนินการระดับราก</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>กำลังทำงาน</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>สถานะ</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>สำเร็จ</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>ดูการดำเนินการ</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>เวิร์กโฟลว์</value>

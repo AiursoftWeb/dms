@@ -30,8 +30,17 @@
   <data name="Open an SSH lease" xml:space="preserve">
     <value>打开 SSH 租约</value>
   </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>预览 APT 软件包变更</value>
+  </data>
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>刷新 APT 软件包索引</value>
+  </data>
   <data name="Refresh images with Box Puller" xml:space="preserve">
     <value>使用 Box Puller 刷新镜像</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>清理不再需要的 APT 软件包</value>
   </data>
   <data name="Run a command in Docker" xml:space="preserve">
     <value>在 Docker 中运行命令</value>
@@ -42,17 +51,8 @@
   <data name="Upgrade DMS Agent" xml:space="preserve">
     <value>升级 DMS 代理</value>
   </data>
-
-  <data name="Refresh APT package indexes" xml:space="preserve">
-    <value>刷新 APT 软件包索引</value>
-  </data>
-  <data name="Preview APT package changes" xml:space="preserve">
-    <value>预览 APT 软件包变更</value>
-  </data>
   <data name="Upgrade available APT packages" xml:space="preserve">
     <value>批量升级 APT 软件包</value>
   </data>
-  <data name="Remove unused APT packages" xml:space="preserve">
-    <value>清理不再需要的 APT 软件包</value>
-  </data>
+
 </root>

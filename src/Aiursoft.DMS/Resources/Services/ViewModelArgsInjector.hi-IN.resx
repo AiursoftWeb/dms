@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>प्रवेश अस्वीकृत</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>एक मशीन जोड़ें</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>एक SSH सार्वजनिक कुंजी जोड़ें</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH सार्वजनिक कुंजियाँ</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI सेटअप करें</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>सेटिंग्स</value>

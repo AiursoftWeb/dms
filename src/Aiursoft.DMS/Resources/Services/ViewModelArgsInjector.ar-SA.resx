@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>الوصول ممنوع</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>إضافة جهاز</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>إضافة مفتاح SSH عام</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>المفاتيح العامة SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>إعداد DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>الإعدادات</value>

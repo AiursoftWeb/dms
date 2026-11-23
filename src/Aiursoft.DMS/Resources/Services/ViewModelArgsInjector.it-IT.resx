@@ -24,6 +24,9 @@
   <data name="Access Denied" xml:space="preserve">
     <value>Accesso negato</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>Aggiungi un machine</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>Aggiungi una chiave pubblica SSH</value>
   </data>
@@ -179,6 +182,9 @@
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>Chiavi pubbliche SSH</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configura DMS CLI</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Impostazioni</value>

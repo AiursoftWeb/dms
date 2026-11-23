@@ -741,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>理念</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>中央網頁應用程式及 API。它追蹤機器、管理 {0} 審批，並協調工作流程。</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>在你的電腦上執行的命令列工具。連接至 Controller 後，你可以提出操作請求並檢視結果。</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>最穩健、經過實戰考驗的 .NET 企業級基礎架構。從身份認證到人工智能，我們已解決所有難題，讓你無需再煩惱。</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>導覽列會根據用戶角色同權限自動調整。</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>安裝喺每部受管理裝置上嘅服務。佢會連線去 Controller、報告自身狀態，並喺本地執行已批准嘅工作流程。</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>此模板專為簡易部署而設計。它包含完整的 Docker 支援，因此您可以將應用程式容器化並在任何地方運行。您亦可直接將其部署到 IIS、Azure App Service 或任何支援 ASP.NET Core 的伺服器上。</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>DMS 嘅三個組成部分</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>這是一個模板項目</value>
@@ -782,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>在 GitHub 查看</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>查看您的機器清單、Agent 連線狀態、版本及操作記錄。</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>提供 WebApplicationFactory</value>
@@ -844,19 +859,4 @@
     <value>{0} 記錄操作的請求人、目標及核准結果。</value>
   </data>
 
-  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
-    <value>中央網頁應用程式及 API。它追蹤機器、管理 {0} 審批，並協調工作流程。</value>
-  </data>
-  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
-    <value>在你的電腦上執行的命令列工具。連接至 Controller 後，你可以提出操作請求並檢視結果。</value>
-  </data>
-  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
-    <value>安裝喺每部受管理裝置上嘅服務。佢會連線去 Controller、報告自身狀態，並喺本地執行已批准嘅工作流程。</value>
-  </data>
-  <data name="The three parts of DMS" xml:space="preserve">
-    <value>DMS 嘅三個組成部分</value>
-  </data>
-  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
-    <value>查看您的機器清單、Agent 連線狀態、版本及操作記錄。</value>
-  </data>
 </root>

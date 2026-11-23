@@ -39,11 +39,11 @@
   <data name="Revoke" xml:space="preserve">
     <value>撤銷</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>設定 DMS CLI</value>
+  </data>
   <data name="Valid days" xml:space="preserve">
     <value>有效日期</value>
   </data>
 
-  <data name="Set up DMS CLI" xml:space="preserve">
-    <value>設定 DMS CLI</value>
-  </data>
 </root>

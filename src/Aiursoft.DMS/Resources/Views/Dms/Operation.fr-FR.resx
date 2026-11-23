@@ -21,8 +21,44 @@
       <data name="Approval context" xml:space="preserve">
     <value>Contexte d&apos;approbation</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatique</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Pile d&apos;appels</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Contrôleur</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Identifiants d&apos;exécution et déclencheur</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Journal d&apos;exécution</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Pages du journal d&apos;exécution</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Navigation d&apos;exécution</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Étapes d&apos;exécution</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Machine</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Non démarré</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Origine</value>
@@ -30,14 +66,44 @@
   <data name="Parent" xml:space="preserve">
     <value>Parent</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Workflow parent</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Précédent</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Résultat d&apos;exécution brut</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Résultat</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Workflow racine</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Voir toutes les étapes d&apos;exécution</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Démarré</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>État</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Étapes nécessitant une attention</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Planification système</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Machines cibles</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Le journal d&apos;exécution est indisponible. Les événements en attente restent stockés.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>Aucun événement archivé sur cette page.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Trace</value>
@@ -47,6 +113,15 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flux de travail</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID du flux de travail</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Historique du flux de travail</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>Demande {0}</value>
   </data>
 
 </root>

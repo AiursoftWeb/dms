@@ -27,6 +27,9 @@
   <data name="Account Settings" xml:space="preserve">
     <value>帳戶設定</value>
   </data>
+  <data name="Add a machine" xml:space="preserve">
+    <value>新增一臺機器</value>
+  </data>
   <data name="Add an SSH public key" xml:space="preserve">
     <value>新增 SSH 公鑰</value>
   </data>
@@ -183,6 +186,9 @@
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH 公鑰</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>設定 DMS CLI</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>設定</value>
   </data>
@@ -217,10 +223,4 @@
     <value>工作流程歷史</value>
   </data>
 
-  <data name="Set up DMS CLI" xml:space="preserve">
-    <value>設定 DMS CLI</value>
-  </data>
-  <data name="Add a machine" xml:space="preserve">
-    <value>新增一臺機器</value>
-  </data>
 </root>

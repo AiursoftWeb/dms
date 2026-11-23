@@ -30,8 +30,17 @@
   <data name="Open an SSH lease" xml:space="preserve">
     <value>SSH 리즈 열기</value>
   </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>APT 패키지 변경 사항 미리보기</value>
+  </data>
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>APT 패키지 인덱스 새로고침</value>
+  </data>
   <data name="Refresh images with Box Puller" xml:space="preserve">
     <value>Box Puller로 이미지 새로고침</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>사용하지 않는 APT 패키지 제거</value>
   </data>
   <data name="Run a command in Docker" xml:space="preserve">
     <value>Docker에서 명령 실행</value>
@@ -41,6 +50,9 @@
   </data>
   <data name="Upgrade DMS Agent" xml:space="preserve">
     <value>DMS 에이전트 업그레이드</value>
+  </data>
+  <data name="Upgrade available APT packages" xml:space="preserve">
+    <value>사용 가능한 APT 패키지 업그레이드</value>
   </data>
 
 </root>

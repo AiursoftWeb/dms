@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>完整說明文件</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>將 DMS CLI 連接至此控制器</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>一致性驗證</value>
   </data>
@@ -116,6 +119,9 @@
   </data>
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>包含詳盡嘅說明文件同埋實用例子，助你快速上手。</value>
+  </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>喺你部電腦安裝 CLI，並用個人 API 金鑰登入。</value>
   </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>整合式檔案管理</value>
@@ -162,6 +168,9 @@
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>無縫整合任何 OpenID Connect 供應商，並自動同步角色權限。</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>設定 DMS CLI</value>
+  </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>智能設定覆蓋</value>
   </data>
@@ -202,13 +211,4 @@
     <value>工作流程歷史</value>
   </data>
 
-  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
-    <value>將 DMS CLI 連接至此控制器</value>
-  </data>
-  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
-    <value>喺你部電腦安裝 CLI，並用個人 API 金鑰登入。</value>
-  </data>
-  <data name="Set up DMS CLI" xml:space="preserve">
-    <value>設定 DMS CLI</value>
-  </data>
 </root>

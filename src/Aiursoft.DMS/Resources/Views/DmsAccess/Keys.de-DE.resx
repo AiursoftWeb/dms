@@ -39,6 +39,9 @@
   <data name="Revoke" xml:space="preserve">
     <value>Widerrufen</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI einrichten</value>
+  </data>
   <data name="Valid days" xml:space="preserve">
     <value>Gültige Tage</value>
   </data>
