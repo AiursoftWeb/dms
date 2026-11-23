@@ -77,6 +77,62 @@ public static class DmsOutputWriter
         else WriteHuman(output, data, width, color);
     }
 
+    public static void WriteFilesystemResult(TextWriter output, TextWriter error, FilesystemListResult result,
+        OutputFormat format, bool color, int width)
+    {
+        if (format == OutputFormat.Json)
+        {
+            WriteResult(output, result, format, color, width);
+            return;
+        }
+        if (format == OutputFormat.Csv)
+        {
+            var rows = from machine in result.Machines
+                       from entry in machine.Entries ?? []
+                       select new
+                       {
+                           machine.Machine, machine.MachineId, machine.WorkflowId, machine.State, machine.Complete,
+                           entry.Path, entry.Bytes, entry.Directory, entry.SymbolicLink, entry.LinkTarget,
+                           entry.LastWriteTimeUtc, entry.CreationTimeUtc, entry.Mode
+                       };
+            WriteCsv(output, JArray.FromObject(rows), ["Machine", "MachineId", "WorkflowId", "State", "Complete",
+                "Path", "Bytes", "Directory", "SymbolicLink", "LinkTarget", "LastWriteTimeUtc", "CreationTimeUtc", "Mode"]);
+            if (result.State != RunState.Succeeded || result.Machines.Count == 0)
+                error.WriteLine($"{result.WorkflowId}: {result.State} ({result.Machines.Count} machine results).");
+        }
+        else
+            output.WriteLine($"{TerminalName(result.Path)} [{result.State}]");
+
+        foreach (var machine in result.Machines)
+        {
+            var name = TerminalName(machine.Machine);
+            var summary = machine.Entries switch
+            {
+                null when machine.State is RunState.Succeeded or RunState.Warning => "directory entries unavailable",
+                null => "no directory result",
+                { Count: 0 } => "empty directory",
+                _ when machine.Complete == false => $"{machine.Entries.Count} entries, listing incomplete",
+                _ => $"{machine.Entries.Count} entries"
+            };
+            if (format == OutputFormat.Csv)
+            {
+                if (machine.Entries is null or { Count: 0 } || machine.Complete == false || machine.State != RunState.Succeeded)
+                    error.WriteLine($"{name} [{machine.State}] {summary}.");
+                continue;
+            }
+            output.WriteLine();
+            output.WriteLine($"{name} [{machine.State}] {summary}");
+            if (machine.Entries is not { Count: > 0 } entries) continue;
+            var rows = entries.Select(entry => new[]
+            {
+                entry.SymbolicLink ? "link" : entry.Directory ? "dir" : "file",
+                entry.Bytes?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                entry.LinkTarget == null ? TerminalName(entry.Path) : $"{TerminalName(entry.Path)} -> {TerminalName(entry.LinkTarget)}"
+            }).ToList();
+            WriteRows(output, ["Type", "Bytes", "Path"], rows, width, color, [4, 20, width - 28]);
+        }
+    }
+
     private static void WriteLockboxStatus(TextWriter output, JObject summary, int width)
     {
         var decision = (DecisionState)summary["Decision"]!.Value<int>();
