@@ -89,13 +89,15 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         var updatedConfig = default(string);
         if (input.ProtectedToken != null)
         {
+            if (!isNew && !config.EndsWith(".toml", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("FRPS token rotation requires TOML configuration.");
             var readToken = agent.GetFrpsDeployToken ?? throw new InvalidOperationException("The Agent cannot fetch the approved FRPS token.");
             var newToken = await readToken(context.Id, token);
             new FrpsDeployInput(newToken).Validate();
             if (newToken.Length == 0) throw new InvalidOperationException("The approved FRPS token is empty.");
             updatedConfig = isNew
                 ? $"bindPort = 7000\nkcpBindPort = 7000\nauth.method = \"token\"\nauth.token = {QuoteToken(newToken)}\n"
-                : RotateToken(config, currentConfig!, newToken);
+                : RotateToken(currentConfig!, newToken);
         }
 
         var updateBinary = oldVersion != Release;
@@ -222,10 +224,8 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
 
     private static string QuoteToken(string token) => "\"" + token.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 
-    private static string RotateToken(string path, string config, string token)
+    private static string RotateToken(string config, string token)
     {
-        if (!path.EndsWith(".toml", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidDataException("FRPS token rotation requires TOML configuration.");
         if (UnsupportedAuth().IsMatch(config))
             throw new InvalidDataException("This FRPS configuration uses non-token or external authentication.");
         var settings = TokenSetting().Matches(config);
