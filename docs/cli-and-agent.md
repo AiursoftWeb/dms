@@ -184,14 +184,15 @@ Update the Controller, CLI (1.2.3) and target Agent (1.3.3) before using removal
 ## Configure the machine's Box Git identity
 
 ```sh
-dms machine box configure-git --machine-id "$MACHINE_ID" \
+dms machine box set-git-ssh-identity --machine-id "$MACHINE_ID" \
   --identity-file /home/anduin/.ssh/id_ed25519 \
   --known-hosts-file /home/anduin/.ssh/known_hosts \
   --reason "Use this machine's existing read-only Box deployment identity"
 ```
 
-This High standard workflow records references to two existing machine-local
-files in `/etc/aiursoft-dms-agent/box-git.json` (0600). The directory is private
+`configure-git` is accepted as an alias. This High standard workflow records
+references to two existing machine-local files in
+`/etc/aiursoft-dms-agent/box-git.json` (0600). The directory is private
 when created. Key contents are never uploaded, copied, returned or traced.
 Use the Box's read-only deployment key and a file containing independently
 verified GitLab host keys. A concrete normalized absolute path containing only
@@ -211,8 +212,8 @@ the deployment's trace. High requests/automatic approval/review use
 `CanApproveHighRiskWorkflow`; self-review additionally requires
 `CanApproveOwnWorkflow`.
 
-Update the Controller, CLI (1.2.2) and target Agent (1.3.2) before using these
-new commands. Unmodified older Agents cannot execute the new definitions.
+The `set-git-ssh-identity` name is available in CLI 1.29.0. Use a Controller
+and target Agent that support `machine.box.configure-git` (Agent 1.3.2 or later).
 
 ## Manage Box secrets
 
