@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Bu izinler hakkında</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Uygula</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Otomatik olarak onayla</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Küme</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Çalıştırma konumu</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Yüksek</value>
@@ -57,13 +63,22 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Kayıtlı genel kullanıma açık standart iş akışı yok.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Açık</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Makine hedefleri gerektirir</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Risk (en yüksekten)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Risk (en düşükten başlayarak)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Rol izinleri, bu DMS örneğindeki her makineye ve her iş akışının risk düzeyine uygulanır. Otomatik onay, {0} istek izni gerektirir. Kendi isteğinizi onaylamak için ayrıca kendi onayı izni de gereklidir.</value>
   </data>
   <data name="Safe" xml:space="preserve">
@@ -72,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>İş akışlarını göster</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Sıralama</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Standart iş akışları</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Bu katalog, Denetleyici’de kullanılabilen herkese açık standart iş akışlarını listeler. Aracının kullanılabilirliği ve desteklenen sürümler yürütme sırasında kontrol edilir. Özel denetim işlemleri ve dahili alt iş akışları listelenmez.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Bilinmeyen</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Sürüm</value>
@@ -86,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>İş akışı</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>İş akışı adı (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Akış adı (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Evet</value>

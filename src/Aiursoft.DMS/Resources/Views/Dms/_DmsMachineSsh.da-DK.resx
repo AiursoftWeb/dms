@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Checked" xml:space="preserve">
+    <value>Tjekket</value>
+  </data>
+  <data name="Expires" xml:space="preserve">
+    <value>Udløber</value>
+  </data>
+  <data name="Ordinary SSH open" xml:space="preserve">
+    <value>Almindelig SSH åben</value>
+  </data>
+  <data name="SSH closed" xml:space="preserve">
+    <value>SSH lukket</value>
+  </data>
+  <data name="SSH lease expired, awaiting confirmation" xml:space="preserve">
+    <value>SSH-leje udløbet, afventer bekræftelse</value>
+  </data>
+  <data name="SSH status unverified" xml:space="preserve">
+    <value>SSH-status ubekræftet</value>
+  </data>
+  <data name="Temporary SSH open" xml:space="preserve">
+    <value>Midlertidig SSH åben</value>
+  </data>
+  <data name="View Lockbox request" xml:space="preserve">
+    <value>Se Lockbox-anmodning</value>
+  </data>
+  <data name="{0} min left" xml:space="preserve">
+    <value>{0} min. tilbage</value>
+  </data>
+
+</root>

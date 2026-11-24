@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Verificare Lint</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} înregistrează cine a solicitat o operațiune, ce ținte are aceasta și decizia de aprobare.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Licență MIT</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Filosofia</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Aplicația web centrală și API. Monitorizează mașinile, gestionează aprobările {0} și coordonează fluxurile de lucru.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Unelata de linie de comandă pe care o rulați pe propriul computer. Se conectează la Controller, astfel încât să puteți solicita operațiuni și a verifica rezultatele acestora.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Fundamentul definitiv, testat în practică pentru întreprinderi în .NET. De la Autentificare până la Inteligență Artificială, am rezolvat părțile dificile, astfel încât să nu aibă nevoie să le rezolvi tu.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Bara de navigare se ajustează automat în funcție de rolurile și permisiunile utilizatorului.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Serviciul pe care îl instalați pe fiecare mașină gestionată. Se conectează la Controller, raportează starea sa și execută fluxurile de lucru aprobate local.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Șablonul este construit pentru o implementare ușoară. Include suport complet pentru Docker, astfel încât poți containeriza aplicația și să o rulezi oriunde. De asemenea, îl poți implementa direct pe IIS, Azure App Service sau pe orice server care suportă ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>Cele trei componente ale DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Acesta este un proiect tip</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Vizualizează pe GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Vizualizați inventarul mașinilor, conectivitatea Agent, versiunile și istoricul operațiunilor.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory disponibil</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>API java.time disponibil</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} înregistrează cine a solicitat o operațiune, ce ținte are aceasta și decizia de aprobare.</value>
   </data>
 
 </root>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Herkes bir açık anahtarı kopyalayabilir. Bu adım, bilgisayarınızda kalan özel anahtarın sizde olduğunu kanıtlar.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>SSH genel anahtarlarına dön</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Bu anahtarı ekleme işlemini iptal et</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Komut kopyalandı</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Komutu kopyala</value>
+  </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>YubiKey / Donanım anahtarım var</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Ben bir özel anahtar dosyası kullanıyorum</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Süre dolarsa anahtarı yeniden ekleyin.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Özel anahtarınız başka bir yerde saklanıyorsa, -f sonrasındaki yolu değiştirin. Ardından komutun yazdırdığı tam imzayı yapıştırın.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Anahtarınızın SSH ajanınızda yüklendiğinden emin olun (örneğin, saklanan anahtarlar için ssh-add -K komutunu çalıştırarak), ardından şu komutu çalıştırın:</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH imzası</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Yeniden başlat</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>2. adım / 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Terminal komutu</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>İmza eşleşmedi. Yukarıdaki komutu, bu genel anahtara ait özel anahtarla çalıştırın ve tam sonucu yapıştırın.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Kalan süre</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>Bu anahtarı eklemeyi tamamlamak için, özel anahtarını barındıran bilgisayarda aşağıdaki komutu çalıştırın.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>İmzalama işlemini tamamlamak için YubiKey&apos;iniz yanıp söndüğünde ona dokunun. Ardından, komutun yazdırdığı tam imzayı yapıştırın.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>Doğrulama süresi doldu. Bu anahtar eklenmedi.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>Doğrulama şu saatte sona erer:</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Doğrula ve anahtarı ekle</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>SSH genel anahtarınızı doğrulayın</value>
+  </data>
+
+</root>

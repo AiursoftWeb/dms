@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lintcontrole</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} registreert wie een bewerking heeft aangevraagd, op welke doelen deze is gericht en wat de goedkeuringsbeslissing is.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT-licentie</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>De filosofie</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>De centrale webapplicatie en API. Het bijhoudt machines, beheert {0} goedkeuringen en coördineert workflows.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>De commandoregeltool die u op uw eigen computer uitvoert. Hij verbinding met de Controller zodat u bewerkingen kunt aanvragen en de resultaten kunt inspecteren.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>De definitieve, bewezen .NET enterprise basis. Van Auth tot AI, hebben we de lastige onderdelen opgelost, zodat u dat niet hoeft te doen.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>De navigatiebalk past zich automatisch aan op basis van gebruikersrollen en machtigingen.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>De service die u op elke beheerde machine installeert. Hij maakt verbinding met de Controller, rapporteert zijn status en voert goedgekeurde workflows lokaal uit.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>De template is gebouwd voor eenvoudige implementatie. Het bevat volledige Docker-ondersteuning, zodat je je app kunt containeriseren en overal kunt uitvoeren. Je kunt het ook direct implementeren naar IIS, Azure App Service of elke server die ASP.NET Core ondersteunt.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>De drie onderdelen van DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Dit is een sjabloonproject</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Bekijk op GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Bekijk uw machineinventaris, agentverbindingen, versies en operatiegeschiedenis.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory beschikbaar</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API beschikbaar</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} registreert wie een bewerking heeft aangevraagd, op welke doelen deze is gericht en wat de goedkeuringsbeslissing is.</value>
   </data>
 
 </root>

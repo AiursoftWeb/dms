@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Add an SSH public key" xml:space="preserve">
+    <value>Voeg een SSH openbare sleutel toe</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Terug naar SSH openbare sleutels</value>
+  </data>
+  <data name="Continue to verification" xml:space="preserve">
+    <value>Doorgaan naar verificatie</value>
+  </data>
+  <data name="Key name" xml:space="preserve">
+    <value>Naam van de sleutel</value>
+  </data>
+  <data name="OpenSSH public key" xml:space="preserve">
+    <value>OpenSSH openbare sleutel</value>
+  </data>
+  <data name="Paste your public key. In the next step, you&apos;ll confirm that you can use its private key." xml:space="preserve">
+    <value>Plak je openbare sleutel. In de volgende stap bevestig je dat je de bijbehorende privésleutel kunt gebruiken.</value>
+  </data>
+  <data name="Step 1 of 2" xml:space="preserve">
+    <value>Stap 1 van 2</value>
+  </data>
+  <data name="This verification has expired or was abandoned. Add the key again to continue." xml:space="preserve">
+    <value>Deze verificatie is verlopen of is verlaten. Voeg de sleutel opnieuw toe om door te gaan.</value>
+  </data>
+
+</root>

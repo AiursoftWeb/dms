@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Toate originile</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Toate stările</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Aplică filtrele</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automat</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Anulat</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Șterge filtrele</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Doar fluxurile de lucru ale clusterului</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Finalizat cu avertismente</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controler</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Creat</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Pagini de execuție</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Starea de execuție</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Eșuat</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtrează</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Mașină</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manual</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Necesită verificare</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Următoarea</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Nicio execuție nu corespunde acestor filtre.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Origine</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Fluxul de lucru părinte</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Anterior</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>În coadă</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Doar execuții principale</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>În execuție</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Stare</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Reușit</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Vizualizare execuție</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flux de lucru</value>

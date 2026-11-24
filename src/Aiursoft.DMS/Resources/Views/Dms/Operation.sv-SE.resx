@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>Godkännandekontext</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatisk</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Anropsstack</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Kontrollerad</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Kontroller</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Varaktighet</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Etablerade OpenSSH-anslutningar</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Exekveringsidentifier och utlösare</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Exekveringslogg</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Sidor för körningslogg</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Navigering för körning</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Exekveringssteg</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Slutförd</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Maskin</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Nästa</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Inte startad</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH-listeners</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Ursprung</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>Överordnad</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Överordnat arbetsflöde</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Föregående</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Rå exekveringsresultat</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Övriga anslutningsdetaljer</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Övriga lyssnardefter</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Resultat</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Rotarbete</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>Stängning av SSH kräver verifiering</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Se alla exekveringssteg</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Startad</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Status</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Steg som behöver uppmärksamhet</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Systemschema</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Målmaskiner</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSH-tjänsten och uttaget maskerades och stoppades.</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Körningsloggen är inte tillgänglig. Väntande händelser förvaras fortfarande.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>Det finns inga arkiverade händelser på den här sidan.</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Detta kör har inga registrerade antal lyssnare eller anslutningar.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Spårning</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>Utlösare</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Visa SSH-verifieringsloggen</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Arbetsflöde</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>Workflow-ID</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Arbetsflödeshistorik</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} begäran</value>
   </data>
 
 </root>

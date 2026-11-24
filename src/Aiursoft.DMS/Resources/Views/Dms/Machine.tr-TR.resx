@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>Ajan bağlantısı</value>
+  </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Ajan yükseltme geçmişi</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Ajan sürümü</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Makinelere dön</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>Çizgi geçmiş</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>Oluşturuldu</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>SSH&apos;yi devre dışı bırakma, çalıştırıldığında oturumları kesebilir ve mevcut herhangi bir lisansı iptal edebilir.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>SSH geçmişi devre dışı bırak</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Tamamlandı</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Son görülme</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Son çalıştırma</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>Makine Kimliği</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Makineler</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>Kalp atışı sinyali alınmadı</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>Bu makine için kayıtlı planlanmış bir temel çizgi çalıştırması bulunmamaktadır.</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Sebep</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>SSH Devre Dışına Alma Talebi</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>SSH&apos;yi Devre Dışı Bırakma isteği göndermek için orta riskli iş akışlarını gönderme yetkisine sahip DMS izni gereklidir.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH kira denetimi geçmişi</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH yönetimi</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH genel anahtarları</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Zamanlanmış güvenlik taban çizgisi</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Başlatıldı</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>{0} isteğini gönder</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>SSH durumu değişti. Yeni bir istek göndermeden önce mevcut durumu gözden geçirin.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Tek bir doğrulanmış anahtar seçmek için --key-id kullanın.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Erişim isteminden önce kişisel SSH anahtarlarınızı doğrulayın. CLI, varsayılan olarak tüm doğrulanmış anahtarlarınızı kullanır.</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Çalışmayı Görüntüle</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>İş akışı geçmişi</value>
+  </data>
+
+</root>

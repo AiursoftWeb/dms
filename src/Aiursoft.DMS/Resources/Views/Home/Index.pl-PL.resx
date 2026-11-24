@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Sprawdzenie kodu</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} rejestruje, kto zlecił operację, jakie są jej cele oraz jaka zapadła decyzja o zatwierdzeniu.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Licencja MIT</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Filozofia</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Centralna aplikacja webowa i API. Śledzi maszyny, zarządza zatwierdzeniami {0} i koordynuje przepływy pracy.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Narzędzie wiersza poleceń, które uruchamiasz na własnym komputerze. Łączy się z kontrolerem, abyś mógł wysyłać żądania operacji i przeglądać ich wyniki.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Definitywny, sprawdzony w praktyce fundament dla firmowego środowiska .NET. Od uwierzytelniania po sztuczną inteligencję — rozwiązaliśmy trudne problemy, dzięki czemu nie musisz tego robić sam.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Pasek nawigacyjny automatycznie dostosowuje się w oparciu o role i uprawnienia użytkownika.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Usługa, którą instalujesz na każdym zarządzanym komputerze. Łączy się z Kontrolerem, raportuje swój status i wykonuje zatwierdzone procesy lokalnie.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Szablon został zaprojektowany z myślą o łatwym wdrażaniu. Zawiera pełne wsparcie dla Dockera, więc możesz skonteneryzować swoją aplikację i uruchomić ją wszędzie. Możesz również wdrożyć ją bezpośrednio na IIS, Azure App Service lub dowolnym serwerze obsługującym ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>Trzy części DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>To jest projekt szablonowy</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Zobacz na GitHubie</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Przeglądaj inwentarz maszyn, łączność Agentów, wersje oraz historię operacji.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>Dostępna klasa WebApplicationFactory</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>Dostępne API java.time</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} rejestruje, kto zlecił operację, jakie są jej cele oraz jaka zapadła decyzja o zatwierdzeniu.</value>
   </data>
 
 </root>

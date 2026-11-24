@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. CLI&apos;yi yükleyin</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. Kişisel API anahtarı oluşturun</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. Bu Denetleyiciye Giriş Yapın</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. Bağlantıyı doğrulayın</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>DMS&apos;ye Geri Dön</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>CLI&apos;nin hangi hesap ve izinleri kullandığını kontrol edin.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>Mevcut DMS_SERVER ve DMS_API_KEY ortam değişkenleri, kayıtlı oturum bilgilerinizin üzerine yazar. Kayıtlı ayarları kullanmak için bunları temizleyin.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>Anahtara bir ad verin ve göründüğü anda kopyalayın. DMS bunu yalnızca bir kez görüntüler.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>CLI zaten yüklendiyse, aşağıdaki komutla güncelleyin.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Open iş akışlarını çalıştırmaya yetkiniz varsa, CLI ile makineleri listelemeyi deneyin.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>Önce .NET 10 SDK&apos;yi yükleyin, ardından bunu terminalinizde çalıştırın.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>API Anahtarlarını Aç</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>Giriş komutunu çalıştırın, gizli istemde kişisel API anahtarını yapıştırın ve Enter tuşuna basın.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>Bu DMS Denetleyicisine bağlanmak için bu komutları bilgisayarınızda çalıştırın.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI&apos;yi kurun</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>CLI, bu adresi ve kişisel API anahtarınızı bilgisayarınızda saklar.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>Bu Denetleyici</value>
+  </data>
+
+</root>
