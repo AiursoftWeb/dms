@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Aiursoft.DMS.Sqlite.Migrations
 {
+    [ExcludeFromCodeCoverage]
     public partial class WorkflowInstanceInput : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
