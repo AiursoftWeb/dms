@@ -27,14 +27,38 @@
   <data name="Ask the machine administrator to confirm readiness before relying on temporary SSH." xml:space="preserve">
     <value>需要使用臨時 SSH 時，請先聯絡機器管理員確認機器已準備好。</value>
   </data>
+  <data name="Check the SSH lease history and the Agent version in DMS." xml:space="preserve">
+    <value>請在 DMS 中檢查 SSH 租約歷史記錄及 Agent 版本。</value>
+  </data>
+  <data name="DMS can check SSH when the Agent reconnects." xml:space="preserve">
+    <value>當 Agent 重新連線時，DMS 即可檢查 SSH。</value>
+  </data>
+  <data name="DMS has no recent SSH observation" xml:space="preserve">
+    <value>DMS 沒有近期的 SSH 觀察記錄</value>
+  </data>
+  <data name="DMS has not verified SSH shutdown" xml:space="preserve">
+    <value>DMS 尚未驗證 SSH 已關閉</value>
+  </data>
+  <data name="Ordinary SSH is still listening" xml:space="preserve">
+    <value>一般 SSH 仍在監聽</value>
+  </data>
+  <data name="Review the Disable SSH workflow result in DMS before requesting another lease." xml:space="preserve">
+    <value>在申請另一個租約之前，請先檢視 DMS 中停用 SSH 工作流的結果。</value>
+  </data>
   <data name="Temporary SSH is ready to request" xml:space="preserve">
     <value>可以申請臨時 SSH</value>
   </data>
   <data name="Temporary SSH readiness is awaiting confirmation" xml:space="preserve">
     <value>臨時 SSH 準備狀態待確認</value>
   </data>
+  <data name="The Agent is disconnected" xml:space="preserve">
+    <value>Agent 已斷線</value>
+  </data>
   <data name="This machine needs SSH setup" xml:space="preserve">
     <value>這台機器尚未準備好臨時 SSH</value>
+  </data>
+  <data name="To switch this machine to temporary SSH, run Disable SSH in DMS first." xml:space="preserve">
+    <value>若要將此機器切換為暫時 SSH，請先在 DMS 中執行「停用 SSH」。</value>
   </data>
   <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
     <value>請等目前的租約結束後再申請。</value>

@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Копировать команду</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>У меня есть YubiKey / аппаратный ключ</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Я использую файл приватного ключа</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>Если время выйдет, добавьте ключ снова.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>Если ваш закрытый ключ хранится в другом месте, измените путь после -f. Затем вставьте полную подпись, напечатанную командой.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Убедитесь, что ваш ключ загружен в ваш SSH-агент (например, выполнив ssh-add -K для резидентных ключей), затем запустите:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>SSH-подпись</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>Чтобы завершить добавление этого ключа, выполните приведённую ниже команду на компьютере, на котором хранится его закрытый ключ.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Коснитесь вашего YubiKey, когда он мигнёт, чтобы завершить подписание. Затем вставьте полную подпись, выведенную командой.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>Срок действия подтверждения истёк. Этот ключ не был добавлен.</value>

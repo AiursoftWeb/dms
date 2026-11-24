@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="A temporary SSH lease is active" xml:space="preserve">
+    <value>Un lease SSH temporaneo è attivo</value>
+  </data>
+  <data name="Check the SSH lease history and the Agent version in DMS." xml:space="preserve">
+    <value>Verifica lo storico dei lease SSH e la versione dell&apos;Agent in DMS.</value>
+  </data>
+  <data name="DMS can check SSH when the Agent reconnects." xml:space="preserve">
+    <value>DMS può verificare SSH quando l&apos;Agent si ricollega.</value>
+  </data>
+  <data name="DMS has no recent SSH observation" xml:space="preserve">
+    <value>DMS non ha recenti osservazioni SSH</value>
+  </data>
+  <data name="DMS has not verified SSH shutdown" xml:space="preserve">
+    <value>DMS non ha verificato l&apos;arresto di SSH</value>
+  </data>
+  <data name="Ordinary SSH is still listening" xml:space="preserve">
+    <value>La SSH ordinaria è ancora in ascolto</value>
+  </data>
+  <data name="Review the Disable SSH workflow result in DMS before requesting another lease." xml:space="preserve">
+    <value>Esamina il risultato del flusso di lavoro Disable SSH in DMS prima di richiedere un altro lease.</value>
+  </data>
+  <data name="Temporary SSH is ready to request" xml:space="preserve">
+    <value>SSH temporaneo pronto per la richiesta</value>
+  </data>
+  <data name="The Agent is disconnected" xml:space="preserve">
+    <value>L&apos;Agent non è connesso</value>
+  </data>
+  <data name="To switch this machine to temporary SSH, run Disable SSH in DMS first." xml:space="preserve">
+    <value>Per passare questa macchina a SSH temporaneo, esegui prima Disabilita SSH in DMS.</value>
+  </data>
+  <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
+    <value>Attendi la fine della concessione corrente prima di richiederne un&apos;altra.</value>
+  </data>
+
+</root>

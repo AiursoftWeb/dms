@@ -21,6 +21,12 @@
       <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
     <value>Demandez à l&apos;administrateur de la machine de vérifier la configuration SSH. Soumettez une nouvelle demande une fois que la machine est prête.</value>
   </data>
+  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
+    <value>DMS doit vérifier la référence SSH avant de pouvoir émettre une location temporaire.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>Ouvrir la gestion SSH</value>
+  </data>
   <data name="The request was approved, and execution stopped before creating a lease." xml:space="preserve">
     <value>La demande a été approuvée et l&apos;exécution s&apos;est arrêtée avant la création d&apos;un bail.</value>
   </data>

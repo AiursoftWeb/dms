@@ -27,11 +27,17 @@
   <data name="Callstack" xml:space="preserve">
     <value>Aufrufstack</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Geprüft</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>Controller</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>Dauer</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Eingehende OpenSSH-Verbindungen</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>Ausführungsidentifikatoren und Auslöser</value>
@@ -60,6 +66,9 @@
   <data name="Not started" xml:space="preserve">
     <value>Nicht gestartet</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH-Listener</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>Ursprung</value>
   </data>
@@ -75,11 +84,20 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>Rohes Ausführungsergebnis</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Verbindungsdaten im Detail</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Details der verbleibenden Listener</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Ergebnis</value>
   </data>
   <data name="Root workflow" xml:space="preserve">
     <value>Hauptworkflow</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH-Schließung erfordert Überprüfung</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>Alle Ausführungsschritte anzeigen</value>
@@ -99,17 +117,26 @@
   <data name="Target machines" xml:space="preserve">
     <value>Zielmaschinen</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>Der SSH-Dienst und der Socket wurden maskiert und gestoppt.</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>Das Ausführungsprotokoll ist nicht verfügbar. Ausstehende Ereignisse werden weiterhin gespeichert.</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>Auf dieser Seite sind keine archivierten Ereignisse vorhanden.</value>
   </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Für diesen Lauf wurden keine Listener- oder Verbindungsanzahlen aufgezeichnet.</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>Protokoll</value>
   </data>
   <data name="Trigger" xml:space="preserve">
     <value>Auslöser</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>SSH-Verifizierungsprotokoll anzeigen</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Workflow</value>

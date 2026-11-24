@@ -27,11 +27,17 @@
   <data name="Callstack" xml:space="preserve">
     <value>呼び出しスタック</value>
   </data>
+  <data name="Checked" xml:space="preserve">
+    <value>確認済み</value>
+  </data>
   <data name="Controller" xml:space="preserve">
     <value>コントローラー</value>
   </data>
   <data name="Duration" xml:space="preserve">
     <value>所要時間</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>確立されたOpenSSH接続</value>
   </data>
   <data name="Execution identifiers and trigger" xml:space="preserve">
     <value>実行識別子とトリガー</value>
@@ -60,6 +66,9 @@
   <data name="Not started" xml:space="preserve">
     <value>未開始</value>
   </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH リスナー</value>
+  </data>
   <data name="Origin" xml:space="preserve">
     <value>発生源</value>
   </data>
@@ -75,11 +84,20 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>生の実行結果</value>
   </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>残りの接続詳細</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>残りのリスナーの詳細</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>結果</value>
   </data>
   <data name="Root workflow" xml:space="preserve">
     <value>ルートワークフロー</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSHクローズの検証が必要です</value>
   </data>
   <data name="See all execution steps" xml:space="preserve">
     <value>すべての実行ステップを表示</value>
@@ -99,17 +117,26 @@
   <data name="Target machines" xml:space="preserve">
     <value>対象マシン</value>
   </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSHサービスとソケットはマスクされ、停止されました。</value>
+  </data>
   <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
     <value>実行ログは利用できません。保留中のイベントは引き続き保存されています。</value>
   </data>
   <data name="There are no archived events on this page." xml:space="preserve">
     <value>このページにはアーカイブされたイベントはありません。</value>
   </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>この実行には、リッスンまたは接続の記録がありません。</value>
+  </data>
   <data name="Trace" xml:space="preserve">
     <value>トレース</value>
   </data>
   <data name="Trigger" xml:space="preserve">
     <value>トリガー</value>
+  </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>SSH検証ログを表示</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>ワークフロー</value>

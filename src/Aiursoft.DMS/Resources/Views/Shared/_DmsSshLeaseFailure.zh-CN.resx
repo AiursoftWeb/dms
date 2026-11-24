@@ -21,6 +21,12 @@
       <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
     <value>请联系机器管理员检查 SSH 设置。管理员确认机器准备好后，请重新提交申请。</value>
   </data>
+  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
+    <value>DMS 必须先验证 SSH 基线，然后才能签发临时租约。</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>打开 SSH 管理</value>
+  </data>
   <data name="The request was approved, and execution stopped before creating a lease." xml:space="preserve">
     <value>申请已获批准，执行在创建租约前停止。</value>
   </data>
@@ -28,10 +34,4 @@
     <value>{0} 尚未准备好临时 SSH</value>
   </data>
 
-  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
-    <value>DMS 必须先验证 SSH 基线，然后才能签发临时租约。</value>
-  </data>
-  <data name="Open SSH management" xml:space="preserve">
-    <value>打开 SSH 管理</value>
-  </data>
 </root>

@@ -33,11 +33,20 @@
   <data name="Copy command" xml:space="preserve">
     <value>Copiar comando</value>
   </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Tenho uma YubiKey / chave de hardware</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Uso um ficheiro de chave privada</value>
+  </data>
   <data name="If time runs out, add the key again." xml:space="preserve">
     <value>Se o tempo acabar, adicione a chave novamente.</value>
   </data>
   <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
     <value>Se a sua chave privada estiver armazenada noutro local, altere o caminho após -f. Em seguida, cole a assinatura completa impressa pelo comando.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Certifique-se de que a sua chave está carregada no seu agente SSH (por exemplo, executando ssh-add -K para chaves residentes) e, em seguida, execute:</value>
   </data>
   <data name="SSH signature" xml:space="preserve">
     <value>Assinatura SSH</value>
@@ -59,6 +68,9 @@
   </data>
   <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
     <value>Para terminar de adicionar esta chave, execute o comando abaixo no computador que detém a sua chave privada.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Toque no YubiKey quando ele piscar para concluir a assinatura. Em seguida, cole a assinatura completa impressa pelo comando.</value>
   </data>
   <data name="Verification expired. This key was not added." xml:space="preserve">
     <value>A verificação expirou. Esta chave não foi adicionada.</value>

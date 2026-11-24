@@ -21,6 +21,9 @@
       <data name="Agent connection" xml:space="preserve">
     <value>การเชื่อมต่อ Agent</value>
   </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>ประวัติการอัปเกรดเอเจนต์</value>
+  </data>
   <data name="Agent version" xml:space="preserve">
     <value>เวอร์ชันของเอเจนต์</value>
   </data>
@@ -32,6 +35,12 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>สร้างแล้ว</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>การปิดใช้งาน SSH อาจทำให้เซสชันถูกตัดการเชื่อมต่อและเพิกถอนลีสที่ปรากฏอยู่เมื่อคำสั่งถูกดำเนินการ</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>ประวัติการปิดใช้งาน SSH</value>
   </data>
   <data name="Finished" xml:space="preserve">
     <value>เสร็จสิ้น</value>
@@ -57,8 +66,23 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>ยังไม่ได้ยืนยัน</value>
   </data>
+  <data name="Reason" xml:space="preserve">
+    <value>เหตุผล</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>คำขอปิดใช้งาน SSH</value>
+  </data>
   <data name="Request temporary SSH" xml:space="preserve">
     <value>ขอใช้งาน SSH ชั่วคราว</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>การขอปิดใช้งาน SSH ต้องมีสิทธิ์ DMS ในการส่ง workflow ความเสี่ยงระดับกลาง</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>ประวัติการตรวจสอบลีสSSH</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>การจัดการ SSH</value>
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>คีย์สาธารณะ SSH</value>
@@ -69,8 +93,20 @@
   <data name="Started" xml:space="preserve">
     <value>เริ่มแล้ว</value>
   </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>ส่งคำขอ {0}</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>สถานะ SSH เปลี่ยนแปลงแล้ว กรุณาตรวจสอบสถานะปัจจุบันก่อนส่งคำขอใหม่</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>ใช้ --key-id เพื่อเลือกคีย์ที่ตรวจสอบแล้วเพียงคีย์เดียว</value>
+  </data>
   <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
     <value>ตรวจสอบคีย์สาธารณะส่วนตัว จากนั้นใช้ ID ของคีย์นั้นเพื่อส่งคำขอของคุณผ่าน CLI</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>ตรวจสอบคีย์ SSH ส่วนตัวของคุณก่อนขอสิทธิ์เข้าถึง CLI จะใช้คีย์ที่ผ่านการตรวจสอบทั้งหมดของคุณโดยค่าเริ่มต้น</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>ดูการดำเนินการ</value>

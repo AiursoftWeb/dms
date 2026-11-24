@@ -21,6 +21,12 @@
       <data name="Ask the machine administrator to check SSH setup. Submit a new request once the machine is ready." xml:space="preserve">
     <value>Yêu cầu quản trị viên máy chủ kiểm tra cấu hình SSH. Gửi một yêu cầu mới khi máy chủ đã sẵn sàng.</value>
   </data>
+  <data name="DMS must verify the SSH baseline before it can issue a temporary lease." xml:space="preserve">
+    <value>DMS phải xác minh đường cơ sở SSH trước khi có thể cấp một khoản thuê tạm thời.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>Mở quản lý SSH</value>
+  </data>
   <data name="The request was approved, and execution stopped before creating a lease." xml:space="preserve">
     <value>Yêu cầu đã được phê duyệt, và quá trình thực thi đã dừng lại trước khi tạo thuê bao.</value>
   </data>

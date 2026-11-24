@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>جميع الأجهزة المفعّلة</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>خطة حزم APT</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>ترقيات إضافية في خطة ستؤدي إلى إزالة الحزم</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>التحقق من مكافحة التزوير:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>موافقة</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>تمت الموافقة</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>الأجهزة المستهدفة المعتمدة</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>معتمد · بانتظار التشغيل</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>معرّف المعتمد</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>عقد التنفيذ المرجعي:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>الموافقة التلقائية</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>بانتظار الموافقة</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>العودة إلى الموافقات</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>الأمر</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>تم نسخ الأمر</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>تاريخ الإنشاء</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>حزمة الوكيل المتاحة حاليًا</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>القرار</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>سبب القرار</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>رفض</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>أمر Docker في طلب {0} هذا</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>أمر DMS المكافئ</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>حالة التنفيذ</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>حالة التنفيذ غير متاحة.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>الملفات المدخلة المجمّدة</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>خطر مرتفع</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>سير عمل الاعتماد التاريخي</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>المعرّف</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>الصورة</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>نطاق الصورة</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>مخاطر منخفضة</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>مخاطر متوسطة</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>يتطلب طلبًا جديدًا</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>لا يوجد معتمدون مؤهلون حاليًا.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>لا توجد أهداف للأجهزة</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>لا توجد تغييرات مخططة للحزم.</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>لم يقدم مقدم الطلب أي سبب.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>فتح إدارة SSH</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>سير عمل مفتوح</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>المعلمات</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>جالب</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>JSON المدخلات الخام</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>مُعاد بناؤه من المدخلات المحفوظة وأجهزة الهدف.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>حزمة الوكيل المطلوبة</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>راجع الحزمة الحالية وأرسل طلبًا جديدًا لنفس الأجهزة.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>راجع المحتوى الدقيق المُقدَّم للتنفيذ.</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>يجب على المراجعين التحقق من أن السبب المذكور من قِبل مقدم الطلب يطابق بدقة تعريف سير العمل المعتمد، وأجهزة الهدف، وبارامترات الإدخال المجمّدة أدناه. لا تُعتمد الطلبات بناءً على هذا النص وحده.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>المخاطر</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>بصمات مفاتيح SSH</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>مسار عمل آمن</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>إرسال طلب ترقية جديد</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>الأجهزة المستهدفة</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>حزمة Agent غير متاحة مؤقتًا. حاول مرة أخرى لاحقًا.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>تعريف سير العمل، وأجهزة الهدف، ومعاملات الإدخال أدناه مجمّدة وصريحة. إنها تمثل بالضبط ما سينفَّذ عند الاعتماد.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>تغيّر حزمة الوكيل الحالية مرة أخرى. راجعها قبل الإرسال.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>حزمة Agent الأصلية متاحة مرة أخرى. راجع الطلب الأصلي.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>المعاينة غير متاحة لهذا الجهاز.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>يجب على مقدم الطلب تقديم طلب ترقية جديد.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>تم استبدال حزمة Agent المحددة. لم يبدأ الترقية بعد.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>لا يستقبل هذا سير العمل أي معلمات.</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>جهاز غير معروف</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>ادعاء مقدم الطلب غير الموثق</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>ترقية وكيل DMS على {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>خطر مرتفع جداً</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>عرض تنفيذ سير العمل</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>من يمكنه الموافقة</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>مسحوبة</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>سير العمل</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>تعريف سير العمل</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>إصدار سير العمل</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>لا يسمح لك دورك الحالي بطلب هذا الترقية.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>بايت</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>معرّف {0}</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>معرّفات الطلب {0} والحمولة الأولية</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>سبب طلب {0}</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>مقدِّم {0}</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>معرّف مقدم الطلب {0}</value>
   </data>
 
 </root>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>Agentverbinding</value>
+  </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Agentupgradehistorie</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Agentversie</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Terug naar machines</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>Baselinegeschiedenis</value>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>Aangemaakt</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>SSH uitschakelen kan sessies verbreken en elke verhuur intrekken die aanwezig is op het moment van uitvoering.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>SSH-geschiedenis wissen</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Voltooid</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Laatst gezien</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Laatste uitvoering</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>Machine-id</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Machines</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>Geen heartbeat ontvangen</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>Er is geen geplande baseline-executie geregistreerd voor deze machine.</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Reden</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>SSH uitschakelen aanvragen</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Het aanvragen van SSH uitschakelen vereist DMS-rechten om workflows met een mediumrisico in te dienen.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH lease-check geschiedenis</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH-beheer</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>SSH-publieke sleutels</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Geplande beveiligingsbaseline</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Gestart</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>Verstuur {0}-verzoek</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>De SSH-status is gewijzigd. Controleer de huidige status voordat u een nieuw verzoek indient.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Gebruik --key-id om een enkele geverifieerde sleutel te selecteren.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Verifieer uw persoonlijke SSH-sleutels voordat u toegang aanvraagt. De CLI gebruikt standaard al uw geverifieerde sleutels.</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Uitvoering weergeven</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Workflowgeschiedenis</value>
+  </data>
+
+</root>

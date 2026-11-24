@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>ALLE INSCHAKELEDE MACHINES</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>APT-pakketplan</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>Aanvullende opwaarderingen in een plan die pakketten zouden verwijderen</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>Anti-spoofingverificatie:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Goedkeuren</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Goedgekeurd</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Goedgekeurde doelmachines</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Goedgekeurd · Wacht op uitvoering</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>Goedgekeurde door ID</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>Auteuritaire Uitvoeringsovereenkomst:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Automatische goedkeuring</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>In afwachting van goedkeuring</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Terug naar goedkeuringen</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Commando</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Commando gekopieerd</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopiëren</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Aangemaakt</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Huidig beschikbare Agent-pakket</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Beslissing</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Reden van de beslissing</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Geweigerd</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Weigeren</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Docker-opdracht in deze {0}-aanvraag</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Equivalente DMS-opdracht</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Executiestatus</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>Uitvoeringsstatus is niet beschikbaar.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Bevroren invoerbestanden</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Hoog risico</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Historische goedkeuringsworkflow</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Afbeelding</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Afbeeldingsbereik</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Laag risico</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Gemiddeld risico</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Nieuwe aanvraag vereist</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>Op dit moment zijn er geen geschikte goedkeuringen.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>Geen machinetoewijzingen</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>Geen pakketwijzigingen gepland.</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>Er is geen reden opgegeven door de aanvrager.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>SSH-beheer openen</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Open workflow</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parameters</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>Ruwe invoer-JSON</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Hergeconstrueerd uit de opgeslagen invoer en doelmachines.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>Aangevraagd Agent-pakket</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Controleer het huidige pakket en dien een nieuw verzoek in voor dezelfde machines.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Controleer de exacte inhoud die voor uitvoering is ingediend.</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>Beoordelaars moeten verifiëren dat de door de aanvrager genoemde reden exact overeenkomt met de autoritaire Workflow-definitie, de doelcomputers en de bevroren invoerparameters hieronder. Keur niet goed op basis van alleen deze tekst.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risico</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH-sleutel vingerafdrukken</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Veilige workflow</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Diende een nieuw upgradeverzoek in</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Doelcomputers</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>Het Agent-pakket is tijdelijk niet beschikbaar. Probeer het later opnieuw.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>De Workflowdefinitie, doelmachines en invoerparameters hieronder zijn bevroren en autoritatief. Ze stellen exact voor wat zal worden uitgevoerd bij goedkeuring.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>Het huidige Agent-pakket is opnieuw gewijzigd. Controleer het voordat u het indient.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>Het oorspronkelijke Agent-pakket is opnieuw beschikbaar. Controleer de oorspronkelijke aanvraag.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>De voorvertoning is niet beschikbaar voor deze machine.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>De aanvrager moet een nieuw upgradeverzoek indienen.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>Het geselecteerde Agent-pakket is vervangen. De upgrade is niet gestart.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>Deze workflow vereist geen parameters.</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>Onbekende machine</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>Ongeverifieerde bewering van aanvrager</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>DMS-agent upgraden op {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Zeer hoog risico</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>Workflowuitvoering weergeven</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Wie kan goedkeuren</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Ingetrokken</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Werkstroom</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>Workflowdefinitie</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>Workflowversie</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Uw huidige rol staat u niet toe om deze upgrade aan te vragen.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>bytes</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0}-ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} verzoekidentificatoren en ruwe payload</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} aanvraagreden</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} aanvrager</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} aanvrager-ID</value>
   </data>
 
 </root>

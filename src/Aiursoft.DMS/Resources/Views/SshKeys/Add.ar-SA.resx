@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Add an SSH public key" xml:space="preserve">
+    <value>إضافة مفتاح SSH عام</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>العودة إلى مفاتيح SSH العامة</value>
+  </data>
+  <data name="Continue to verification" xml:space="preserve">
+    <value>المتابعة إلى التحقق</value>
+  </data>
+  <data name="Key name" xml:space="preserve">
+    <value>اسم المفتاح</value>
+  </data>
+  <data name="OpenSSH public key" xml:space="preserve">
+    <value>مفتاح OpenSSH العام</value>
+  </data>
+  <data name="Paste your public key. In the next step, you&apos;ll confirm that you can use its private key." xml:space="preserve">
+    <value>الصق مفتاحك العام. في الخطوة التالية، ستؤكد أنك تستطيع استخدام المفتاح الخاص به.</value>
+  </data>
+  <data name="Step 1 of 2" xml:space="preserve">
+    <value>الخطوة 1 من 2</value>
+  </data>
+  <data name="This verification has expired or was abandoned. Add the key again to continue." xml:space="preserve">
+    <value>انتهت صلاحية هذا التحقق أو تم التخلي عنه. أضف المفتاح مرة أخرى للمتابعة.</value>
+  </data>
+
+</root>

@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Alle oorsprongen</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Alle staten</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Filters toepassen</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatisch</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Geannuleerd</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Filters wissen</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Alleen clusterworkflows</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Voltooid met waarschuwingen</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controller</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Aangemaakt</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Uitvoeringpagina&apos;s</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Executiestatus</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Mislukt</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filteren</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Machine</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Handmatig</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Verificatie vereist</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Volgende</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Geen uitvoeringen komen overeen met deze filters.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Oorsprong</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Bovenliggende workflow</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Vorige</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>In de wachtrij</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Alleen root-executies</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Bezig</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Status</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Geslaagd</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Uitvoering weergeven</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Werkstroom</value>

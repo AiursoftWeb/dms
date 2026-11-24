@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="A temporary SSH lease is active" xml:space="preserve">
+    <value>임시 SSH 리스가 활성 상태입니다</value>
+  </data>
+  <data name="Check the SSH lease history and the Agent version in DMS." xml:space="preserve">
+    <value>DMS에서 SSH 리스历史和 Agent 버전을 확인하세요.</value>
+  </data>
+  <data name="DMS can check SSH when the Agent reconnects." xml:space="preserve">
+    <value>에이전트가 재연결되면 DMS가 SSH를 확인할 수 있습니다.</value>
+  </data>
+  <data name="DMS has no recent SSH observation" xml:space="preserve">
+    <value>DMS에 최근 SSH 관찰 기록이 없습니다</value>
+  </data>
+  <data name="DMS has not verified SSH shutdown" xml:space="preserve">
+    <value>DMS에서 SSH 종료 여부를 확인하지 못했습니다</value>
+  </data>
+  <data name="Ordinary SSH is still listening" xml:space="preserve">
+    <value>일반 SSH가 여전히 수신 중입니다</value>
+  </data>
+  <data name="Review the Disable SSH workflow result in DMS before requesting another lease." xml:space="preserve">
+    <value>다른 리스를 요청하기 전에 DMS에서 Disable SSH 워크플로 결과를 확인하세요.</value>
+  </data>
+  <data name="Temporary SSH is ready to request" xml:space="preserve">
+    <value>임시 SSH 요청이 준비되었습니다</value>
+  </data>
+  <data name="The Agent is disconnected" xml:space="preserve">
+    <value>에이전트가 연결이 끊겼습니다</value>
+  </data>
+  <data name="To switch this machine to temporary SSH, run Disable SSH in DMS first." xml:space="preserve">
+    <value>이 머신을 임시 SSH로 전환하려면 먼저 DMS에서 SSH 비활성화를 실행하세요.</value>
+  </data>
+  <data name="Wait for the current lease to end before requesting another one." xml:space="preserve">
+    <value>현재 리즈가 종료될 때까지 기다린 후 다른 리즈를 요청하세요.</value>
+  </data>
+
+</root>

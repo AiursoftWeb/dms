@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. Instale o CLI</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. Criar uma chave de API pessoal</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. Faça login neste Controller</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. Verifique a conexão</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>Voltar ao DMS</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>Verifique qual conta e permissões a CLI está usando.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>Variáveis de ambiente DMS_SERVER e DMS_API_KEY existentes substituem seu login salvo. Limpe-as para usar as configurações salvas.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>Dê um nome à chave e copie-a assim que ela aparecer. O DMS a exibe apenas uma vez.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>Se o CLI já estiver instalado, atualize-o com o comando abaixo.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Se você tiver permissão para executar fluxos de trabalho Open, tente listar as máquinas com o CLI.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>Instale primeiro o SDK do .NET 10 e, em seguida, execute isso no seu terminal.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>Abrir Chaves de API</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>Execute o comando de login, cole a chave de API pessoal no prompt oculto e pressione Enter.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>Execute estes comandos no seu computador para se conectar a este Controlador DMS.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Configurar o DMS CLI</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>O CLI salva esse endereço e sua chave de API pessoal no seu computador.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>Este Controlador</value>
+  </data>
+
+</root>

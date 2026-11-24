@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>جميع طلبات {0}</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>تطبيق عوامل التصفية</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>معتمد</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>بانتظار الموافقة</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>مرفوض</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>حالة التنفيذ</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>خطر مرتفع</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>مخاطر منخفضة</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>خطر متوسط</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>يتطلب طلبًا جديدًا</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>لا توجد طلبات {0} في انتظار مراجعتك.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>لا توجد طلبات {0} تطابق هذه المرشحات.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>سير عمل مفتوح</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>السابق</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>جاهزة لمراجعتي</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>مراجعة</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>مسار عمل آمن</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>البحث في طلبات {0}</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>عرض جميع طلبات {0} المعلقة</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>عرض</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>مخاطر عالية جدًا</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>عرض الطلب {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>مسحوب</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>سير العمل، مقدم الطلب، السبب، أو معرف {0}</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>صفحات طلب {0}</value>
+  </data>
+
+</root>

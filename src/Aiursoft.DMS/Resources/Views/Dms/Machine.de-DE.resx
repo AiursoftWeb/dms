@@ -21,6 +21,9 @@
       <data name="Agent connection" xml:space="preserve">
     <value>Agent-Verbindung</value>
   </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Agent-Upgrade-Verlauf</value>
+  </data>
   <data name="Agent version" xml:space="preserve">
     <value>Agentversion</value>
   </data>
@@ -32,6 +35,12 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>Erstellt</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>Das Deaktivieren von SSH kann Verbindungen trennen und alle vorhandenen Leases bei Ausführung widerrufen.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>SSH-Verlauf deaktivieren</value>
   </data>
   <data name="Finished" xml:space="preserve">
     <value>Abgeschlossen</value>
@@ -57,8 +66,23 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>Noch nicht verifiziert</value>
   </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Grund</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>SSH-Deaktivierung anfordern</value>
+  </data>
   <data name="Request temporary SSH" xml:space="preserve">
     <value>Temporäre SSH-Anfrage</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Zum Deaktivieren von SSH ist die DMS-Berechtigung zum Einreichen von Workflows mit mittlerem Risiko erforderlich.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>SSH-Lease-Prüfverlauf</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>SSH-Verwaltung</value>
   </data>
   <data name="SSH public keys" xml:space="preserve">
     <value>SSH-öffentliche Schlüssel</value>
@@ -69,8 +93,20 @@
   <data name="Started" xml:space="preserve">
     <value>Gestartet</value>
   </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>{0}-Anfrage senden</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>Der SSH-Status hat sich geändert. Prüfen Sie den aktuellen Status, bevor Sie eine neue Anfrage senden.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Verwenden Sie --key-id, um einen einzelnen verifizierten Schlüssel auszuwählen.</value>
+  </data>
   <data name="Verify a personal public key, then use its key ID to submit your request in the CLI." xml:space="preserve">
     <value>Überprüfen Sie einen persönlichen öffentlichen Schlüssel und verwenden Sie dessen Schlüssel-ID, um Ihre Anfrage in der CLI einzureichen.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Prüfen Sie Ihre persönlichen SSH-Schlüssel, bevor Sie auf Zugriff zugreifen. Die CLI verwendet standardmäßig alle Ihre verifizierten Schlüssel.</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Ausführung anzeigen</value>
