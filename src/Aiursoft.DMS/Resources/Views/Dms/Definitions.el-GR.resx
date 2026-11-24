@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Σχετικά με αυτές τις άδειες</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Εφαρμογή</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Αυτόματη έγκριση</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Σύμπτυξη</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Τοποθεσία εκτέλεσης</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Υψηλή</value>
@@ -57,23 +63,38 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Δεν υπάρχουν καταχωρημένα δημόσια τυπικά workflows.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Ανοιχτό</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Απαιτείται στόχοι μηχανής</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Κίνδυνος</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Κίνδυνος (από τον υψηλότερο)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Κίνδυνος (χαμηλότερος πρώτος)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Οι άδειες ρόλων ισχύουν για κάθε μηχάνημα σε αυτή την παράσταση DMS και για το επίπεδο κινδύνου κάθε ροής εργασίας. Η αυτόματη έγκριση απαιτεί άδεια αιτήματος {0}. Η έγκριση του δικού σας αιτήματος απαιτεί επίσης άδεια αυτοέγκρισης.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Ασφαλές</value>
+  </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Ταξινόμηση κατά</value>
   </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Προτυπικές ροές εργασίας</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Αυτός ο κατάλογος παραθέτει τα δημόσια τυπικά workflows που διατίθενται στον Controller. Η διαθεσιμότητα των Agent και οι υποστηριζόμενες εκδόσεις ελέγχονται κατά την εκτέλεση. Οι ειδικές λειτουργίες ελέγχου και τα εσωτερικά υπο-workflows δεν παρατίθενται.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Άγνωστο</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Έκδοση</value>
@@ -83,6 +104,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Ροή εργασίας</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Όνομα ροής εργασίας (Α–Ω)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Όνομα ροής εργασιών (Ω–Α)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Ναι</value>

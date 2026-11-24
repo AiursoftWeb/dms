@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Οποιοσδήποτε μπορεί να αντιγράψει ένα δημόσιο κλειδί. Αυτό το βήμα αποδεικνύει ότι κατέχετε το ιδιωτικό του κλειδί, το οποίο παραμένει στον υπολογιστή σας.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Επιστροφή στα δημόσια κλειδιά SSH</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Ακύρωση προσθήκης αυτού του κλειδιού</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Η εντολή αντιγράφηκε</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Αντιγραφή εντολής</value>
+  </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Έχω YubiKey / υλικό κλειδί</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Χρησιμοποιώ αρχείο ιδιωτικού κλειδιού</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Αν παρέλθει ο χρόνος, προσθέστε το κλειδί ξανά.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Εάν το ιδιωτικό σας κλειδί αποθηκεύεται αλλού, αλλάξτε τη διαδρομή μετά το -f. Στη συνέχεια, επικολλήστε την πλήρη υπογραφή που εκτυπώνεται από την εντολή.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Βεβαιωθείτε ότι το κλειδί σας φορτώθηκε στον SSH agent (για παράδειγμα, εκτελώντας ssh-add -K για κλειδιά κατοίκων) και στη συνέχεια εκτελέστε:</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH υπογραφή</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Ξεκινήστε ξανά</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>Βήμα 2 από 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Εντολή τερματικού</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>Η υπογραφή δεν ταιριάζει. Εκτελέστε την παραπάνω εντολή με το ιδιωτικό κλειδί για αυτό το δημόσιο κλειδί και επικολλήστε το πλήρες αποτέλεσμα.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Παραλείπον χρόνος</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>Για να ολοκληρώσετε την προσθήκη αυτού του κλειδιού, εκτελέστε την παρακάτω εντολή στον υπολογιστή που διατηρεί το ιδιωτικό του κλειδί.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Αγγίξτε το YubiKey σας όταν αναβοσβήνει για να ολοκληρώσετε την υπογραφή. Στη συνέχεια, επικολλήστε την πλήρη υπογραφή που εκτυπώνεται από την εντολή.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>Η επαλήθευση λήγει. Αυτό το κλειδί δεν προστέθηκε.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>Η επαλήθευση λήγει στις</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Επαλήθευση και προσθήκη κλειδιού</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Επαληθεύστε το δημόσιο κλειδί SSH σας</value>
+  </data>
+
+</root>

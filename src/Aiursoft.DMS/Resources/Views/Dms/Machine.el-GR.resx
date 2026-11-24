@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>Σύνδεση Agent</value>
+  </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Ιστορικό αναβαθμίσης agent</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Έκδοση agent</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Επιστροφή στις μηχανές</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>Ιστορικό βασικής γραμμής</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>Η απενεργοποίηση SSH μπορεί να αποσυνδέσει συνεδρίες και να ανακαλέσει κάθε ενοίκιο που υπάρχει κατά την εκτέλεσή της.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>Ιστορικό απενεργοποίησης SSH</value>
+  </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Ερεύνηση μηχανής</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Τελευταία οπτικοποίηση</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Τελευταία εκτέλεση</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>Αναγνωριστικό μηχανής</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Μηχανές</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>Δεν έχει παραληφθεί σημάδι ζωής</value>
+  </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Δεν έχουν καταγραφεί πρόσφατες εκτελέσεις ροών εργασίας για αυτόν τον υπολογιστή.</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>Δεν καταγράφεται καμία προγραμματισμένη εκτέλεση βασικών παραμέτρων για αυτόν τον υπολογιστή.</value>
+  </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Γονικό workflow</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Αιτιολογία</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Πρόσφατες εκτελέσεις</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>Αίτημα Απενεργοποίησης SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Η αίτηση για απενεργοποίηση SSH απαιτεί άδεια DMS για την υποβολή ροών εργασίας με μεσαίο κίνδυνο.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>Ιστορικό ελέγχου ενοικίασης SSH</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>Διαχείριση SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Δημόσια κλειδιά SSH</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Προγραμματισμένη βασική γραμμή ασφαλείας</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>Υποβολή αιτήματος {0}</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>Η κατάσταση SSH άλλαξε. Ελέγξτε την τρέχουσα κατάσταση πριν υποβάλετε νέα αίτηση.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Χρησιμοποιήστε το --key-id για να επιλέξετε έναν μόνο επαληθευμένο κλειδί.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Επαληθεύστε τα προσωπικά σας κλειδιά SSH πριν ζητήσετε πρόσβαση. Η CLI χρησιμοποιεί από προεπιλογή όλα τα επαληθευμένα σας κλειδιά.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Προβολή ολόκληρου του ιστορικού</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Προβολή εκτέλεσης</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Ιστορικό ροής εργασιών</value>
+  </data>
+
+</root>

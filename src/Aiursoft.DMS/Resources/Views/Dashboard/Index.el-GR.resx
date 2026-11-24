@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>Πληρέστερη Τεκμηρίωση</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>Σύνδεση του DMS CLI με αυτόν τον Ελεγκτή</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>Έλεγχος Συνοχής</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>Περιλαμβάνει εκτενή τεκμηρίωση και πρακτικά παραδείγματα για να ξεκινήσετε γρήγορα.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>Εγκαταστήστε το CLI στον υπολογιστή σας και συνδεθείτε με ένα προσωπικό κλειδί API.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Ενσωματωμένη Διαχείριση Αρχείων</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Αποκρισιμό Σχεδιασμό</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>Εξέταση αιτημάτων {0}</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>Εξετάστε την αιτηθείσα λειτουργία, τις παραμέτρους και τους σταθερούς στόχους. (αιτήματα {0})</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Εξέταση αιτημάτων {0}</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Ανθεκτικός Έλεγχος Ενοποίησης</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>Απρόσκοπτη ενσωμάτωση με οποιονδήποτε πάροχο OpenID Connect, με αυτόματο συγχρονισμό ρόλων.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Ρύθμιση DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>Έξυπνες Αντικαταστάσεις Ρυθμίσεων</value>

@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>Σύνοψη έγκρισης</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Αυτόματο</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Σταίλα κλήσεων</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Ελέγχθηκε</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Ελεγκτής</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Διάρκεια</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Εγκατεστημένες συνδέσεις OpenSSH</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Αναγνωριστικά εκτέλεσης και ενεργοποίηση</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Καταγραφή εκτέλεσης</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Σελίδες ημερολογίου εκτέλεσης</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Πλοήγηση εκτέλεσης</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Βήματα εκτέλεσης</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Ολοκληρώθηκε</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Μηχανή</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Επόμενο</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Δεν έχει ξεκινήσει</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>Ακροατές OpenSSH</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Προέλευση</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>Γονέας</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Γονική ροή εργασιών</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Προηγούμενο</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Απώτερο αποτέλεσμα εκτέλεσης</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Λεπτομέρειες υπολοίπων συνδέσεων</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Λεπτομέρειες απομεινάντων ακροατών</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Αποτέλεσμα</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Ριζική ροή εργασιών</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>Η κλείσιμο SSH απαιτεί επαλήθευση</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Δείτε όλα τα βήματα εκτέλεσης</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Έναρξη</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Κατάσταση</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Βήματα που χρειάζονται προσοχή</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Προγραμματισμός συστήματος</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Στόχοι μηχανών</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>Η υπηρεσία SSH και το socket αποκρύφτηκαν και διακόπηκαν.</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Το αρχείο καταγραφής εκτέλεσης δεν είναι διαθέσιμο. Τα εκκρεμή γεγονότα παραμένουν αποθηκευμένα.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>Δεν υπάρχουν αρχειοθετημένα γεγονότα σε αυτήν τη σελίδα.</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Αυτή η εκτέλεση δεν έχει καταγεγραμμένους αριθμούς ακροατών ή συνδέσεων.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Ιχνη</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>Προέλευση</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Προβολή του αρχείου καταγραφής επαλήθευσης SSH</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Ροή εργασιών</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>Αναγνωριστικό ροής εργασίας</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Ιστορικό ροής εργασιών</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} αίτημα</value>
   </data>
 
 </root>

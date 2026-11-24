@@ -18,14 +18,50 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All origins" xml:space="preserve">
+      <data name="All machines" xml:space="preserve">
+    <value>Όλα τα μηχανήματα</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
     <value>Όλες οι προελεύσεις</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Όλες οι καταστάσεις</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Εφαρμογή φίλτρων</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Αυτόματο</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Ακυρώθηκε</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Καθαρισμός φίλτρων</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Μόνο ροές εργασίας συσσωρευτών</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Ολοκληρώθηκε με προειδοποιήσεις</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Ελεγκτής</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Δημιουργήθηκε</value>
+  </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>Εξαιρέστε καρδιογράμματα</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Σελίδες εκτέλεσης</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Κατάσταση εκτέλεσης</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Απέτυχε</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Φιλτράρισμα</value>
@@ -33,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Μηχανή</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Χειροκίνητη</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Απαιτείται επαλήθευση</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Επόμενο</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Καμία εκτέλεση δεν ταιριάζει με αυτά τα φίλτρα.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Προέλευση</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Γονική ροή εργασιών</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Προηγούμενη</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>Σε ουρά</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Μόνο εκτελέσεις ρίζας</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Εκτέλεση</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Κατάσταση</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Επιτυχία</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Προβολή εκτέλεσης</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Ροή εργασιών</value>
