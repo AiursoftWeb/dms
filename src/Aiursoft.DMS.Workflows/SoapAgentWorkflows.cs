@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Xml;
-using System.Xml.Linq;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Workflows.Operations;
 
@@ -104,13 +103,11 @@ internal sealed class SoapInvokeWorkflow(MachineWorkflowDefinition<SoapCallInput
         {
             var authorization = await SoapAgentRuntime.ReadAuthorizationAsync(profile.BasicAuth, endpoint, requestToken);
             using var client = runtime.CreateClient();
-            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
-            {
-                // Never reuse a connection for an invocation or follow a redirect/auth challenge.
-                Version = HttpVersion.Version11,
-                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
-                Content = new ByteArrayContent(requestBytes)
-            };
+            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            // Never reuse a connection for an invocation or follow a redirect/auth challenge.
+            request.Version = HttpVersion.Version11;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            request.Content = new ByteArrayContent(requestBytes);
             request.Headers.ConnectionClose = true;
             request.Headers.Authorization = authorization?.Header;
             if (template.EnvelopeNamespace == SoapAgentXml.Soap11)

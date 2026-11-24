@@ -33,7 +33,7 @@ internal sealed class SoapArtifactWorkflows(DmsArtifactStore artifacts)
     {
         var xml = ReadXml(await ReadAsync(context, input.Xml, token), token);
         var schema = await ReadAsync(context, input.Schema, token);
-        var rawXml = schema[0] is (byte)0xFF or 0xFE or 0 || IsXml(schema);
+        var rawXml = schema[0] is 0xFF or 0xFE or 0 || IsXml(schema);
         var bundle = rawXml ? StandaloneSchema(ReadXml(schema, token)) : ReadBundle(schema);
         var result = SoapContractAnalysis.Validate(xml, bundle);
         if (!result.Valid)

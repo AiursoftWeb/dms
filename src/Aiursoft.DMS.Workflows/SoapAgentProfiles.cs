@@ -93,7 +93,11 @@ internal sealed class SoapAgentRuntime(
         for (string? current = path; current is not null; current = Path.GetDirectoryName(current))
             start.ArgumentList.Add(current);
         using var process = Process.Start(start) ?? throw new InvalidDataException();
-        using var cancellation = token.Register(() => { try { process.Kill(); } catch (InvalidOperationException) { } });
+        using var cancellation = token.Register(static state =>
+        {
+            try { ((Process)state!).Kill(); }
+            catch (InvalidOperationException) { }
+        }, process);
         var metadataTask = process.StandardOutput.ReadToEndAsync(token);
         var errorsTask = process.StandardError.ReadToEndAsync(token);
         await Task.WhenAll(metadataTask, errorsTask, process.WaitForExitAsync(token));
@@ -144,7 +148,7 @@ internal sealed class SoapAgentRuntime(
         && string.Equals(root.IdnHost, candidate.IdnHost, StringComparison.OrdinalIgnoreCase);
 }
 
-internal sealed record SoapProfileFile(Dictionary<string, SoapServiceProfile> Services);
+internal sealed record SoapProfileFile(Dictionary<string, SoapServiceProfile?>? Services);
 internal sealed record SoapServiceProfile
 {
     public string Environment { get; init; } = "production";
@@ -154,11 +158,11 @@ internal sealed record SoapServiceProfile
     public int TimeoutSeconds { get; init; } = 30;
     public SoapBasicAuth? BasicAuth { get; init; }
     public string[] RedactNames { get; init; } = [];
-    public Dictionary<string, SoapOperationProfile> Operations { get; init; } = new(StringComparer.Ordinal);
+    public Dictionary<string, SoapOperationProfile?>? Operations { get; init; } = new(StringComparer.Ordinal);
 }
 internal sealed record SoapBasicAuth(string Username, string PasswordFile);
 internal sealed record SoapAuthorization(AuthenticationHeaderValue Header, string Password, string Username);
-internal sealed record SoapOperationProfile(string Mode, string Action, string Template, Dictionary<string, SoapArgumentRule> Arguments,
+internal sealed record SoapOperationProfile(string Mode, string? Action, string? Template, Dictionary<string, SoapArgumentRule>? Arguments,
     SoapBusinessSuccess? BusinessSuccess = null);
 internal sealed record SoapArgumentRule(string Type, int? MaxLength = null, string[]? AllowedValues = null, decimal? Min = null, decimal? Max = null);
 internal sealed record SoapBusinessSuccess(string[] Path, [property: JsonPropertyName("equals")] string Expected);

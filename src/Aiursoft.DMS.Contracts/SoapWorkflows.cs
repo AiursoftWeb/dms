@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Xml;
 
@@ -65,6 +66,7 @@ public sealed record SoapCallInput(string Service, string Operation, ArtifactRef
     }
 }
 public sealed record SoapFetchResult(ArtifactReference Artifact, int DocumentCount);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Workflow result properties are serialized for API and CLI clients.")]
 public sealed record SoapCallResult(int? HttpStatus, long ElapsedMilliseconds, string Outcome, ArtifactReference? Artifact);
 public sealed record SoapContractBundle(string Root, Dictionary<string, string> Documents);
 
@@ -95,16 +97,17 @@ public sealed record XmlAssertInput(ArtifactReference Artifact, string Path, str
     public void Validate()
     {
         SoapLimits.File(Artifact, SoapLimits.MaxXmlBytes);
-        if (Path is null || Path.Length > 1024 || !Path.StartsWith('/') || Path.Split('/').Length is > 33)
+        if (string.IsNullOrEmpty(Path) || Path.Length > 1024 || !Path.StartsWith('/') || Path.Split('/').Length is > 33)
             throw new ArgumentException("Use an absolute XML path of at most 32 elements.");
         foreach (var segment in Path[1..].Split('/'))
         {
             try { XmlConvert.VerifyNCName(segment); }
             catch (XmlException) { throw new ArgumentException("Use slash-separated XML local element names, not XPath expressions."); }
         }
-        if (Expect is null || Expect.Length > 1024 || (Expect is not ("missing" or "empty" or "nonempty" or "nil" or "present")
+        if (string.IsNullOrEmpty(Expect) || Expect.Length > 1024 || (Expect is not ("missing" or "empty" or "nonempty" or "nil" or "present")
                 && !Expect.StartsWith("equals:", StringComparison.Ordinal)))
             throw new ArgumentException("Expect missing, empty, nonempty, nil, present, or equals:<text>.");
     }
 }
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Workflow result properties are serialized for API and CLI clients.")]
 public sealed record XmlAssertResult(bool Passed, int Matches, int Empty, int Nil, int Nonempty, int MatchingExpectation);

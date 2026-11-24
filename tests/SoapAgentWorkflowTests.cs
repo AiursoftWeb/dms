@@ -43,7 +43,7 @@ public class SoapAgentWorkflowTests
               }
             }
             """;
-        var profile = SoapAgentRuntime.ParseProfile(Encoding.UTF8.GetBytes(json)).Services["fixture"];
+        var profile = SoapAgentRuntime.ParseProfile(Encoding.UTF8.GetBytes(json)).Services!["fixture"]!;
         var response = $"""
             <s:Envelope xmlns:s="{Soap11}" xmlns:q="urn:fixture"><s:Body><q:Reply><q:Success>true</q:Success></q:Reply></s:Body></s:Envelope>
             """;

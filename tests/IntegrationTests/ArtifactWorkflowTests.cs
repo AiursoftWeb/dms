@@ -380,13 +380,15 @@ public class ArtifactWorkflowTests : TestBase
         var setup = await SetupAsync();
         var directory = Directory.CreateTempSubdirectory("dms-soap-roundtrip-");
         using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var token = stop.Token;
         Task? agentLoop = null;
-        using var journal = new TaskJournal(Path.Combine(directory.FullName, "journal"));
+        var journal = new TaskJournal(Path.Combine(directory.FullName, "journal"));
+        const string ns = "http://schemas.xmlsoap.org/soap/envelope/";
+        using var handler = new SoapFixtureHandler($"<s:Envelope xmlns:s='{ns}'><s:Body><LookupResponse><NewField>ok</NewField><Password>fixture-private</Password></LookupResponse></s:Body></s:Envelope>");
         try
         {
             const string endpoint = "https://soap.example.invalid/service";
-            const string ns = "http://schemas.xmlsoap.org/soap/envelope/";
-            var profile = new Aiursoft.DMS.Workflows.SoapServiceProfile
+            var profile = new Workflows.SoapServiceProfile
             {
                 Environment = "test",
                 Wsdl = endpoint + "?wsdl",
@@ -398,12 +400,10 @@ public class ArtifactWorkflowTests : TestBase
                         new() { ["id"] = new("string", MaxLength: 32) })
                 }
             };
-            var handler = new SoapFixtureHandler($"<s:Envelope xmlns:s='{ns}'><s:Body><LookupResponse><NewField>ok</NewField><Password>fixture-private</Password></LookupResponse></s:Body></s:Envelope>");
-            var runtime = new Aiursoft.DMS.Workflows.SoapAgentRuntime(_ => Task.FromResult(new Aiursoft.DMS.Workflows.SoapProfileFile(new() { ["sample"] = profile })),
-                () => new HttpClient(handler, disposeHandler: false));
-            using var fixtureHandler = handler;
+            var runtime = new Workflows.SoapAgentRuntime(_ => Task.FromResult(new Workflows.SoapProfileFile(new() { ["sample"] = profile })),
+                handler.CreateClient);
             agentLoop = new AgentClient(Http.BaseAddress!, setup.AgentKey, journal,
-                new Aiursoft.DMS.Workflows.MachineWorkflowRegistry(runtime)).RunAsync(stop.Token);
+                new Workflows.MachineWorkflowRegistry(runtime)).RunAsync(token);
 
             var argsPath = Path.Combine(directory.FullName, "args.json");
             await File.WriteAllTextAsync(argsPath, "{\"id\":\"112233\"}", stop.Token);
@@ -452,18 +452,24 @@ public class ArtifactWorkflowTests : TestBase
             {
                 while (true)
                 {
-                    var tree = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(run => run.RootId == root).ToListAsync(stop.Token));
+                    var tree = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(run => run.RootId == root).ToListAsync(token));
                     if (tree.Single(run => run.Id == root).State.Terminal()) return tree;
-                    await Task.Delay(100, stop.Token);
+                    await Task.Delay(100, token);
                 }
             }
         }
         finally
         {
-            await stop.CancelAsync();
-            if (agentLoop is not null) { try { await agentLoop; } catch (OperationCanceledException) { } }
-            journal.Dispose();
-            directory.Delete(recursive: true);
+            try
+            {
+                await stop.CancelAsync();
+                if (agentLoop is not null) { try { await agentLoop; } catch (OperationCanceledException) { } }
+            }
+            finally
+            {
+                journal.Dispose();
+                directory.Delete(recursive: true);
+            }
         }
     }
 
@@ -471,6 +477,8 @@ public class ArtifactWorkflowTests : TestBase
     {
         private int _requests;
         public int Requests => Volatile.Read(ref _requests);
+
+        public HttpClient CreateClient() => new(this, disposeHandler: false);
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {

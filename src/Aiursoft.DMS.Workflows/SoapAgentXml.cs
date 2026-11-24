@@ -33,24 +33,28 @@ internal static class SoapAgentXml
     internal static XDocument Parse(byte[] bytes)
     {
         using var stream = new MemoryStream(bytes, writable: false);
-        return Parse(() => XmlReader.Create(stream, ReaderSettings()), () => stream.Position = 0);
+        using (var reader = XmlReader.Create(stream, ReaderSettings())) CheckStructure(reader);
+        stream.Position = 0;
+        using var document = XmlReader.Create(stream, ReaderSettings());
+        return XDocument.Load(document, LoadOptions.PreserveWhitespace);
     }
 
-    internal static XDocument Parse(string text) => Parse(() => XmlReader.Create(new StringReader(text), ReaderSettings()));
+    internal static XDocument Parse(string text)
+    {
+        using (var source = new StringReader(text))
+        using (var reader = XmlReader.Create(source, ReaderSettings())) CheckStructure(reader);
+        using var documentSource = new StringReader(text);
+        using var document = XmlReader.Create(documentSource, ReaderSettings());
+        return XDocument.Load(document, LoadOptions.PreserveWhitespace);
+    }
 
-    private static XDocument Parse(Func<XmlReader> create, Action? rewind = null)
+    private static void CheckStructure(XmlReader reader)
     {
         // Bound nesting and node count before constructing a tree from untrusted XML.
-        using (var reader = create())
-        {
-            var nodes = 0;
-            while (reader.Read())
-                if (reader.Depth > 64 || (nodes += 1 + reader.AttributeCount) > 150_000)
-                    throw new InvalidDataException("SOAP XML exceeds the nesting or node limit.");
-        }
-        rewind?.Invoke();
-        using var document = create();
-        return XDocument.Load(document, LoadOptions.PreserveWhitespace);
+        var nodes = 0;
+        while (reader.Read())
+            if (reader.Depth > 64 || (nodes += 1 + reader.AttributeCount) > 150_000)
+                throw new InvalidDataException("SOAP XML exceeds the nesting or node limit.");
     }
 
     internal static byte[] Utf8(XDocument document)

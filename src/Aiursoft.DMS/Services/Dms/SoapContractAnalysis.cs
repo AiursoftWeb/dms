@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +14,9 @@ public sealed record SoapOperation(string PortType, string Name, SoapMessage? Re
 public sealed record SoapMessage(string Name, IReadOnlyList<SoapField> Fields);
 public sealed record SoapField(string Name, string Type, string Kind, bool Required, string MinOccurs, string MaxOccurs,
     bool Nillable, IReadOnlyList<SoapField> Fields, string? Part = null, string? BaseType = null);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Diff result properties are serialized for API and CLI clients.")]
 public sealed record SoapDiffResult(IReadOnlyList<SoapContractChange> Changes, IReadOnlyList<string> Warnings);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Diff result properties are serialized for API and CLI clients.")]
 public sealed record SoapContractChange(string Kind, string PortType, string Operation, string? Direction,
     IReadOnlyList<string> Path, string? Before, string? After);
 public sealed record XmlValidationResult(bool Valid, IReadOnlyList<XmlValidationDiagnostic> Errors, bool Truncated = false);
@@ -204,17 +207,11 @@ public static class SoapContractAnalysis
         var namespaces = new XmlNamespaceManager(schemas.NameTable);
         var validator = new XmlSchemaValidator(schemas.NameTable, schemas, namespaces,
             XmlSchemaValidationFlags.AllowXmlAttributes | XmlSchemaValidationFlags.ProcessIdentityConstraints) { XmlResolver = null };
-        var phase = ValidationPhase.Structure;
-        validator.ValidationEventHandler += (_, args) =>
-        {
-            if (errors.Count == MaxDiagnostics) throw new DiagnosticLimitException();
-            var exception = args.Exception;
-            var (code, message) = Classify(phase, exception);
-            errors.Add(new(code, message, exception.LineNumber, exception.LinePosition));
-        };
+        var diagnostics = new ValidationDiagnostics(errors);
+        validator.ValidationEventHandler += diagnostics.OnValidationEvent;
         validator.Initialize();
         Visit(root);
-        phase = ValidationPhase.IdentityConstraints;
+        diagnostics.Phase = ValidationPhase.IdentityConstraints;
         validator.EndValidation();
 
         void Visit(XElement element)
@@ -223,17 +220,17 @@ public static class SoapContractAnalysis
             foreach (var attribute in element.Attributes().Where(attribute => attribute.IsNamespaceDeclaration))
                 namespaces.AddNamespace(attribute.Name.Namespace == XNamespace.None ? "" : attribute.Name.LocalName, attribute.Value);
 
-            phase = ValidationPhase.Structure;
+            diagnostics.Phase = ValidationPhase.Structure;
             validator.LineInfoProvider = element;
             validator.ValidateElement(element.Name.LocalName, element.Name.NamespaceName, null,
                 (string?)element.Attribute(xsi + "type"), (string?)element.Attribute(xsi + "nil"), null, null);
             foreach (var attribute in element.Attributes().Where(attribute => !attribute.IsNamespaceDeclaration))
             {
-                phase = ValidationPhase.Attribute;
+                diagnostics.Phase = ValidationPhase.Attribute;
                 validator.LineInfoProvider = attribute;
                 validator.ValidateAttribute(attribute.Name.LocalName, attribute.Name.NamespaceName, attribute.Value, null);
             }
-            phase = ValidationPhase.EndAttributes;
+            diagnostics.Phase = ValidationPhase.EndAttributes;
             validator.LineInfoProvider = element;
             validator.ValidateEndOfAttributes(null);
             foreach (var node in element.Nodes())
@@ -241,15 +238,28 @@ public static class SoapContractAnalysis
                 if (node is XElement child) Visit(child);
                 else if (node is XText { Value.Length: > 0 } text)
                 {
-                    phase = ValidationPhase.Structure;
+                    diagnostics.Phase = ValidationPhase.Structure;
                     validator.LineInfoProvider = text;
                     validator.ValidateText(text.Value);
                 }
             }
-            phase = ValidationPhase.EndElement;
+            diagnostics.Phase = ValidationPhase.EndElement;
             validator.LineInfoProvider = element;
             validator.ValidateEndElement(null);
             namespaces.PopScope();
+        }
+    }
+
+    private sealed class ValidationDiagnostics(List<XmlValidationDiagnostic> errors)
+    {
+        public ValidationPhase Phase { get; set; }
+
+        public void OnValidationEvent(object? sender, ValidationEventArgs args)
+        {
+            if (errors.Count == MaxDiagnostics) throw new DiagnosticLimitException();
+            var exception = args.Exception;
+            var (code, message) = Classify(Phase, exception);
+            errors.Add(new(code, message, exception.LineNumber, exception.LinePosition));
         }
     }
 
@@ -336,17 +346,18 @@ public static class SoapContractAnalysis
 
     private sealed class LimitedSink(int limit, string error = "The XML exceeds the byte limit.") : Stream
     {
-        private int written;
+        private readonly int capacity = limit;
+        private int remaining = limit;
         public override bool CanRead => false;
         public override bool CanSeek => false;
         public override bool CanWrite => true;
-        public override long Length => written;
-        public override long Position { get => written; set => throw new NotSupportedException(); }
+        public override long Length => capacity - remaining;
+        public override long Position { get => Length; set => throw new NotSupportedException(); }
         public override void Write(byte[] buffer, int offset, int count) => Write(buffer.AsSpan(offset, count));
         public override void Write(ReadOnlySpan<byte> buffer)
         {
-            if (buffer.Length > limit - written) throw new InvalidDataException(error);
-            written += buffer.Length;
+            if (buffer.Length > remaining) throw new InvalidDataException(error);
+            remaining -= buffer.Length;
         }
         public override void Flush() { }
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
@@ -456,10 +467,12 @@ public static class SoapContractAnalysis
             var remaining = MaxSchemaLinks;
             foreach (var source in sources)
             {
-                foreach (XmlSchemaExternal external in source.Schema.Includes)
+                foreach (var item in source.Schema.Includes)
                 {
+                    if (item is not XmlSchemaExternal external)
+                        throw new InvalidDataException("The XSD contains an unsupported dependency.");
                     if (--remaining < 0) throw new InvalidDataException("The XSD exceeds the import and include limit.");
-                    if (external.SchemaLocation is not { } location && external is XmlSchemaImport import)
+                    if (external.SchemaLocation is null && external is XmlSchemaImport import)
                     {
                         if (!namespaces.Contains(import.Namespace ?? "") && import.Namespace != XNamespace.Xml.NamespaceName)
                             throw new InvalidDataException("An imported XSD namespace is not present in the bundle.");
@@ -488,8 +501,8 @@ public static class SoapContractAnalysis
             void LinkReachable(XmlSchema schema)
             {
                 if (!reached.Add(schema)) return;
-                foreach (XmlSchemaExternal dependency in schema.Includes)
-                    if (dependency.Schema is { } linked) LinkReachable(linked);
+                foreach (var item in schema.Includes)
+                    if (item is XmlSchemaExternal { Schema: { } linked }) LinkReachable(linked);
             }
         }
 
