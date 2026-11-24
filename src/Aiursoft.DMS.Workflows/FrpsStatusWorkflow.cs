@@ -110,7 +110,8 @@ public sealed partial class FrpsStatusWorkflow(EmptyInput input, AgentEnvironmen
             .Where(fields => fields.Length == 7 && fields[0] is "tcp" or "udp" &&
                 fields[6].Contains($"pid={pid},", StringComparison.Ordinal))
             .Select(fields => new FrpsListener(fields[0], fields[4]))
-            .Distinct().OrderBy(row => row.Protocol).ThenBy(row => row.LocalEndpoint).ToArray();
+            .Distinct().OrderBy(row => row.Protocol, StringComparer.Ordinal)
+            .ThenBy(row => row.LocalEndpoint, StringComparer.Ordinal).ToArray();
     }
 
     private async Task<FrpsJournalSummary?> ReadJournalAsync(string unit, CancellationToken token)
