@@ -329,6 +329,11 @@ public class DmsWorkflowTests : TestBase
         Assert.AreEqual(0, subtree.ProgramReturn, subtree.StdErr);
         StringAssert.Contains(subtree.StdOut, parent.Id.ToString()); StringAssert.Contains(subtree.StdOut, child.Id.ToString());
         Assert.DoesNotContain(sibling.Id.ToString(), subtree.StdOut); Assert.DoesNotContain("└──", subtree.StdOut);
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var machine = await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().Machines.SingleAsync(m => m.Id == setup.Machine);
+            StringAssert.Contains(subtree.StdOut, $"\"MachineName\": \"{machine.Name}\"");
+        }
         Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}")).StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}/callstack")).StatusCode);
         Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync($"/api/v1/dms/operations/{Guid.NewGuid()}")).StatusCode);
@@ -349,6 +354,27 @@ public class DmsWorkflowTests : TestBase
         CollectionAssert.AreEqual(new[] { parent.Id.ToString() }, singleTrace.Keys.ToArray());
         Assert.AreEqual(parent.Definition, singleTrace[parent.Id.ToString()]);
         Assert.IsTrue(await checkedDb.AuditEvents.AnyAsync(a => a.ActorId == setup.User && a.Action == "operation.trace" && a.ResourceId == parent.Id));
+    }
+
+    [TestMethod]
+    public void UpgradeCallstackShowsIndividualResultsEvenWhenTheBatchFails()
+    {
+        var batch = Guid.NewGuid();
+        var nodes = Newtonsoft.Json.Linq.JArray.FromObject(new[]
+        {
+            new { Id = batch, ParentId = (Guid?)null, Definition = WorkflowNames.Batch, State = RunState.Failed, MachineName = "", Result = "" },
+            new { Id = Guid.NewGuid(), ParentId = (Guid?)batch, Definition = WorkflowNames.AgentUpgrade, State = RunState.Succeeded,
+                MachineName = "current", Result = """{"Version":"1.30.0.0","AlreadyCurrent":true}""" },
+            new { Id = Guid.NewGuid(), ParentId = (Guid?)batch, Definition = WorkflowNames.AgentUpgrade, State = RunState.Succeeded,
+                MachineName = "migrated", Result = """{"PreviousVersion":"1.11.0.0","Version":"1.30.0.0"}""" },
+            new { Id = Guid.NewGuid(), ParentId = (Guid?)batch, Definition = WorkflowNames.AgentUpgrade, State = RunState.Failed,
+                MachineName = "unreachable", Result = """{"Error":"Agent download timed out."}""" }
+        });
+        var lines = Client.WorkflowTreeRenderer.Render(nodes, false).ToArray();
+        StringAssert.Contains(lines[0], "2/3 completed successfully");
+        StringAssert.Contains(lines[1], "current · Already current (1.30.0.0)");
+        StringAssert.Contains(lines[2], "migrated · Upgraded 1.11.0.0 → 1.30.0.0");
+        StringAssert.Contains(lines[3], "unreachable · Agent download timed out.");
     }
 
     [TestMethod]

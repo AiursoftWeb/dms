@@ -504,7 +504,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             run.ScheduleId, run.ScheduleExpression, run.ScheduledAt);
     });
 
-    public Task<List<WorkflowRun>> CallstackAsync(string user, Guid id) => gate.RunAsync(async () =>
+    public Task<List<WorkflowRun>> CallstackAsync(string user, Guid id, bool includeMachineNames = false) => gate.RunAsync(async () =>
     {
         var run = await db.WorkflowRuns.AsNoTracking().SingleOrDefaultAsync(r => r.Id == id) ?? throw new DmsException(404, "Workflow not found.");
         await access.RequireViewAsync(user);
@@ -512,6 +512,13 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var selected = SubtreeIds(id, all.Select(r => (r.Id, r.ParentId)));
         access.Audit(user, "operation.callstack", id); await db.SaveChangesAsync();
         var tree = all.Where(r => selected.Contains(r.Id)).ToList();
+        if (includeMachineNames)
+        {
+            var machines = tree.Where(r => r.MachineId.HasValue).Select(r => r.MachineId!.Value).Distinct().ToArray();
+            var names = await db.Machines.AsNoTracking().Where(m => machines.Contains(m.Id)).ToDictionaryAsync(m => m.Id, m => m.Name);
+            foreach (var item in tree)
+                if (item.MachineId is { } machineId) item.MachineName = names.GetValueOrDefault(machineId);
+        }
         foreach (var item in tree) item.Result = InvestigationResult(item);
         return tree;
     });

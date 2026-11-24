@@ -137,12 +137,12 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         Handle(async () => await results.ReadAsync(Actor, id, token));
 
     [HttpGet("operations/{id:guid}/callstack")]
-    public Task<IActionResult> Callstack(Guid id) => Handle(async () => (await workflows.CallstackAsync(Actor, id)).Select(run => new
+    public Task<IActionResult> Callstack(Guid id) => Handle(async () => (await workflows.CallstackAsync(Actor, id, includeMachineNames: true)).Select(run => new
     {
         run.Id, run.RootId, run.ParentId, LockboxId = (LockboxId?)run.LockboxId, run.MachineId,
         run.Definition, run.State, run.CreatedAt, run.StartedAt, run.FinishedAt, run.Result,
         run.Input, run.Version, run.IsMachineTask, run.LastSequence, run.Origin, run.Trigger,
-        run.ScheduleId, run.ScheduleExpression, run.ScheduledAt
+        run.ScheduleId, run.ScheduleExpression, run.ScheduledAt, run.MachineName
     }).ToList());
 
     [HttpGet("operations/{id:guid}/trace")]

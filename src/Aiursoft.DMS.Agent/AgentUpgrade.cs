@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -15,7 +16,7 @@ public sealed record UpgradeHandoff(Guid TaskId, Guid WorkflowId, Guid? ParentId
 // Manual Lockbox approval or the managed Agent's schedule initiates preparation. The systemd unit survives its Agent.
 public sealed class AgentUpgrade(string state, TaskJournal journal)
 {
-    private static readonly HttpClient Downloads = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromMinutes(3) };
+    private static readonly HttpClient Downloads = new(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan };
     private const string Destination = "/opt/aiursoft-dms-agent";
     private string Marker => Path.Combine(state, "upgrade.json");
     private static string Stage(string state, Guid id) => Path.Combine(state, "upgrades", id.ToString("N"));
@@ -34,10 +35,19 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         var config = AgentConfiguration.Load(state) ?? throw new InvalidDataException("Missing installed Agent identity.");
         if (config.MachineId == null || config.InstallationId != journal.InstallationId)
             throw new InvalidDataException("Agent installation identity differs.");
-        if (File.Exists(Marker) && Read(Marker).Phase is "prepared" or "stopping" or "installing" or "installed")
+        var previous = File.Exists(Marker) ? Read(Marker) : null;
+        if (previous?.Phase is "prepared" or "stopping" or "installing" or "installed")
             throw new InvalidOperationException("An earlier Agent upgrade requires verification.");
         input.Validate();
         var release = input.Releases.Single(r => r.Architecture == Architecture);
+        if (IsCurrentRelease(release, config, previous, Hash(typeof(AgentUpgrade).Assembly.Location)))
+        {
+            await context.TraceAsync($"Agent {Version} is already running the approved release. No download or service restart is needed.");
+            return new AgentUpgradeResult(Version, Version, Architecture, release.ArchiveSha256, journal.InstallationId)
+            {
+                AlreadyCurrent = true
+            };
+        }
         var directory = Stage(state, context.Id);
         var handedOff = false;
         try
@@ -45,15 +55,9 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             Directory.CreateDirectory(directory);
             File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             await context.TraceAsync($"Preparing Agent {Version} -> {release.Version}; {release.Architecture}; archive {release.ArchiveSha256}.");
-            using var response = await Downloads.GetAsync(config.Controller.TrimEnd('/') + "/agent/download/" + Architecture, HttpCompletionOption.ResponseHeadersRead, token);
-            response.EnsureSuccessStatusCode();
             var archive = Path.Combine(directory, "agent.tar.gz");
-            await using (var output = new FileStream(archive, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            {
-                await using var source = await response.Content.ReadAsStreamAsync(token);
-                await source.CopyToAsync(output, token);
-                output.Flush(true);
-            }
+            await DownloadAsync(Downloads, new Uri(config.Controller.TrimEnd('/') + "/agent/download/" + Architecture),
+                archive, context, TimeSpan.FromMinutes(3), TimeSpan.FromSeconds(2), token);
             if (Hash(archive) != release.ArchiveSha256) throw new InvalidDataException("Agent release asset changed or was corrupted. Submit a new Lockbox request.");
             var payload = Path.Combine(directory, "payload");
             Directory.CreateDirectory(payload);
@@ -112,6 +116,54 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             if (!handedOff && Directory.Exists(directory)) Directory.Delete(directory, true);
         }
     }
+
+    internal static bool IsCurrentRelease(AgentRelease release, AgentConfiguration config, UpgradeHandoff? previous, string assemblyHash) =>
+        release.Version == Version &&
+        (assemblyHash == release.AssemblySha256 ||
+         previous is { Phase: "confirmed" } && previous.Release == release &&
+         previous.InstallationId == config.InstallationId && previous.MachineId == config.MachineId &&
+         previous.ToolAssemblySha256 == assemblyHash);
+
+    internal static async Task DownloadAsync(HttpClient client, Uri uri, string archive, MachineWorkflowContext context,
+        TimeSpan attemptTimeout, TimeSpan retryDelay, CancellationToken token)
+    {
+        const int maxAttempts = 3;
+        for (var attempt = 1; ; attempt++)
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
+            timeout.CancelAfter(attemptTimeout);
+            try
+            {
+                using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
+                response.EnsureSuccessStatusCode();
+                await using var source = await response.Content.ReadAsStreamAsync(timeout.Token);
+                await using var output = new FileStream(archive, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                await source.CopyToAsync(output, timeout.Token);
+                output.Flush(true);
+                return;
+            }
+            catch (Exception exception) when (!token.IsCancellationRequested && IsTransientDownloadFailure(exception))
+            {
+                if (attempt == maxAttempts)
+                {
+                    var reason = exception is OperationCanceledException ? "download timed out" : exception.Message;
+                    throw new IOException($"Could not download the Controller's Agent release after {maxAttempts} attempts: {reason}", exception);
+                }
+                File.Delete(archive);
+                var detail = exception is OperationCanceledException ? "download timed out" : exception.Message;
+                await context.TraceAsync($"Agent download attempt {attempt}/{maxAttempts} failed: {detail}. Retrying.", "warning");
+                await Task.Delay(retryDelay * attempt, token);
+            }
+        }
+    }
+
+    private static bool IsTransientDownloadFailure(Exception exception) => exception switch
+    {
+        OperationCanceledException or HttpIOException => true,
+        HttpRequestException request => request.StatusCode is null or HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests ||
+                                       (int)request.StatusCode >= 500,
+        _ => false
+    };
 
     public async Task ConfirmAsync()
     {

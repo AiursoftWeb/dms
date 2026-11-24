@@ -183,13 +183,14 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             await context.TraceAsync("Pausing new machine tasks and waiting for running tasks to finish.");
             using var drain = CancellationTokenSource.CreateLinkedTokenSource(token);
             drain.CancelAfter(TimeSpan.FromMinutes(1));
-            while (true)
+            try
             {
-                var others = journal.Snapshot().Where(t => t.Id != taskId).ToList();
-                if (others.Any(t => t.State is RunState.NeedsVerification or RunState.CancelRequested))
-                    throw new InvalidOperationException("Reconcile uncertain machine tasks before upgrading the Agent.");
-                if (others.All(t => t.State != RunState.Running)) break;
-                await Task.Delay(250, drain.Token);
+                while (_running.Keys.Any(id => id != taskId) || journal.BlocksAgentUpgrade(taskId))
+                    await Task.Delay(250, drain.Token);
+            }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested)
+            {
+                throw new InvalidOperationException("The Agent could not start upgrading. A machine workflow is still running or a previous Agent upgrade, reboot, or poweroff needs verification.");
             }
             return await new AgentUpgrade(installedState!, journal).PrepareAsync(taskId, context, input, token);
         }
@@ -231,7 +232,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             lock (_startGate)
             {
                 if (_maintenance != null) return false;
-                if (_running.Keys.Any(id => id != taskId) || journal.HasUnsettledWork(taskId))
+                if (_running.Keys.Any(id => id != taskId) || journal.BlocksAgentUpgrade(taskId))
                 {
                     idleSince = null;
                 }

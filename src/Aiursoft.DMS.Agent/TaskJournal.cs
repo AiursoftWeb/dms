@@ -60,10 +60,15 @@ public sealed class TaskJournal : IDisposable
         lock (_gate) return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(t => JsonSerializer.Deserialize<JournalTask>(JsonSerializer.Serialize(t))!).ToList();
     }
 
-    internal bool HasUnsettledWork(Guid except)
+    internal bool BlocksAgentUpgrade(Guid except)
     {
+        // Historical verification survives the Agent restart. A lifecycle helper can
+        // still act outside the Agent process, so its uncertain outcome blocks maintenance.
         lock (_gate) return _tasks.Values.Any(task => task.Id != except &&
-            task.State is RunState.Running or RunState.NeedsVerification or RunState.CancelRequested);
+            (task.State is RunState.Running or RunState.CancelRequested ||
+             task.State == RunState.NeedsVerification &&
+             (task.Definition is WorkflowNames.AgentUpgrade or ScheduledAgentUpgradeWorkflow.DefinitionName ||
+              task.Definition == OperationsWorkflows.SystemReboot.Name || task.Definition == OperationsWorkflows.SystemPoweroff.Name)));
     }
 
     internal void SetScheduledUpgradeRelease(Guid taskId, AgentRelease release)

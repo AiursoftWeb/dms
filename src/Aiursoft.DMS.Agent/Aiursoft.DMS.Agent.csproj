@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <Version>1.29.0</Version>
+    <Version>1.31.0</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aiursoft.DMS.Agent</AssemblyName>
     <RootNamespace>Aiursoft.DMS.Agent</RootNamespace>
@@ -25,6 +25,7 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Aiursoft.DMS.Tests" />
     <ProjectReference Include="../Aiursoft.DMS.Workflows/Aiursoft.DMS.Workflows.csproj" />
     <ProjectReference Include="../Aiursoft.DMS.SDK/Aiursoft.DMS.SDK.csproj" />
     <PackageReference Include="Aiursoft.CommandFramework" Version="10.0.19" />

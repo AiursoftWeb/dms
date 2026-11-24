@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Entities;
@@ -57,6 +58,7 @@ public class WorkflowRun
     [MaxLength(200)] public string? ScheduleExpression { get; set; }
     public DateTime? ScheduledAt { get; set; }
     public Guid? MachineId { get; set; }
+    [NotMapped] public string? MachineName { get; set; }
     [MaxLength(100)] public string Definition { get; set; } = string.Empty;
     public RunState State { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

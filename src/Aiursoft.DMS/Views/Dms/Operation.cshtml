@@ -227,6 +227,19 @@
                                     <span data-utc-time="@started.ToHtmlDateTime()"></span>
                                 }
                             </div>
+                            @if (OperationViewModel.ReadAgentUpgrade(step) is { Version: not null } upgrade)
+                            {
+                                var outcome = upgrade.AlreadyCurrent
+                                    ? Localizer["Already current ({0})", upgrade.Version]
+                                    : upgrade.PreviousVersion == upgrade.Version
+                                        ? Localizer["Reconnected on {0}", upgrade.Version]
+                                        : Localizer["Upgraded from {0} to {1}", upgrade.PreviousVersion, upgrade.Version];
+                                <div class="small text-body-secondary">@outcome</div>
+                            }
+                            else if (step.Definition == WorkflowNames.AgentUpgrade && OperationViewModel.ReadSummary(step.Result) is { } upgradeError)
+                            {
+                                <div class="small text-body-secondary">@upgradeError</div>
+                            }
                         </div>
                         <partial name="_DmsRunStatus" model="step.State" />
                     </li>

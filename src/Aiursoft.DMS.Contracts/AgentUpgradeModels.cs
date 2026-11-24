@@ -30,7 +30,10 @@ public sealed record AgentUpgradeInput(List<AgentRelease> Releases)
         release.Validate();
     }
 }
-public sealed record AgentUpgradeResult(string PreviousVersion, string Version, string Architecture, string ArchiveSha256, Guid InstallationId);
+public sealed record AgentUpgradeResult(string PreviousVersion, string Version, string Architecture, string ArchiveSha256, Guid InstallationId)
+{
+    public bool AlreadyCurrent { get; init; }
+}
 public sealed class AgentReleasesResponse : AiurResponse
 {
     public List<AgentRelease> Data { get; set; } = [];

@@ -127,4 +127,13 @@
     <value>{0} 请求</value>
   </data>
 
+  <data name="Already current ({0})" xml:space="preserve">
+    <value>已是目标版本（{0}）</value>
+  </data>
+  <data name="Reconnected on {0}" xml:space="preserve">
+    <value>已重新连接，版本 {0}</value>
+  </data>
+  <data name="Upgraded from {0} to {1}" xml:space="preserve">
+    <value>已从 {0} 升级到 {1}</value>
+  </data>
 </root>

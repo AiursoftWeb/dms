@@ -43,6 +43,14 @@ public sealed class OperationViewModel : UiStackLayoutViewModel
         }
     }
 
+    public static AgentUpgradeResult? ReadAgentUpgrade(WorkflowRun run)
+    {
+        if (run.Definition != WorkflowNames.AgentUpgrade || run.State != RunState.Succeeded || string.IsNullOrWhiteSpace(run.Result))
+            return null;
+        try { return JsonSerializer.Deserialize<AgentUpgradeResult>(run.Result); }
+        catch (JsonException) { return null; }
+    }
+
     public static SshClosureCheck? ReadSshClosureCheck(string? result)
     {
         if (string.IsNullOrEmpty(result)) return null;
@@ -54,7 +62,7 @@ public sealed class OperationViewModel : UiStackLayoutViewModel
         catch (JsonException) { return null; }
     }
 
-    internal static string? ReadSummary(string? result)
+    public static string? ReadSummary(string? result)
     {
         if (string.IsNullOrWhiteSpace(result)) return null;
         try

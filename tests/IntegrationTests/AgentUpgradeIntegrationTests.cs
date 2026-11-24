@@ -137,6 +137,51 @@ public class AgentUpgradeIntegrationTests : TestBase
     }
 
     [TestMethod]
+    public async Task FailedBatchShowsCompletedMachinesAndIndividualUpgradeResults()
+    {
+        using var scope = Server!.Services.CreateScope();
+        var services = scope.ServiceProvider;
+        var db = services.GetRequiredService<TemplateDbContext>();
+        var admin = await services.GetRequiredService<UserManager<User>>().FindByEmailAsync("admin@default.com");
+        var updated = new Machine { Name = "Updated machine" };
+        var blocked = new Machine { Name = "Blocked machine" };
+        var root = new WorkflowRun { Definition = WorkflowNames.Batch, State = RunState.Failed };
+        root.RootId = root.Id;
+        var box = new LockboxRequest
+        {
+            ClientRequestId = Guid.NewGuid(), RequesterId = admin!.Id, Definition = WorkflowNames.AgentUpgrade,
+            Version = MachineWorkflows.AgentUpgrade.Version, Risk = RiskLevel.Medium, WorkflowId = root.Id,
+            Decision = DecisionState.Approved, TargetMachines = JsonSerializer.Serialize(new[] { updated.Id, blocked.Id })
+        };
+        root.LockboxId = box.Id;
+        var successful = new WorkflowRun
+        {
+            RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, MachineId = updated.Id, IsMachineTask = true,
+            Definition = WorkflowNames.AgentUpgrade, State = RunState.Succeeded,
+            Result = JsonSerializer.Serialize(new AgentUpgradeResult("1.11.0.0", "1.31.0.0", "linux-x64", new string('a', 64), Guid.NewGuid()))
+        };
+        var failed = new WorkflowRun
+        {
+            RootId = root.Id, ParentId = root.Id, LockboxId = box.Id, MachineId = blocked.Id, IsMachineTask = true,
+            Definition = WorkflowNames.AgentUpgrade, State = RunState.Failed,
+            Result = JsonSerializer.Serialize(new { Error = "Agent download timed out." })
+        };
+        db.Machines.AddRange(updated, blocked);
+        db.Lockboxes.Add(box);
+        db.WorkflowRuns.AddRange(root, successful, failed);
+        await db.SaveChangesAsync();
+
+        await LoginAsAdmin();
+        var queue = await Http.GetStringAsync("/Dms/Lockboxes?scope=approved");
+        StringAssert.Contains(queue, "1 of 2 machines completed successfully");
+        var operation = await Http.GetStringAsync($"/Dms/Operation/{root.Id}");
+        StringAssert.Contains(operation, "Updated machine");
+        StringAssert.Contains(operation, "Upgraded from 1.11.0.0 to 1.31.0.0");
+        StringAssert.Contains(operation, "Blocked machine");
+        StringAssert.Contains(operation, "Agent download timed out.");
+    }
+
+    [TestMethod]
     public async Task BootstrapIncludesControllerOriginAndServesOnlyThePackagedTool()
     {
         Assert.AreEqual(HttpStatusCode.NotFound, (await Http.GetAsync("/agent/install.sh")).StatusCode);
