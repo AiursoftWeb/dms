@@ -84,7 +84,12 @@ public static partial class DmsCommandApp
                 NewFilesystemExportCommand(),
                 NewFilesystemImportCommand()
             ]),
-            new Group("frps", "Deploy the FRP server on a machine.", [FrpsDeployCommand()]),
+            new Group("frps", "Inspect or deploy the FRP server on a machine.",
+            [
+                StandardCommand("status", "Report FRPS versions, systemd state, listeners, and recent journal counts.",
+                    MachineWorkflows.FrpsStatus, _ => new EmptyInput()),
+                FrpsDeployCommand()
+            ]),
             new Group(MachineWorkflowCli.Box, "Inspect or deploy the Box repository on a machine.",
             [
                 StandardCommand("inspect",

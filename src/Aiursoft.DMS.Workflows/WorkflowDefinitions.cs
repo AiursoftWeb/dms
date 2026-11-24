@@ -24,6 +24,7 @@ public sealed partial class MachineWorkflowRegistry
     public MachineWorkflowRegistry()
     {
         RegisterOperations();
+        Register(MachineWorkflows.FrpsStatus, (input, agent) => new FrpsStatusWorkflow(input, agent));
         Register(MachineWorkflows.FrpsDeploy, (input, agent) => new FrpsDeployWorkflow(input, agent));
         Register(MachineWorkflows.DockerPs, (input, _) => new DockerPsWorkflow(input));
         Register(MachineWorkflows.DockerLogs, (input, _) => new DockerLogsWorkflow(input));

@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Workflows.Operations;
+using static Aiursoft.DMS.Workflows.FrpsLayout;
 
 namespace Aiursoft.DMS.Workflows;
 
@@ -13,14 +14,9 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
     Func<CancellationToken, Task<byte[]>>? download = null)
     : MachineWorkflow<FrpsDeployInput, FrpsDeployResult>(MachineWorkflows.FrpsDeploy, input)
 {
-    private const string Unit = "frps.service";
     private const string UnitPath = "/etc/systemd/system/frps.service";
     private const string DefaultBinary = "/usr/local/bin/frps";
     private const string DefaultConfig = "/etc/frp/frps.toml";
-    private const string WrappedUnit = "turn.service";
-    private const string Wrapper = "/usr/bin/turn";
-    private const string WrappedBinary = "/usr/lib/turn/turn";
-    private const string WrappedConfig = "/etc/turn/turn.toml";
     private const string Release = "0.72.0";
     private const int MaxArchiveSize = 64 * 1024 * 1024;
     private const UnixFileMode PrivateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
@@ -346,9 +342,6 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         }
         throw new InvalidDataException("The FRPS archive did not contain its executable.");
     }
-
-    [GeneratedRegex(@"(?m)^ExecStart=\{ path=(?<binary>/[\w./-]+) ; argv\[\]=(?<argv>/[\w./-]+) (?:-c |--config[ =])(?<config>/[\w./-]+) ; [^\n{}]+\}\r?$")]
-    private static partial Regex ExecStart();
 
     [GeneratedRegex(@"\A[0-9]+\.[0-9]+\.[0-9]+\z")]
     private static partial Regex VersionNumber();

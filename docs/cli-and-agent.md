@@ -433,6 +433,22 @@ health separately. Updating the Controller itself can temporarily interrupt the
 CLI/API connection; inspect the original Workflow ID after reconnecting. Update
 the Controller, CLI (1.2.0) and Agent (1.3.0) before using this new definition.
 
+## Inspect FRPS
+
+Use `dms machine frps status` on managed Linux machines with systemd.
+
+```sh
+dms machine frps status --machine-id <machine-id> --reason "Check FRPS health" --output-format Json
+```
+
+The Low risk workflow reports standard `frps.service` and the supported encrypted `turn.service` layout. It returns the installed and running versions when they can be verified, systemd state and startup time, automatic restart count, process ID, local TCP and UDP listeners, and bounded journal counts. The journal summary covers up to 250 entries from the last hour. A full sample can omit earlier entries. The report includes configuration paths and presence without exposing configuration contents, authentication tokens, remote connections, or journal messages. It also reports unavailable observations and returns an empty service list on machines without either supported service.
+
+The Controller and target Agent must both support the workflow. Approval follows the existing Low risk policy for the requesting account. Use the receipt's workflow ID to read the report once execution finishes.
+
+```sh
+dms operation get-callstack <workflow-id> --output-format Json
+```
+
 ## Deploy FRPS
 
 Use `dms machine frps deploy` with one managed Linux machine. The request opens a Very High risk Lockbox. The Agent installs the pinned upstream FRPS release for AMD64 or ARM64, verifies its SHA-256 and configuration, and checks that the systemd service starts.

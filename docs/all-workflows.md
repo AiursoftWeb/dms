@@ -19,6 +19,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Scheduled Agent upgrade | `machine.agent.scheduled-upgrade` | Agent schedule on every managed machine (High) | 00:00, 08:00, and 16:00 daily | Checks for a newer Controller release. Waits for other workflows to exit and for 10 seconds of continuous idle time before upgrading. |
 | Inspect Agent status | `machine.agent.status` | `dms machine agent status` (Safe) | — | Check Agent version, connection identity, and pending events. |
 | Upgrade an Agent | `machine.agent.upgrade` | `dms machine agent upgrade` (Medium) | — | Installs the Controller-selected Agent release. The workflow checks that the upgraded Agent reconnects. |
+| Inspect FRPS | `machine.frps.status` | `dms machine frps status` (Low) | — | Reports installed and running versions, systemd state, local listeners, and recent journal counts. |
 | Deploy FRPS | `machine.frps.deploy` | `dms machine frps deploy` (VeryHigh) | — | Installs or upgrades FRPS on one Linux host. A fresh installation requires a token; an empty token preserves existing authentication. |
 | Inspect APT packages | `machine.apt.inspect` | `dms machine apt inspect` (Low) | — | Show installed packages and available APT updates. |
 | Install APT packages | `machine.apt.install` | `dms machine apt install` (High) | — | Install the requested APT packages. |
