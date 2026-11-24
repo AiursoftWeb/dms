@@ -630,6 +630,8 @@ public static partial class DmsCommandApp
 
         private readonly Option<LockboxId> _lockboxId = new("--id")
             { Description = "Lockbox ID, lb/<UUID>.", CustomParser = result => ParseLockboxId(result) ?? default };
+        private readonly Option<bool> _verbose = new("--verbose")
+            { Description = "Include full execution parameters and target machines in the output." };
 
         private readonly Option<DecisionState?> _decision = new("--decision")
             { Description = "Filter by Pending, Approved, Denied, or Withdrawn." };
@@ -724,6 +726,10 @@ public static partial class DmsCommandApp
                 {
                     _reason.Description = "Optional explanation recorded with the approval or rejection.";
                     yield return _reason;
+                }
+                if (action is "approve" or "deny" or "withdraw")
+                {
+                    yield return _verbose;
                 }
             }
             else if (UsesId)
@@ -822,7 +828,13 @@ public static partial class DmsCommandApp
                     ((JObject)response.Data!).ToObject<FilesystemListResult>()!, format, color, width);
             else
             {
-                base.WriteResponse(context, response, format, color, width);
+                var verbose = action switch
+                {
+                    "approve" or "deny" or "withdraw" => context.GetValue(_verbose),
+                    _ => true
+                };
+                DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format, Callstack, color, width,
+                    catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose);
                 if (format == OutputFormat.Table && response.Data is JObject data)
                     WriteDirectoryNextStep(context.InvocationConfiguration.Output, data);
             }
