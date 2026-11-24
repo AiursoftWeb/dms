@@ -90,11 +90,14 @@ public static partial class DmsCommandApp
                     MachineWorkflows.FrpsStatus, _ => new EmptyInput()),
                 FrpsDeployCommand()
             ]),
-            new Group(MachineWorkflowCli.Box, "Inspect or deploy the Box repository on a machine.",
+            new Group(MachineWorkflowCli.Box, "Inspect, update, or deploy the Box repository on a machine.",
             [
                 StandardCommand("inspect",
                     "Check the local Box repository's branch, commit, and working tree.",
                     MachineWorkflows.BoxInspect, _ => new EmptyInput()),
+                StandardCommand("update-only",
+                    "Fast-forward the local Box repository without deploying.",
+                    MachineWorkflows.BoxUpdateOnly, _ => new EmptyInput()),
                 BoxSetGitSshIdentityCommand(),
                 BoxDeployCommand(),
                 new BoxSecretCommand(BoxSecretCommandKind.List),

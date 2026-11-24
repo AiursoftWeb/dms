@@ -783,6 +783,7 @@ public class DmsRolePermissionTests : TestBase
     [DataRow("docker", RiskLevel.Low)]
     [DataRow("set-git-ssh-identity", RiskLevel.Medium)]
     [DataRow("configure-git", RiskLevel.Medium)]
+    [DataRow("update-only", RiskLevel.Medium)]
     [DataRow("rm", RiskLevel.High)]
     public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
     {
@@ -792,6 +793,7 @@ public class DmsRolePermissionTests : TestBase
             "du" => ["machine", "filesystem", "du", "--path", "/swarm-vol", "--depth", "2"],
             "docker" => ["machine", "docker", "system", "df"],
             "rm" => ["machine", "filesystem", "rm", "--path", "/tmp/reviewed cleanup", "--recursive"],
+            "update-only" => ["machine", "box", "update-only"],
             _ => ["machine", "box", operation, "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
         };
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--machine-id", setup.First.ToString(),
@@ -811,6 +813,11 @@ public class DmsRolePermissionTests : TestBase
         if (operation == "du") Assert.AreEqual(new DirectoryUsageInput("/swarm-vol", 2), MachineWorkflows.DirectoryUsage.ReadInput(request.Input));
         if (operation == "docker") Assert.AreEqual("{}", request.Input);
         if (operation == "rm") Assert.AreEqual(new RemovePathInput("/tmp/reviewed cleanup", true), MachineWorkflows.RemovePath.ReadInput(request.Input));
+        if (operation == "update-only")
+        {
+            Assert.AreEqual(MachineWorkflows.BoxUpdateOnly.Name, box.Definition);
+            Assert.AreEqual("{}", request.Input);
+        }
         if (operation is "set-git-ssh-identity" or "configure-git")
         {
             Assert.AreEqual(MachineWorkflows.BoxConfigureGit.Name, box.Definition);
