@@ -93,6 +93,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             using var socket = new ClientWebSocket();
             socket.Options.SetRequestHeader("Authorization", "Bearer " + key);
             socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+            socket.Options.KeepAliveTimeout = TimeSpan.FromSeconds(15);
             var endpoint = new UriBuilder(controller) { Scheme = controller.Scheme == "https" ? "wss" : "ws", Path = "/api/agent/channel" }.Uri;
             try
             {
