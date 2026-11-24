@@ -23,7 +23,7 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
     private const UnixFileMode ExecutableMode = PrivateMode | UnixFileMode.UserExecute |
         UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
     private const UnixFileMode UnitMode = PrivateMode | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(2) };
+    private static readonly HttpClient Http = new() { Timeout = Timeout.InfiniteTimeSpan };
     private const string UnitContent = """
         [Unit]
         Description=FRP server
@@ -79,7 +79,9 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         }
 
         var updateBinary = oldVersion != Release;
-        var nextBinary = updateBinary ? await (download ?? DownloadReleaseAsync)(token) : null;
+        var nextBinary = updateBinary
+            ? await (download is null ? DownloadReleaseAsync(context, token) : download(token))
+            : null;
         var previousBinary = !isNew && updateBinary ? await File.ReadAllBytesAsync(binaryPath, token) : null;
         var previousConfig = !isNew && updatedConfig != null ? await File.ReadAllBytesAsync(configPath, token) : null;
         var binaryMode = isNew ? ExecutableMode : File.GetUnixFileMode(binaryPath);
@@ -298,7 +300,53 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
         await file.FlushAsync(token);
     }
 
-    private static async Task<byte[]> DownloadReleaseAsync(CancellationToken token)
+    internal static async Task<byte[]> DownloadArchiveAsync(HttpClient http, Uri github, Uri proxy, string hash,
+        TimeSpan githubTimeout, Func<string, Task> trace, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        try
+        {
+            return await FetchArchiveAsync(http, github, hash, githubTimeout, token);
+        }
+        catch (Exception error) when (!token.IsCancellationRequested &&
+            error is HttpRequestException or IOException or OperationCanceledException &&
+            error is not InvalidDataException)
+        {
+            var reason = error is OperationCanceledException ? "timed out" : "failed to deliver the archive";
+            await trace($"GitHub {reason}. Trying the configured FRPS release proxy.");
+            token.ThrowIfCancellationRequested();
+            return await FetchArchiveAsync(http, proxy, hash, TimeSpan.FromMinutes(5), token);
+        }
+    }
+
+    private static async Task<byte[]> FetchArchiveAsync(HttpClient http, Uri url, string hash,
+        TimeSpan timeout, CancellationToken token)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(timeout);
+        var downloadToken = deadline.Token;
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Accept.ParseAdd("application/octet-stream");
+        request.Headers.UserAgent.ParseAdd("Aiursoft-DMS");
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, downloadToken);
+        response.EnsureSuccessStatusCode();
+        using var content = await response.Content.ReadAsStreamAsync(downloadToken);
+        using var archive = new MemoryStream();
+        var buffer = new byte[65536];
+        int count;
+        while ((count = await content.ReadAsync(buffer, downloadToken)) > 0)
+        {
+            if (archive.Length + count > MaxArchiveSize) throw new InvalidDataException("The FRPS archive exceeded the size limit.");
+            archive.Write(buffer, 0, count);
+        }
+        downloadToken.ThrowIfCancellationRequested();
+        if (!SHA256.HashData(archive.GetBuffer().AsSpan(0, (int)archive.Length)).SequenceEqual(Convert.FromHexString(hash)))
+            throw new InvalidDataException("The FRPS archive did not match the pinned SHA-256.");
+
+        return archive.ToArray();
+    }
+
+    private static async Task<byte[]> DownloadReleaseAsync(MachineWorkflowContext context, CancellationToken token)
     {
         var (architecture, asset, hash) = RuntimeInformation.OSArchitecture switch
         {
@@ -307,27 +355,10 @@ public sealed partial class FrpsDeployWorkflow(FrpsDeployInput input, AgentEnvir
             _ => throw new PlatformNotSupportedException("DMS provides FRPS releases for Linux x64 and ARM64.")
         };
         var name = $"frp_{Release}_linux_{architecture}";
-        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
-        deadline.CancelAfter(TimeSpan.FromMinutes(5));
-        token = deadline.Token;
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/fatedier/frp/releases/assets/{asset}");
-        request.Headers.Accept.ParseAdd("application/octet-stream");
-        request.Headers.UserAgent.ParseAdd("Aiursoft-DMS");
-        using var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
-        response.EnsureSuccessStatusCode();
-        using var content = await response.Content.ReadAsStreamAsync(token);
-        using var archive = new MemoryStream();
-        var buffer = new byte[65536];
-        int count;
-        while ((count = await content.ReadAsync(buffer, token)) > 0)
-        {
-            if (archive.Length + count > MaxArchiveSize) throw new InvalidDataException("The FRPS archive exceeded the size limit.");
-            await archive.WriteAsync(buffer.AsMemory(0, count), token);
-        }
-        if (!SHA256.HashData(archive.GetBuffer().AsSpan(0, (int)archive.Length)).SequenceEqual(Convert.FromHexString(hash)))
-            throw new InvalidDataException("The FRPS archive did not match the pinned SHA-256.");
-
-        archive.Position = 0;
+        var github = new Uri($"https://api.github.com/repos/fatedier/frp/releases/assets/{asset}");
+        var proxy = new Uri($"https://gh-proxy.com/https://github.com/fatedier/frp/releases/download/v{Release}/{name}.tar.gz");
+        using var archive = new MemoryStream(await DownloadArchiveAsync(Http, github, proxy, hash,
+            TimeSpan.FromMinutes(40), message => context.TraceAsync(message, "frps"), token));
         using var gzip = new GZipStream(archive, CompressionMode.Decompress);
         await using var tar = new TarReader(gzip);
         while (await tar.GetNextEntryAsync(cancellationToken: token) is { } entry)
