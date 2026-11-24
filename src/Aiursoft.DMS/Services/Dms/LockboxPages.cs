@@ -67,6 +67,15 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
             .ToDictionaryAsync(user => user.Id, user => AccessService.PersonName(user.DisplayName, user.UserName));
         var machines = await MachineNamesAsync(visible.SelectMany(row => row.Targets.Take(3)).Distinct().ToArray());
         var executions = await ExecutionStatesAsync(visible.Select(row => row.Item));
+        var upgradeRoots = visible.Where(row => IsAgentUpgrade(row.Item) && executions.ContainsKey(row.Item.Id))
+            .Select(row => row.Item.WorkflowId!.Value).ToArray();
+        var completedUpgrades = upgradeRoots.Length == 0
+            ? new Dictionary<Guid, int>()
+            : await db.WorkflowRuns.AsNoTracking().NotCacheable()
+                .Where(run => run.ParentId.HasValue && upgradeRoots.Contains(run.ParentId.Value) && run.Definition == WorkflowNames.AgentUpgrade)
+                .GroupBy(run => run.ParentId!.Value)
+                .Select(group => new { Root = group.Key, Completed = group.Count(run => run.State == RunState.Succeeded) })
+                .ToDictionaryAsync(count => count.Root, count => count.Completed);
 
         return new LockboxQueueViewModel
         {
@@ -77,7 +86,8 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
                 row.Targets.Length, canReview && !row.RequiresResubmission && row.Item.Decision == DecisionState.Pending &&
                     DmsPermissions.CanDecide(principal, row.Item.Risk, row.Item.RequesterId == actor) &&
                         !(row.Item.RequesterId == actor && BoxSecretTransfers.RequiresIndependentApproval(row.Item.Definition)),
-                executions.GetValueOrDefault(row.Item.Id), row.RequiresResubmission)).ToList(),
+                executions.GetValueOrDefault(row.Item.Id), row.RequiresResubmission,
+                row.Item.WorkflowId is { } root && completedUpgrades.TryGetValue(root, out var completed) ? completed : null)).ToList(),
             OwnRequests = ownRequests, Scope = scope, Search = search,
             Page = page, HasNextPage = rows.Count > pageSize, Notice = notice
         };

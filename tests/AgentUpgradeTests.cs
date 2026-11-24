@@ -1,3 +1,4 @@
+using System.Net;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Aiursoft.DMS.Agent;
@@ -9,6 +10,72 @@ namespace Aiursoft.DMS.Tests;
 [TestClass]
 public class AgentUpgradeTests
 {
+    [TestMethod]
+    public void AlreadyCurrentRequiresTheApprovedAssemblyAndInstallation()
+    {
+        var machine = Guid.NewGuid();
+        var installation = Guid.NewGuid();
+        var config = new AgentConfiguration("http://controller", Guid.NewGuid(), installation, "", "", "dmsa_test", machine);
+        var toolHash = new string('c', 64);
+        var release = new AgentRelease(AgentUpgrade.Architecture, AgentUpgrade.Version, new string('a', 64), new string('b', 64));
+        var handoff = new UpgradeHandoff(Guid.NewGuid(), Guid.NewGuid(), null, installation, machine, release,
+            "1.11.0.0", DateTime.UtcNow, "confirmed", toolHash);
+
+        Assert.IsTrue(AgentUpgrade.IsCurrentRelease(release, config, null, release.AssemblySha256));
+        Assert.IsTrue(AgentUpgrade.IsCurrentRelease(release, config, handoff, toolHash));
+        Assert.IsFalse(AgentUpgrade.IsCurrentRelease(release, config, null, toolHash));
+        Assert.IsFalse(AgentUpgrade.IsCurrentRelease(release, config, handoff with { Phase = "failed" }, toolHash));
+        Assert.IsFalse(AgentUpgrade.IsCurrentRelease(release, config, handoff with { MachineId = Guid.NewGuid() }, toolHash));
+        Assert.IsFalse(AgentUpgrade.IsCurrentRelease(release, config, handoff, new string('d', 64)));
+        Assert.IsFalse(AgentUpgrade.IsCurrentRelease(release with { ArchiveSha256 = new string('e', 64) }, config, handoff, toolHash));
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.ServiceUnavailable, true)]
+    [DataRow(HttpStatusCode.NotFound, false)]
+    [DataRow(null, true)]
+    public async Task UpgradeRetriesTransientDownloadsOnly(HttpStatusCode? firstStatus, bool retry)
+    {
+        var state = Directory.CreateTempSubdirectory("dms-upgrade-download-");
+        var archive = Path.Combine(state.FullName, "agent.tar.gz");
+        var events = new List<WorkflowEvent>();
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, item => { events.Add(item); return Task.CompletedTask; });
+        using var handler = new ReleaseDownload(firstStatus);
+        using var client = new HttpClient(handler);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        try
+        {
+            var download = AgentUpgrade.DownloadAsync(client, new Uri("https://controller/asset"), archive, context,
+                TimeSpan.FromMilliseconds(250), TimeSpan.Zero, cancellation.Token);
+            if (retry)
+            {
+                await download;
+                Assert.AreEqual("approved archive", await File.ReadAllTextAsync(archive, cancellation.Token));
+                Assert.AreEqual(2, handler.Requests);
+                Assert.AreEqual("warning", events.Single().Source);
+            }
+            else
+            {
+                await Assert.ThrowsAsync<HttpRequestException>(() => download);
+                Assert.AreEqual(1, handler.Requests);
+                Assert.IsFalse(File.Exists(archive));
+            }
+        }
+        finally { state.Delete(true); }
+    }
+
+    private sealed class ReleaseDownload(HttpStatusCode? firstStatus) : HttpMessageHandler
+    {
+        public int Requests { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (++Requests != 1) return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("approved archive") };
+            if (firstStatus is { } status) return new HttpResponseMessage(status);
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("The first response must time out.");
+        }
+    }
+
     [TestMethod]
     [DataRow("installed", true, 10, true, true)]
     [DataRow("prepared", true, -6, true, false)]

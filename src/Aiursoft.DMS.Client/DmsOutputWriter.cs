@@ -198,7 +198,7 @@ public static class DmsOutputWriter
         }
     }
 
-    private static string TerminalText(string? text) => text == null ? "-" :
+    internal static string TerminalText(string? text) => text == null ? "-" :
         new string(text.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
 
     private static void WriteHuman(TextWriter output, JToken value, int width, bool color, bool workflowMetadata = false)

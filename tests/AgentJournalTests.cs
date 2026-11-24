@@ -70,6 +70,35 @@ public class AgentJournalTests
     }
 
     [TestMethod]
+    [DataRow("machine.ssh.disable", false)]
+    [DataRow("machine.system.execute-script", false)]
+    [DataRow(WorkflowNames.AgentUpgrade, true)]
+    [DataRow("machine.system.reboot", true)]
+    [DataRow("machine.system.poweroff", true)]
+    public void UpgradeCanPreserveHistoricalWorkButWaitsForLiveWorkAndLifecycleVerification(string definition, bool lifecycle)
+    {
+        var directory = Directory.CreateTempSubdirectory("dms-upgrade-journal-");
+        var interrupted = Guid.NewGuid();
+        var upgrade = Guid.NewGuid();
+        try
+        {
+            using (var journal = new TaskJournal(directory.FullName))
+            {
+                journal.Accept(new AgentMessage { TaskId = interrupted, Definition = definition });
+                Assert.IsNotNull(journal.Start(interrupted));
+                Assert.IsTrue(journal.BlocksAgentUpgrade(upgrade));
+            }
+            using var recovered = new TaskJournal(directory.FullName);
+            var task = recovered.Snapshot().Single();
+            Assert.AreEqual(RunState.NeedsVerification, task.State);
+            Assert.AreEqual(lifecycle, recovered.BlocksAgentUpgrade(upgrade));
+            Assert.AreEqual(RunState.NeedsVerification, task.Pending.Single().State);
+            Assert.IsNull(recovered.Start(interrupted));
+        }
+        finally { directory.Delete(true); }
+    }
+
+    [TestMethod]
     public async Task AcceptedTaskCanResumeAndAcknowledgedEventsStayAcknowledged()
     {
         var path = Path.Combine(Path.GetTempPath(), "dms-journal-" + Guid.NewGuid());

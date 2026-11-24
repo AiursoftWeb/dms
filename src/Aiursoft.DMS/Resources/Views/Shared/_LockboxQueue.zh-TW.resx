@@ -100,4 +100,7 @@
     <value>{0} 個請求頁面</value>
   </data>
 
+  <data name="{0} of {1} machines completed successfully" xml:space="preserve">
+    <value>{0}/{1} 台機器已成功完成</value>
+  </data>
 </root>

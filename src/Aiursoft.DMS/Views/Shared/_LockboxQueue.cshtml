@@ -131,6 +131,10 @@
                             <div class="dms-item-execution">
                                 <span class="small text-body-secondary">@Localizer["Execution status"]</span>
                                 <partial name="_DmsRunStatus" model="state" />
+                                @if (row.SuccessfulTargets is { } completed)
+                                {
+                                    <span class="small text-body-secondary">@Localizer["{0} of {1} machines completed successfully", completed, row.TargetCount]</span>
+                                }
                             </div>
                         }
                     </div>
