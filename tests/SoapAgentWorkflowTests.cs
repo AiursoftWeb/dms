@@ -321,6 +321,28 @@ public class SoapAgentWorkflowTests
         Assert.DoesNotContain("opaque-transport-detail", JsonSerializer.Serialize(fixture.Events));
     }
 
+    [TestMethod]
+    [DataRow(HttpStatusCode.BadGateway)]
+    [DataRow(HttpStatusCode.GatewayTimeout)]
+    public async Task CallTestNeedsVerificationAfterGatewayErrorWithoutSoapConfirmation(HttpStatusCode status)
+    {
+        var fixture = new Fixture(Profile("test", "test-only"), (_, _) =>
+            Task.FromResult(new HttpResponseMessage(status)
+            {
+                Content = new StringContent("<html>Gateway error</html>", Encoding.UTF8, "text/html")
+            }));
+
+        await Assert.ThrowsExactlyAsync<WorkflowNeedsVerificationException>(() => fixture.Run(SoapWorkflows.CallTest, fixture.Call()));
+
+        var terminal = fixture.Events.Last();
+        Assert.AreEqual(RunState.NeedsVerification, terminal.State);
+        var result = SoapWorkflows.CallTest.ReadResult(terminal.Result);
+        Assert.AreEqual((int)status, result.HttpStatus);
+        Assert.AreEqual("http-error", result.Outcome);
+        Assert.IsNull(result.Artifact);
+        CollectionAssert.AreEqual(new[] { Endpoint }, fixture.Requests.ToArray());
+    }
+
     private static Task<HttpResponseMessage> UnexpectedRequest(HttpRequestMessage request, CancellationToken token) =>
         throw new AssertFailedException("Unexpected outbound request.");
 
