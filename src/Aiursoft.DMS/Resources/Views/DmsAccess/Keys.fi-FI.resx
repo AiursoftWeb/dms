@@ -39,6 +39,9 @@
   <data name="Revoke" xml:space="preserve">
     <value>Kumoa</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Aseta DMS CLI</value>
+  </data>
   <data name="Valid days" xml:space="preserve">
     <value>Voimassaolopäivät</value>
   </data>

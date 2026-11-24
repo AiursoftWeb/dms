@@ -51,6 +51,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Finished</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Investigate machine</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Last seen</value>
   </data>
@@ -66,6 +69,9 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>No heartbeat received</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>No recent workflow executions recorded for this machine.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>No scheduled baseline execution is recorded for this machine.</value>
   </data>
@@ -78,8 +84,14 @@
   <data name="Online" xml:space="preserve">
     <value>Online</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Parent workflow</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Reason</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Recent executions</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>Request to disable SSH</value>
@@ -122,6 +134,9 @@
   </data>
   <data name="Version" xml:space="preserve">
     <value>Version</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>View all history</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>View execution</value>

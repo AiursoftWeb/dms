@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lint-tarkistus</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} kirjaa, kuka pyysi operaatiota, sen kohteet ja hyväksyntäpäätös.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT-lisenssi</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Filosofia</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Keskeinen verkkosovellus ja API. Se seuraa koneita, hallitsee {0} -hyväksynnät ja koordinoi työvuoimia.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Komentorivityökalu, jonka ajat omalla tietokoneellasi. Se yhdistyy Controlleriin, jotta voit pyytää toimintoja ja tarkastella niiden tuloksia.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Määritelmällinen, kovasti testattu .NET-yritysperusta. Autentikoinnista tekoälyyn, olemme ratkaisseet vaikeat osiot, jotta sinun ei tarvitse.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Navigointipalkki sopeutuu automaattisesti käyttäjän roolien ja käyttöoikeuksien perusteella.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Palvelu, jonka asennat jokaiselle hallittuun koneeseen. Se muodostaa yhteyden Controlleriin, raportoi tilansa ja suorittaa hyväksytyt työvuoimat paikallisesti.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Malli on suunniteltu helppokäyttöiseksi käyttöönottoa varten. Se sisältää täyden Docker-tuen, joten voit konttipohjata sovelluksesi ja ajaa sitä missä tahansa. Voit myös ottaa sen käyttöön suoraan IIS:ään, Azure App Serviceen tai mihin tahansa palvelimeen, joka tukee ASP.NET Corea.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>DMS:n kolme osaa</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Tämä on malliprojekti</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Näytä GitHubissa</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Näytä konekanta, Agentin yhteys, versiot ja toimintahistoria.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory saatavilla</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API käytettävissä</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} kirjaa, kuka pyysi operaatiota, sen kohteet ja hyväksyntäpäätös.</value>
   </data>
 
 </root>

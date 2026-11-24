@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Cek Lint</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} mencatat siapa yang meminta operasi, targetnya, dan keputusan persetujuan.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Lisensi MIT</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Filsafat</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Aplikasi web dan API pusat. Melacak mesin, mengelola persetujuan {0}, dan mengoordinasikan alur kerja.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Perangkat baris perintah yang Anda jalankan di komputer Anda sendiri. Perangkat ini terhubung ke Controller agar Anda dapat meminta operasi dan memeriksa hasilnya.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Dasar perusahaan .NET yang pasti dan telah teruji dalam pertempuran. Dari Otentikasi hingga Kecerdasan Buatan, kami telah menyelesaikan bagian-bagian sulit sehingga Anda tidak perlu melakukannya.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Bilah navigasi secara otomatis menyesuaikan berdasarkan peran dan izin pengguna.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Layanan yang Anda instal di setiap mesin yang dikelola. Layanan ini terhubung ke Controller, melaporkan statusnya, dan menjalankan alur kerja yang disetujui secara lokal.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Template ini dibangun untuk kemudahan penerapan. Template ini mencakup dukungan Docker penuh, sehingga Anda dapat meng-container-kan aplikasi Anda dan menjalankannya di mana saja. Anda juga dapat menerapkannya langsung ke IIS, Azure App Service, atau server apa pun yang mendukung ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>Tiga bagian DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Ini adalah proyek templat</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Lihat di GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Lihat inventaris mesin Anda, konektivitas Agent, versi, dan riwayat operasi.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory tersedia</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>API java.time tersedia</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} mencatat siapa yang meminta operasi, targetnya, dan keputusan persetujuan.</value>
   </data>
 
 </root>

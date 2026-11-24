@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>Koneksi agen</value>
+  </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Riwayat peningkatan agen</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Versi agen</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Kembali ke mesin</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>Riwayat baseline</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>Menonaktifkan SSH dapat memutus sesi dan mencabut sewa apa pun yang ada saat dijalankan.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>Riwayat Nonaktifkan SSH</value>
+  </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Selidiki mesin</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Terakhir dilihat</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Eksekusi terbaru</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>ID Mesin</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Mesin</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>Tidak ada heartbeat yang diterima</value>
+  </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Tidak ada eksekusi alur kerja terbaru yang tercatat untuk mesin ini.</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>Tidak ada eksekusi baseline terjadwal yang tercatat untuk mesin ini.</value>
+  </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Alur kerja induk</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Alasan</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Eksekusi Terbaru</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>Minta Nonaktifkan SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Permintaan Disable SSH memerlukan izin DMS untuk mengirim alur kerja risiko Medium.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>Riwayat pemeriksaan sewa SSH</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>Manajemen SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Kunci publik SSH</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Garis dasar keamanan terjadwal</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>Kirim permintaan {0}</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>Status SSH telah berubah. Tinjau status saat ini sebelum mengirimkan permintaan baru.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Gunakan --key-id untuk memilih satu kunci yang terverifikasi.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Verifikasi kunci SSH pribadi Anda sebelum meminta akses. CLI menggunakan semua kunci terverifikasi Anda secara default.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Lihat semua riwayat</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Lihat eksekusi</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Riwayat alur kerja</value>
+  </data>
+
+</root>

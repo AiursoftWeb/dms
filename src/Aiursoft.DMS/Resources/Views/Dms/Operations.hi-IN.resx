@@ -18,14 +18,50 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All origins" xml:space="preserve">
+      <data name="All machines" xml:space="preserve">
+    <value>सभी मशीनें</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
     <value>सभी स्रोत</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>सभी स्थितियाँ</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>फ़िल्टर लागू करें</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>स्वतः</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>रद्द किया गया</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>फ़िल्टर हटाएँ</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>केवल क्लस्टर वर्कफ़्लो</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>चेतावनियों के साथ पूर्ण</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>कंट्रोलर</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>निर्मित</value>
+  </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>हार्टबीट्स को छोड़ें</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>निष्पादन पृष्ठ</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>निष्पादन स्थिति</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>विफल</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>फ़िल्टर</value>
@@ -33,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>मशीन</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>मैनुअल</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>सत्यापन आवश्यक</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>अगला</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>कोई निष्पादन इन फ़िल्टर से मेल नहीं खाते।</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>मूल</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>माता वर्कफ़्लो</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>पिछला</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>कतार में</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>केवल मूल निष्पादन</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>चल रहा है</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>अवस्था</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>सफल</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>एक्ज़िक्यूशन देखें</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>वर्कफ़्लो</value>

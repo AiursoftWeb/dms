@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Agent connection" xml:space="preserve">
+    <value>З&apos;єднання агента</value>
+  </data>
+  <data name="Agent upgrade history" xml:space="preserve">
+    <value>Історія оновлення агента</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Версія агента</value>
+  </data>
+  <data name="Back to machines" xml:space="preserve">
+    <value>Повернутися до машин</value>
+  </data>
+  <data name="Baseline history" xml:space="preserve">
+    <value>Історія базових налаштувань</value>
+  </data>
+  <data name="Disable SSH can disconnect sessions and revoke any lease present when it runs." xml:space="preserve">
+    <value>Вимкнення SSH може розірвати сесії та анулювати будь-яку наявну ліцензію під час виконання.</value>
+  </data>
+  <data name="Disable SSH history" xml:space="preserve">
+    <value>Історія вимкнення SSH</value>
+  </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Діагностика машини</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Останнє спостереження</value>
+  </data>
+  <data name="Latest execution" xml:space="preserve">
+    <value>Останнє виконання</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>Ідентифікатор машини</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Машини</value>
+  </data>
+  <data name="No heartbeat received" xml:space="preserve">
+    <value>Серцебиття не отримано</value>
+  </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Немає записаних нещодавніх виконань робочих процесів для цього комп&apos;ютера.</value>
+  </data>
+  <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
+    <value>Для цього комп&apos;ютера не записано жодного запланованого виконання базової конфігурації безпеки.</value>
+  </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Батьківський workflow</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>Причина</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Нещодавні виконання</value>
+  </data>
+  <data name="Request Disable SSH" xml:space="preserve">
+    <value>Запит на вимкнення SSH</value>
+  </data>
+  <data name="Requesting Disable SSH requires DMS permission to submit Medium risk workflows." xml:space="preserve">
+    <value>Для запиту вимкнення SSH потрібне дозвіл DMS для подання робочих процесів середнього рівня ризику.</value>
+  </data>
+  <data name="SSH lease-check history" xml:space="preserve">
+    <value>Історія перевірки оренди SSH</value>
+  </data>
+  <data name="SSH management" xml:space="preserve">
+    <value>Керування SSH</value>
+  </data>
+  <data name="SSH public keys" xml:space="preserve">
+    <value>Публічні ключі SSH</value>
+  </data>
+  <data name="Scheduled security baseline" xml:space="preserve">
+    <value>Запланована базова безпека</value>
+  </data>
+  <data name="Submit {0} request" xml:space="preserve">
+    <value>Надіслати запит {0}</value>
+  </data>
+  <data name="The SSH state changed. Review the current status before submitting a new request." xml:space="preserve">
+    <value>Стан SSH змінено. Перевірте поточний статус перед наданням нового запиту.</value>
+  </data>
+  <data name="Use --key-id to select a single verified key." xml:space="preserve">
+    <value>Використовуйте --key-id, щоб обрати один підтверджений ключ.</value>
+  </data>
+  <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
+    <value>Перевірте свої особисті SSH-ключі перед запитом доступу. CLI за замовчуванням використовує всі ваші перевірені ключі.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Переглянути всю історію</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Переглянути виконання</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Історія робочих процесів</value>
+  </data>
+
+</root>

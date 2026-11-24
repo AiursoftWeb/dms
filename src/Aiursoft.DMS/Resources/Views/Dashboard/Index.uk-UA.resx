@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>Документація</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>Підключіть DMS CLI до цього контролера</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>Перевірка сумісності</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>Містить обширну документацію та практичні приклади, щоб ви могли швидко розпочати роботу.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>Встановіть CLI на свій комп&apos;ютер та увійдіть за допомогою особистого API-ключа.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Інтегроване управління файлами</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Адаптивний дизайн</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>Переглянути запити {0}</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>Перегляньте запитану {0} операцію, параметри та заздалегідь визначені цілі.</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Переглянути запити {0}</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Надійне тестування інтеграції</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>Безперешкодна інтеграція з будь-яким постачальником OpenID Connect із автоматичною синхронізацією ролей.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Налаштувати DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>Розумні перевизначення конфігурації</value>

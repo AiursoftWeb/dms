@@ -18,8 +18,26 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Agent version" xml:space="preserve">
+      <data name="Add a machine" xml:space="preserve">
+    <value>मशीन जोड़ें</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
     <value>एजेंट संस्करण</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>सभी स्थितियाँ</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>फ़िल्टर लागू करें</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>फ़िल्टर साफ़ करें</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>कनेक्शन स्थिति</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>अक्षम</value>
   </data>
   <data name="Last seen" xml:space="preserve">
     <value>अंतिम बार देखा गया</value>
@@ -27,11 +45,38 @@
   <data name="Machine" xml:space="preserve">
     <value>मशीन</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>मशीन का नाम</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>मशीन पेज</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>मशीनें</value>
   </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>कभी से कनेक्ट नहीं हुआ</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>अगला</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>अभी तक कोई मशीन जुड़ी नहीं है।</value>
+  </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>कोई मशीन जुड़ी नहीं है। एजेंट पंजीकरण की अनुरोध के लिए जॉइन की का उपयोग करें।</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>इन फ़िल्टर से कोई मशीन मेल नहीं खाती।</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>ऑफ़लाइन</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>ऑनलाइन</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>पिछला</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>स्थिति</value>

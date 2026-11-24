@@ -21,6 +21,9 @@
       <data name="All clusters" xml:space="preserve">
     <value>Alle klynger</value>
   </data>
+  <data name="All machines" xml:space="preserve">
+    <value>Alle maskiner</value>
+  </data>
   <data name="All origins" xml:space="preserve">
     <value>Alle oprindelser</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>Oprettet</value>
+  </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>Udelad hjerterytmer</value>
   </data>
   <data name="Execution pages" xml:space="preserve">
     <value>Eksekveringssider</value>

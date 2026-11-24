@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>अनुमोदन संदर्भ</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>स्वचालित</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>कॉल स्टैक</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>जाँचा गया</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>कंट्रोलर</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>अवधि</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>स्थापित OpenSSH कनेक्शन</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>निष्पादन पहचानकर्ता और ट्रिगर</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>एक्ज़ीक्यूशन लॉग</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>निष्पादन लॉज पृष्ठ</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>निष्पादन नेविगेशन</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>निष्पादन चरण</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>पूर्ण</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>यंत्र</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>अगला</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>अभी तक शुरू नहीं हुआ</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH लीसनेर्स</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>उत्पत्ति</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>माता-पिता</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>मूल वर्कफ्लो</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>पिछला</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>कच्चा निष्पादन परिणाम</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>शेष कनेक्शन विवरण</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>शेष लिसनर विवरण</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>परिणाम</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>मूल वर्कफ़्लो</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH क्लोज़र की पुष्टि आवश्यक है</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>सभी निष्पादन चरण देखें</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>शुरू हुआ</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>अवस्था</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>ध्यान देने वाले चरण</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>सिस्टम शेड्यूल</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>लक्षित मशीनें</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSH सेवा और सोकेट को मास्क किया गया था और रोक दिया गया था।</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>एग्ज़िक्यूशन लॉग उपलब्ध नहीं है। लंबित इवेंट्स संग्रहीत रहते हैं।</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>इस पृष्ठ पर कोई संग्रहीत घटनाएँ नहीं हैं।</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>इस चालू की कोई दर्ज सुनने वाला या कनेक्शन काउंट नहीं है।</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>ट्रेस</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>ट्रिगर</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>SSH सत्यापन लॉग देखें</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>कार्यप्रवाह</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>वर्कफ़्लो आईडी</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>कार्यप्रवाह इतिहास</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} अनुरोध</value>
   </data>
 
 </root>

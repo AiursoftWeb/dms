@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Semua permintaan {0}</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Terapkan filter</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Disetujui</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Menunggu persetujuan</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Hapus</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Ditolak</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Status eksekusi</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Risiko tinggi</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Risiko rendah</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Risiko sedang</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Membutuhkan permintaan baru</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Berikutnya</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Tidak ada permintaan {0} yang menunggu peninjauan Anda.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Tidak ada permintaan {0} yang cocok dengan filter ini.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Alur kerja terbuka</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Sebelumnya</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Siap untuk ditinjau</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Tinjau</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Alur kerja aman</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Cari {0} permintaan</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Lihat semua permintaan {0} yang tertunda</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Tampilkan</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Risiko sangat tinggi</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>Lihat permintaan {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Dicabut</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Alur kerja, pemohon, alasan, atau ID {0}</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} halaman permintaan</value>
+  </data>
+
+</root>

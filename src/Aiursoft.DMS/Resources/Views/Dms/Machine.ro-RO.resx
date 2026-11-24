@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Finalizat</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Investighează mașina</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Văzut ultima oară</value>
   </data>
@@ -60,11 +63,20 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>Niciun heartbeat primit</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Nu există execuții recente de workflow înregistrate pentru acest calculator.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>Nu este înregistrată nicio execuție programată a liniei de bază pentru acest calculator.</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Fluxul de lucru părinte</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Motiv</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Execuții recente</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>Solicitare dezactivare SSH</value>
@@ -98,6 +110,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>Verifica cheile SSH personale înainte de a solicita accesul. CLI utilizează implicit toate cheile tale verificate.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Vizualizați tot istoricul</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Vizualizare execuție</value>

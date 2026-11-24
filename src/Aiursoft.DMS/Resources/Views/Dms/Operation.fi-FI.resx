@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>Hyväksymiskonteksti</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automaattinen</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Kutsupino</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Tarkistettu</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Ohjain</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Kesto</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Luodut OpenSSH-yhteydet</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Suoritustunnisteet ja laukaisu</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Suorituspäiväkirja</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Suorituslokin sivut</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Suorituksen navigointi</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Suoritusvaiheet</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Valmis</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Kone</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Seuraava</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Ei aloitettu</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>OpenSSH-kuuntelijat</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Alkuperä</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>Yleisempi</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Ylätyövuo</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Edellinen</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Raja suoritustulos</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Muut yhteys tiedot</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Jäljelle jääneiden kuuntelijoiden tiedot</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Tulos</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Juuritoimintavirta</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>SSH-sulkeuma vaatii tarkistuksen</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Näytä kaikki suoritusaskeleet</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Aloitettu</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Tila</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Vaiheet, jotka vaativat huomiota</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Järjestelmän aikataulu</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Kohdekoneet</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>SSH-palvelu ja -pistorasia maskattiin ja pysäytettiin.</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Suorituspäiväkirja ei ole käytettävissä. Odottavat tapahtumat säilytetään.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>Tällä sivulla ei ole arkistoituja tapahtumia.</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Tässä ajossa ei ole kirjattuja kuuntelija- tai yhteyden laskentia.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Jäljitelmä</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>Laipaus</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Näytä SSH-vahvistusloki</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Työvirta</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>Työvirran ID</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Työvirran historia</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} pyyntö</value>
   </data>
 
 </root>

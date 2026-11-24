@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>इन अनुमतियों के बारे में</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>लागू करें</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>स्वतः स्वीकृत करें</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>क्लस्टर</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>निष्पादन स्थान</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>उच्च</value>
@@ -57,23 +63,38 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>कोई सार्वजनिक मानक वर्कफ्लो पंजीकृत नहीं हैं।</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>खुला</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>मशीन लक्ष्य आवश्यक</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>जोखिम</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>जोखिम (सबसे ऊपर से)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>जोखिम (सबसे कम पहले)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>रोल अनुमतियाँ इस DMS इंस्टेंस की हर मशीन और प्रत्येक वर्कफ्लो के जोखिम स्तर पर लागू होती हैं। स्वतः स्वीकृति के लिए {0} अनुरोध करने की अनुमति आवश्यक है। अपने स्वयं के अनुरोध को स्वीकृत करने के लिए स्व-स्वीकृति अनुमति भी आवश्यक है।</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>सुरक्षित</value>
+  </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>क्रमबद्ध करें</value>
   </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>मानक वर्कफ्लो</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>यह कैटलॉग कंट्रोलर पर उपलब्ध सार्वजनिक मानक वर्कफ्लो की सूची देता है। एजेंट की उपलब्धता और समर्थित संस्करणों की जांच निष्पादन के दौरान की जाती है। विशेष नियंत्रण संक्रियाएँ और आंतरिक सबवर्कफ्लो सूचीबद्ध नहीं हैं।</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>अज्ञात</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>संस्करण</value>
@@ -83,6 +104,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>कार्यप्रवाह</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>वर्कफ़्लो नाम (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>वर्कफ़्लो नाम (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>हाँ</value>

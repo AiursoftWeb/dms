@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Abgeschlossen</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Maschine untersuchen</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Zuletzt gesehen</value>
   </data>
@@ -60,14 +63,23 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>Kein Heartbeat empfangen</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Keine aktuellen Workflow-Ausführungen für diesen Computer aufgezeichnet.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>Für diesen Computer ist keine geplante Baseline-Ausführung erfasst.</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>Noch nicht verifiziert</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Übergeordneter Workflow</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Grund</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Letzte Ausführungen</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>SSH-Deaktivierung anfordern</value>
@@ -107,6 +119,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>Prüfen Sie Ihre persönlichen SSH-Schlüssel, bevor Sie auf Zugriff zugreifen. Die CLI verwendet standardmäßig alle Ihre verifizierten Schlüssel.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Gesamten Verlauf anzeigen</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Ausführung anzeigen</value>

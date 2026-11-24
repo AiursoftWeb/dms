@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>เสร็จสิ้น</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>ตรวจสอบเครื่อง</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>ครั้งสุดท้ายที่เห็น</value>
   </data>
@@ -60,14 +63,23 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>ไม่พบสัญญาณชีพ</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>ไม่มีการบันทึกการดำเนินการเวิร์กโฟลว์ล่าสุดสำหรับเครื่องนี้</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>ไม่มีการบันทึกการดำเนินการฐานความปลอดภัยตามกำหนดสำหรับเครื่องนี้</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>ยังไม่ได้ยืนยัน</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>เวิร์กโฟลว์แม่</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>เหตุผล</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>การดำเนินการล่าสุด</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>คำขอปิดใช้งาน SSH</value>
@@ -107,6 +119,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>ตรวจสอบคีย์ SSH ส่วนตัวของคุณก่อนขอสิทธิ์เข้าถึง CLI จะใช้คีย์ที่ผ่านการตรวจสอบทั้งหมดของคุณโดยค่าเริ่มต้น</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>ดูประวัติทั้งหมด</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>ดูการดำเนินการ</value>

@@ -18,8 +18,26 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Agent version" xml:space="preserve">
+      <data name="Add a machine" xml:space="preserve">
+    <value>Tambahkan mesin</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
     <value>Versi agen</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Semua status</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Terapkan filter</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Hapus filter</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>Status koneksi</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Nonaktif</value>
   </data>
   <data name="Last seen" xml:space="preserve">
     <value>Terakhir dilihat</value>
@@ -27,11 +45,38 @@
   <data name="Machine" xml:space="preserve">
     <value>Mesin</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>Nama mesin</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>Halaman mesin</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>Mesin</value>
   </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>Tidak pernah terhubung</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Berikutnya</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>Belum ada mesin yang bergabung.</value>
+  </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>Tidak ada mesin yang bergabung. Gunakan kunci bergabung untuk meminta pendaftaran Agen.</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>Tidak ada mesin yang cocok dengan filter ini.</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Luring</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>Daring</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Sebelumnya</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>Status</value>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Kaikki {0} -pyynnöt</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Käytä suodattimia</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Hyväksytty</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Odottaa hyväksyntää</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Tyhjennä</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Hylätty</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Suoritustila</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Korkea riski</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Matala riski</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Kohtalainen riski</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Vaatii uuden pyynnön</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Seuraava</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Ei {0} pyyntöjä odota tarkistustasi.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Ei {0} pyyntöjä täsmää näihin suodattimiin.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Avoin työvuo</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Edellinen</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Valmis arvosteluuni</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Tarkastele</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Turvallinen työprosessi</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Hae {0} pyyntöjä</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Näytä kaikki odottavat {0}-pyynnöt</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Näytä</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Erittäin korkea riski</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>Näytä {0} pyyntö</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Peruttu</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Työvirta, hakija, syy tai {0}-ID</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} pyyntösivua</value>
+  </data>
+
+</root>

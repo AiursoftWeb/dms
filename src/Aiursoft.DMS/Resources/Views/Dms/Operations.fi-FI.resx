@@ -18,14 +18,50 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All origins" xml:space="preserve">
+      <data name="All machines" xml:space="preserve">
+    <value>Kaikki koneet</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
     <value>Kaikki alkuperät</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Kaikki tilat</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Käytä suodattimia</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automaattinen</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Kumottu</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Tyhjennä suodattimet</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Vain klusterin työvuo</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Suoritettu varoituksilla</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Ohjain</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Luotu</value>
+  </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>Sulje syke-merkinnät</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Suoritus-sivut</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Suoritus tila</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Epäonnistunut</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Suodata</value>
@@ -33,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Kone</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manuaalinen</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Vaatii tarkistuksen</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Seuraava</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Yhtään suorituksia ei vastaa näitä suodattimia.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Alkuperä</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Ylätason työvuo</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Edellinen</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>Jonossa</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Vain juurikonsertit</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Käynnissä</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Tila</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Onnistui</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Näytä suoritus</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Työvirta</value>

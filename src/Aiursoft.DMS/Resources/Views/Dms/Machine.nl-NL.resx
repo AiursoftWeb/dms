@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Voltooid</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Machine onderzoeken</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Laatst gezien</value>
   </data>
@@ -60,11 +63,20 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>Geen heartbeat ontvangen</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Geen recente workflowuitvoeringen geregistreerd voor deze machine.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>Er is geen geplande baseline-executie geregistreerd voor deze machine.</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Bovenliggende workflow</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Reden</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Recente uitvoeringen</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>SSH uitschakelen aanvragen</value>
@@ -98,6 +110,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>Verifieer uw persoonlijke SSH-sleutels voordat u toegang aanvraagt. De CLI gebruikt standaard al uw geverifieerde sleutels.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Alles weergeven</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Uitvoering weergeven</value>

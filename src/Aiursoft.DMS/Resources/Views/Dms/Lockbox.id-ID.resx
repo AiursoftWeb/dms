@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>SEMUA MESIN AKTIF</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>Rencana paket APT</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>Pembaruan tambahan dalam rencana yang akan menghapus paket</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>Verifikasi anti-spoofing:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Setujui</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Disetujui</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Mesin target yang disetujui</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Disetujui · Menunggu untuk dijalankan</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID Pengecer</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>Kontrak Eksekusi Otoritatif:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Persetujuan otomatis</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Menunggu persetujuan</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Kembali ke persetujuan</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Perintah</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Perintah disalin</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Salin</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Dibuat</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Paket Agent yang saat ini tersedia</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Keputusan</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Alasan keputusan</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Ditolak</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Tolak</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Perintah Docker dalam permintaan {0} ini</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Perintah DMS yang ekuivalen</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Status eksekusi</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>Status eksekusi tidak tersedia.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Berkas input beku</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Risiko tinggi</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Alur kerja persetujuan historis</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Gambar</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Cakupan gambar</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Risiko rendah</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Risiko sedang</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Perlu permintaan baru</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>Tidak ada approver yang memenuhi syarat saat ini.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>Tidak ada target mesin</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>Tidak ada perubahan paket yang direncanakan.</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>Tidak ada alasan yang diberikan oleh pemohon.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>Buka manajemen SSH</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Alur kerja terbuka</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parameter</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Penarik</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>JSON Input Mentah</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Direkonstruksi dari input tersimpan dan mesin target.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>Paket Agent yang Diminta</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Tinjau paket saat ini dan kirimkan permintaan baru untuk mesin yang sama.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Periksa isi persis yang dikirim untuk dieksekusi.</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>Peninjau harus memverifikasi bahwa alasan yang dinyatakan oleh pemohon sepenuhnya sesuai dengan definisi Workflow, Target Machines, dan parameter Frozen Input yang otoritatif di bawah ini. Jangan setujui berdasarkan teks ini saja.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>Jari-jari kunci SSH</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Alur kerja aman</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Kirim permintaan upgrade baru</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Mesin target</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>Paket Agent tidak tersedia untuk saat ini. Silakan coba lagi nanti.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>Definisi Alur Kerja, Mesin Target, dan parameter Input di bawah ini dibekukan dan bersifat otoritatif. Mereka merepresentasikan persis apa yang akan dieksekusi setelah disetujui.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>Paket Agent saat ini berubah lagi. Tinjau sebelum mengirim.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>Paket Agent asli tersedia lagi. Tinjau permintaan aslinya.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>Pratinjau tidak tersedia untuk mesin ini.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>Pemohon perlu mengajukan permintaan peningkatan baru.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>Paket Agent yang dipilih telah diganti. Pembaruan belum dimulai.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>Workflow ini tidak memerlukan parameter.</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>Mesin tidak diketahui</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>Klaim pelamar belum terverifikasi</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>Tingkatkan DMS Agent di {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Risiko sangat tinggi</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>Lihat eksekusi alur kerja</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Siapa yang dapat menyetujui</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Dicabut</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Alur Kerja</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>Definisi alur kerja</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>Versi alur kerja</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Peran Anda saat ini tidak mengizinkan Anda untuk meminta peningkatan ini.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>bytes</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} pengidentifikasi permintaan dan payload mentah</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} alasan permintaan</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Peminta {0}</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} ID peminta</value>
   </data>
 
 </root>

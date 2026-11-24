@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Apply security baseline" xml:space="preserve">
+    <value>सुरक्षा बेसलाइन लागू करें</value>
+  </data>
+  <data name="Check SSH lease" xml:space="preserve">
+    <value>SSH लीज़ की जाँच करें</value>
+  </data>
+  <data name="Disable SSH access" xml:space="preserve">
+    <value>SSH एक्सेस अक्षम करें</value>
+  </data>
+  <data name="Open an SSH lease" xml:space="preserve">
+    <value>एक SSH लीज़ खोलें</value>
+  </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>APT पैकेज परिवर्तनों की पूर्वावलोकन</value>
+  </data>
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>APT पैकेज सूचकांक ताज़ा करें</value>
+  </data>
+  <data name="Refresh images with Box Puller" xml:space="preserve">
+    <value>Box Puller से छवियों को रीफ्रेश करें</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>अप्रयुक्त APT पैकेज हटाएँ</value>
+  </data>
+  <data name="Run a command in Docker" xml:space="preserve">
+    <value>Docker में एक कमांड चलाएं</value>
+  </data>
+  <data name="Run an uploaded script" xml:space="preserve">
+    <value>एक अपलोड की गई स्क्रिप्ट चलाएँ</value>
+  </data>
+  <data name="Upgrade DMS Agent" xml:space="preserve">
+    <value>DMS एजेंट को अपग्रेड करें</value>
+  </data>
+  <data name="Upgrade available APT packages" xml:space="preserve">
+    <value>उपलब्ध APT पैकेज अपग्रेड करें</value>
+  </data>
+
+</root>
