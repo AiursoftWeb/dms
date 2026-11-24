@@ -46,6 +46,6 @@ public sealed class BoxDeployWorkflow(BoxDeployInput input, string root = "/swar
             throw;
         }
         await context.TraceAsync("Box deployment script completed. Swarm rollout and application health must be checked separately.");
-        return new BoxDeployResult(repository, update.PreviousCommit, update.Commit, value.Stage, value.Filter, 0);
+        return new BoxDeployResult(update.Repository, update.PreviousCommit, update.Commit, value.Stage, value.Filter, 0);
     }
 }
