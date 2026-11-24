@@ -326,8 +326,9 @@ dms machine soap fetch-wsdl --machine-id "$MACHINE_ID" --service qad-test --reas
 dms soap inspect-wsdl --artifact-id "$CONTRACT_ID" --reason 'Identify response fields'
 dms machine soap query --machine-id "$MACHINE_ID" --service qad-test --operation Lookup \
   --args-file ./args.json --reason 'Check a sample response'
-dms xml assert-field --artifact-id "$RESPONSE_ID" --path /Envelope/Body/LookupResponse/NewField \
-  --expect nonempty --reason 'Check the new field'
+dms xml assert-field --artifact-id "$RESPONSE_ID" \
+  --path '/{http://schemas.xmlsoap.org/soap/envelope/}Envelope/{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:example}LookupResponse/{urn:example}Row/{urn:example}NewField' \
+  --expect nonempty --reason 'Check the new field on each returned row'
 dms artifact download --id "$RESPONSE_ID" --file ./response-result.xml
 ```
 
@@ -342,7 +343,7 @@ dms machine soap call-test --machine-id "$MACHINE_ID" --service qad-test --opera
   --args-file ./test-args.json --reason 'Verify test-only write and receipt'
 ```
 
-The contract inspector supports WSDL 1.1 operations and message fields, not bindings or endpoints. Oversized contracts or analysis results fail with an explicit limit error. Validation accepts a standalone XSD or the fetched contract bundle. Supply XML matching a global element in the schema (for a schema describing only the payload, upload the payload rather than the outer SOAP envelope). Schema references must be available in the bundle; instance schema hints are ignored. Validation reports sanitized diagnostics with line and column when available, distinguishing type mismatches, missing required attributes or child content, and unexpected structure where possible. Assertions use slash-separated element local names, starting at the root, not XPath. Use `missing`, `present`, `nil`, `empty`, `nonempty`, or `equals:<text>`. Except for `missing`, every matched element must satisfy the condition and there must be at least one match. Validation failures and failed assertions return details with a warning status.
+The contract inspector supports WSDL 1.1 operations and message fields, not bindings or endpoints. Oversized contracts or analysis results fail with an explicit limit error. Validation accepts a standalone XSD or the fetched contract bundle. Supply XML matching a global element in the schema (for a schema describing only the payload, upload the payload rather than the outer SOAP envelope). Schema references must be available in the bundle; instance schema hints are ignored. Validation reports sanitized diagnostics with line and column when available, distinguishing type mismatches, missing required attributes or child content, and unexpected structure where possible. Assertions use absolute element paths, not XPath. Write `{namespace-uri}localName` for namespaced elements (including elements with a default namespace) and a bare name only for elements with no namespace. Prefix spelling in the XML does not matter. Quote the path in the shell. Every matching parent of the final step is checked: `Parents` counts those parents, `Missing` counts parents without the field, and `Nil`, `Empty`, and `Nonempty` count parents with a matching field in each state. A parent with multiple matching fields can contribute to more than one state, but only once per state. `Matches` counts field elements; `MatchingExpectation` counts parents that satisfy the expectation. For `missing`, all matched parents must lack the field; for `present`, `nil`, `empty`, `nonempty`, or `equals:<text>`, every parent must contain the field and every matching field must satisfy the expectation. No matched parent means the assertion fails rather than passing vacuously. To verify a particular row, use the registered query's filters to narrow the returned rows. Validation failures and failed assertions return details with a warning status.
 
 ### Agent SOAP profile example
 
@@ -360,6 +361,7 @@ Replace the example URLs, operation names, SOAP envelope, and argument rules wit
       "endpoint": "https://qad-test.example.invalid/service",
       "timeoutSeconds": 30,
       "redactNames": ["PersonalIdentifier"],
+      "redactEntries": [{ "element": "ttContext", "matchChild": "propertyName" }],
       "operations": {
         "Lookup": {
           "mode": "read-only",
@@ -373,7 +375,11 @@ Replace the example URLs, operation names, SOAP envelope, and argument rules wit
 }
 ```
 
-The Agent accepts only registered service and operation names. List every WSDL/XSD dependency explicitly; dependencies must use the same origin as the registered WSDL. `query` accepts only `read-only` operations. `call-test` is for `test-only` operations on services marked `test`; it requires manual High-risk approval. Restrict access to the profile and keep production and test services separate. For Basic auth, use HTTPS and set `basicAuth` to `{"username":"<account>","passwordFile":"/etc/aiursoft-dms-agent/qad-password"}` with a private password file (0600). Do not put authentication material in templates or argument files. All configured arguments must appear in the JSON object. Whole-element text placeholders are escaped as XML values; `{{dmsMessageId}}` generates a fresh WS-Addressing `urn:uuid:` value and is not supplied in JSON. Add service-specific elements/attributes to `redactNames`; redaction is not a substitute for treating the remaining business data as private. SOAP headers and raw fault details are not published. If a test write reports `NeedsVerification`, verify the effect in the test system before resubmitting; DMS does not retry the POST.
+The Agent accepts only registered service and operation names. List every WSDL/XSD dependency explicitly; dependencies must use the same origin as the registered WSDL. `query` accepts only `read-only` operations. `call-test` is for `test-only` operations on services marked `test`; it requires manual High-risk approval. Before the Agent will send a test write, its operation must declare both `"responseElement": "{urn:example}SaveFixtureResponse"` and `"businessSuccess": { "path": ["{urn:example}SaveFixtureResponse", "{urn:example}Success"], "equals": "true" }`. The response must match by namespace and local name; each step of the business path must resolve to exactly one non-nil element, and its final text must equal the configured value. A valid scalar reporting a different value is a business failure. An unrelated response or an absent, ambiguous, or nil confirmation field after sending the request yields `NeedsVerification`, not success. Verify the effect in the test system before resubmitting; DMS does not retry the POST.
+
+Restrict access to the profile and keep production and test services separate. For Basic auth, use HTTPS and set `basicAuth` to `{"username":"<account>","passwordFile":"/etc/aiursoft-dms-agent/qad-password"}` with a private password file (0600). Do not put authentication material in templates or argument files. All configured arguments must appear in the JSON object. Whole-element text placeholders are escaped as XML values; `{{dmsMessageId}}` generates a fresh WS-Addressing `urn:uuid:` value and is not supplied in JSON.
+
+Add service-specific element/attribute names to `redactNames`. Use `redactEntries` to remove an entire `element` when a direct `matchChild` matches the condition. In these rules, `{namespace-uri}name` matches exactly; a bare name matches the local name case-insensitively across namespaces. With `equals`, the trimmed child text must equal the configured value (case-sensitive); without it, the trimmed child text is checked against the built-in and configured sensitive names, ignoring case, hyphens and underscores. **Before upgrading an Agent that queries QAD, add the `ttContext` rule shown above to each QAD profile** to keep removing sensitive context entries. Do not add that rule to unrelated services. SOAP headers and raw fault details are not published. Treat the remaining business data as private.
 
 ## Database profiles and SQL
 

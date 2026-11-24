@@ -321,7 +321,9 @@ public class ArtifactWorkflowTests : TestBase
         using var scope = Server!.Services.CreateScope(); return await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(user, definition.Request(input, "Artifact acceptance", [machine]));
     }
     [TestMethod]
-    public async Task SoapWorkflowsFreezeBothArtifactsAndWriteTestsRequireApproval()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task SoapWorkflowsFreezeBothArtifactsAndWriteTestsRequireApproval(bool includeOtherNamespaceAndValueKinds)
     {
         var setup = await SetupAsync();
         var store = Server!.Services.GetRequiredService<DmsArtifactStore>();
@@ -336,7 +338,18 @@ public class ArtifactWorkflowTests : TestBase
             return reference;
         }
 
-        var owned = await PublishAsync(setup.User, "response.xml", "<response><field/><field>value</field></response>");
+        var rows = includeOtherNamespaceAndValueKinds ? """
+            <row><other:status>not the requested field</other:status></row>
+            <row><status xsi:nil="true" /><status xsi:nil="1" /></row>
+            <row><status> </status></row>
+            """ : "<row/>";
+        var owned = await PublishAsync(setup.User, "response.xml", $"""
+            <response xmlns="https://fixture.example/results" xmlns:r="https://fixture.example/results"
+                      xmlns:other="urn:other" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+              <row><r:status>ok</r:status></row>
+              {rows}
+            </response>
+            """);
         var privateSchema = await PublishAsync(setup.Reviewer, "schema.xsd", "<schema/>");
         var args = await PublishAsync(setup.User, "args.json", "{}");
         await DatabaseAsync(async db =>
@@ -358,7 +371,8 @@ public class ArtifactWorkflowTests : TestBase
         Assert.IsNull(write.WorkflowId);
 
         var assertion = await service.SubmitAsync(setup.User, SoapWorkflows.AssertField.Request(
-            new XmlAssertInput(owned, "/response/field", "nonempty"), "Check each match"));
+            new XmlAssertInput(owned, "/{https://fixture.example/results}response/{https://fixture.example/results}row/{https://fixture.example/results}status", "nonempty"),
+            "Check each matching parent"));
         assertion = await service.DecideAsync(setup.Reviewer, assertion.Id, true, "Approved field check");
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         while (true)
@@ -367,7 +381,9 @@ public class ArtifactWorkflowTests : TestBase
             if (run.State.Terminal())
             {
                 Assert.AreEqual(RunState.Warning, run.State, run.Result);
-                Assert.AreEqual(new XmlAssertResult(false, 2, 1, 0, 1, 1), SoapWorkflows.AssertField.ReadResult(run.Result));
+                var expected = includeOtherNamespaceAndValueKinds ? new XmlAssertResult(false, 4, 1, 1, 1, 1, Parents: 4, Missing: 1)
+                    : new XmlAssertResult(false, 1, 0, 0, 1, 1, Parents: 2, Missing: 1);
+                Assert.AreEqual(expected, SoapWorkflows.AssertField.ReadResult(run.Result));
                 break;
             }
             await Task.Delay(100, deadline.Token);
@@ -441,7 +457,7 @@ public class ArtifactWorkflowTests : TestBase
             Assert.DoesNotContain("fixture-private", xml);
 
             var assertion = await service.SubmitAsync(setup.User, SoapWorkflows.AssertField.Request(
-                new(artifact, "/Envelope/Body/LookupResponse/NewField", "equals:ok"), "Check the saved field"));
+                new(artifact, $"/{{{ns}}}Envelope/{{{ns}}}Body/LookupResponse/NewField", "equals:ok"), "Check the saved field"));
             assertion = await service.DecideAsync(setup.Reviewer, assertion.Id, true, "Approved offline check");
             var asserted = (await WaitAsync(assertion.WorkflowId!.Value)).Single();
             Assert.AreEqual(RunState.Succeeded, asserted.State, asserted.Result);

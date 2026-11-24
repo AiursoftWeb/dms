@@ -58,6 +58,7 @@ public class DmsCliHelpTests
     [DataRow("soap diff-wsdl", "--before")]
     [DataRow("xml validate", "--schema-artifact-id")]
     [DataRow("xml assert-field", "--expect")]
+    [DataRow("xml assert-field", "{urn:example}response")]
     public async Task HelpLetsUsersFindDirectoryAndArtifactCommands(string path, string guidance)
     {
         var args = path.Split(' ', StringSplitOptions.RemoveEmptyEntries);

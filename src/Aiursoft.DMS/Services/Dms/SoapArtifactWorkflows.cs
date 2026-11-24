@@ -57,33 +57,47 @@ internal sealed class SoapArtifactWorkflows(DmsArtifactStore artifacts)
 
     internal static XmlAssertResult AssertField(XDocument xml, string path, string expect)
     {
-        var segments = path[1..].Split('/');
-        if (xml.Root is not { } root || root.Name.LocalName != segments[0]) return new(expect == "missing", 0, 0, 0, 0, 0);
-        IEnumerable<XElement> nodes = [root];
-        foreach (var segment in segments.Skip(1))
-            nodes = nodes.SelectMany(node => node.Elements().Where(element => element.Name.LocalName == segment));
+        var segments = XmlAssertInput.ParsePath(path);
+        IEnumerable<XContainer> parents = [xml];
+        foreach (var segment in segments.AsSpan(0, segments.Length - 1))
+            parents = parents.SelectMany(parent => parent.Elements(segment));
         XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
-        int matches = 0, empty = 0, nil = 0, nonempty = 0, matchingExpectation = 0;
-        foreach (var element in nodes)
+        int parentCount = 0, missing = 0, matches = 0, empty = 0, nil = 0, nonempty = 0, matchingExpectation = 0;
+        foreach (var parent in parents)
         {
-            matches++;
-            var isNil = ((string?)element.Attribute(xsi + "nil"))?.Trim() is "true" or "1";
-            var isEmpty = !isNil && string.IsNullOrWhiteSpace(element.Value);
-            if (isNil) nil++;
-            else if (isEmpty) empty++;
-            else nonempty++;
-            if (expect switch
+            parentCount++;
+            var hasNil = false;
+            var hasEmpty = false;
+            var hasValue = false;
+            var allMatch = true;
+            foreach (var element in parent.Elements(segments[^1]))
+            {
+                matches++;
+                var isNil = ((string?)element.Attribute(xsi + "nil"))?.Trim() is "true" or "1";
+                var value = element.Value;
+                var isEmpty = !isNil && string.IsNullOrWhiteSpace(value);
+                hasNil |= isNil;
+                hasEmpty |= isEmpty;
+                hasValue |= !isNil && !isEmpty;
+                allMatch &= expect switch
                 {
                     "present" => true,
                     "nil" => isNil,
                     "empty" => isEmpty,
                     "nonempty" => !isNil && !isEmpty,
                     "missing" => false,
-                    _ => !isNil && element.Value.Equals(expect[7..], StringComparison.Ordinal)
-                }) matchingExpectation++;
+                    _ => !isNil && value.Equals(expect[7..], StringComparison.Ordinal)
+                };
+            }
+            if (hasNil) nil++;
+            if (hasEmpty) empty++;
+            if (hasValue) nonempty++;
+            var isMissing = !(hasNil || hasEmpty || hasValue);
+            if (isMissing) missing++;
+            if (isMissing ? expect == "missing" : allMatch) matchingExpectation++;
         }
-        return new(expect == "missing" ? matches == 0 : matches > 0 && matches == matchingExpectation,
-            matches, empty, nil, nonempty, matchingExpectation);
+        return new(parentCount > 0 && matchingExpectation == parentCount,
+            matches, empty, nil, nonempty, matchingExpectation, parentCount, missing);
     }
 
     private async Task<byte[]> ReadAsync(WorkflowExecutionContext context, ArtifactReference reference, CancellationToken token)

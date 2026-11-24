@@ -83,8 +83,8 @@ internal sealed class SoapInvokeWorkflow(MachineWorkflowDefinition<SoapCallInput
             || operation.Mode != (testOnly ? "test-only" : "read-only") || (testOnly && profile.Environment != "test"))
             throw new InvalidOperationException("The SOAP operation is not registered for this workflow mode and environment.");
         var endpoint = SoapAgentRuntime.RegisteredUrl(profile.Endpoint, metadata: false);
-        var template = new SoapRequestTemplate(operation);
-        var redaction = SoapAgentXml.RedactionNames(profile.RedactNames);
+        var template = new SoapRequestTemplate(operation, testOnly);
+        var redaction = SoapAgentXml.RedactionPolicy(profile.RedactNames, profile.RedactEntries);
         var artifacts = SoapAgentArtifacts.Require(agent);
         string args;
         try { args = await FilesystemOperations.ReadArtifactTextAsync(input.Artifact, agent, SoapLimits.MaxArgsBytes, token); }
@@ -134,12 +134,14 @@ internal sealed class SoapInvokeWorkflow(MachineWorkflowDefinition<SoapCallInput
                     var bytes = await SoapAgentArtifacts.ReadResponseAsync(response, SoapLimits.MaxXmlBytes, requestToken);
                     var xml = SoapAgentXml.Parse(bytes);
                     var (header, body) = SoapAgentXml.Envelope(xml);
-                    if (body.Name.Namespace != template.EnvelopeNamespace || body.Elements().Count() != 1)
+                    var elements = body.Elements().Take(2).ToArray();
+                    if (body.Name.Namespace != template.EnvelopeNamespace || elements is not [var reply])
                         throw new InvalidDataException("Unexpected SOAP response envelope or body.");
-                    var fault = body.Element(body.Name.Namespace + "Fault") is not null;
-                    outcome = fault ? "soap-fault" : !response.IsSuccessStatusCode ? "http-error" : !template.IsBusinessSuccess(body)
-                        ? "business-failure" : "success";
-                    sanitized = SoapAgentXml.Redact(xml, header, fault, redaction, authorization);
+                    var fault = reply.Name == body.Name.Namespace + "Fault";
+                    outcome = fault ? "soap-fault" : !response.IsSuccessStatusCode ? "http-error"
+                        : template.ClassifyResponse(body, reply, testOnly);
+                    if (outcome is not ("unexpected-response" or "unconfirmed-response"))
+                        sanitized = SoapAgentXml.Redact(xml, header, fault, redaction, authorization);
                 }
                 catch (SoapPayloadTooLargeException) { if (response.IsSuccessStatusCode) outcome = "response-too-large"; }
                 catch (Exception e) when (e is XmlException or InvalidDataException) { /* Preserve the HTTP status classification. */ }
@@ -150,7 +152,8 @@ internal sealed class SoapInvokeWorkflow(MachineWorkflowDefinition<SoapCallInput
         catch (OperationCanceledException) when (testOnly && sent) { outcome = "cancelled-after-send"; sanitized = null; }
         catch (Exception e) when (e is HttpRequestException or IOException) { outcome = "transport-error"; sanitized = null; }
         elapsed.Stop();
-        if (testOnly && sent && outcome is "timeout" or "transport-error" or "invalid-response" or "response-too-large" or "cancelled-after-send")
+        if (testOnly && sent && outcome is "timeout" or "transport-error" or "invalid-response" or "response-too-large"
+            or "cancelled-after-send" or "unexpected-response" or "unconfirmed-response")
         {
             await context.WarningAsync($"Registered test-only SOAP request outcome: {outcome}; verify effects before considering another call.");
             throw new WorkflowNeedsVerificationException(context.Id)
@@ -166,7 +169,7 @@ internal sealed class SoapInvokeWorkflow(MachineWorkflowDefinition<SoapCallInput
             try
             {
                 artifact = await SoapAgentArtifacts.PublishAsync(artifacts, context.Id, sanitized, "soap-response.xml", token);
-                await context.TraceAsync("SOAP response artifact redaction: headers, fault details and sensitive QAD context entries removed; sensitive XML names masked.");
+                await context.TraceAsync("SOAP response artifact redaction: headers, fault details, and matching configured entries removed; sensitive XML names masked.");
             }
             catch (Exception e) when (e is HttpRequestException or IOException or InvalidDataException or UnauthorizedAccessException)
             {

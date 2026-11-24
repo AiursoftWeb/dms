@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace Aiursoft.DMS.Contracts;
 
@@ -97,17 +98,42 @@ public sealed record XmlAssertInput(ArtifactReference Artifact, string Path, str
     public void Validate()
     {
         SoapLimits.File(Artifact, SoapLimits.MaxXmlBytes);
-        if (string.IsNullOrEmpty(Path) || Path.Length > 1024 || !Path.StartsWith('/') || Path.Split('/').Length is > 33)
-            throw new ArgumentException("Use an absolute XML path of at most 32 elements.");
-        foreach (var segment in Path[1..].Split('/'))
-        {
-            try { XmlConvert.VerifyNCName(segment); }
-            catch (XmlException) { throw new ArgumentException("Use slash-separated XML local element names, not XPath expressions."); }
-        }
+        ParsePath(Path);
         if (string.IsNullOrEmpty(Expect) || Expect.Length > 1024 || (Expect is not ("missing" or "empty" or "nonempty" or "nil" or "present")
                 && !Expect.StartsWith("equals:", StringComparison.Ordinal)))
             throw new ArgumentException("Expect missing, empty, nonempty, nil, present, or equals:<text>.");
     }
+
+    public static XName[] ParsePath(string? path)
+    {
+        if (path is not { Length: > 1 and <= 1024 } || path[0] != '/') throw InvalidPath();
+        var segments = new List<XName>();
+        for (var start = 1; ;)
+        {
+            var localStart = start;
+            var ns = XNamespace.None;
+            if (start < path.Length && path[start] == '{')
+            {
+                var close = path.IndexOf('}', start + 1);
+                if (close <= start + 1) throw InvalidPath();
+                var uri = path[(start + 1)..close];
+                if (uri.Contains('{') || uri.Any(c => char.IsWhiteSpace(c) || char.IsControl(c))) throw InvalidPath();
+                ns = uri;
+                localStart = close + 1;
+            }
+            var slash = path.IndexOf('/', localStart);
+            var end = slash < 0 ? path.Length : slash;
+            if (localStart == end || segments.Count == 32) throw InvalidPath();
+            try { segments.Add(ns + XmlConvert.VerifyNCName(path[localStart..end])); }
+            catch (XmlException) { throw InvalidPath(); }
+            if (slash < 0) return segments.ToArray();
+            start = slash + 1;
+        }
+    }
+
+    private static ArgumentException InvalidPath() =>
+        new("Use an absolute XML path of up to 32 elements, with names like {namespace-uri}name or unqualified name, not XPath.");
 }
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Workflow result properties are serialized for API and CLI clients.")]
-public sealed record XmlAssertResult(bool Passed, int Matches, int Empty, int Nil, int Nonempty, int MatchingExpectation);
+public sealed record XmlAssertResult(bool Passed, int Matches, int Empty, int Nil, int Nonempty, int MatchingExpectation,
+    int Parents = 0, int Missing = 0);

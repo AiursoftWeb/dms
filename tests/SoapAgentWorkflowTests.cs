@@ -36,6 +36,7 @@ public class SoapAgentWorkflowTests
                     "lookup": {
                       "mode":"read-only","action":"urn:lookup","template":{{JsonSerializer.Serialize(Template)}},
                       "arguments":{"id":{"type":"string","maxLength":128},"limit":{"type":"integer","min":1,"max":3} },
+                      "responseElement":"{urn:fixture}Reply",
                       "businessSuccess":{"path":["{urn:fixture}Reply","{urn:fixture}Success"],"equals":"true"}
                     }
                   }
@@ -105,10 +106,16 @@ public class SoapAgentWorkflowTests
     }
 
     [TestMethod]
-    public async Task QueryBindsTypedArgumentsAsTextAndRedactsResponse()
+    public async Task QadProfileBindsTypedArgumentsAndRedactsConfiguredContextEntries()
     {
         string? body = null;
-        var fixture = new Fixture(Profile(), async (request, token) =>
+        var profile = Profile() with
+        {
+            RedactEntries = SoapAgentRuntime.ParseProfile("""
+                {"services":{"qad":{"redactEntries":[{"element":"ttContext","matchChild":"propertyName"}]}}}
+                """u8.ToArray()).Services!["qad"]!.RedactEntries
+        };
+        var fixture = new Fixture(profile, async (request, token) =>
         {
             Assert.AreEqual(HttpMethod.Post, request.Method);
             Assert.AreEqual("text/xml", request.Content!.Headers.ContentType!.MediaType);
@@ -148,6 +155,33 @@ public class SoapAgentWorkflowTests
     }
 
     [TestMethod]
+    public async Task OrdinarySoapProfileRedactsOnlyItsConfiguredEntries()
+    {
+        var profile = Profile() with
+        {
+            RedactEntries = [new("{urn:fixture}entry", "{urn:fixture}kind", "private")]
+        };
+        var fixture = new Fixture(profile, (_, _) => Task.FromResult(Response($"""
+            <s:Envelope xmlns:s="{Soap11}" xmlns:q="urn:fixture" xmlns:o="urn:other">
+              <s:Body><q:Reply><q:Success>true</q:Success>
+                <q:entry><q:kind> private </q:kind><q:value>hide-custom-entry</q:value></q:entry>
+                <q:entry><q:kind>public</q:kind><q:value>keep-public-entry</q:value></q:entry>
+                <o:entry><q:kind>private</q:kind><q:value>keep-other-namespace</q:value></o:entry>
+                <ttContext><propertyName>AccessToken</propertyName><propertyValue>keep-ordinary-context</propertyValue></ttContext>
+                <q:Password>hide-generic-secret</q:Password>
+              </q:Reply></s:Body>
+            </s:Envelope>
+            """)));
+        var result = await fixture.Run(SoapWorkflows.Query, fixture.Call());
+        var saved = fixture.Artifacts.Read(result.Artifact!);
+        Assert.DoesNotContain("hide-custom-entry", saved);
+        Assert.DoesNotContain("hide-generic-secret", saved);
+        Assert.Contains("keep-public-entry", saved);
+        Assert.Contains("keep-other-namespace", saved);
+        Assert.Contains("keep-ordinary-context", saved);
+    }
+
+    [TestMethod]
     [DataRow("""{"id":"I1","id":"I2","limit":3}""")]
     [DataRow("""{"id":"I1","limit":9}""")]
     [DataRow("""{"id":"I1","limit":3,"extra":"X"}""")]
@@ -171,6 +205,55 @@ public class SoapAgentWorkflowTests
         Assert.IsEmpty(production.Requests);
         Assert.IsEmpty(query.Requests);
         Assert.IsEmpty(testOnly.Requests);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public async Task CallTestRefusesToSendWithoutBothConfirmationSettings(bool response, bool business)
+    {
+        var profile = Profile("test", "test-only");
+        var operation = profile.Operations!["lookup"]!;
+        profile.Operations["lookup"] = operation with
+        {
+            ResponseElement = response ? operation.ResponseElement : null,
+            BusinessSuccess = business ? operation.BusinessSuccess : null
+        };
+        var fixture = new Fixture(profile, UnexpectedRequest);
+        await Assert.ThrowsExactlyAsync<InvalidDataException>(() => fixture.Run(SoapWorkflows.CallTest, fixture.Call()));
+        Assert.IsEmpty(fixture.Requests);
+    }
+
+    [TestMethod]
+    [DataRow("<q:OtherReply><q:Success>true</q:Success></q:OtherReply>", "unexpected-response")]
+    [DataRow("<Reply xmlns='urn:other'><q:Success>true</q:Success></Reply>", "unexpected-response")]
+    [DataRow("<q:Reply/>", "unconfirmed-response")]
+    [DataRow("<q:Reply><q:Success xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:nil='true'/></q:Reply>", "unconfirmed-response")]
+    [DataRow("<q:Reply><q:Success>true</q:Success><q:Success>true</q:Success></q:Reply>", "unconfirmed-response")]
+    [DataRow("<q:Reply><q:Success>true</q:Success></q:Reply>", "success")]
+    public async Task CallTestRequiresMatchingResponseAndBusinessConfirmation(string reply, string expected)
+    {
+        var fixture = new Fixture(Profile("test", "test-only"), (_, _) => Task.FromResult(Response($"""
+            <s:Envelope xmlns:s="{Soap11}" xmlns:q="urn:fixture"><s:Body>{reply}</s:Body></s:Envelope>
+            """)));
+        if (expected == "success")
+        {
+            var result = await fixture.Run(SoapWorkflows.CallTest, fixture.Call());
+            Assert.AreEqual(RunState.Succeeded, fixture.Events.Last().State);
+            Assert.AreEqual(expected, result.Outcome);
+            Assert.IsNotNull(result.Artifact);
+        }
+        else
+        {
+            await Assert.ThrowsExactlyAsync<WorkflowNeedsVerificationException>(() => fixture.Run(SoapWorkflows.CallTest, fixture.Call()));
+            var terminal = fixture.Events.Last();
+            Assert.AreEqual(RunState.NeedsVerification, terminal.State);
+            var result = SoapWorkflows.CallTest.ReadResult(terminal.Result);
+            Assert.AreEqual(200, result.HttpStatus);
+            Assert.AreEqual(expected, result.Outcome);
+            Assert.IsNull(result.Artifact);
+        }
+        CollectionAssert.AreEqual(new[] { Endpoint }, fixture.Requests.ToArray());
     }
 
     [TestMethod]
@@ -250,7 +333,7 @@ public class SoapAgentWorkflowTests
             {
                 ["id"] = new SoapArgumentRule("string", MaxLength: 64),
                 ["limit"] = new SoapArgumentRule("integer", Min: 1, Max: 3)
-            }, new SoapBusinessSuccess(["{urn:fixture}Reply", "{urn:fixture}Success"], "true"))
+            }, new SoapBusinessSuccess(["{urn:fixture}Reply", "{urn:fixture}Success"], "true"), ResponseElement: "{urn:fixture}Reply")
         }
     };
 

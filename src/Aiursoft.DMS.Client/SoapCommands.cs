@@ -54,7 +54,7 @@ public static partial class DmsCommandApp
     private static ActionCommand XmlAssertCommand()
     {
         var artifact = SoapArtifactOption("--artifact-id", "Saved XML file artifact ID.");
-        var path = new Option<string>("--path") { Required = true, Description = "Absolute slash-separated local element names (no XPath expressions)." };
+        var path = new Option<string>("--path") { Required = true, Description = "Absolute element path, e.g. /{urn:example}response/{urn:example}field (no XPath)." };
         var expect = new Option<string>("--expect") { Required = true, Description = "missing, empty, nonempty, nil, present, or equals:<text>." };
         return PreparedOperation("assert-field", "Check matching elements in a saved XML file.", SoapWorkflows.AssertField,
             async (client, p, _) => new XmlAssertInput(await client.Artifacts.GetAsync(p.GetValue(artifact)),

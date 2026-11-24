@@ -158,12 +158,14 @@ internal sealed record SoapServiceProfile
     public int TimeoutSeconds { get; init; } = 30;
     public SoapBasicAuth? BasicAuth { get; init; }
     public string[] RedactNames { get; init; } = [];
+    public SoapRedactionEntry?[]? RedactEntries { get; init; } = [];
     public Dictionary<string, SoapOperationProfile?>? Operations { get; init; } = new(StringComparer.Ordinal);
 }
 internal sealed record SoapBasicAuth(string Username, string PasswordFile);
 internal sealed record SoapAuthorization(AuthenticationHeaderValue Header, string Password, string Username);
 internal sealed record SoapOperationProfile(string Mode, string? Action, string? Template, Dictionary<string, SoapArgumentRule>? Arguments,
-    SoapBusinessSuccess? BusinessSuccess = null);
+    SoapBusinessSuccess? BusinessSuccess = null, string? ResponseElement = null);
+internal sealed record SoapRedactionEntry(string? Element, string? MatchChild, [property: JsonPropertyName("equals")] string? Expected = null);
 internal sealed record SoapArgumentRule(string Type, int? MaxLength = null, string[]? AllowedValues = null, decimal? Min = null, decimal? Max = null);
 internal sealed record SoapBusinessSuccess(string[] Path, [property: JsonPropertyName("equals")] string Expected);
 
@@ -176,8 +178,9 @@ internal sealed class SoapRequestTemplate
     private readonly List<(XElement Element, string Name)> _placeholders = [];
     private readonly XName[]? _businessPath;
     private readonly string? _businessValue;
+    private readonly XName? _responseName;
 
-    internal SoapRequestTemplate(SoapOperationProfile operation)
+    internal SoapRequestTemplate(SoapOperationProfile operation, bool requireConfirmation)
     {
         if (operation.Action is null || operation.Action.Length > 1024 || operation.Action.Any(c => c < 0x20 || c > 0x7e || c is '"' or '\\')
             || operation.Template is null || Encoding.UTF8.GetByteCount(operation.Template) > SoapLimits.MaxArgsBytes
@@ -213,17 +216,19 @@ internal sealed class SoapRequestTemplate
             }
             if (!_placeholders.Where(p => p.Name != MessageId).Select(p => p.Name).ToHashSet(StringComparer.Ordinal).SetEquals(_rules.Keys))
                 throw InvalidTemplate();
+            if (requireConfirmation && (operation.ResponseElement is null || operation.BusinessSuccess is null))
+                throw InvalidTemplate();
+            if (operation.ResponseElement is { } responseElement)
+            {
+                _responseName = SoapAgentXml.ParseName(responseElement);
+                if (_responseName == body.Name.Namespace + "Fault") throw InvalidTemplate();
+            }
             if (operation.BusinessSuccess is { } business)
             {
                 if (business.Path is not { Length: > 0 and <= 24 } || business.Expected is null || business.Expected.Length > 1024)
                     throw InvalidTemplate();
-                _businessPath = business.Path.Select(part =>
-                {
-                    if (string.IsNullOrEmpty(part) || part.Length > 1024) throw InvalidTemplate();
-                    var name = XName.Get(part);
-                    XmlConvert.VerifyNCName(name.LocalName);
-                    return name;
-                }).ToArray();
+                _businessPath = business.Path.Select(SoapAgentXml.ParseName).ToArray();
+                if (_responseName is not null && _businessPath[0] != _responseName) throw InvalidTemplate();
                 _businessValue = business.Expected;
             }
         }
@@ -288,17 +293,20 @@ internal sealed class SoapRequestTemplate
         return value;
     }
 
-    internal bool IsBusinessSuccess(XElement body)
+    internal string ClassifyResponse(XElement body, XElement response, bool requireConfirmation)
     {
-        if (_businessPath is null) return true;
+        if (_responseName is not null && response.Name != _responseName) return "unexpected-response";
+        if (_businessPath is null) return "success";
         var element = body;
         foreach (var name in _businessPath)
         {
             var matches = element.Elements(name).Take(2).ToArray();
-            if (matches.Length != 1) return false;
+            if (matches.Length != 1) return requireConfirmation ? "unconfirmed-response" : "business-failure";
             element = matches[0];
+            if (SoapAgentXml.IsNil(element)) return requireConfirmation ? "unconfirmed-response" : "business-failure";
         }
-        return !element.HasElements && element.Value == _businessValue;
+        if (element.HasElements) return requireConfirmation ? "unconfirmed-response" : "business-failure";
+        return element.Value == _businessValue ? "success" : "business-failure";
     }
 
     private static bool HasMarker(string text) => text.Contains("{{", StringComparison.Ordinal) || text.Contains("}}", StringComparison.Ordinal);

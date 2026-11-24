@@ -118,9 +118,24 @@ internal static class SoapAgentXml
     private static string RequireLocation(string? value) => !string.IsNullOrWhiteSpace(value) && value.Length <= 2048
         ? value.Trim() : throw new InvalidDataException("A SOAP metadata dependency has an invalid location.");
 
-    internal static HashSet<string> RedactionNames(string[]? extra)
+    internal static XName ParseName(string? value)
     {
-        if (extra is null || extra.Length > 128) throw new InvalidDataException("The Agent SOAP redaction names are invalid.");
+        if (value is not { Length: > 0 and <= 1024 }) throw new XmlException();
+        if (!value.StartsWith('{')) return XName.Get(XmlConvert.VerifyNCName(value));
+        var close = value.IndexOf('}');
+        if (close <= 1 || close == value.Length - 1) throw new XmlException();
+        var ns = value[1..close];
+        if (ns.Contains('{') || ns.Any(c => char.IsWhiteSpace(c) || char.IsControl(c))) throw new XmlException();
+        return XName.Get(XmlConvert.VerifyNCName(value[(close + 1)..]), ns);
+    }
+
+    internal static bool IsNil(XElement element) =>
+        ((string?)element.Attribute(XName.Get("nil", "http://www.w3.org/2001/XMLSchema-instance")))?.Trim() is "true" or "1";
+
+    internal static SoapRedactionPolicy RedactionPolicy(string[]? extra, SoapRedactionEntry?[]? entries)
+    {
+        if (extra is null || extra.Length > 128 || entries is null || entries.Length > 32)
+            throw new InvalidDataException("The Agent SOAP redaction configuration is invalid.");
         var names = new HashSet<string>(SensitiveNames, StringComparer.OrdinalIgnoreCase);
         try
         {
@@ -129,12 +144,18 @@ internal static class SoapAgentXml
                 if (string.IsNullOrEmpty(name) || name.Length > 128 || NormalizeName(name).Length == 0) throw new XmlException();
                 names.Add(NormalizeName(XmlConvert.VerifyNCName(name)));
             }
+            var rules = new List<SoapRedactionRule>();
+            foreach (var entry in entries)
+            {
+                if (entry is null || entry.Expected is { Length: > 1024 }) throw new XmlException();
+                rules.Add(new(ParseName(entry.Element), ParseName(entry.MatchChild), entry.Expected));
+            }
+            return new(names, rules);
         }
-        catch (XmlException) { throw new InvalidDataException("The Agent SOAP redaction names are invalid."); }
-        return names;
+        catch (XmlException) { throw new InvalidDataException("The Agent SOAP redaction configuration is invalid."); }
     }
 
-    internal static byte[]? Redact(XDocument document, XElement? header, bool fault, HashSet<string> names, SoapAuthorization? authorization)
+    internal static byte[]? Redact(XDocument document, XElement? header, bool fault, SoapRedactionPolicy policy, SoapAuthorization? authorization)
     {
         if (fault)
         {
@@ -148,10 +169,9 @@ internal static class SoapAgentXml
                         new XElement(ns + "Reason", new XElement(ns + "Text", new XAttribute(XNamespace.Xml + "lang", "en"), Redacted)))))));
         }
         header?.Remove();
-        // QAD stores sensitive field names as data, with their values in sibling nodes. Drop the entire entry.
-        document.Descendants().Where(element => element.Name.LocalName.Equals("ttContext", StringComparison.OrdinalIgnoreCase)
-            && element.Elements().Any(property => property.Name.LocalName.Equals("propertyName", StringComparison.OrdinalIgnoreCase)
-                && names.Contains(NormalizeName(property.Value.Trim())))).Remove();
+        if (policy.Entries.Count > 0)
+            document.Descendants().Where(element => policy.Entries.Any(rule => MatchesEntry(element, rule))).Remove();
+        var names = policy.Names;
         var credentials = authorization is null ? Array.Empty<string>() : new[]
         {
             authorization.Password, authorization.Username, authorization.Header.Parameter!
@@ -180,7 +200,16 @@ internal static class SoapAgentXml
         return bytes.Length <= SoapLimits.MaxXmlBytes ? bytes : null;
 
         bool ContainsCredential(string value) => credentials.Any(x => value.Contains(x, StringComparison.Ordinal));
+
+        bool MatchesEntry(XElement element, SoapRedactionRule rule) => MatchesName(element.Name, rule.Element)
+            && element.Elements().Any(child => MatchesName(child.Name, rule.MatchChild) && MatchesValue(child.Value.Trim(), rule.Expected));
+
+        bool MatchesValue(string value, string? expected) => expected is null
+            ? policy.Names.Contains(NormalizeName(value)) : value.Equals(expected, StringComparison.Ordinal);
     }
+
+    private static bool MatchesName(XName actual, XName configured) => configured.Namespace == XNamespace.None
+        ? actual.LocalName.Equals(configured.LocalName, StringComparison.OrdinalIgnoreCase) : actual == configured;
 
     private static string NormalizeName(string name) => name.Replace("-", "", StringComparison.Ordinal).Replace("_", "", StringComparison.Ordinal);
 
@@ -198,4 +227,6 @@ internal static class SoapAgentXml
     }
 }
 
+internal sealed record SoapRedactionPolicy(HashSet<string> Names, IReadOnlyList<SoapRedactionRule> Entries);
+internal sealed record SoapRedactionRule(XName Element, XName MatchChild, string? Expected);
 internal sealed class SoapPayloadTooLargeException : IOException;
