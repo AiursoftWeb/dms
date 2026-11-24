@@ -17,22 +17,37 @@ public class FrpsStatusTests
         var result = await machine.InspectAsync();
         var service = result.Services.Single();
 
+        Assert.AreEqual(TimeSpan.Zero, result.CheckedAtUtc.Offset);
         Assert.AreEqual(wrapped ? "turn.service" : "frps.service", service.Unit);
+        Assert.AreEqual(wrapped ? "encrypted-wrapper" : "systemd", service.Installation);
+        Assert.AreEqual("loaded", service.LoadState);
         Assert.AreEqual("active", service.ActiveState);
+        Assert.AreEqual("running", service.SubState);
+        Assert.AreEqual("enabled", service.UnitFileState);
         Assert.AreEqual(203, service.MainPid);
         Assert.AreEqual(2, service.AutomaticRestarts);
         Assert.AreEqual(new DateTimeOffset(2026, 11, 23, 13, 8, 52, TimeSpan.Zero), service.StartedAtUtc);
         Assert.AreEqual("0.72.0", service.InstalledVersion);
         Assert.AreEqual(service.InstalledVersion, service.RunningVersion);
+        Assert.AreEqual(wrapped ? "/usr/lib/turn/turn" : "/usr/local/bin/frps", service.Executable);
+        Assert.AreEqual(service.Executable, service.RunningExecutable);
+        Assert.AreEqual(wrapped ? "/etc/turn/turn.toml" : "/etc/frp/frps.toml", service.ConfigurationPath);
         Assert.AreEqual(true, service.ConfigurationPresent);
-        Assert.AreEqual(wrapped ? true : (bool?)null, service.InMemoryConfiguration);
+        Assert.AreEqual(wrapped ? true : null, service.InMemoryConfiguration);
         CollectionAssert.AreEqual(new[] { new FrpsListener("tcp", "*:443"), new FrpsListener("udp", "*:7000") },
             service.Listeners!.ToArray());
-        Assert.AreEqual(3, service.RecentJournal!.Entries);
+        Assert.AreEqual(6, service.RecentJournal!.Entries);
+        Assert.AreEqual(60, service.RecentJournal.WindowMinutes);
+        Assert.AreEqual(250, service.RecentJournal.SampleLimit);
+        Assert.IsFalse(service.RecentJournal.LimitReached);
         Assert.AreEqual(1, service.RecentJournal.Errors);
         Assert.AreEqual(1, service.RecentJournal.Warnings);
         Assert.AreEqual(1, service.RecentJournal.WorkPoolFull);
+        Assert.AreEqual(1, service.RecentJournal.ClientLogins);
+        Assert.AreEqual(1, service.RecentJournal.ClientReplacements);
         Assert.AreEqual(1, service.RecentJournal.ProxyStarts);
+        Assert.AreEqual(1, service.RecentJournal.ProxyClosures);
+        Assert.AreEqual(1, service.RecentJournal.WorkConnectionFailures);
         Assert.IsEmpty(service.Diagnostics);
         Assert.DoesNotContain("never-return-this-token", System.Text.Json.JsonSerializer.Serialize(result));
     }
@@ -143,6 +158,9 @@ public class FrpsStatusTests
                         {"PRIORITY":"6","MESSAGE":"new proxy [https] type [tcp] success"}
                         {"PRIORITY":"6","MESSAGE":"2026-11-23 13:09:00.000 [E] work connection pool is full; never-return-this-token"}
                         {"PRIORITY":"4","MESSAGE":"failed to get work connection"}
+                        {"PRIORITY":"6","MESSAGE":"client login info"}
+                        {"PRIORITY":"6","MESSAGE":"replaced by client"}
+                        {"PRIORITY":"6","MESSAGE":"proxy closing"}
                         """;
                     break;
                 default:
