@@ -21,6 +21,9 @@
       <data name="All clusters" xml:space="preserve">
     <value>Tutti i cluster</value>
   </data>
+  <data name="All machines" xml:space="preserve">
+    <value>Tutte le macchine</value>
+  </data>
   <data name="All origins" xml:space="preserve">
     <value>Tutte le origini</value>
   </data>
@@ -53,6 +56,9 @@
   </data>
   <data name="Created" xml:space="preserve">
     <value>Creato</value>
+  </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>Escludi heartbeat</value>
   </data>
   <data name="Execution pages" xml:space="preserve">
     <value>Pagine di esecuzione</value>

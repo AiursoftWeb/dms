@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Apply security baseline" xml:space="preserve">
+    <value>Käytä tietoturvapohjaa</value>
+  </data>
+  <data name="Check SSH lease" xml:space="preserve">
+    <value>Tarkista SSH-vuokraus</value>
+  </data>
+  <data name="Disable SSH access" xml:space="preserve">
+    <value>Poista SSH-pääsy</value>
+  </data>
+  <data name="Open an SSH lease" xml:space="preserve">
+    <value>Avaa SSH-vuokraus</value>
+  </data>
+  <data name="Preview APT package changes" xml:space="preserve">
+    <value>Esikatsele APT-pakettimuutokset</value>
+  </data>
+  <data name="Refresh APT package indexes" xml:space="preserve">
+    <value>Päivitä APT-pakettihakemistot</value>
+  </data>
+  <data name="Refresh images with Box Puller" xml:space="preserve">
+    <value>Päivitä kuvat Box Pullerilla</value>
+  </data>
+  <data name="Remove unused APT packages" xml:space="preserve">
+    <value>Poista käyttämättömät APT-paketit</value>
+  </data>
+  <data name="Run a command in Docker" xml:space="preserve">
+    <value>Suorita komento Dockerissa</value>
+  </data>
+  <data name="Run an uploaded script" xml:space="preserve">
+    <value>Suorita ladattu skripti</value>
+  </data>
+  <data name="Upgrade DMS Agent" xml:space="preserve">
+    <value>Päivitä DMS-agentti</value>
+  </data>
+  <data name="Upgrade available APT packages" xml:space="preserve">
+    <value>Päivitä käytettävissä olevat APT-paketit</value>
+  </data>
+
+</root>

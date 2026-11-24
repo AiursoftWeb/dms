@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>Dokumentasi Komprehensif</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>Hubungkan DMS CLI ke Controller ini</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>Validasi Konsistensi</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>Mencakup dokumentasi yang luas dan contoh-contoh praktis untuk memudahkan Anda memulai dengan cepat.</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>Instal CLI di komputer Anda dan masuk menggunakan kunci API pribadi.</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>Manajemen File Terintegrasi</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>Desain Responsif</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>Tinjau permintaan {0}</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>Tinjau operasi, parameter, dan target tetap yang diminta. (permintaan {0})</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>Tinjau permintaan {0}</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>Pengujian Integrasi yang Kuat</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>Terintegrasi dengan mulus bersama penyedia OpenID Connect apa pun, dengan sinkronisasi peran otomatis.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Setel Ulang DMS CLI</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>Penggantian Konfigurasi Cerdas</value>

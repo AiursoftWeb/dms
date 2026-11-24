@@ -18,14 +18,50 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All origins" xml:space="preserve">
+      <data name="All machines" xml:space="preserve">
+    <value>Усі машини</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
     <value>Усі джерела</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Усі стани</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Застосувати фільтри</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Автоматично</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Скасовано</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Очистити фільтри</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Тільки кластерні робочі процеси</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Завершено з попередженнями</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Контролер</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Створено</value>
+  </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>Не враховувати сигнали життя</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Сторінки виконань</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Стан виконання</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Невдало</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Фільтр</value>
@@ -33,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Машинний станок</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Ручний</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Потребує перевірки</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Далі</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Жодні виконання не відповідають цим фільтрам.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Похідження</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Батьківський workflow</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Попередня</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>У черзі</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Тільки кореневі виконання</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Виконується</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Стан</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Успішно</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Переглянути виконання</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Workflow</value>

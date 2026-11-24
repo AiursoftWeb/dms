@@ -27,6 +27,9 @@
   <data name="Agent version" xml:space="preserve">
     <value>代理版本</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>自動</value>
+  </data>
   <data name="Back to machines" xml:space="preserve">
     <value>返回機器</value>
   </data>
@@ -45,6 +48,9 @@
   <data name="Finished" xml:space="preserve">
     <value>已完成</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>調查機器</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>最後連線時間</value>
   </data>
@@ -57,8 +63,14 @@
   <data name="Machines" xml:space="preserve">
     <value>機器</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>手動</value>
+  </data>
   <data name="No heartbeat received" xml:space="preserve">
     <value>未收到心跳</value>
+  </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>該機器暫無工作流執行記錄。</value>
   </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>此機器沒有記錄任何排程基準執行。</value>
@@ -66,8 +78,14 @@
   <data name="Not verified yet" xml:space="preserve">
     <value>尚未驗證</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>父工作流</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>原因</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>最近執行</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>申請停用 SSH</value>
@@ -108,6 +126,9 @@
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>請在申請存取權限前核實您嘅個人 SSH 金鑰。CLI 預設會使用您所有已核實嘅金鑰。</value>
   </data>
+  <data name="View all history" xml:space="preserve">
+    <value>檢視全部歷史</value>
+  </data>
   <data name="View execution" xml:space="preserve">
     <value>檢視執行</value>
   </data>
@@ -115,25 +136,4 @@
     <value>工作流程記錄</value>
   </data>
 
-  <data name="Investigate machine" xml:space="preserve">
-    <value>調查機器</value>
-  </data>
-  <data name="Recent executions" xml:space="preserve">
-    <value>最近執行</value>
-  </data>
-  <data name="View all history" xml:space="preserve">
-    <value>檢視全部歷史</value>
-  </data>
-  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
-    <value>該機器暫無工作流執行記錄。</value>
-  </data>
-  <data name="Automatic" xml:space="preserve">
-    <value>自動</value>
-  </data>
-  <data name="Manual" xml:space="preserve">
-    <value>手動</value>
-  </data>
-  <data name="Parent workflow" xml:space="preserve">
-    <value>父工作流</value>
-  </data>
 </root>

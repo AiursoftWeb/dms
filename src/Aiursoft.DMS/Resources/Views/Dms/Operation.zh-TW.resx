@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approval context" xml:space="preserve">
+      <data name="Already current ({0})" xml:space="preserve">
+    <value>已是目標版本（{0}）</value>
+  </data>
+  <data name="Approval context" xml:space="preserve">
     <value>核准上下文</value>
   </data>
   <data name="Automatic" xml:space="preserve">
@@ -84,6 +87,9 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>原始執行結果</value>
   </data>
+  <data name="Reconnected on {0}" xml:space="preserve">
+    <value>已重新連線，版本 {0}</value>
+  </data>
   <data name="Remaining connection details" xml:space="preserve">
     <value>剩餘連線詳細資訊</value>
   </data>
@@ -135,6 +141,9 @@
   <data name="Trigger" xml:space="preserve">
     <value>觸發</value>
   </data>
+  <data name="Upgraded from {0} to {1}" xml:space="preserve">
+    <value>已從 {0} 升級至 {1}</value>
+  </data>
   <data name="View the SSH verification log" xml:space="preserve">
     <value>檢視 SSH 驗證日誌</value>
   </data>
@@ -151,13 +160,4 @@
     <value>{0} 請求</value>
   </data>
 
-  <data name="Already current ({0})" xml:space="preserve">
-    <value>已是目標版本（{0}）</value>
-  </data>
-  <data name="Reconnected on {0}" xml:space="preserve">
-    <value>已重新連線，版本 {0}</value>
-  </data>
-  <data name="Upgraded from {0} to {1}" xml:space="preserve">
-    <value>已從 {0} 升級至 {1}</value>
-  </data>
 </root>

@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>완료됨</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>머신 조사</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>마지막 확인</value>
   </data>
@@ -60,14 +63,23 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>하트비트가 수신되지 않았습니다</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>이 머신에 대한 최근 워크플로 실행 기록이 없습니다.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>이 컴퓨터에 대한 예약된 베이스라인 실행 기록이 없습니다.</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>아직 검증되지 않음</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>상위 워크플로</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>사유</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>최근 실행</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>SSH 비활성화 요청</value>
@@ -107,6 +119,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>접근을 요청하기 전에 개인 SSH 키를 확인하세요. CLI는 기본적으로 모든 확인된 키를 사용합니다.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>전체 기록 보기</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>실행 보기</value>

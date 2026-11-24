@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Hoàn thành</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Điều tra máy</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Lần cuối nhìn thấy</value>
   </data>
@@ -60,14 +63,23 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>Chưa nhận được tín hiệu hoạt động</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Không có bản ghi thực thi quy trình làm việc gần đây nào cho máy này.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>Chưa có bản ghi thực thi baseline định kỳ nào cho máy này.</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>Chưa được xác minh</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Quy trình cha</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Lý do</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Các lần thực hiện gần đây</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>Yêu cầu vô hiệu hóa SSH</value>
@@ -107,6 +119,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>Xác minh các khóa SSH cá nhân của bạn trước khi yêu cầu quyền truy cập. CLI sử dụng tất cả các khóa đã xác minh của bạn theo mặc định.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Xem tất cả lịch sử</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Xem thực thi</value>

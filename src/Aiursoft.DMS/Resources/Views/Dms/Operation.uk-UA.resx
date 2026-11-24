@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>Контекст схвалення</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Автоматично</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Стек викликів</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Перевірено</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Контролер</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Тривалість</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Встановлені з&apos;єднання OpenSSH</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Ідентифікатори виконання та тригер</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Журнал виконання</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Сторінки журналу виконання</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Навігація по виконанню</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Кроки виконання</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Завершено</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Машинний</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далі</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Не розпочато</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>Слухачі OpenSSH</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Похідження</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>Батьківський</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Батьківський workflow</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Попередній</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Сирій результат виконання</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Інші дані з&apos;єднання</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Деталі решти слухачів</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Результат</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Кореневий workflow</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>Закриття SSH потребує перевірки</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Переглянути всі кроки виконання</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Почато</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Стан</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Кроки, що потребують уваги</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Системний розклад</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Цільові машини</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>Службу SSH та сокет було замасковано та зупинено.</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Журнал виконання недоступний. Очікувані події залишаються збереженими.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>На цій сторінці немає архівованих подій.</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>У цьому запуску немає записаних даних про кількість слухачів або з&apos;єднань.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Трасування</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>Тригер</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Переглянути журнал перевірки SSH</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Потік робіт</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID робочого процесу</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Історія робочого процесу</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>Запит {0}</value>
   </data>
 
 </root>

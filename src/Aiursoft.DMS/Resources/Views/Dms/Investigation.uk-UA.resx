@@ -30,9 +30,6 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Будь-який режим затвердження</value>
   </data>
-  <data name="{0} request" xml:space="preserve">
-    <value>Запит {0}</value>
-  </data>
   <data name="Approver" xml:space="preserve">
     <value>Затверджувач</value>
   </data>
@@ -59,9 +56,6 @@
   </data>
   <data name="Investigation" xml:space="preserve">
     <value>Дослідження</value>
-  </data>
-  <data name="{0} ID" xml:space="preserve">
-    <value>Ідентифікатор {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Машині</value>
@@ -102,18 +96,6 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Записано до (не включно, UTC)</value>
   </data>
-  <data name="Workflow in the {0} request" xml:space="preserve">
-    <value>Запитуваний (запити {0})</value>
-  </data>
-  <data name="Workflow type in the {0} request" xml:space="preserve">
-    <value>Запитаний тип робочого процесу (запити {0})</value>
-  </data>
-  <data name="{0} requester" xml:space="preserve">
-    <value>Заявник (запити {0})</value>
-  </data>
-  <data name="{0} requester ID" xml:space="preserve">
-    <value>ID запитувача (запити {0})</value>
-  </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Ідентифікатор кореневого робочого процесу</value>
   </data>
@@ -138,8 +120,26 @@
   <data name="Workflow ID" xml:space="preserve">
     <value>Ідентифікатор робочого процесу</value>
   </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Запитуваний (запити {0})</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Запитаний тип робочого процесу (запити {0})</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Так</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>Ідентифікатор {0}</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>Запит {0}</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Заявник (запити {0})</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID запитувача (запити {0})</value>
   </data>
 
 </root>

@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>完了</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>マシンの調査</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>最終確認日時</value>
   </data>
@@ -60,14 +63,23 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>ハートビートを受信していません</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>このマシンに最近のワークフロー実行の記録はありません。</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>このマシンには、スケジュールされたベースラインの実行記録がありません。</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>未検証</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>親ワークフロー</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>理由</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>最近の実行</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>SSH無効化をリクエスト</value>
@@ -107,6 +119,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>アクセスをリクエストする前に、個人用のSSHキーを確認してください。CLIはデフォルトで、すべての検証済みのキーを使用します。</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>すべての履歴を表示</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>実行の詳細を表示</value>

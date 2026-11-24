@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>सभी सक्षम मशीनें</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>APT पैकेज योजना</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>ऐसे अतिरिक्त अपग्रेड जो योजना में पैकेज हटा देंगे</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>एंटी-स्पूफिंग सत्यापन:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>स्वीकारें</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>स्वीकृत</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>स्वीकृत लक्ष्य मशीनें</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>स्वीकृत · चालू होने का प्रतीक्षा</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>अनुमोदक ID</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>प्रामाणिक निष्पादन अनुबंध:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>स्वचालित अनुमोदन</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>अनुमोदन की प्रतीक्षा में</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>अनुमोदनों पर वापस जाएँ</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>कमांड</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>कमांड कॉपी की गई</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>कॉपी करें</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>निर्मित</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>वर्तमान में उपलब्ध एजेंट पैकेज</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>निर्णय</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>निर्णय का कारण</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>अस्वीकृत</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>अस्वीकार करें</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>इस {0} अनुरोध में Docker कमांड</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>समतुल्य DMS कमांड</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>निष्पादन स्थिति</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>निष्पादन स्थिति उपलब्ध नहीं है।</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>स्थिर इनपुट फ़ाइलें</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>उच्च जोखिम</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>प्राचीन अनुमोदन वर्कफ़्लो</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>इमेज</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>इमेज दायरा</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>कम जोखिम</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>मध्यम जोखिम</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>नई अनुरोध आवश्यक है</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>अभी कोई पात्र अनुमोदक उपलब्ध नहीं है।</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>कोई मशीन लक्ष्य नहीं</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>कोई पैकेज परिवर्तन योजनाबद्ध नहीं हैं।</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>आवेदक द्वारा कोई कारण प्रदान नहीं किया गया था।</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>SSH प्रबंधन खोलें</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>खुला वर्कफ़्लो</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>पैरामीटर</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>कच्चा इनपुट JSON</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>सहेजे गए इनपुट और लक्षित मशीनों से पुनर्निर्मित किया गया।</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>अनुरोधित एजेंट पैकेज</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>वर्तमान पैकेज की समीक्षा करें और उसी मशीनों के लिए एक नया अनुरोध जमा करें।</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>निष्पादन हेतु प्रस्तुत की गई सटीक सामग्री की समीक्षा करें।</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>समीक्षकों को यह सत्यापित करना होगा कि आवेदक द्वारा बताई गई वजह नीचे दी गई प्राधिकृत वर्कफ्लो परिभाषा, टार्गेट मशीनें और फ्रोज़न इनपुट पैरामीटरों से सटीक रूप से मेल खाती है। केवल इस पाठ के आधार पर अनुमोदन न करें।</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>जोखिम</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH कुंजी अंगूठे के निशान</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>सुरक्षित वर्कफ़्लो</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>नई अपग्रेड अनुरोध जमा करें</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>लक्षित मशीनें</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>एजेंट पैकेज अस्थायी रूप से अनुपलब्ध है। कृपया बाद में पुनः प्रयास करें।</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>नीचे दी गई वर्कफ़्लो परिभाषा, टार्गेट मशीनें और इनपुट पैरामीटर्स स्थिर और अधिकारिक हैं। ये बिल्कुल वही चीज़ें दर्शाती हैं जो अनुमोदन के बाद चलाई जाएंगी।</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>वर्तमान Agent पैकेज फिर से बदल गया है। सबमिट करने से पहले इसकी समीक्षा करें।</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>मूल Agent पैकेज फिर से उपलब्ध है। मूल अनुरोध की समीक्षा करें।</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>इस मशीन के लिए प्रीव्यू उपलब्ध नहीं है।</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>अनुरोधकर्ता को एक नया अपग्रेड अनुरोध जमा करना होगा।</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>चयनित Agent पैकेज को बदल दिया गया है। अपग्रेड शुरू नहीं हुआ है।</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>यह वर्कफ्लो कोई पैरामीटर नहीं लेता।</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>अज्ञात मशीन</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>असत्यापित आवेदक का दावा</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>{0} पर DMS एजेंट को अपग्रेड करें</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>बहुत अधिक जोखिम</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>वर्कफ्लो निष्पादन देखें</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>कौन स्वीकृत कर सकता है</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>वापस लिया गया</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>वर्कफ्लो</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>वर्कफ्लो परिभाषा</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>वर्कफ्लो संस्करण</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>आपकी वर्तमान भूमिका आपको इस अपग्रेड का अनुरोध करने की अनुमति नहीं देती।</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>बाइट्स</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} अनुरोध पहचानकर्ता और कच्चा भुगतान</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} अनुरोध कारण</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} अनुरोधकर्ता</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} अनुरोधकर्ता ID</value>
   </data>
 
 </root>

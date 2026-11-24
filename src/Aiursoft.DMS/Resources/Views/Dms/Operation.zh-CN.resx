@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Automatic" xml:space="preserve">
+      <data name="Already current ({0})" xml:space="preserve">
+    <value>已是目标版本（{0}）</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
     <value>自动</value>
   </data>
   <data name="Checked" xml:space="preserve">
@@ -75,6 +78,9 @@
   <data name="Raw execution result" xml:space="preserve">
     <value>原始执行结果</value>
   </data>
+  <data name="Reconnected on {0}" xml:space="preserve">
+    <value>已重新连接，版本 {0}</value>
+  </data>
   <data name="Remaining connection details" xml:space="preserve">
     <value>其余连接详情</value>
   </data>
@@ -114,6 +120,9 @@
   <data name="This run has no recorded listener or connection counts." xml:space="preserve">
     <value>本次运行没有记录任何监听器或连接数。</value>
   </data>
+  <data name="Upgraded from {0} to {1}" xml:space="preserve">
+    <value>已从 {0} 升级到 {1}</value>
+  </data>
   <data name="View the SSH verification log" xml:space="preserve">
     <value>查看 SSH 验证日志</value>
   </data>
@@ -127,13 +136,4 @@
     <value>{0} 请求</value>
   </data>
 
-  <data name="Already current ({0})" xml:space="preserve">
-    <value>已是目标版本（{0}）</value>
-  </data>
-  <data name="Reconnected on {0}" xml:space="preserve">
-    <value>已重新连接，版本 {0}</value>
-  </data>
-  <data name="Upgraded from {0} to {1}" xml:space="preserve">
-    <value>已从 {0} 升级到 {1}</value>
-  </data>
 </root>

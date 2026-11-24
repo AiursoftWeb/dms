@@ -18,8 +18,26 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Agent version" xml:space="preserve">
+      <data name="Add a machine" xml:space="preserve">
+    <value>Додати машину</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
     <value>Версія агента</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Усі стани</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Застосувати фільтри</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Очистити фільтри</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>Стан з&apos;єднання</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Вимкнено</value>
   </data>
   <data name="Last seen" xml:space="preserve">
     <value>Останнє бачення</value>
@@ -27,11 +45,38 @@
   <data name="Machine" xml:space="preserve">
     <value>Машини</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>Назва машини</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>Сторінки машин</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>Машини</value>
   </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>Ніколи не підключено</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Далі</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>Ще не приєднано жодних машин.</value>
+  </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>Немає приєднаних машин. Використайте ключ приєднання, щоб запросити реєстрацію Agent.</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>Немає машин, що відповідають цим фільтрам.</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Офлайн</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>У мережі</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Попередня</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>Стан</value>

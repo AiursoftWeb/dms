@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Nämä oikeudet</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Käytä</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Hyväksy automaattisesti</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Klusteri</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Suorituspaikka</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Korkea</value>
@@ -57,23 +63,38 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Julkisia standarditapauksia ei ole rekisteröity.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Avoin</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Vaatii konekohdet</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Riski</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Riski (korkein ensin)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Riski (matalin ensin)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Roolioikeudet koskevat kaikkia koneita tässä DMS-instanssissa ja kunkin työvirran riskitasoa. Automaatisti hyväksyminen vaatii pyytämisoikeuden. Oman {0}-pyynnön hyväksyminen vaatii myös itsensä hyväksymisen oikeuden.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Turvallinen</value>
+  </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Järjestä</value>
   </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Vakiotoiminnat</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Tämä kataloki luettaa julkiset standardityövirrat, jotka ovat käytettävissä ohjaimessa. Agenttien saatavuus ja tuetut versiot tarkistetaan suorituksen aikana. Erityiset ohjaustoiminnot ja sisäiset alatyövirrat eivät ole lueteltuna.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Tuntematon</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Versio</value>
@@ -83,6 +104,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Työprosessi</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Työvirran nimi (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Työnimen (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Kyllä</value>

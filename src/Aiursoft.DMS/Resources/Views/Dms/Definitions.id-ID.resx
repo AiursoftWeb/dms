@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Tentang izin-izin ini</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Terapkan</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Setujui secara otomatis</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Lokasi eksekusi</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Tinggi</value>
@@ -57,23 +63,38 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Tidak ada alur kerja standar publik yang terdaftar.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Terbuka</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Memerlukan target mesin</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Risiko (tertinggi dulu)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Risiko (terendah terlebih dahulu)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Izin peran berlaku untuk setiap mesin dalam instance DMS ini dan tingkat risiko setiap alur kerja. Persetujuan otomatis memerlukan izin untuk meminta. Menyetujui permintaan {0} Anda sendiri juga memerlukan izin persetujuan sendiri.</value>
   </data>
   <data name="Safe" xml:space="preserve">
     <value>Aman</value>
+  </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Urutkan berdasarkan</value>
   </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Alur kerja standar</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Katalog ini mencantumkan alur kerja standar publik yang tersedia di Controller. Ketersediaan agen dan versi yang didukung diperiksa saat eksekusi. Operasi kontrol khusus dan subalur kerja internal tidak dicantumkan.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Tidak diketahui</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Versi</value>
@@ -83,6 +104,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Alur Kerja</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Nama alur kerja (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Nama alur kerja (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Ya</value>

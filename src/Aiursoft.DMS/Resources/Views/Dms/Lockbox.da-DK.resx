@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>ALLE AKTIVEREDE MASKINER</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>APT-pakkeplan</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>Yderligere opgraderinger i en plan, der ville fjerne pakker</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>Anti-spoofing-verifikation:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Godkend</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Godkendt</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Godkendte målmaskiner</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Godkendt · Venter på kørsel</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>Godkenderes ID</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>Autoritativ kontrakt for eksekvering:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Automatisk godkendelse</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Afventer godkendelse</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Tilbage til godkendelser</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Kommando</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Kommando kopieret</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopiér</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Oprettet</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Tilgængelig Agent-pakke i øjeblikket</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Afgørelse</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Begrundelse for afgørelse</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Afvist</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Afvis</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Docker-kommando i denne {0}-anmodning</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Tilsvarende DMS-kommando</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Eksekveringsstatus</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>Udførelsesstatus er utilgængelig.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Frosne inputfiler</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Høj risiko</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Historisk godkendelsesworkflow</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Billedområde</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Lav risiko</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Mellemstor risiko</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Kræver en ny anmodning</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>Ingen berettigede godkendere lige nu.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>Ingen maskinmål</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>Ingen pakkeændringer planlagt.</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>Der er ikke angivet nogen grund af ansøgeren.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>Åbn SSH-håndtering</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Åben workflow</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametre</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>Rå input JSON</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Genoprettet fra den gemte input og målmaskinerne.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>Anmodet Agent-pakke</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Gennemse den aktuelle pakke og send en ny anmodning for de samme maskiner.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Gennemgå de nøjagtige indhold, der er indsendt til udførelse.</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>Gennemgangere skal verificere, at ansøgerens angivne grund strengt overensstemmer med den autoritative Workflow-definition, Target Machines og Frozen Input-parametrene nedenfor. Godkend ikke på grundlag af denne tekst alene.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risiko</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH-nøglefingeraftryk</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Sikker workflow</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Send en ny opgraderingsanmodning</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Målmaskiner</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>Agent-pakken er midlertidigt utilgængelig. Prøv igen senere.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>Workflowdefinitionen, målmaskinerne og inputparametrene nedenfor er frosne og autoritative. De repræsenterer præcis det, der udføres ved godkendelse.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>Den aktuelle Agent-pakke er blevet ændret igen. Gennemgå den, før du indsender.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>Den originale Agent-pakke er tilgængelig igen. Gennemgå den originale anmodning.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>Forhåndsvisningen er ikke tilgængelig for denne maskine.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>Anmoderen skal indsende en ny opgraderingsanmodning.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>Den valgte Agent-pakke er blevet erstattet. Opgraderingen er ikke startet.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>Denne workflow tager ingen parametre.</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>Ukendt maskine</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>Ubevist ansøgernes påstand</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>Opgrader DMS Agent på {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Meget høj risiko</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>Vis workflow-eksekvering</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Hvem kan godkende</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Tilbagekaldt</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Arbejdsgang</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>Workflow-definition</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>Workflow-version</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Din nuværende rolle tillader dig ikke at anmode om denne opgradering.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>bytes</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0}-ID</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} anmodningsidentifikatorer og rå payload</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} anmodningsårsag</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} anmoder</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} anmoder-ID</value>
   </data>
 
 </root>

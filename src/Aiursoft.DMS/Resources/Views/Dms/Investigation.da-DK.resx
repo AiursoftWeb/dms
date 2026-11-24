@@ -30,9 +30,6 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Alle godkendelsesformer</value>
   </data>
-  <data name="{0} request" xml:space="preserve">
-    <value>{0}-anmodning</value>
-  </data>
   <data name="Approver" xml:space="preserve">
     <value>Godkender</value>
   </data>
@@ -62,9 +59,6 @@
   </data>
   <data name="Investigation" xml:space="preserve">
     <value>Undersøgelse</value>
-  </data>
-  <data name="{0} ID" xml:space="preserve">
-    <value>{0}-id</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Maskine</value>
@@ -105,18 +99,6 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Registreret indtil (eksklusiv, UTC)</value>
   </data>
-  <data name="Workflow in the {0} request" xml:space="preserve">
-    <value>Anmodet ({0}-anmodninger)</value>
-  </data>
-  <data name="Workflow type in the {0} request" xml:space="preserve">
-    <value>Anmodet workflowtype ({0}-anmodninger)</value>
-  </data>
-  <data name="{0} requester" xml:space="preserve">
-    <value>Anmoder ({0}-anmodninger)</value>
-  </data>
-  <data name="{0} requester ID" xml:space="preserve">
-    <value>Anmoderens ID ({0}-anmodninger)</value>
-  </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Rodworkflow-id</value>
   </data>
@@ -141,11 +123,29 @@
   <data name="Workflow ID" xml:space="preserve">
     <value>Workflow-id</value>
   </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Anmodet ({0}-anmodninger)</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Anmodet workflowtype ({0}-anmodninger)</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
   </data>
   <data name="You do not have access to any clusters." xml:space="preserve">
     <value>Du har ikke adgang til nogen klynger.</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0}-id</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0}-anmodning</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Anmoder ({0}-anmodninger)</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>Anmoderens ID ({0}-anmodninger)</value>
   </data>
 
 </root>

@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Terminé</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Inspecter la machine</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Dernière détection</value>
   </data>
@@ -60,14 +63,23 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>Aucun battement de cœur reçu</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Aucune exécution récente de workflow enregistrée pour cette machine.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>Aucune exécution planifiée de la ligne de base n&apos;est enregistrée pour cet appareil.</value>
   </data>
   <data name="Not verified yet" xml:space="preserve">
     <value>Pas encore vérifié</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Workflow parent</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Motif</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Exécutions récentes</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>Demande de désactivation de SSH</value>
@@ -107,6 +119,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>Vérifiez vos clés SSH personnelles avant de demander l&apos;accès. L&apos;interface en ligne de commande utilise par défaut toutes vos clés vérifiées.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Voir tout l&apos;historique</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Afficher l&apos;exécution</value>

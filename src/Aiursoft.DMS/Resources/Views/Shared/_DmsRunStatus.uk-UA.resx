@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Accepted by Agent" xml:space="preserve">
+    <value>Прийнято агентом</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Очікує затвердження</value>
+  </data>
+  <data name="Cancellation requested" xml:space="preserve">
+    <value>Скасування запитується</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Скасовано</value>
+  </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Завершено з попередженнями</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Відмовлено</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Не вдалося</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Потребує перевірки</value>
+  </data>
+  <data name="Offered to Agent" xml:space="preserve">
+    <value>Запропоновано агенту</value>
+  </data>
+  <data name="Queued" xml:space="preserve">
+    <value>У черзі</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Виконується</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Успішно завершено</value>
+  </data>
+
+</root>

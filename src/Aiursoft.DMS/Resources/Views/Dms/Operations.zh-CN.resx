@@ -18,7 +18,10 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="All origins" xml:space="preserve">
+      <data name="All machines" xml:space="preserve">
+    <value>所有机器</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
     <value>所有来源</value>
   </data>
   <data name="All states" xml:space="preserve">
@@ -45,6 +48,9 @@
   <data name="Controller" xml:space="preserve">
     <value>控制器</value>
   </data>
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>排除心跳</value>
+  </data>
   <data name="Execution pages" xml:space="preserve">
     <value>执行页面</value>
   </data>
@@ -53,6 +59,9 @@
   </data>
   <data name="Failed" xml:space="preserve">
     <value>失败</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>机器</value>
   </data>
   <data name="Manual" xml:space="preserve">
     <value>手动</value>
@@ -97,13 +106,4 @@
     <value>工作流类型</value>
   </data>
 
-  <data name="Exclude heartbeats" xml:space="preserve">
-    <value>排除心跳</value>
-  </data>
-  <data name="All machines" xml:space="preserve">
-    <value>所有机器</value>
-  </data>
-  <data name="Machine" xml:space="preserve">
-    <value>机器</value>
-  </data>
 </root>

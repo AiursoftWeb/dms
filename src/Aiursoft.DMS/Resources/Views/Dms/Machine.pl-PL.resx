@@ -45,6 +45,9 @@
   <data name="Finished" xml:space="preserve">
     <value>Zakończono</value>
   </data>
+  <data name="Investigate machine" xml:space="preserve">
+    <value>Zbadaj maszynę</value>
+  </data>
   <data name="Last seen" xml:space="preserve">
     <value>Ostatnio widziany</value>
   </data>
@@ -60,11 +63,20 @@
   <data name="No heartbeat received" xml:space="preserve">
     <value>Brak otrzymanego sygnału życia</value>
   </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>Brak zarejestrowanych ostatnich wykonań przepływu pracy dla tego komputera.</value>
+  </data>
   <data name="No scheduled baseline execution is recorded for this machine." xml:space="preserve">
     <value>Dla tego komputera nie zarejestrowano żadnego zaplanowanego wykonania linii bazowej.</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Przypisany workflow</value>
+  </data>
   <data name="Reason" xml:space="preserve">
     <value>Powód</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>Ostatnie wykonania</value>
   </data>
   <data name="Request Disable SSH" xml:space="preserve">
     <value>Złóż wniosek o wyłączenie SSH</value>
@@ -98,6 +110,9 @@
   </data>
   <data name="Verify your personal SSH keys before requesting access. The CLI uses all your verified keys by default." xml:space="preserve">
     <value>Zweryfikuj swoje osobiste klucze SSH przed złożeniem wniosku o dostęp. CLI domyślnie używa wszystkich Twoich zweryfikowanych kluczy.</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>Pokaż cały historię</value>
   </data>
   <data name="View execution" xml:space="preserve">
     <value>Wyświetl wykonanie</value>
