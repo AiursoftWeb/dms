@@ -459,7 +459,7 @@ dms operation get-callstack <workflow-id> --output-format Json
 
 ## Deploy FRPS
 
-Use `dms machine frps deploy` with one managed Linux machine. The request opens a Very High risk Lockbox. The Agent installs the pinned upstream FRPS release for AMD64 or ARM64, verifies its SHA-256 and configuration, and checks that the systemd service starts.
+Use `dms machine frps deploy` with one managed Linux machine. The request opens a Very High risk Lockbox. The Agent installs the pinned upstream FRPS release for AMD64 or ARM64, verifies its SHA-256 and configuration, and checks that the systemd service starts. The Agent gives GitHub up to 40 minutes to deliver the complete archive. If the download times out or fails, it tries the same public release through GH-Proxy for up to five minutes. Both sources must match the pinned SHA-256 before installation, and a checksum mismatch stops deployment.
 
 ```bash
 dms machine frps deploy --machine-id <machine-id> --reason "Upgrade FRPS"
