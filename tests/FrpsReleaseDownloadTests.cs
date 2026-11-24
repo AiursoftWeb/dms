@@ -24,9 +24,8 @@ public class FrpsReleaseDownloadTests
     [TestMethod]
     public async Task IncompleteGitHubBodyTimesOutAndTheProxyStartsAFreshDownload()
     {
-        using var blocked = new PartialArchive();
         using var handler = new ReleaseHandler(url => url == GitHub
-            ? Ok(new StreamContent(blocked))
+            ? Ok(new StreamContent(new PartialArchive()))
             : Ok(new ByteArrayContent(Archive)));
         using var client = new HttpClient(handler);
         var trace = new List<string>();
@@ -63,13 +62,15 @@ public class FrpsReleaseDownloadTests
     public async Task OperatorCancellationDoesNotContactTheProxy()
     {
         using var cancellation = new CancellationTokenSource();
+        var token = cancellation.Token;
+        Action cancel = cancellation.Cancel;
         using var handler = new ReleaseHandler(_ =>
         {
-            cancellation.Cancel();
-            throw new OperationCanceledException(cancellation.Token);
+            cancel();
+            throw new OperationCanceledException(token);
         });
         using var client = new HttpClient(handler);
-        await Assert.ThrowsAsync<OperationCanceledException>(() => DownloadAsync(client, cancellation.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => DownloadAsync(client, token));
         CollectionAssert.AreEqual(new[] { GitHub }, handler.Requests);
     }
 
