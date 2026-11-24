@@ -519,6 +519,7 @@ public class DmsWorkflowTests : TestBase
         Assert.DoesNotContain(autoHeartbeatId.ToString(), excluded);
         StringAssert.Contains(excluded, manualHeartbeatId.ToString());
         StringAssert.Contains(excluded, machineRun.Id.ToString());
+        StringAssert.Contains(excluded, $"<option value=\"{setup.Machine}\" selected");
     }
 
     [TestMethod]

@@ -100,4 +100,10 @@
   <data name="Exclude heartbeats" xml:space="preserve">
     <value>排除心跳</value>
   </data>
+  <data name="All machines" xml:space="preserve">
+    <value>所有机器</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>机器</value>
+  </data>
 </root>
