@@ -636,7 +636,7 @@ Use an installed Agent release that already supports this workflow for the first
 
 ### Schedule Agent upgrades
 
-Every managed machine running an installed Agent with this feature runs `machine.agent.scheduled-upgrade` at 00:00, 08:00 and 16:00 UTC. The Agent authenticates to the Controller and checks for a strictly newer version for its architecture. While it waits, other workflows run normally. New work resets the 10-second idle window. Once the window completes, the Agent reserves maintenance, checks the release again, and uses the same verified activation and reconnect confirmation as a manual upgrade.
+Every managed machine running an installed Agent with this feature runs `machine.agent.scheduled-upgrade` at 00:00, 08:00 and 16:00 UTC. The Agent authenticates to the Controller and checks for a strictly newer version for its architecture. While it waits, other workflows run normally. New work resets the 10-second idle window. Once the window completes, the Agent reserves maintenance, checks the release again, and uses the same verified activation and reconnect confirmation as a manual upgrade. On startup or after scheduling resumes, the Agent checks the latest missed occurrence once. It retries temporary failures reading the release manifest, saving the chosen release before activation.
 
 Open **Workflow history** to inspect the scheduled run and its outcome. Use the manual command above to bootstrap an older Agent onto a release that supports this schedule or to request an immediate upgrade through Lockbox.
 
