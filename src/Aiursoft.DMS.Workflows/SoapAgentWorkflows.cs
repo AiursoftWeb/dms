@@ -152,8 +152,9 @@ internal sealed class SoapInvokeWorkflow(MachineWorkflowDefinition<SoapCallInput
         catch (OperationCanceledException) when (testOnly && sent) { outcome = "cancelled-after-send"; sanitized = null; }
         catch (Exception e) when (e is HttpRequestException or IOException) { outcome = "transport-error"; sanitized = null; }
         elapsed.Stop();
-        if (testOnly && sent && outcome is "timeout" or "transport-error" or "invalid-response" or "response-too-large"
-            or "cancelled-after-send" or "unexpected-response" or "unconfirmed-response")
+        var unconfirmedGatewayResponse = outcome == "http-error" && httpStatus is 502 or 504;
+        if (testOnly && sent && (unconfirmedGatewayResponse || outcome is "timeout" or "transport-error" or "invalid-response"
+            or "response-too-large" or "cancelled-after-send" or "unexpected-response" or "unconfirmed-response"))
         {
             await context.WarningAsync($"Registered test-only SOAP request outcome: {outcome}; verify effects before considering another call.");
             throw new WorkflowNeedsVerificationException(context.Id)
