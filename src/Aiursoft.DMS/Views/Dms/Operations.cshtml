@@ -34,7 +34,16 @@
     </header>
 
     <form class="card dms-filters dms-history-filters" method="get" asp-action="Operations">
-        <input name="machineId" type="hidden" value="@Model.MachineId" />
+        <div class="dms-filter-field">
+            <label for="machineId" class="form-label">@Localizer["Machine"]</label>
+            <select id="machineId" name="machineId" class="form-select">
+                <option value="">@Localizer["All machines"]</option>
+                @foreach (var machine in Model.AllMachines)
+                {
+                    <option value="@machine.Key" selected="@(Model.MachineId == machine.Key)">@machine.Value</option>
+                }
+            </select>
+        </div>
         <div class="dms-filter-field dms-filter-search">
             <label for="definition" class="form-label">@Localizer["Workflow type"]</label>
             <input type="search" id="definition" name="definition" class="form-control" maxlength="200" value="@Model.Definition" />

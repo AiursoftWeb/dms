@@ -121,4 +121,7 @@
   <data name="Exclude heartbeats" xml:space="preserve">
     <value>排除心跳</value>
   </data>
+  <data name="All machines" xml:space="preserve">
+    <value>所有機器</value>
+  </data>
 </root>

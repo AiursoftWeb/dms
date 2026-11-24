@@ -285,6 +285,9 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         var boxIds = runs.Where(run => run.Definition == WorkflowNames.Batch).Select(run => run.LockboxId).OfType<Guid>().Distinct().ToArray();
         var requested = await db.Lockboxes.AsNoTracking().Where(box => boxIds.Contains(box.Id))
             .ToDictionaryAsync(box => box.Id, box => box.Definition);
+        var allMachines = await db.Machines.AsNoTracking()
+            .OrderBy(m => m.Name)
+            .ToDictionaryAsync(m => m.Id, m => m.Name);
         return this.StackView(new DmsViewModel
         {
             PageTitle = "Workflow history",
@@ -292,6 +295,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             MachineId = machineId, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly,
             ExcludeHeartbeats = excludeHeartbeats,
             MachineNames = await MachineNamesAsync(runs.Select(run => run.MachineId).Append(machineId)),
+            AllMachines = allMachines,
             RequestedDefinitions = requested
         });
     }
