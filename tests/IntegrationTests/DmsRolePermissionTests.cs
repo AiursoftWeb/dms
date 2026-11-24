@@ -238,7 +238,7 @@ public class DmsRolePermissionTests : TestBase
     [TestMethod]
     public async Task LockboxPageShowsFrozenTargetsCommandAndLiveApprovers()
     {
-        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High), DmsPermissions.Approve(RiskLevel.High));
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Medium), DmsPermissions.Approve(RiskLevel.Medium));
         using var scope = Server!.Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var reviewer = new User
@@ -249,7 +249,7 @@ public class DmsRolePermissionTests : TestBase
         };
         Assert.IsTrue((await users.CreateAsync(reviewer)).Succeeded);
         Assert.IsTrue((await users.AddClaimAsync(reviewer,
-            new Claim(AppPermissions.Type, DmsPermissions.Approve(RiskLevel.High)))).Succeeded);
+            new Claim(AppPermissions.Type, DmsPermissions.Approve(RiskLevel.Medium)))).Succeeded);
 
         var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var box = await workflows.SubmitAsync(setup.User, MachineWorkflows.PullerForceUpdate.Request(
@@ -420,7 +420,7 @@ public class DmsRolePermissionTests : TestBase
     [TestMethod]
     public async Task RequesterCanFollowOwnWebExecutionWithoutGlobalReadPermission()
     {
-        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Medium));
         using var scope = Server!.Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var requester = (await users.FindByIdAsync(setup.User))!;
@@ -679,8 +679,8 @@ public class DmsRolePermissionTests : TestBase
         {
             RiskLevel.Safe => MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Role test", machines: [machine]),
             RiskLevel.Low => MachineWorkflows.ServiceStatus.Request(new ServiceInput("dms-test.service"), "Role test", machines: [machine]),
-            RiskLevel.Medium => MachineWorkflows.Restart.Request(new ServiceInput("dms-test.service"), "Role test", machines: [machine]),
-            RiskLevel.High => MachineWorkflows.PullerForceUpdate.Request(new PullerForceUpdateInput(), "Role test", machines: [machine]),
+            RiskLevel.Medium => MachineWorkflows.PullerForceUpdate.Request(new PullerForceUpdateInput(), "Role test", machines: [machine]),
+            RiskLevel.High => MachineWorkflows.BoxDeploy.Request(new BoxDeployInput(), "Role test", machines: [machine]),
             RiskLevel.VeryHigh => MachineWorkflows.DockerExec.Request(new DockerExecInput(new string('a', 64), ["/start.sh"]), "Role test", machines: [machine]),
             _ => throw new ArgumentOutOfRangeException(nameof(risk))
         };

@@ -101,7 +101,7 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<DockerContainerInput, ProcessResult> DockerKill = new("machine.docker.kill", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerKill)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DiskUsage)), Version: "1");
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(PullerForceUpdate)), "2", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxInspectionResult> BoxInspect = new("machine.box.inspect", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxInspect)), "1", PublicEntry: true);

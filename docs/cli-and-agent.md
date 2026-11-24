@@ -509,12 +509,12 @@ resolved IDs before approval. Reusing the same `--request-id` preserves the
 original resolved targets even if inventory changes.
 An ambiguous or empty selection fails before creating a Lockbox.
 
-This is the standard **High-risk** `machine.box.puller.force-update` workflow,
-version 2. The caller needs `CanRequestHighRiskWorkflow`. Automatic approval also
-requires `CanAutoApproveHighRiskWorkflow`; otherwise a reviewer needs
-`CanApproveHighRiskWorkflow`. Approving your own request additionally requires
-`CanApproveOwnWorkflow`. These are global role permissions; a role's name alone
-does not authorize any action.
+This is the standard **Medium-risk** `machine.box.puller.force-update` workflow,
+version 2. The caller needs `CanRequestMediumRiskWorkflow`. Automatic approval
+requires `CanAutoApproveMediumRiskWorkflow`. Manual approval requires
+`CanApproveMediumRiskWorkflow`. Approving your own request additionally requires
+`CanApproveOwnWorkflow`. Submit a new request if a legacy High-risk Lockbox
+was still pending when the Controller changed the risk level.
 
 The Lockbox stores the actual machines, selected Puller and
 `ImageScope: SingleImage` or `AllConfiguredImages` in canonical typed input.
