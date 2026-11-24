@@ -201,16 +201,12 @@ linked or insecurely permissioned files are rejected. The identity file must not
 be readable or writable by group/others; the trust file must not be writable by
 group/others. No key or trust entry is generated or accepted automatically.
 
-Subsequent `box deploy` workflows use this explicit identity in the Agent's root
+Subsequent `box update-only` and `box deploy` workflows use this identity in the Agent's root
 context, with strict host checking, noninteractive authentication and SSH agent
 identities disabled. Missing/mismatched host trust or rejected credentials fail
 the Git pull before deployment starts. The Git origin is retained. Machines
 without this optional configuration continue to use their existing Git setup.
-Configuration does not pull or deploy, and does not prove GitLab access; verify
-the deployment's trace. High requests/automatic approval/review use
-`CanRequestHighRiskWorkflow` / `CanAutoApproveHighRiskWorkflow` /
-`CanApproveHighRiskWorkflow`; self-review additionally requires
-`CanApproveOwnWorkflow`.
+Use `box update-only` to verify GitLab access after configuring the identity.
 
 The `set-git-ssh-identity` name is available in CLI 1.29.0. Use a Controller
 and target Agent that support `machine.box.configure-git` (Agent 1.3.2 or later).
@@ -386,6 +382,17 @@ Update the Controller before upgrading Agents to this release.
 ## Deploy a Box
 
 ```bash
+dms machine box update-only --machine-id "$MACHINE_ID" \
+  --reason "Sync the merged Box configuration ahead of maintenance"
+```
+
+`box update-only` is a **Medium-risk** workflow that fast-forwards the local
+checkout and reports the previous and current commits. It uses the same checkout
+checks, Git identity and machine lock as deployment. It leaves `.env.prod`
+in place and skips `deploy.sh`. Use CLI 1.32.0 and Agent 1.34.0 or later
+with a Controller that lists `machine.box.update-only`.
+
+```bash
 dms machine box deploy --machine-id "$MACHINE_ID" \
   --stage 4 --filter dms --reason "Deploy merged DMS configuration"
 ```
@@ -405,21 +412,22 @@ shared preparation. `--reason` is required; machine selection, output formats
 and `--request-id` follow the normal submission rules.
 
 The Agent looks for exactly one regular Box Git checkout directly under
-`/swarm-vol`, with `box` in its directory name, a `.git` directory and a regular
+`/swarm-vol`, with a directory name starting with `boxfor`, a `.git` directory and a regular
 `deploy.sh`. Missing or ambiguous checkouts fail before updating anything. The
 checkout must use exactly one official Aiursoft GitLab Box origin and its `master`
 branch, with no tracked local changes. Supported origins are HTTPS on
 `gitlab.aiursoft.com`, the existing `git@gitlab.aiursoft.com:aiursoft/...` form,
-and GitLab's published `ssh://git@ssh.aiursoft.com:2202/aiursoft/...` endpoint,
-limited to the five official Box repositories. Embedded credentials, other
-hosts/ports/namespaces and multiple origins remain rejected. The workflow uses the machine's existing
-Git authentication to run `git pull --ff-only` and executes that checkout's
-`deploy.sh` with separate arguments. It preserves private `.env.prod` files,
-refuses a Git-tracked `.env.prod`, never resets local changes, and accepts no user-supplied path, repository URL
-or shell command. The approval covers the latest master at execution time;
-the result and trace record the previous and deployed commit IDs.
+and GitLab's published `ssh://git@ssh.aiursoft.com:2202/aiursoft/...` endpoint.
+The origin must point to an Aiursoft repository whose name starts with `boxfor`.
+Embedded credentials, other
+hosts, ports, namespaces and multiple origins are rejected. Both workflows fetch
+remote `master` and fast-forward to the fetched commit. They reject a tracked
+`.env.prod` in the local checkout or incoming commit before changing the working
+tree. Deployment then executes `deploy.sh` with separate arguments.
+The approval covers the latest master at execution time. The result and trace
+record the previous and deployed commit IDs.
 
-A machine lock prevents concurrent DMS Box deployments. Git validation, update,
+A shared machine lock prevents concurrent DMS Box updates and deployments. Git validation, update,
 commit inspection and deployment are Process subworkflows with independent
 IDs and streamed logs. A nonzero script exit is Failed and can leave partial
 changes. Cancellation during deployment is NeedsVerification because submitted
