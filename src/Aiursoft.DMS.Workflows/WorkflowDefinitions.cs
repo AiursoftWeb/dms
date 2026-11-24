@@ -21,9 +21,14 @@ public sealed partial class MachineWorkflowRegistry
 {
     private readonly Dictionary<string, (WorkflowDefinition Definition, Func<string, AgentEnvironment, MachineWorkflow> Factory)> _definitions = new(StringComparer.Ordinal);
 
-    public MachineWorkflowRegistry()
+    public MachineWorkflowRegistry() : this(SoapAgentRuntime.Default) { }
+
+    internal MachineWorkflowRegistry(SoapAgentRuntime soap)
     {
         RegisterOperations();
+        Register(SoapWorkflows.FetchWsdl, (input, agent) => new SoapFetchWorkflow(input, agent, soap));
+        Register(SoapWorkflows.Query, (input, agent) => new SoapInvokeWorkflow(SoapWorkflows.Query, input, agent, soap, testOnly: false));
+        Register(SoapWorkflows.CallTest, (input, agent) => new SoapInvokeWorkflow(SoapWorkflows.CallTest, input, agent, soap, testOnly: true));
         Register(MachineWorkflows.FrpsStatus, (input, agent) => new FrpsStatusWorkflow(input, agent));
         Register(MachineWorkflows.FrpsDeploy, (input, agent) => new FrpsDeployWorkflow(input, agent));
         Register(MachineWorkflows.DockerPs, (input, _) => new DockerPsWorkflow(input));

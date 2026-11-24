@@ -321,6 +321,182 @@ public class ArtifactWorkflowTests : TestBase
         using var scope = Server!.Services.CreateScope(); return await scope.ServiceProvider.GetRequiredService<WorkflowService>().SubmitAsync(user, definition.Request(input, "Artifact acceptance", [machine]));
     }
     [TestMethod]
+    public async Task SoapWorkflowsFreezeBothArtifactsAndWriteTestsRequireApproval()
+    {
+        var setup = await SetupAsync();
+        var store = Server!.Services.GetRequiredService<DmsArtifactStore>();
+        async Task<ArtifactReference> PublishAsync(string owner, string name, string text)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+            var reference = new ArtifactReference(Guid.NewGuid(), Convert.ToHexStringLower(SHA256.HashData(bytes)), bytes.Length, Name: name);
+            await store.BeginUploadAsync(reference, owner, null, CancellationToken.None);
+            using var body = new MemoryStream(bytes);
+            await store.AppendUploadAsync(reference.Id, 0, body, CancellationToken.None);
+            await store.CompleteUploadAsync(reference.Id, CancellationToken.None);
+            return reference;
+        }
+
+        var owned = await PublishAsync(setup.User, "response.xml", "<response><field/><field>value</field></response>");
+        var privateSchema = await PublishAsync(setup.Reviewer, "schema.xsd", "<schema/>");
+        var args = await PublishAsync(setup.User, "args.json", "{}");
+        await DatabaseAsync(async db =>
+        {
+            DmsTestPermissions.Risk(db, setup.User, RiskLevel.High, request: true, automatic: true);
+            return await db.SaveChangesAsync();
+        });
+        using var scope = Server.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var deniedValidation = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
+            SoapWorkflows.ValidateXml.Request(new XmlValidateInput(owned, privateSchema), "Check both owners")));
+        Assert.AreEqual(403, deniedValidation.StatusCode);
+        var deniedDiff = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User,
+            SoapWorkflows.DiffWsdl.Request(new SoapDiffInput(owned, privateSchema), "Check both owners")));
+        Assert.AreEqual(403, deniedDiff.StatusCode);
+        var write = await service.SubmitAsync(setup.User, SoapWorkflows.CallTest.Request(new SoapCallInput("fixture", "Write", args),
+            "Test approval", [setup.Machine]));
+        Assert.AreEqual(DecisionState.Pending, write.Decision);
+        Assert.IsNull(write.WorkflowId);
+
+        var assertion = await service.SubmitAsync(setup.User, SoapWorkflows.AssertField.Request(
+            new XmlAssertInput(owned, "/response/field", "nonempty"), "Check each match"));
+        assertion = await service.DecideAsync(setup.Reviewer, assertion.Id, true, "Approved field check");
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        while (true)
+        {
+            var run = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == assertion.WorkflowId));
+            if (run.State.Terminal())
+            {
+                Assert.AreEqual(RunState.Warning, run.State, run.Result);
+                Assert.AreEqual(new XmlAssertResult(false, 2, 1, 0, 1, 1), SoapWorkflows.AssertField.ReadResult(run.Result));
+                break;
+            }
+            await Task.Delay(100, deadline.Token);
+        }
+    }
+
+    [TestMethod]
+    public async Task ApprovedSoapFetchAndQueryUseAnAgentAndProduceDownloadableArtifacts()
+    {
+        var setup = await SetupAsync();
+        var directory = Directory.CreateTempSubdirectory("dms-soap-roundtrip-");
+        using var stop = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        Task? agentLoop = null;
+        using var journal = new TaskJournal(Path.Combine(directory.FullName, "journal"));
+        try
+        {
+            const string endpoint = "https://soap.example.invalid/service";
+            const string ns = "http://schemas.xmlsoap.org/soap/envelope/";
+            var profile = new Aiursoft.DMS.Workflows.SoapServiceProfile
+            {
+                Environment = "test",
+                Wsdl = endpoint + "?wsdl",
+                WsdlDependencies = [endpoint + "?xsd=1"],
+                Endpoint = endpoint,
+                Operations = new()
+                {
+                    ["Lookup"] = new("read-only", "", $"<s:Envelope xmlns:s='{ns}'><s:Body><Lookup><Id>{{{{id}}}}</Id></Lookup></s:Body></s:Envelope>",
+                        new() { ["id"] = new("string", MaxLength: 32) })
+                }
+            };
+            var handler = new SoapFixtureHandler($"<s:Envelope xmlns:s='{ns}'><s:Body><LookupResponse><NewField>ok</NewField><Password>fixture-private</Password></LookupResponse></s:Body></s:Envelope>");
+            var runtime = new Aiursoft.DMS.Workflows.SoapAgentRuntime(_ => Task.FromResult(new Aiursoft.DMS.Workflows.SoapProfileFile(new() { ["sample"] = profile })),
+                () => new HttpClient(handler, disposeHandler: false));
+            using var fixtureHandler = handler;
+            agentLoop = new AgentClient(Http.BaseAddress!, setup.AgentKey, journal,
+                new Aiursoft.DMS.Workflows.MachineWorkflowRegistry(runtime)).RunAsync(stop.Token);
+
+            var argsPath = Path.Combine(directory.FullName, "args.json");
+            await File.WriteAllTextAsync(argsPath, "{\"id\":\"112233\"}", stop.Token);
+            var files = new DmsArtifactClient(Http.BaseAddress!.ToString(), setup.Key);
+            var args = await files.UploadAsync(argsPath, "args.json", "file", stop.Token);
+            using var scope = Server!.Services.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var fetch = await service.SubmitAsync(setup.User, SoapWorkflows.FetchWsdl.Request(new("sample"),
+                "Fetch the test fixture WSDL", [setup.Machine]));
+            Assert.AreEqual(0, handler.Requests);
+            fetch = await service.DecideAsync(setup.Reviewer, fetch.Id, true, "Approved one contract fetch");
+            var fetchChild = (await WaitAsync(fetch.WorkflowId!.Value)).Single(run => run.Definition == SoapWorkflows.FetchWsdl.Name);
+            Assert.AreEqual(setup.Machine, fetchChild.MachineId);
+            Assert.AreEqual(RunState.Succeeded, fetchChild.State, fetchChild.Result);
+            var fetched = SoapWorkflows.FetchWsdl.ReadResult(fetchChild.Result);
+            var bundlePath = Path.Combine(directory.FullName, "soap-contract.json");
+            await files.DownloadAsync(fetched.Artifact, bundlePath, token: stop.Token);
+            var bundle = JsonSerializer.Deserialize<SoapContractBundle>(await File.ReadAllTextAsync(bundlePath, stop.Token))!;
+            Assert.AreEqual(endpoint + "?wsdl", bundle.Root);
+            Assert.AreEqual(2, fetched.DocumentCount);
+            CollectionAssert.AreEquivalent(new[] { endpoint + "?wsdl", endpoint + "?xsd=1" }, bundle.Documents.Keys.ToArray());
+
+            var query = await service.SubmitAsync(setup.User, SoapWorkflows.Query.Request(new SoapCallInput("sample", "Lookup", args),
+                "Query only the test fixture", [setup.Machine]));
+            Assert.AreEqual(2, handler.Requests);
+            query = await service.DecideAsync(setup.Reviewer, query.Id, true, "Approved one query");
+            var runs = await WaitAsync(query.WorkflowId!.Value);
+            var child = runs.Single(run => run.Definition == SoapWorkflows.Query.Name);
+            Assert.AreEqual(RunState.Succeeded, child.State, child.Result);
+            var artifact = SoapWorkflows.Query.ReadResult(child.Result).Artifact!;
+            var outputPath = Path.Combine(directory.FullName, "response.xml");
+            await files.DownloadAsync(artifact, outputPath, token: stop.Token);
+            var xml = await File.ReadAllTextAsync(outputPath, stop.Token);
+            StringAssert.Contains(xml, "<NewField>ok</NewField>");
+            Assert.DoesNotContain("fixture-private", xml);
+
+            var assertion = await service.SubmitAsync(setup.User, SoapWorkflows.AssertField.Request(
+                new(artifact, "/Envelope/Body/LookupResponse/NewField", "equals:ok"), "Check the saved field"));
+            assertion = await service.DecideAsync(setup.Reviewer, assertion.Id, true, "Approved offline check");
+            var asserted = (await WaitAsync(assertion.WorkflowId!.Value)).Single();
+            Assert.AreEqual(RunState.Succeeded, asserted.State, asserted.Result);
+            Assert.IsTrue(SoapWorkflows.AssertField.ReadResult(asserted.Result).Passed);
+            Assert.AreEqual(3, handler.Requests);
+
+            async Task<List<WorkflowRun>> WaitAsync(Guid root)
+            {
+                while (true)
+                {
+                    var tree = await DatabaseAsync(db => db.WorkflowRuns.AsNoTracking().Where(run => run.RootId == root).ToListAsync(stop.Token));
+                    if (tree.Single(run => run.Id == root).State.Terminal()) return tree;
+                    await Task.Delay(100, stop.Token);
+                }
+            }
+        }
+        finally
+        {
+            await stop.CancelAsync();
+            if (agentLoop is not null) { try { await agentLoop; } catch (OperationCanceledException) { } }
+            journal.Dispose();
+            directory.Delete(recursive: true);
+        }
+    }
+
+    private sealed class SoapFixtureHandler(string response) : HttpMessageHandler
+    {
+        private int _requests;
+        public int Requests => Volatile.Read(ref _requests);
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+        {
+            Interlocked.Increment(ref _requests);
+            if (request.Method == HttpMethod.Get)
+            {
+                var metadata = request.RequestUri!.AbsoluteUri switch
+                {
+                    "https://soap.example.invalid/service?wsdl" => """
+                        <definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                          <types><xs:schema><xs:include schemaLocation="?xsd=1" /></xs:schema></types>
+                        </definitions>
+                        """,
+                    "https://soap.example.invalid/service?xsd=1" => "<schema xmlns='http://www.w3.org/2001/XMLSchema' />",
+                    _ => throw new AssertFailedException("Unexpected SOAP metadata URL.")
+                };
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(metadata) };
+            }
+            Assert.AreEqual(HttpMethod.Post, request.Method);
+            Assert.AreEqual("https://soap.example.invalid/service", request.RequestUri!.AbsoluteUri);
+            StringAssert.Contains(await request.Content!.ReadAsStringAsync(token), "<Id>112233</Id>");
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(response) };
+        }
+    }
+
+    [TestMethod]
     public async Task RealHttpChunkUploadDownloadAndReviewerAccessFollowFrozenRequestOwnership()
     {
         var setup = await SetupAsync(); var path = Directory.CreateTempSubdirectory("dms-artifact-http-").FullName;

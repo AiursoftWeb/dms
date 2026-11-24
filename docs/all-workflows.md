@@ -2,7 +2,7 @@
 
 [Discover workflows and permissions](workflow-discovery.md) · [CLI and Agent setup](cli-and-agent.md) · [Operation options](operations.md)
 
-Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 127 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
+Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 134 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
 
 Enter a CLI command with `--help` to see its options. Workflow requests generally need a reason and, where applicable, a machine target. The `Open` inventory workflow uses the **Run open workflows** permission. For other risk levels, request, automatic approval, and manual approval are separate role permissions. Self-approval requires its own permission. Internal and scheduled entries show their registered risk and run through their parent or schedule. See [Role permissions](permissions.md).
 
@@ -128,6 +128,13 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Inspect Fail2ban | `machine.security.fail2ban-status` | `dms machine security fail2ban-status` (Low) | — | Check Fail2ban status, jails, and active bans. |
 | Check Secure Boot | `machine.security.secure-boot` | `dms machine security secure-boot` (Safe) | — | Check whether UEFI Secure Boot is enabled. |
 | Audit SSH configuration | `machine.security.ssh-audit` | `dms machine security ssh-audit` (Low) | — | Reads effective OpenSSH settings for a specified user, client address, and host in a local configuration check. |
+| Fetch SOAP contract | `machine.soap.fetch-wsdl` | `dms machine soap fetch-wsdl` (Low) | — | Saves the registered WSDL and allowlisted imports as a private contract artifact. |
+| Inspect SOAP contract | `cluster.soap.inspect-wsdl` | `dms soap inspect-wsdl` (Low) | — | Reports operations, namespaces, and request/response fields and types without network access. |
+| Compare SOAP contracts | `cluster.soap.diff-wsdl` | `dms soap diff-wsdl` (Low) | — | Shows operation and field changes including types and requiredness. |
+| Query a SOAP service | `machine.soap.query` | `dms machine soap query` (Medium) | — | Calls a registered read-only operation once and saves a redacted response artifact. |
+| Validate stored XML | `cluster.xml.validate` | `dms xml validate` (Low) | — | Validates an XML artifact against an XSD offline. |
+| Assert a stored XML field | `cluster.xml.assert-field` | `dms xml assert-field` (Low) | — | Checks a field path and distinguishes missing, nil, empty and nonempty values. |
+| Call a SOAP test endpoint | `machine.soap.call-test` | `dms machine soap call-test` (High, manual approval) | — | Calls a registered test operation once and records its response. |
 | Disable SSH | `machine.ssh.disable` | `dms machine ssh disable` (Medium) | — | Masks and stops the system SSH service and socket. An existing DMS lease is revoked immediately, with its sessions stopped and its temporary account and access removed. |
 | Reconcile SSH leases | `machine.ssh.reconcile-lease` | Agent schedule and startup (Medium) | Every 5 minutes and at Agent startup | Reclaims expired or invalid SSH leases on the Agent. Valid leases remain active. Without a lease, the existing SSH state is preserved. |
 | Open a temporary SSH lease | `machine.ssh.temp-allow-ssh` | `dms machine ssh temp-allow-ssh` (VeryHigh) | — | Opens a temporary account with the requester’s verified personal keys after managed closure is established. Use `--key-id` to select one. One lease per machine, 30 minutes by default, 30–270 minutes supported. Sudo is opt-in. |

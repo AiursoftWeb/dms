@@ -37,6 +37,7 @@ public sealed class ClusterWorkflowRegistry
         Register(ClusterWorkflows.DiskUsage, () => new ClusterDiskUsageWorkflow());
         Register(ClusterWorkflows.AddMachine, () => new AddMachineWorkflow());
         Register(ClusterWorkflows.Cancel, () => new CancelWorkflow());
+        new SoapArtifactWorkflows(artifacts).Register(this);
     }
 
     public WorkflowDefinition? FindDefinition(string name) => _definitions.TryGetValue(name, out var entry) ? entry.Definition : null;

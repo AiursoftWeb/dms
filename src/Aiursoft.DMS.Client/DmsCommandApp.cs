@@ -30,6 +30,8 @@ public static partial class DmsCommandApp
             new ManagementCommand("revoke-join-key", "join-revoke"),
             new ManagementCommand("list-enrollments", "enrollments")
         ]))
+        .WithFeature(new Group("soap", "Inspect and compare saved SOAP contracts.", [SoapInspectCommand(), SoapDiffCommand()]))
+        .WithFeature(new Group("xml", "Validate saved XML and check fields in responses.", [XmlValidateCommand(), XmlAssertCommand()]))
         .WithFeature(new Group(MachineWorkflowCli.Machine, "List managed machines and request operations on them.",
         [
             StandardCommand("list",
@@ -39,6 +41,8 @@ public static partial class DmsCommandApp
                 "Summarize filesystem capacity and usage across selected machines.",
                 ClusterWorkflows.DiskUsage, _ => new EmptyInput()),
             AddMachineCommand(),
+            new Group("soap", "Fetch a registered contract or call an approved SOAP operation.",
+                [SoapFetchCommand(), SoapCallCommand(test: false), SoapCallCommand(test: true)]),
             new Group("docker", "Inspect and control standalone Docker containers.",
             [
                 DockerPsCommand(),

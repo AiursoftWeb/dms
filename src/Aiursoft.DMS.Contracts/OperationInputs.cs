@@ -13,6 +13,11 @@ public interface IArtifactOperationInput
     ArtifactReference Artifact { get; }
 }
 
+public interface IMultipleArtifactOperationInput
+{
+    IEnumerable<ArtifactReference> Artifacts { get; }
+}
+
 public interface IAuditTextInput : IArtifactOperationInput
 {
 }

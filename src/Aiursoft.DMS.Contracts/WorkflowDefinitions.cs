@@ -57,7 +57,12 @@ public abstract record WorkflowDefinition<TInput, TResult>(string Name, RiskLeve
     }
     public override void Validate(string input) => ReadInput(input);
     public override string Normalize(string input) => Serialize(ReadInput(input));
-    public override IEnumerable<ArtifactReference> Artifacts(string input) => ReadInput(input) is IArtifactOperationInput value ? [value.Artifact] : [];
+    public override IEnumerable<ArtifactReference> Artifacts(string input) => ReadInput(input) switch
+    {
+        IMultipleArtifactOperationInput multiple => multiple.Artifacts,
+        IArtifactOperationInput single => [single.Artifact],
+        _ => []
+    };
     public override bool RetainInputArtifactsForAudit => typeof(IAuditTextInput).IsAssignableFrom(typeof(TInput));
     public TResult ReadResult(string result) => JsonSerializer.Deserialize<TResult>(result, WorkflowJson.Options)
         ?? throw new InvalidDataException("Workflow returned a null result.");
