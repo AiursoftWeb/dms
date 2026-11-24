@@ -64,4 +64,10 @@
     <value>请等当前租约结束后再申请。</value>
   </data>
 
+  <data name="DMS closes ordinary SSH automatically and verifies it before opening temporary access." xml:space="preserve">
+    <value>DMS 会自动关闭普通 SSH 连接，并在开启临时访问权限之前对其进行验证。</value>
+  </data>
+  <data name="DMS retries SSH verification automatically. Open the SSH lease-check history for details." xml:space="preserve">
+    <value>DMS 会自动重试 SSH 验证。请打开 SSH 租约检查历史记录以查看详细信息。</value>
+  </data>
 </root>

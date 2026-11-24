@@ -313,7 +313,11 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token),
             Poweroff: installedState == null ? null : (context, input, token) => PoweroffAsync(task.Id, context, input, token),
             AuthorizeSshLease: (id, token) => AgentSshLeaseAuthorization.GetAsync(controller, key, id, token),
-            GetSecurityBaselinePolicy: token => AgentSecurityBaselinePolicy.GetAsync(controller, key, token),
+            GetSecurityBaselinePolicy: async token =>
+            {
+                var policy = await AgentSecurityBaselinePolicy.GetAsync(controller, key, token);
+                return installedState == null && policy?.AutomaticallyManageSsh == true ? null : policy;
+            },
             ScheduledUpgrade: installedState == null ? null : (context, token) => ScheduledUpgradeAsync(task.Id, context, token),
             AptTransactionHook: AgentAptTransaction.Hook,
             GetFrpsDeployToken: (id, token) => AgentFrpsDeployToken.GetAsync(controller, key, id, token),

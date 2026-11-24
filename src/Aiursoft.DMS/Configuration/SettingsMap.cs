@@ -77,8 +77,8 @@ public class SettingsMap
         new GlobalSettingDefinition
         {
             Key = ScheduledSecurityBaseline,
-            Name = Localizer["Scheduled Security Baseline"],
-            Description = Localizer["Enter a JSON policy with a version and the machine IDs where it should run daily. Applying it closes SSH when no active lease exists."],
+            Name = Localizer["Additional scheduled security settings"],
+            Description = Localizer["Optional JSON for scheduled Fail2ban and UFW settings. DMS manages SSH automatically for every enabled Agent."],
             Type = SettingType.Text,
             DefaultValue = ""
         },

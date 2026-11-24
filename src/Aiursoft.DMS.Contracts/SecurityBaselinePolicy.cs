@@ -5,6 +5,9 @@ namespace Aiursoft.DMS.Contracts;
 
 public sealed record SecurityBaselinePolicy(string Version, bool RequireFail2ban = false, bool? UfwEnabled = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool AutomaticallyManageSsh { get; init; }
+
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(Version) || Version.Length > 80 || Version.Any(char.IsControl))

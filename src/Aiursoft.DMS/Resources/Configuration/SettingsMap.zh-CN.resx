@@ -73,4 +73,10 @@
     <value>项目在前端显示的名称。</value>
   </data>
 
+  <data name="Additional scheduled security settings" xml:space="preserve">
+    <value>额外的计划安全设置</value>
+  </data>
+  <data name="Optional JSON for scheduled Fail2ban and UFW settings. DMS manages SSH automatically for every enabled Agent." xml:space="preserve">
+    <value>用于定时 Fail2ban 和 UFW 设置的可选 JSON。DMS 会为每个已启用的 Agent 自动管理 SSH。</value>
+  </data>
 </root>

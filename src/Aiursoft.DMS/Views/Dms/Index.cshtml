@@ -79,7 +79,7 @@
                             </div>
                             <partial name="_DmsMachineSsh" model="@Model.SshStates[machine.Id]" />
                             <div class="dms-item-meta">
-                                <partial name="_DmsScheduledSshStatus" model="@(Model.ScheduledSshMachines?.Contains(machine.Id))" />
+                                <partial name="_DmsScheduledSshStatus" model="@(machine.Connection != MachineConnection.Disabled)" />
                             </div>
                         </div>
                     </div>

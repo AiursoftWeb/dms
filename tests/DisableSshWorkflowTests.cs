@@ -146,6 +146,36 @@ public class DisableSshWorkflowTests
     }
 
     [TestMethod]
+    public async Task PeriodicReconciliationTakesOverAsSoonAsControllerEnablesAutomaticSsh()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
+        using var fixture = new Fixture { SshListening = true };
+        var policy = new SecurityBaselinePolicy("automatic") { AutomaticallyManageSsh = true };
+
+        await fixture.ReconcileAsync(new SecurityBaselinePolicy("legacy"));
+        Assert.IsTrue(fixture.SshListening);
+        Assert.AreEqual(0, fixture.MaskCount);
+
+        await fixture.ReconcileAsync(policy);
+        Assert.IsFalse(fixture.SshListening);
+        Assert.AreEqual(1, fixture.MaskCount);
+
+        fixture.SshListening = true;
+        fixture.LeasePid = 123;
+        var lease = Guid.NewGuid();
+        fixture.SeedLease(lease, DateTimeOffset.UtcNow.AddMinutes(25));
+        await fixture.ReconcileAsync(policy);
+        Assert.IsTrue(fixture.SshListening);
+        Assert.AreEqual(lease, fixture.State().GetProperty("Lease").GetProperty("Id").GetGuid());
+        Assert.AreEqual(1, fixture.MaskCount);
+
+        fixture.SeedLease(lease, DateTimeOffset.UtcNow.AddMinutes(-1));
+        await fixture.ReconcileAsync(null);
+        Assert.IsFalse(fixture.SshListening);
+        Assert.AreEqual(2, fixture.MaskCount);
+    }
+
+    [TestMethod]
     public async Task SshObservationDistinguishesLeaseListenerSocketActivationAndMissingListener()
     {
         if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH observation runs on Linux.");
@@ -195,7 +225,7 @@ public class DisableSshWorkflowTests
     }
 
     [TestMethod]
-    public async Task ScheduledApplicationSkipsUnconfiguredMachinesAndDefersUfwForAnActiveLease()
+    public async Task DailyBaselineAcceptsNoPolicyFromOlderControllersAndDefersUfwForAnActiveLease()
     {
         if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
         using var fixture = new Fixture { SshListening = true };
@@ -272,6 +302,9 @@ public class DisableSshWorkflowTests
             var definition = OperationsWorkflows.SshCheckLease;
             return definition.ReadResult(await InvokeAsync(definition.Name, definition.Serialize(input)));
         }
+
+        public async Task ReconcileAsync(SecurityBaselinePolicy? policy) =>
+            await InvokeAsync("machine.ssh.reconcile-lease", "{}", policy);
 
         public async Task<OperationResult> ApplyBaselineAsync(SecurityBaselinePolicy? policy) =>
             JsonSerializer.Deserialize<OperationResult>(await InvokeAsync("machine.security.apply-baseline", "{}", policy))!;

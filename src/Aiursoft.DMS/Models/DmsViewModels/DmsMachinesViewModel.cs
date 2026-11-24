@@ -24,7 +24,6 @@ public sealed class DmsMachinesViewModel : UiStackLayoutViewModel
 {
     public required IReadOnlyList<DmsMachineRow> Machines { get; init; }
     public IReadOnlyDictionary<Guid, DmsMachineSshRow> SshStates { get; init; } = new Dictionary<Guid, DmsMachineSshRow>();
-    public IReadOnlySet<Guid>? ScheduledSshMachines { get; init; }
     public required string Search { get; init; }
     public MachineConnection? Connection { get; init; }
     public int Page { get; init; }

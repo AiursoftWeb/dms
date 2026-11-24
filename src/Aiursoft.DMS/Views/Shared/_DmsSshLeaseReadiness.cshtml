@@ -10,11 +10,11 @@
                 break;
             case SshLeaseReadiness.OrdinaryOpen:
                 <strong>@Localizer["Ordinary SSH is still listening"]</strong>
-                <p class="mb-0">@Localizer["To switch this machine to temporary SSH, run Disable SSH in DMS first."]</p>
+                <p class="mb-0">@Localizer["DMS closes ordinary SSH automatically and verifies it before opening temporary access."]</p>
                 break;
             case SshLeaseReadiness.NeedsSetup:
                 <strong>@Localizer["DMS has not verified SSH shutdown"]</strong>
-                <p class="mb-0">@Localizer["Review the Disable SSH workflow result in DMS before requesting another lease."]</p>
+                <p class="mb-0">@Localizer["DMS retries SSH verification automatically. Open the SSH lease-check history for details."]</p>
                 break;
             case SshLeaseReadiness.InUse:
                 <strong>@Localizer["A temporary SSH lease is active"]</strong>

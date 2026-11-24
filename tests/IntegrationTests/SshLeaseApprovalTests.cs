@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
@@ -266,22 +265,15 @@ public sealed class SshLeaseApprovalTests : TestBase
     }
 
     [TestMethod]
-    public async Task MachineSshManagementShowsScheduledScopeAndSubmitsOnlyAConfirmedDisable()
+    public async Task MachineSshManagementShowsAutomaticPolicyAndSubmitsOnlyAConfirmedDisable()
     {
         await LoginAsAdmin();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var now = DateTimeOffset.UtcNow;
-        var machine = new Machine { Name = "SSH in policy", KeyHash = "ssh-in-policy", LastSeen = now.UtcDateTime };
-        var outside = new Machine { Name = "SSH outside policy", KeyHash = "ssh-outside-policy", LastSeen = now.UtcDateTime };
-        db.Machines.AddRange(machine, outside);
-        var policy = await db.GlobalSettings.FindAsync(SettingsMap.ScheduledSecurityBaseline);
-        if (policy == null)
-        {
-            policy = new GlobalSetting { Key = SettingsMap.ScheduledSecurityBaseline };
-            db.GlobalSettings.Add(policy);
-        }
-        policy.Value = JsonSerializer.Serialize(new ScheduledSecurityBaselineSettings([machine.Id], new SecurityBaselinePolicy("test")));
+        var machine = new Machine { Name = "SSH automatic", KeyHash = "ssh-automatic", LastSeen = now.UtcDateTime };
+        var paused = new Machine { Name = "SSH paused", KeyHash = "ssh-paused", Disabled = true };
+        db.Machines.AddRange(machine, paused);
         var observation = new WorkflowRun
         {
             Definition = OperationsWorkflows.SshCheckLease.Name, MachineId = machine.Id,
@@ -292,9 +284,9 @@ public sealed class SshLeaseApprovalTests : TestBase
         await db.SaveChangesAsync();
 
         var page = $"/Dms/Machine/{machine.Id}";
-        StringAssert.Contains(await Http.GetStringAsync(page), "Included in scheduled SSH baseline");
-        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{outside.Id}"), "Outside scheduled SSH baseline");
-        StringAssert.Contains(await Http.GetStringAsync("/Dms/Index?q=SSH+in+policy"), "Included in scheduled SSH baseline");
+        StringAssert.Contains(await Http.GetStringAsync(page), "Automatic SSH management enabled");
+        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{paused.Id}"), "Automatic SSH management paused");
+        StringAssert.Contains(await Http.GetStringAsync("/Dms/Index?q=SSH+automatic"), "Automatic SSH management enabled");
         StringAssert.Contains(await Http.GetStringAsync(page), "Request Disable SSH");
         var token = await GetAntiCsrfToken(page);
         var requestId = Guid.NewGuid();

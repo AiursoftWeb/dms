@@ -24,14 +24,14 @@ public class ScheduledWorkflowIntegrationTests : TestBase
         });
 
     [TestMethod]
-    public async Task AgentCanReadOnlyItsCurrentScheduledBaselineAndRevocationTakesEffectImmediately()
+    public async Task EveryConnectedEnabledAgentGetsTheSshPolicyAndOptionalSettingsKeepTheirScope()
     {
         var setups = await DatabaseAsync(async db =>
         {
-            var result = Enumerable.Range(0, 2).Select(i =>
+            var result = Enumerable.Range(0, 3).Select(i =>
             {
                 var key = DmsKeyAuthenticationHandler.CreateKey(true);
-                var machine = new Machine { Name = $"baseline-scope-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key) };
+                var machine = new Machine { Name = $"baseline-scope-{i}", KeyHash = DmsKeyAuthenticationHandler.Hash(key), Disabled = i == 2 };
                 db.Machines.Add(machine);
                 return (machine.Id, Key: key);
             }).ToArray();
@@ -48,7 +48,16 @@ public class ScheduledWorkflowIntegrationTests : TestBase
 
         using var scope = Server!.Services.CreateScope();
         var settings = scope.ServiceProvider.GetRequiredService<GlobalSettingsService>();
+        var sessions = scope.ServiceProvider.GetRequiredService<AgentSessions>();
+        using var beforeConnection = await FetchAsync(setups[0].Key);
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, beforeConnection.StatusCode);
+        using var disabled = await FetchAsync(setups[2].Key);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, disabled.StatusCode);
+        using var first = sessions.Register(setups[0].Id, new ClientWebSocket(), DmsKeyAuthenticationHandler.Hash(setups[0].Key));
+        using var second = sessions.Register(setups[1].Id, new ClientWebSocket(), DmsKeyAuthenticationHandler.Hash(setups[1].Key));
+        first.Ready = second.Ready = true;
         var policy = new SecurityBaselinePolicy("integration-v1", RequireFail2ban: true, UfwEnabled: false);
+        var defaultPolicy = new SecurityBaselinePolicy("managed-ssh-v1") { AutomaticallyManageSsh = true };
         try
         {
             await settings.UpdateSettingAsync(SettingsMap.ScheduledSecurityBaseline,
@@ -57,16 +66,21 @@ public class ScheduledWorkflowIntegrationTests : TestBase
             Assert.AreEqual(HttpStatusCode.Unauthorized, anonymous.StatusCode);
             using var selected = await FetchAsync(setups[0].Key);
             Assert.AreEqual(HttpStatusCode.OK, selected.StatusCode);
-            Assert.AreEqual(policy, await selected.Content.ReadFromJsonAsync<SecurityBaselinePolicy>());
-            using var excluded = await FetchAsync(setups[1].Key);
-            Assert.AreEqual(HttpStatusCode.NoContent, excluded.StatusCode);
+            Assert.AreEqual(policy with { AutomaticallyManageSsh = true },
+                await selected.Content.ReadFromJsonAsync<SecurityBaselinePolicy>());
+            using var defaultResponse = await FetchAsync(setups[1].Key);
+            Assert.AreEqual(HttpStatusCode.OK, defaultResponse.StatusCode);
+            Assert.AreEqual(defaultPolicy, await defaultResponse.Content.ReadFromJsonAsync<SecurityBaselinePolicy>());
 
             await settings.UpdateSettingAsync(SettingsMap.ScheduledSecurityBaseline, "");
-            using var removed = await FetchAsync(setups[0].Key);
-            Assert.AreEqual(HttpStatusCode.NoContent, removed.StatusCode);
+            using var noAdditionalPolicy = await FetchAsync(setups[0].Key);
+            Assert.AreEqual(HttpStatusCode.OK, noAdditionalPolicy.StatusCode);
+            Assert.AreEqual(defaultPolicy, await noAdditionalPolicy.Content.ReadFromJsonAsync<SecurityBaselinePolicy>());
         }
         finally
         {
+            sessions.Remove(setups[0].Id, first);
+            sessions.Remove(setups[1].Id, second);
             await settings.UpdateSettingAsync(SettingsMap.ScheduledSecurityBaseline, "");
         }
     }

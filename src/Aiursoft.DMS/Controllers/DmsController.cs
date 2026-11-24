@@ -52,7 +52,6 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         return this.StackView(new DmsMachinesViewModel
         {
             PageTitle = "Machines", Machines = visible, Search = search, SshStates = ssh.ToDictionary(row => row.MachineId),
-            ScheduledSshMachines = await sshOverview.ReadScheduledTargetsAsync(),
             Connection = connection, Page = page, HasNextPage = rows.Count > MachinePageSize
         });
     }
@@ -83,11 +82,10 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             .NotCacheable().FirstOrDefaultAsync();
         var ssh = (await sshOverview.ReadAsync([machine], HttpContext.RequestAborted)).Single();
         var readiness = MachineSshOverview.Classify(ssh.Observation, machine.Connection == MachineConnection.Online);
-        var scheduled = await sshOverview.ReadScheduledTargetsAsync();
         return this.StackView(new DmsMachineViewModel
         {
             Machine = machine, BaselineRun = baseline, SshAccess = ssh,
-            SshLeaseReadiness = readiness, ScheduledSshEnabled = scheduled?.Contains(id),
+            SshLeaseReadiness = readiness,
             CanRequestSshDisable = DmsPermissions.ForRisk(User, OperationsWorkflows.SshDisable.Risk).CanRequest,
             CanRequestSshLease = DmsPermissions.ForRisk(User, OperationsWorkflows.SshOpen.Risk).CanRequest,
             SshStateChanged = TempData["SshStateChanged"] as bool? == true,

@@ -114,7 +114,7 @@
             <div class="card dms-detail-card h-100 mb-0">
                 <div class="card-body">
                     <h2 id="baseline-heading"><i data-lucide="shield-check" aria-hidden="true"></i> @Localizer["Scheduled security baseline"]</h2>
-                    <p class="mb-2"><partial name="_DmsScheduledSshStatus" model="Model.ScheduledSshEnabled" /></p>
+                    <p class="mb-2"><partial name="_DmsScheduledSshStatus" model="@(machine.Connection != MachineConnection.Disabled)" /></p>
                     @if (Model.BaselineRun is { } run)
                     {
                         var runTime = run.FinishedAt ?? run.StartedAt ?? run.CreatedAt;

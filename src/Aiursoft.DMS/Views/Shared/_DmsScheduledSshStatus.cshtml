@@ -1,13 +1,9 @@
-@model bool?
-@if (Model == true)
+@model bool
+@if (Model)
 {
-    <span>@Localizer["Included in scheduled SSH baseline"]</span>
-}
-else if (Model == false)
-{
-    <span>@Localizer["Outside scheduled SSH baseline"]</span>
+    <span>@Localizer["Automatic SSH management enabled"]</span>
 }
 else
 {
-    <span>@Localizer["Scheduled SSH policy unavailable"]</span>
+    <span>@Localizer["Automatic SSH management paused"]</span>
 }

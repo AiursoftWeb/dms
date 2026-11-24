@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Models.DmsViewModels;
@@ -8,16 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class MachineSshOverview(TemplateDbContext db, GlobalSettingsService settings)
+public sealed class MachineSshOverview(TemplateDbContext db)
 {
     public static readonly TimeSpan Freshness = TimeSpan.FromMinutes(6);
-
-    public async Task<IReadOnlySet<Guid>?> ReadScheduledTargetsAsync()
-    {
-        var value = await settings.GetSettingValueAsync(SettingsMap.ScheduledSecurityBaseline);
-        try { return ScheduledSecurityBaselineSettings.Parse(value)?.MachineIds.ToHashSet() ?? []; }
-        catch (Exception exception) when (exception is JsonException or ArgumentException) { return null; }
-    }
 
     public async Task<IReadOnlyList<DmsMachineSshRow>> ReadAsync(IReadOnlyList<DmsMachineRow> machines, CancellationToken token)
     {

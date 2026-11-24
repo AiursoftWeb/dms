@@ -13,7 +13,24 @@ public sealed class ReconcileSshLeaseWorkflow : MachineWorkflow
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
         var result = await context.CallAsync(OperationsWorkflows.SshCheckLease, new SshLeaseCheckInput { ReportStatus = true }, token);
+        if (result.SshClosed == null && result.Observation is { BaselineReady: false } &&
+            context.Environment.GetSecurityBaselinePolicy is { } readPolicy &&
+            await IsAutomaticManagementEnabledAsync(context, readPolicy, token))
+            result = await context.CallAsync(OperationsWorkflows.SshCheckLease,
+                new SshLeaseCheckInput(CloseSshWhenNoLease: true) { ReportStatus = true }, token);
         return JsonSerializer.Serialize(new OperationResult(result.Summary));
+    }
+
+    private static async Task<bool> IsAutomaticManagementEnabledAsync(MachineWorkflowContext context,
+        Func<CancellationToken, Task<SecurityBaselinePolicy?>> readPolicy, CancellationToken token)
+    {
+        try { return (await readPolicy(token))?.AutomaticallyManageSsh == true; }
+        catch (Exception error) when (!token.IsCancellationRequested &&
+            error is HttpRequestException or OperationCanceledException or JsonException or IOException)
+        {
+            await context.WarningAsync("Could not read the Controller's automatic SSH policy. DMS will check again on the next schedule.");
+            return false;
+        }
     }
 }
 

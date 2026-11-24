@@ -28,4 +28,10 @@
     <value>计划 SSH 策略不可用</value>
   </data>
 
+  <data name="Automatic SSH management enabled" xml:space="preserve">
+    <value>自动 SSH 管理已启用</value>
+  </data>
+  <data name="Automatic SSH management paused" xml:space="preserve">
+    <value>自动 SSH 管理已暂停</value>
+  </data>
 </root>

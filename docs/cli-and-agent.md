@@ -350,9 +350,13 @@ send the trace after reconnecting. Allow for the polling interval when
 estimating when sessions will disconnect. Update the Controller before
 upgrading Agents to this release.
 
-### Schedule security baseline application
+### Automatic SSH management
 
-In **Administration → Global Settings**, configure **Scheduled Security Baseline** with the IDs of the machines to include and the desired policy.
+DMS supplies an SSH policy to every enabled Agent after its management channel is connected. The Agent verifies and closes ordinary OpenSSH when no healthy temporary lease is active. Current service Agents apply this policy at startup or during the next five-minute lease check after connecting, and retry on later checks if policy retrieval fails. Older Agents that support `machine.security.apply-baseline` apply the policy at their daily run at 03:00 UTC.
+
+A healthy, unexpired lease remains usable. The Agent recovers expired leases locally, including during a Controller outage. The machine list shows the observed SSH state independently of the automatic policy.
+
+Optional Fail2ban and UFW policies are still applied at the daily baseline run. Configure them under **Administration → Global Settings → Additional scheduled security settings**.
 
 ```json
 {
@@ -365,14 +369,7 @@ In **Administration → Global Settings**, configure **Scheduled Security Baseli
 }
 ```
 
-The Agent runs `machine.security.apply-baseline` daily at 03:00 UTC.
-Only machines explicitly listed in the Controller setting apply the baseline.
-An empty setting or machine list disables enforcement. The Controller must be reachable to supply the current policy.
-
-The workflow closes ordinary OpenSSH when there is no temporary lease.
-A healthy, unexpired lease remains usable, and the existing five-minute lease
-check still handles its expiry. Firewall changes are deferred while a lease
-is present. Setting `requireFail2ban` installs the package if missing.
+The machine IDs only scope these additional settings. An empty setting still applies the default SSH policy to enabled Agents. Firewall changes are deferred while a lease is present. Setting `requireFail2ban` installs the package if missing.
 Omit `ufwEnabled` to leave UFW as it is. Setting it to `true` enables UFW
 with the host's existing rules. Configure those rules before enabling it.
 Setting it to `false` disables UFW. After a change, the Agent checks the
