@@ -14,4 +14,6 @@ public class DmsMachineViewModel : UiStackLayoutViewModel
     public bool SshStateChanged { get; init; }
     public bool CanRequestSshLease { get; init; }
     public string? BaselineSummary => OperationViewModel.ReadSummary(BaselineRun?.Result);
+    public IReadOnlyList<WorkflowRun> RecentRuns { get; init; } = [];
+    public IReadOnlyDictionary<Guid, string> RequestedDefinitions { get; init; } = new Dictionary<Guid, string>();
 }

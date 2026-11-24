@@ -130,4 +130,25 @@
     <value>工作流程歷史</value>
   </data>
 
+  <data name="Investigate machine" xml:space="preserve">
+    <value>調查機器</value>
+  </data>
+  <data name="Recent executions" xml:space="preserve">
+    <value>最近執行</value>
+  </data>
+  <data name="View all history" xml:space="preserve">
+    <value>檢視全部歷史</value>
+  </data>
+  <data name="No recent workflow executions recorded for this machine." xml:space="preserve">
+    <value>該機器暫無工作流執行記錄。</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="Manual" xml:space="preserve">
+    <value>手動</value>
+  </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>父工作流</value>
+  </data>
 </root>

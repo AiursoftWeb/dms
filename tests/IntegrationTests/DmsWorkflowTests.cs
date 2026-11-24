@@ -498,6 +498,27 @@ public class DmsWorkflowTests : TestBase
         var machineOnly = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}");
         StringAssert.Contains(machineOnly, machineRun.Id.ToString());
         Assert.DoesNotContain(runs[0].Id.ToString(), machineOnly);
+
+        Guid autoHeartbeatId, manualHeartbeatId;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var autoHeartbeat = new WorkflowRun { MachineId = setup.Machine, Definition = WorkflowNames.AgentStatus, Origin = WorkflowOrigin.Automatic, State = RunState.Succeeded, CreatedAt = DateTime.UtcNow };
+            var manualHeartbeat = new WorkflowRun { MachineId = setup.Machine, Definition = WorkflowNames.AgentStatus, Origin = WorkflowOrigin.Manual, State = RunState.Succeeded, CreatedAt = DateTime.UtcNow };
+            db.WorkflowRuns.AddRange(autoHeartbeat, manualHeartbeat);
+            await db.SaveChangesAsync();
+            autoHeartbeatId = autoHeartbeat.Id;
+            manualHeartbeatId = manualHeartbeat.Id;
+        }
+        var allWithHeartbeats = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}");
+        StringAssert.Contains(allWithHeartbeats, autoHeartbeatId.ToString());
+        StringAssert.Contains(allWithHeartbeats, manualHeartbeatId.ToString());
+        StringAssert.Contains(allWithHeartbeats, machineRun.Id.ToString());
+
+        var excluded = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}&excludeHeartbeats=true");
+        Assert.DoesNotContain(autoHeartbeatId.ToString(), excluded);
+        StringAssert.Contains(excluded, manualHeartbeatId.ToString());
+        StringAssert.Contains(excluded, machineRun.Id.ToString());
     }
 
     [TestMethod]
