@@ -114,6 +114,38 @@ public class ScheduledWorkflowTests
     }
 
     [TestMethod]
+    public async Task StartupAndClockGapsCatchUpOnlyTheLatestAgentUpgradeSlot()
+    {
+        var path = Directory.CreateTempSubdirectory("dms-upgrade-catchup-");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        try
+        {
+            var controller = new Uri("http://127.0.0.1:1");
+            var previousSlot = Slot.Date.AddHours(8);
+            using (var journal = new TaskJournal(path.FullName))
+            {
+                var agent = new AgentClient(controller, "unused", journal);
+                agent.TickSchedules(Slot, startup: true);
+                while (journal.Snapshot().Any(task => !task.State.Terminal())) await Task.Delay(10, timeout.Token);
+                var occurrence = journal.Snapshot().Single(task => task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName).Schedule!;
+                Assert.AreEqual(previousSlot, occurrence.ScheduledAt);
+                Assert.AreEqual(WorkflowTrigger.Cron, occurrence.Trigger);
+            }
+
+            using var recovered = new TaskJournal(path.FullName);
+            var restarted = new AgentClient(controller, "unused", recovered);
+            restarted.TickSchedules(Slot.AddMinutes(3), startup: true);
+            Assert.HasCount(1, recovered.Snapshot().Where(task => task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName));
+            restarted.TickSchedules(Slot.AddDays(1).AddHours(6));
+            while (recovered.Snapshot().Any(task => !task.State.Terminal())) await Task.Delay(10, timeout.Token);
+            var upgrades = recovered.Snapshot().Where(task => task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName).ToArray();
+            CollectionAssert.AreEquivalent(new[] { previousSlot, Slot.Date.AddDays(1).AddHours(16) },
+                upgrades.Select(task => task.Schedule!.ScheduledAt).ToArray());
+        }
+        finally { path.Delete(recursive: true); }
+    }
+
+    [TestMethod]
     public async Task AgentShutdownCancelsAndDrainsRunningPlansWhileOverlappingSlotsAreSkipped()
     {
         var path = Directory.CreateTempSubdirectory("dms-cron-shutdown-").FullName;

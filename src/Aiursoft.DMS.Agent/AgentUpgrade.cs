@@ -142,7 +142,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
                 output.Flush(true);
                 return;
             }
-            catch (Exception exception) when (!token.IsCancellationRequested && IsTransientDownloadFailure(exception))
+            catch (Exception exception) when (!token.IsCancellationRequested && IsTransientRequestFailure(exception))
             {
                 if (attempt == maxAttempts)
                 {
@@ -157,7 +157,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
         }
     }
 
-    private static bool IsTransientDownloadFailure(Exception exception) => exception switch
+    internal static bool IsTransientRequestFailure(Exception exception) => exception switch
     {
         OperationCanceledException or HttpIOException => true,
         HttpRequestException request => request.StatusCode is null or HttpStatusCode.RequestTimeout or HttpStatusCode.TooManyRequests ||
