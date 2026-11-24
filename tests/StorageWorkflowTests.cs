@@ -101,7 +101,7 @@ public class StorageWorkflowTests
         }
         Assert.AreEqual(RiskLevel.Low, MachineWorkflows.DirectoryUsage.Risk);
         Assert.AreEqual(RiskLevel.Low, MachineWorkflows.DockerDiskUsage.Risk);
-        Assert.AreEqual(RiskLevel.High, MachineWorkflows.BoxConfigureGit.Risk);
+        Assert.AreEqual(RiskLevel.Medium, MachineWorkflows.BoxConfigureGit.Risk);
         foreach (var path in new[] { "relative", "/tmp/../etc", "/tmp\npath", "", "/tmp//path" })
             Assert.Throws<ArgumentException>(() => new DirectoryUsageInput(path).Validate());
         Assert.Throws<ArgumentException>(() => new DirectoryUsageInput("/", -1).Validate());

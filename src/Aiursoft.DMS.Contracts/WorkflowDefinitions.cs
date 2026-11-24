@@ -105,7 +105,7 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(PullerForceUpdate)), "2", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxInspectionResult> BoxInspect = new("machine.box.inspect", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxInspect)), "1", PublicEntry: true);
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<BoxGitInput, BoxInspectionResult> BoxConfigureGit = new("machine.box.configure-git", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxConfigureGit)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DirectoryUsageInput, ProcessResult> DirectoryUsage = new("machine.filesystem.du", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DirectoryUsage)), "1", input => input.Validate(), PublicEntry: true);

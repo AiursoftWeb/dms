@@ -27,7 +27,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Preview APT maintenance | `machine.apt.plan` | `dms machine apt upgrade-all --dry-run` or `dms machine apt autoremove --dry-run` (Low) | — | Record each target's package actions using its existing indexes. |
 | Upgrade available APT packages | `machine.apt.upgrade-all` | `dms machine apt upgrade-all --plan` (High) | — | Upgrade the reviewed per-machine packages and any approved new dependencies without removals. |
 | Remove unused APT packages | `machine.apt.autoremove` | `dms machine apt autoremove --plan` (High) | — | Remove the reviewed unused packages. `--purge` also removes their package configuration files. |
-| Configure Box Git access | `machine.box.configure-git` | `dms machine box set-git-ssh-identity` (High) | — | Configures which existing SSH identity file and known-hosts file Box uses for Git pulls. |
+| Configure Box Git access | `machine.box.configure-git` | `dms machine box set-git-ssh-identity` (Medium) | — | Configures which existing SSH identity file and known-hosts file Box uses for Git pulls. |
 | Deploy a Box | `machine.box.deploy` | `dms machine box deploy` (High) | — | Updates the Box checkout and deploys from the selected stage onward. The service filter can limit the deployment. |
 | Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Safe) | — | Produces a structured report of Box Git status, stages, stacks, Swarm running stacks, service replica health, and secrets inventory. |
 | Refresh images with Box Puller | `machine.box.puller.force-update` | `dms machine box puller force-update` (High) | — | Refreshes a selected image or the configured image set through the specified Box Puller. |
