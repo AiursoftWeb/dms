@@ -190,7 +190,7 @@ dms machine box set-git-ssh-identity --machine-id "$MACHINE_ID" \
   --reason "Use this machine's existing read-only Box deployment identity"
 ```
 
-`configure-git` is accepted as an alias. This High standard workflow records
+`configure-git` is accepted as an alias. This Medium standard workflow records
 references to two existing machine-local files in
 `/etc/aiursoft-dms-agent/box-git.json` (0600). The directory is private
 when created. Key contents are never uploaded, copied, returned or traced.

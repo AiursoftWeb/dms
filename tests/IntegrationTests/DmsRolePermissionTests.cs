@@ -781,8 +781,8 @@ public class DmsRolePermissionTests : TestBase
     [TestMethod]
     [DataRow("du", RiskLevel.Low)]
     [DataRow("docker", RiskLevel.Low)]
-    [DataRow("set-git-ssh-identity", RiskLevel.High)]
-    [DataRow("configure-git", RiskLevel.High)]
+    [DataRow("set-git-ssh-identity", RiskLevel.Medium)]
+    [DataRow("configure-git", RiskLevel.Medium)]
     [DataRow("rm", RiskLevel.High)]
     public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
     {
