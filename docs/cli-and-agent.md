@@ -589,7 +589,7 @@ dms lockbox approve \
   --id <lockbox-id> --reason 'Verified machine registration'
 ```
 
-Self approval still requires the independent self-approval attribute. A machine credential becomes usable only after the registration workflow creates the machine. The Agent then connects outward over WebSocket. It requires no inbound SSH or database access.
+Self approval still requires the independent self-approval attribute. A machine credential becomes usable only after the registration workflow creates the machine. The Agent then connects outward over WebSocket. It uses a 15-second WebSocket keep-alive interval and reconnects if the peer does not answer a ping within 15 seconds. It requires no inbound SSH or database access.
 
 If the Agent binary is already installed, the equivalent registration command is:
 
