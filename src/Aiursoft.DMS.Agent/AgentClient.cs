@@ -56,13 +56,21 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             foreach (var accepted in journal.Snapshot(activeOnly: true).Where(t => t.Schedule != null && t.State == RunState.Accepted))
                 if (journal.Start(accepted.Id) is { } recovered) Launch(recovered);
             if (!startup && _lastScheduleMinute == minute) return;
+            var missedMinute = _lastScheduleMinute is { } previous && minute > previous.AddMinutes(1);
             _lastScheduleMinute = minute;
             foreach (var schedule in _workflows.Schedules)
             {
                 var onStartup = startup && schedule.RunOnStartup;
-                if (!onStartup && !schedule.Matches(minute)) continue;
+                var occurrence = minute;
+                if (schedule.Id == ScheduledAgentUpgradeWorkflow.DefinitionName && (startup || missedMinute))
+                {
+                    // Catch up only the latest cron slot after downtime or maintenance. The journal
+                    // deduplicates its original UTC time across restarts.
+                    occurrence = schedule.Cron.GetOccurrences(minute.AddDays(-1), minute, TimeZoneInfo.Utc, toInclusive: true).Last();
+                }
+                else if (!onStartup && !schedule.Matches(minute)) continue;
                 var task = journal.AcceptScheduled(schedule.Definition.Name, schedule.Definition.Version,
-                    new ScheduledInvocation(schedule.Id, schedule.Expression, minute,
+                    new ScheduledInvocation(schedule.Id, schedule.Expression, occurrence,
                         onStartup ? WorkflowTrigger.AgentStartup : WorkflowTrigger.Cron), schedule.ReconcileAfterInterruption);
                 if (task != null && journal.Start(task.Id) is { } started) Launch(started);
             }
@@ -203,7 +211,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
 
     private async Task<string> ScheduledUpgradeAsync(Guid taskId, MachineWorkflowContext context, CancellationToken token)
     {
-        var input = await AgentUpgradeManifest.GetAsync(controller, key, token);
+        var input = await AgentUpgradeManifest.GetAsync(controller, key, context, token);
         var release = input.Releases.Single(item => item.Architecture == AgentUpgrade.Architecture);
         if (Version.Parse(release.Version) <= Version.Parse(AgentUpgrade.Version))
             return JsonSerializer.Serialize(new OperationResult("No newer Agent release is available."));
@@ -212,11 +220,14 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         if (!await TryReserveUpgradeWindowAsync(taskId, token))
             return JsonSerializer.Serialize(new OperationResult("Another Agent maintenance operation took precedence."));
 
-        var current = await AgentUpgradeManifest.GetAsync(controller, key, token);
-        if (current.Releases.Single(item => item.Architecture == release.Architecture) != release)
-            return JsonSerializer.Serialize(new OperationResult("The Agent release changed while waiting."));
+        var current = await AgentUpgradeManifest.GetAsync(controller, key, context, token);
+        var selected = current.Releases.Single(item => item.Architecture == AgentUpgrade.Architecture);
+        if (Version.Parse(selected.Version) <= Version.Parse(AgentUpgrade.Version))
+            return JsonSerializer.Serialize(new OperationResult("No newer Agent release is available."));
+        if (selected != release)
+            await context.TraceAsync($"The Controller published Agent {selected.Version} while waiting. Using the current release.");
 
-        journal.SetScheduledUpgradeRelease(taskId, release);
+        journal.SetScheduledUpgradeRelease(taskId, selected);
         await context.TraceAsync("The Agent has been idle for 10 seconds. Starting the scheduled upgrade.");
         var result = await new AgentUpgrade(installedState!, journal).PrepareAsync(taskId, context, current, token);
         return JsonSerializer.Serialize(result);

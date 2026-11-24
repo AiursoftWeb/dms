@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Aiursoft.DMS.Agent;
@@ -73,6 +74,45 @@ public class AgentUpgradeTests
             if (firstStatus is { } status) return new HttpResponseMessage(status);
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
             throw new InvalidOperationException("The first response must time out.");
+        }
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.GatewayTimeout, true)]
+    [DataRow(HttpStatusCode.Unauthorized, false)]
+    public async Task ScheduledUpgradeRetriesTemporaryManifestFailureButNotRejectedAuthentication(HttpStatusCode initialStatus, bool retries)
+    {
+        var release = new AgentRelease("linux-x64", "1.32.0.0", new string('a', 64), new string('b', 64));
+        var releases = new[] { release, release with { Architecture = "linux-arm64" } };
+        var events = new List<WorkflowEvent>();
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, item => { events.Add(item); return Task.CompletedTask; });
+        using var handler = new ManifestDownload(initialStatus, releases);
+        using var client = new HttpClient(handler);
+        var request = AgentUpgradeManifest.GetAsync(client, new Uri("https://controller"), "test-agent", context,
+            TimeSpan.FromSeconds(3), TimeSpan.Zero, CancellationToken.None);
+        if (retries)
+        {
+            CollectionAssert.AreEqual(releases, (await request).Releases);
+            Assert.AreEqual(2, handler.Requests);
+            Assert.AreEqual("warning", events.Single().Source);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<HttpRequestException>(() => request);
+            Assert.AreEqual(1, handler.Requests);
+            Assert.IsEmpty(events);
+        }
+    }
+
+    private sealed class ManifestDownload(HttpStatusCode initialStatus, AgentRelease[] releases) : HttpMessageHandler
+    {
+        public int Requests { get; private set; }
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Assert.AreEqual("/api/agent/scheduled-upgrade", request.RequestUri!.AbsolutePath);
+            Assert.AreEqual("test-agent", request.Headers.Authorization?.Parameter);
+            return Task.FromResult(++Requests == 1 ? new HttpResponseMessage(initialStatus) :
+                new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(releases) });
         }
     }
 
