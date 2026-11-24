@@ -81,6 +81,19 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
                 run.ParentId == null && run.Origin == WorkflowOrigin.Automatic)
             .OrderByDescending(run => run.CreatedAt).ThenByDescending(run => run.Id)
             .NotCacheable().FirstOrDefaultAsync();
+        var recentRuns = await db.WorkflowRuns.AsNoTracking()
+            .Where(run => run.MachineId == id && (run.Origin == WorkflowOrigin.Manual ||
+                (run.Definition != WorkflowNames.AgentStatus && run.Definition != OperationsWorkflows.SshCheckLease.Name)))
+            .OrderByDescending(run => run.CreatedAt).ThenByDescending(run => run.Id)
+            .Take(10)
+            .NotCacheable()
+            .ToListAsync(HttpContext.RequestAborted);
+        var recentBoxIds = recentRuns.Where(run => run.Definition == WorkflowNames.Batch)
+            .Select(run => run.LockboxId).OfType<Guid>().Distinct().ToArray();
+        var recentRequested = recentBoxIds.Length > 0
+            ? await db.Lockboxes.AsNoTracking().Where(box => recentBoxIds.Contains(box.Id))
+                .ToDictionaryAsync(box => box.Id, box => box.Definition, HttpContext.RequestAborted)
+            : new Dictionary<Guid, string>();
         var ssh = (await sshOverview.ReadAsync([machine], HttpContext.RequestAborted)).Single();
         var readiness = MachineSshOverview.Classify(ssh.Observation, machine.Connection == MachineConnection.Online);
         var scheduled = await sshOverview.ReadScheduledTargetsAsync();
@@ -91,6 +104,8 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             CanRequestSshDisable = DmsPermissions.ForRisk(User, OperationsWorkflows.SshDisable.Risk).CanRequest,
             CanRequestSshLease = DmsPermissions.ForRisk(User, OperationsWorkflows.SshOpen.Risk).CanRequest,
             SshStateChanged = TempData["SshStateChanged"] as bool? == true,
+            RecentRuns = recentRuns,
+            RequestedDefinitions = recentRequested,
             PageTitle = machine.Name
         });
     }
@@ -241,7 +256,8 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Workflow history", LinkOrder = 3)]
     public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null,
-        bool clusterWorkflowsOnly = false, WorkflowOrigin? origin = null, RunState? state = null, bool rootOnly = false)
+        bool clusterWorkflowsOnly = false, WorkflowOrigin? origin = null, RunState? state = null, bool rootOnly = false,
+        bool excludeHeartbeats = false)
     {
         if (!ModelState.IsValid || (origin.HasValue && !Enum.IsDefined(origin.Value)) ||
             (state.HasValue && !Enum.IsDefined(state.Value)) || definition?.Length > 200) return BadRequest();
@@ -252,6 +268,11 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         if (rootOnly) query = query.Where(run => run.ParentId == null);
         if (clusterWorkflowsOnly) query = query.Where(run => run.MachineId == null);
         if (machineId != null) query = query.Where(run => run.MachineId == machineId);
+        if (excludeHeartbeats)
+        {
+            query = query.Where(run => run.Origin == WorkflowOrigin.Manual ||
+                (run.Definition != WorkflowNames.AgentStatus && run.Definition != OperationsWorkflows.SshCheckLease.Name));
+        }
         if (!string.IsNullOrWhiteSpace(definition))
         {
             var matching = db.Lockboxes.Where(box => box.Definition == definition).Select(box => box.Id);
@@ -269,6 +290,7 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
             PageTitle = "Workflow history",
             Origin = origin, State = state, RootOnly = rootOnly, Runs = runs, Page = page, HasNextPage = items.Count > 50,
             MachineId = machineId, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly,
+            ExcludeHeartbeats = excludeHeartbeats,
             MachineNames = await MachineNamesAsync(runs.Select(run => run.MachineId).Append(machineId)),
             RequestedDefinitions = requested
         });

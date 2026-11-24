@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Vem som helst kan kopiera en publick nyckel. Detta steg bevisar att du har dess privata nyckel, som förblir på din dator.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Tillbaka till SSH-offentliga nycklar</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Avbryt läggning till av denna nyckel</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Kommando kopierad</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Kopiera kommando</value>
+  </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Jag har en YubiKey / hårdvaru Nyckel</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Jag använder en privat nyckelfil</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Om tiden går ut, lägg till nyckeln igen.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Om din privata nyckel lagras på en annan plats, ändra sökvägen efter -f. Klistra sedan in den fullständiga signatur som skrivs ut av kommandot.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Se till att din nyckel är laddad i din SSH-agent (till exempel genom att köra ssh-add -K för residentnycklar), och kör sedan:</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH-signatur</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Börja om</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>Steg 2 av 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Terminalkommando</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>Signaturen stämde inte överens. Kör kommandot ovan med den privata nyckeln för denna publika nyckel och klistra in hela resultatet.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Kvarvarande tid</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>För att slutföra läggandet av denna nyckel, kör kommandot nedan på datorn som innehåller dess privata nyckel.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Tryck på din YubiKey när den blinkar för att slutföra signeringen. Kopiera sedan den fullständiga signatur som skrivs ut av kommandot.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>Verifieringen har gått ut. Nyckeln lades inte till.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>Verifieringen går ut kl</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Verifiera och lägg till nyckeln</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Verifiera din SSH-nyckel</value>
+  </data>
+
+</root>

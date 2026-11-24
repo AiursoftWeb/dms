@@ -23,6 +23,7 @@ public class DmsViewModel : UiStackLayoutViewModel
     public RunState? State { get; set; }
     public IReadOnlyDictionary<Guid, string> MachineNames { get; set; } = new Dictionary<Guid, string>();
     public bool RootOnly { get; set; }
+    public bool ExcludeHeartbeats { get; set; }
     public IReadOnlyDictionary<Guid, string> RequestedDefinitions { get; set; } = new Dictionary<Guid, string>();
     public bool ClusterWorkflowsOnly { get; set; }
     public Guid? MachineId { get; set; }

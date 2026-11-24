@@ -18,10 +18,10 @@ internal sealed class BoxSecretWorkflow<TInput, TResult>(
 {
     public override async Task<TResult> ExecuteAsync(MachineWorkflowContext context, TInput value, CancellationToken token)
     {
-        await using var guard = BoxDeployWorkflow.AcquireLock(root);
-        var repository = BoxDeployWorkflow.FindRepository(root);
+        await using var guard = BoxRepository.AcquireLock(root);
+        var repository = BoxRepository.FindRepository(root);
         await context.CallAsync(new ProcessWorkflow("/bin/bash",
-            ["-c", BoxDeployWorkflow.Preflight, "dms-box-secret-preflight", repository, git, BoxDeployWorkflow.OfficialOriginPattern],
+            ["-c", BoxRepository.Preflight, "dms-box-secret-preflight", repository, git, BoxRepository.OfficialOriginPattern],
             captureOutput: true), token);
         await context.CallAsync(new ProcessWorkflow("/bin/bash",
             ["-c", """test ! -L "$1" && { test ! -e "$1" || test -f "$1"; }""",

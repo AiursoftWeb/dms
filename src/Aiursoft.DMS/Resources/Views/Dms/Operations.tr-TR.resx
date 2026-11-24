@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Tüm kaynaklar</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Tüm durumlar</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Filtreleri Uygula</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Otomatik</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>İptal Edildi</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Filtreleri Temizle</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Küme</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Yalnızca küme iş akışları</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Uyarılarla tamamlandı</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Denetleyici</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Oluşturulma</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Çalışma sayfaları</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Çalışma durumu</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Başarısız</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtrele</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Makine</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manuel</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Doğrulama gerekli</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Sonraki</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Bu filtrelerle eşleşen çalıştırma yok.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Kaynak</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Üst akış</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Önceki</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>Sırada</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Yalnızca kök çalıştırmalar</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Çalışıyor</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Durum</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Başarılı</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Çalıştırmayı Görüntüle</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>İş akışı</value>

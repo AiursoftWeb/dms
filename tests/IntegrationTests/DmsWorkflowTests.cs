@@ -498,6 +498,27 @@ public class DmsWorkflowTests : TestBase
         var machineOnly = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}");
         StringAssert.Contains(machineOnly, machineRun.Id.ToString());
         Assert.DoesNotContain(runs[0].Id.ToString(), machineOnly);
+
+        Guid autoHeartbeatId, manualHeartbeatId;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var autoHeartbeat = new WorkflowRun { MachineId = setup.Machine, Definition = WorkflowNames.AgentStatus, Origin = WorkflowOrigin.Automatic, State = RunState.Succeeded, CreatedAt = DateTime.UtcNow };
+            var manualHeartbeat = new WorkflowRun { MachineId = setup.Machine, Definition = WorkflowNames.AgentStatus, Origin = WorkflowOrigin.Manual, State = RunState.Succeeded, CreatedAt = DateTime.UtcNow };
+            db.WorkflowRuns.AddRange(autoHeartbeat, manualHeartbeat);
+            await db.SaveChangesAsync();
+            autoHeartbeatId = autoHeartbeat.Id;
+            manualHeartbeatId = manualHeartbeat.Id;
+        }
+        var allWithHeartbeats = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}");
+        StringAssert.Contains(allWithHeartbeats, autoHeartbeatId.ToString());
+        StringAssert.Contains(allWithHeartbeats, manualHeartbeatId.ToString());
+        StringAssert.Contains(allWithHeartbeats, machineRun.Id.ToString());
+
+        var excluded = await Http.GetStringAsync($"/Dms/Operations?machineId={setup.Machine}&excludeHeartbeats=true");
+        Assert.DoesNotContain(autoHeartbeatId.ToString(), excluded);
+        StringAssert.Contains(excluded, manualHeartbeatId.ToString());
+        StringAssert.Contains(excluded, machineRun.Id.ToString());
     }
 
     [TestMethod]
@@ -976,7 +997,7 @@ await db.SaveChangesAsync();
     [TestMethod]
     [DataRow("main")]
     [DataRow("cn")]
-    public async Task PullerCliFreezesImageAndTargetsInHighRiskLockbox(string puller)
+    public async Task PullerCliFreezesImageAndTargetsInMediumRiskLockbox(string puller)
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
@@ -993,7 +1014,7 @@ await db.SaveChangesAsync();
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
             Assert.AreEqual(WorkflowNames.PullerForceUpdate, box.Definition); Assert.AreEqual("2", box.Version);
-            Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
+            Assert.AreEqual(RiskLevel.Medium, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
             var input = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
             var frozen = MachineWorkflows.PullerForceUpdate.ReadInput(input.Input);
             Assert.AreEqual("aiursoft/dms:latest", frozen.Image);
@@ -1020,7 +1041,7 @@ await db.SaveChangesAsync();
             "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
-        Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision);
+        Assert.AreEqual(RiskLevel.Medium, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision);
         var frozen = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
         CollectionAssert.AreEqual(new[] { setup.Machine }, frozen.MachineIds);
         var selection = MachineWorkflows.PullerForceUpdate.ReadInput(frozen.Input);
@@ -1078,7 +1099,7 @@ await db.SaveChangesAsync();
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
         var explicitAll = await service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, AllMachines = true, Reason = "Explicit batch" });
         CollectionAssert.AreEquivalent(new[] { setup.Machine, extra.Id }, JsonSerializer.Deserialize<Guid[]>(explicitAll.TargetMachines));
-        Assert.AreEqual(RiskLevel.High, explicitAll.Risk);
+        Assert.AreEqual(RiskLevel.Medium, explicitAll.Risk);
     }
 
     [TestMethod]
@@ -1088,10 +1109,11 @@ await db.SaveChangesAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High), false);
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Medium), false);
         await db.SaveChangesAsync();
-        await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No high permission" }));
-        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High));
+        var denied = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No medium permission" }));
+        Assert.AreEqual(403, denied.StatusCode);
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.Medium));
         (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).Disabled = true;
         await db.SaveChangesAsync();
         var missing = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, new OperationRequest { Workflow = WorkflowNames.PullerForceUpdate, Reason = "No active target" }));
@@ -1104,7 +1126,7 @@ await db.SaveChangesAsync();
     [DataRow(WorkflowNames.ServiceStatus, RiskLevel.Low)]
     [DataRow(WorkflowNames.ListBlockDevices, RiskLevel.Safe)]
     [DataRow(WorkflowNames.DiskFree, RiskLevel.Safe)]
-    [DataRow(WorkflowNames.PullerForceUpdate, RiskLevel.High)]
+    [DataRow(WorkflowNames.PullerForceUpdate, RiskLevel.Medium)]
     [DataRow("machine.docker.ps", RiskLevel.Low)]
     [DataRow("machine.docker.logs", RiskLevel.Low)]
     [DataRow("machine.docker.exec", RiskLevel.VeryHigh)]

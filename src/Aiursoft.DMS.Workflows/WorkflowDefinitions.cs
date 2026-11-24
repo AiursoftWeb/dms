@@ -38,6 +38,7 @@ public sealed partial class MachineWorkflowRegistry
         Register(MachineWorkflows.DiskUsage, (input, _) => new MachineDiskUsageWorkflow(input));
         Register(MachineWorkflows.PullerForceUpdate, (input, _) => new BoxPullerForceUpdateWorkflow(input));
         Register(MachineWorkflows.BoxInspect, (_, _) => new BoxInspectWorkflow());
+        Register(MachineWorkflows.BoxUpdateOnly, (_, _) => new BoxUpdateWorkflow());
         Register(MachineWorkflows.BoxConfigureGit, (input, _) => new BoxConfigureGitWorkflow(input));
         Register(MachineWorkflows.DirectoryUsage, (input, _) => new DirectoryUsageWorkflow(input));
         Register(MachineWorkflows.RemovePath, (input, _) => new RemovePathWorkflow(input));

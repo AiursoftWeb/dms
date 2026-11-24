@@ -11,3 +11,4 @@ public sealed record ClusterDiskUsageResult(long TotalBytes, long UsedBytes, lon
 
 // Inspection details belong in the trace archive, not the workflow result or submission receipt.
 public sealed record BoxInspectionResult;
+public sealed record BoxUpdateResult(string Repository, string PreviousCommit, string Commit);

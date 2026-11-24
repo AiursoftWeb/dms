@@ -30,9 +30,6 @@
   <data name="Any approval mode" xml:space="preserve">
     <value>Alla godkännandelägen</value>
   </data>
-  <data name="{0} request" xml:space="preserve">
-    <value>{0}-förfrågan</value>
-  </data>
   <data name="Approver" xml:space="preserve">
     <value>Godkännare</value>
   </data>
@@ -62,9 +59,6 @@
   </data>
   <data name="Investigation" xml:space="preserve">
     <value>Granskning</value>
-  </data>
-  <data name="{0} ID" xml:space="preserve">
-    <value>ID för {0}</value>
   </data>
   <data name="Machine" xml:space="preserve">
     <value>Maskin</value>
@@ -105,18 +99,6 @@
   <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
     <value>Registrerad till och med (exklusive, UTC)</value>
   </data>
-  <data name="Workflow in the {0} request" xml:space="preserve">
-    <value>Begärd ({0}-förfrågningar)</value>
-  </data>
-  <data name="Workflow type in the {0} request" xml:space="preserve">
-    <value>Begärd arbetsflödestyp ({0}-förfrågningar)</value>
-  </data>
-  <data name="{0} requester" xml:space="preserve">
-    <value>Begärande ({0}-förfrågningar)</value>
-  </data>
-  <data name="{0} requester ID" xml:space="preserve">
-    <value>Begärar-ID ({0}-förfrågningar)</value>
-  </data>
   <data name="Root workflow ID" xml:space="preserve">
     <value>Rotarbetsflödes-ID</value>
   </data>
@@ -141,11 +123,29 @@
   <data name="Workflow ID" xml:space="preserve">
     <value>Arbetsflödes-ID</value>
   </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Begärd ({0}-förfrågningar)</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Begärd arbetsflödestyp ({0}-förfrågningar)</value>
+  </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
   </data>
   <data name="You do not have access to any clusters." xml:space="preserve">
     <value>Du har inte åtkomst till några kluster.</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>ID för {0}</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0}-förfrågan</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Begärande ({0}-förfrågningar)</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>Begärar-ID ({0}-förfrågningar)</value>
   </data>
 
 </root>

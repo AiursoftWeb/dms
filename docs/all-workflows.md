@@ -29,9 +29,10 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Upgrade available APT packages | `machine.apt.upgrade-all` | `dms machine apt upgrade-all --plan` (High) | — | Upgrade the reviewed per-machine packages and any approved new dependencies without removals. |
 | Remove unused APT packages | `machine.apt.autoremove` | `dms machine apt autoremove --plan` (High) | — | Remove the reviewed unused packages. `--purge` also removes their package configuration files. |
 | Configure Box Git access | `machine.box.configure-git` | `dms machine box set-git-ssh-identity` (Medium) | — | Configures which existing SSH identity file and known-hosts file Box uses for Git pulls. |
+| Update a Box checkout | `machine.box.update-only` | `dms machine box update-only` (Medium) | — | Fast-forwards the checkout and reports the previous and current commits. |
 | Deploy a Box | `machine.box.deploy` | `dms machine box deploy` (High) | — | Updates the Box checkout and deploys from the selected stage onward. The service filter can limit the deployment. |
 | Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Safe) | — | Produces a structured report of Box Git status, stages, stacks, Swarm running stacks, service replica health, and secrets inventory. |
-| Refresh images with Box Puller | `machine.box.puller.force-update` | `dms machine box puller force-update` (High) | — | Refreshes a selected image or the configured image set through the specified Box Puller. |
+| Refresh images with Box Puller | `machine.box.puller.force-update` | `dms machine box puller force-update` (Medium) | — | Refreshes a selected image or the configured image set through the specified Box Puller. |
 | Find a ClickHouse container | `machine.clickhouse.find-container` | `dms machine clickhouse find-container` (Open) | — | Find the unique running ClickHouse server container on the target machine. |
 | List ClickHouse databases | `machine.clickhouse.list-databases` | `dms machine clickhouse list-databases` (Open) | — | List databases visible to the local read account. |
 | List ClickHouse tables | `machine.clickhouse.list-tables` | `dms machine clickhouse list-tables` (Open) | — | List visible tables in one database. |

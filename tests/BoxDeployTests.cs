@@ -66,6 +66,50 @@ public class BoxDeployTests
     }
 
     [TestMethod]
+    public async Task UpdateOnlyFastForwardsWithoutRunningTheDeploymentScriptOrGitHooks()
+    {
+        if (!OperatingSystem.IsLinux()) throw new PlatformNotSupportedException();
+        using var box = new Box();
+        var previous = box.Revision(box.Repository);
+        var hook = box.PathOf(".git/hooks/post-merge");
+        File.WriteAllText(hook, "#!/bin/sh\ntouch merge-hook-ran\n");
+        File.SetUnixFileMode(hook, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        box.Advance();
+
+        var result = MachineWorkflows.BoxUpdateOnly.ReadResult(await box.UpdateAsync());
+
+        Assert.AreEqual(new BoxUpdateResult(box.Repository, previous, box.Revision(box.Source)), result);
+        Assert.AreEqual(result.Commit, box.Revision(box.Repository));
+        Assert.IsFalse(File.Exists(box.PathOf("deployment-arguments")));
+        Assert.IsFalse(File.Exists(box.PathOf("merge-hook-ran")));
+        Assert.AreEqual("private-value", File.ReadAllText(box.PathOf(".env.prod")));
+        Assert.AreEqual(RiskLevel.Medium, MachineWorkflows.BoxUpdateOnly.Risk);
+        Assert.IsTrue(MachineWorkflows.BoxUpdateOnly.PublicEntry);
+        Assert.IsTrue(new MachineWorkflowRegistry().Contains(MachineWorkflows.BoxUpdateOnly.Name));
+        Assert.Throws<JsonException>(() => MachineWorkflows.BoxUpdateOnly.ReadInput("{\"Stage\":0}"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task RemoteCommitCannotOverwriteTheIgnoredPrivateEnvironment(bool deploy)
+    {
+        using var box = new Box();
+        var previous = box.Revision(box.Repository);
+        File.WriteAllText(Path.Combine(box.Source, ".env.prod"), "tracked-placeholder");
+        box.Git(box.Source, "add", "--force", ".env.prod");
+        box.Git(box.Source, "commit", "-m", "Track environment by mistake");
+        box.Publish();
+
+        await Assert.ThrowsAsync<ChildWorkflowException>(() => deploy ? box.RunAsync(new BoxDeployInput()) : box.UpdateAsync());
+
+        Assert.AreEqual(previous, box.Revision(box.Repository));
+        Assert.AreEqual("private-value", File.ReadAllText(box.PathOf(".env.prod")));
+        Assert.IsFalse(File.Exists(box.PathOf("deployment-arguments")));
+        Assert.IsTrue(box.Events.Any(e => e.Message.Contains("remote Box tracks private .env.prod", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
     [DataRow("missing")]
     [DataRow("ambiguous")]
     [DataRow("linked")]
@@ -164,6 +208,8 @@ public class BoxDeployTests
             while (!File.Exists(box.PathOf("deployment-arguments"))) await Task.Delay(20, stop.Token);
             await Assert.ThrowsAsync<InvalidOperationException>(() => new MachineWorkflowContext(Guid.NewGuid(), null, _ => Task.CompletedTask)
                 .RunAsync(new BoxDeployWorkflow(new BoxDeployInput(), box.Root, box.Executable), stop.Token));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => new MachineWorkflowContext(Guid.NewGuid(), null, _ => Task.CompletedTask)
+                .RunAsync(new BoxUpdateWorkflow(box.Root, box.Executable), stop.Token));
         }
         finally { await stop.CancelAsync(); }
         await Assert.ThrowsAsync<WorkflowNeedsVerificationException>(() => first);
@@ -454,7 +500,7 @@ public class BoxDeployTests
                 import os, pathlib, sys
                 directory = pathlib.Path(__file__).parent
                 args = sys.argv[1:]
-                if 'pull' in args:
+                if 'fetch' in args:
                     (directory / 'pulled').write_text('once')
                     (directory / 'ssh-command').write_text(os.environ.get('GIT_SSH_COMMAND', ''))
                     args[args.index('origin')] = str(directory / 'upstream.git')
@@ -476,8 +522,10 @@ public class BoxDeployTests
         public void Advance()
         {
             WriteDeploy("updated"); Git(Source, "add", "deploy.sh"); Git(Source, "commit", "-m", "Reviewed update");
-            Git(Source, "push", Path.Combine(Directory, "upstream.git"), "master");
+            Publish();
         }
+
+        public void Publish() => Git(Source, "push", Path.Combine(Directory, "upstream.git"), "master");
 
         public string Revision(string directory) => Git(directory, "rev-parse", "HEAD").Trim();
 
@@ -499,6 +547,9 @@ public class BoxDeployTests
         public Task<string> RunAsync(BoxDeployInput input, CancellationToken token = default) =>
             new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })
                 .RunAsync(new BoxDeployWorkflow(input, Root, Executable, GitConfiguration), token);
+
+        public Task<string> UpdateAsync() => new MachineWorkflowContext(Id, null, e => { Events.Enqueue(e); return Task.CompletedTask; })
+            .RunAsync(new BoxUpdateWorkflow(Root, Executable, GitConfiguration), CancellationToken.None);
 
         public void Dispose() => System.IO.Directory.Delete(Directory, true);
     }

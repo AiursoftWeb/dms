@@ -238,7 +238,7 @@ public class DmsRolePermissionTests : TestBase
     [TestMethod]
     public async Task LockboxPageShowsFrozenTargetsCommandAndLiveApprovers()
     {
-        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High), DmsPermissions.Approve(RiskLevel.High));
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Medium), DmsPermissions.Approve(RiskLevel.Medium));
         using var scope = Server!.Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var reviewer = new User
@@ -249,7 +249,7 @@ public class DmsRolePermissionTests : TestBase
         };
         Assert.IsTrue((await users.CreateAsync(reviewer)).Succeeded);
         Assert.IsTrue((await users.AddClaimAsync(reviewer,
-            new Claim(AppPermissions.Type, DmsPermissions.Approve(RiskLevel.High)))).Succeeded);
+            new Claim(AppPermissions.Type, DmsPermissions.Approve(RiskLevel.Medium)))).Succeeded);
 
         var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var box = await workflows.SubmitAsync(setup.User, MachineWorkflows.PullerForceUpdate.Request(
@@ -420,7 +420,7 @@ public class DmsRolePermissionTests : TestBase
     [TestMethod]
     public async Task RequesterCanFollowOwnWebExecutionWithoutGlobalReadPermission()
     {
-        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.High));
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Medium));
         using var scope = Server!.Services.CreateScope();
         var users = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var requester = (await users.FindByIdAsync(setup.User))!;
@@ -679,8 +679,8 @@ public class DmsRolePermissionTests : TestBase
         {
             RiskLevel.Safe => MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Role test", machines: [machine]),
             RiskLevel.Low => MachineWorkflows.ServiceStatus.Request(new ServiceInput("dms-test.service"), "Role test", machines: [machine]),
-            RiskLevel.Medium => MachineWorkflows.Restart.Request(new ServiceInput("dms-test.service"), "Role test", machines: [machine]),
-            RiskLevel.High => MachineWorkflows.PullerForceUpdate.Request(new PullerForceUpdateInput(), "Role test", machines: [machine]),
+            RiskLevel.Medium => MachineWorkflows.PullerForceUpdate.Request(new PullerForceUpdateInput(), "Role test", machines: [machine]),
+            RiskLevel.High => MachineWorkflows.BoxDeploy.Request(new BoxDeployInput(), "Role test", machines: [machine]),
             RiskLevel.VeryHigh => MachineWorkflows.DockerExec.Request(new DockerExecInput(new string('a', 64), ["/start.sh"]), "Role test", machines: [machine]),
             _ => throw new ArgumentOutOfRangeException(nameof(risk))
         };
@@ -783,6 +783,7 @@ public class DmsRolePermissionTests : TestBase
     [DataRow("docker", RiskLevel.Low)]
     [DataRow("set-git-ssh-identity", RiskLevel.Medium)]
     [DataRow("configure-git", RiskLevel.Medium)]
+    [DataRow("update-only", RiskLevel.Medium)]
     [DataRow("rm", RiskLevel.High)]
     public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
     {
@@ -792,6 +793,7 @@ public class DmsRolePermissionTests : TestBase
             "du" => ["machine", "filesystem", "du", "--path", "/swarm-vol", "--depth", "2"],
             "docker" => ["machine", "docker", "system", "df"],
             "rm" => ["machine", "filesystem", "rm", "--path", "/tmp/reviewed cleanup", "--recursive"],
+            "update-only" => ["machine", "box", "update-only"],
             _ => ["machine", "box", operation, "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
         };
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--machine-id", setup.First.ToString(),
@@ -811,6 +813,11 @@ public class DmsRolePermissionTests : TestBase
         if (operation == "du") Assert.AreEqual(new DirectoryUsageInput("/swarm-vol", 2), MachineWorkflows.DirectoryUsage.ReadInput(request.Input));
         if (operation == "docker") Assert.AreEqual("{}", request.Input);
         if (operation == "rm") Assert.AreEqual(new RemovePathInput("/tmp/reviewed cleanup", true), MachineWorkflows.RemovePath.ReadInput(request.Input));
+        if (operation == "update-only")
+        {
+            Assert.AreEqual(MachineWorkflows.BoxUpdateOnly.Name, box.Definition);
+            Assert.AreEqual("{}", request.Input);
+        }
         if (operation is "set-git-ssh-identity" or "configure-git")
         {
             Assert.AreEqual(MachineWorkflows.BoxConfigureGit.Name, box.Definition);

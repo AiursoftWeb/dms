@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Iedereen kan een openbare sleutel kopiëren. Deze stap bewijst dat u de bijbehorende privésleutel bezit, die op uw computer blijft.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Terug naar SSH openbare sleutels</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Annuleren van het toevoegen van deze sleutel</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Commando gekopieerd</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Command kopiëren</value>
+  </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Ik heb een YubiKey / hardware-sleutel</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Ik gebruik een privésleutelbestand</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Als de tijd om is, voegt u de sleutel opnieuw toe.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Als uw privé-sleutel elders is opgeslagen, wijzig dan het pad na -f. Plak vervolgens de volledige handtekening die door het commando is weergegeven.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Zorg ervoor dat je sleutel geladen is in je SSH-agent (bijvoorbeeld door ssh-add -K uit te voeren voor resident keys), en voer daarna uit:</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH-handtekening</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Opnieuw starten</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>Stap 2 van 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Terminalopdracht</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>De handtekening kwam niet overeen. Voer het bovenstaande commando uit met de privé-sleutel voor deze openbare sleutel en plak het volledige resultaat.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Resterende tijd</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>Om het toevoegen van deze sleutel af te ronden, voert u het onderstaande commando uit op de computer die de bijbehorende privésleutel bevat.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Raak je YubiKey aan wanneer deze knippert om het ondertekenen te voltooien. Plak vervolgens de volledige handtekening die door het commando is weergegeven.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>Verificatie verlopen. Deze sleutel is niet toegevoegd.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>Verificatie verloopt om</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Verifiëren en sleutel toevoegen</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Verifieer uw SSH-publieke sleutel</value>
+  </data>
+
+</root>

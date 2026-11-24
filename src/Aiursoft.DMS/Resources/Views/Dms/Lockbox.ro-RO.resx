@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>TOATE MAȘINILE ACTIVATE</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>Plan de pachete APT</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>Actualizări suplimentare într-un plan care ar elimina pachete</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>Verificare anti-spoofing:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Aprobă</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Aprobat</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Mașini țintă aprobate</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Aprobat · În așteptarea executării</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID aprobator</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>Contractul autoritar de execuție:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Aprobare automată</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>În așteptarea aprobării</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Înapoi la aprobări</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Comandă</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Comandă copiată</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copiază</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Creat</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Pachetul Agent disponibil în prezent</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Decizie</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Motivul deciziei</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Respins</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Respinge</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Comanda Docker din această cerere {0}</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Comandă DMS echivalentă</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Starea de execuție</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>Starea de execuție nu este disponibilă.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Fișiere de intrare înghețate</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Risc ridicat</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Fluxul de lucru istoric de aprobare</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>Identificator</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Imagine</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Scop imagine</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Risc scăzut</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Risc mediu</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Necesită o cerere nouă</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>Nicio aprobator eligibil în acest moment.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>Nicio țintă de mașină</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>Nicio modificare a pachetelor nu este planificată.</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>Solicitantul nu a furnizat niciun motiv.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>Deschideți gestionarea SSH</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Flux deschis</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametri</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Puller</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>JSON de intrare brut</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Reconstruit din intrările salvate și mașinile țintă.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>Pachetul Agent solicitat</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Verificați pachetul curent și trimiteți o cerere nouă pentru aceleași mașini.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Verifica conținutul exact trimis pentru execuție.</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>Evaluatorii trebuie să verifice că motivul declarat de solicitant corespunde strict definiției autoritative a Workflow, mașinilor țintă și parametrilor de intrare înghețată de mai jos. Nu aprobați pe baza acestui text singur.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risc</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>Amprentele cheilor SSH</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Flux de lucru sigur</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Trimiteți o cerere nouă de upgrade</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Mașini țintă</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>Pachetul Agent este temporar indisponibil. Încercați din nou mai târziu.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>Definiția Workflow, Mașinile țintă și Parametrii de intrare de mai jos sunt înghețate și autoritare. Ele reprezintă exact ceea ce va fi executat la aprobare.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>Pachetul Agent curent a fost modificat din nou. Verificați-l înainte de a trimite.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>Pachetul Agent original este din nou disponibil. Revizuiți cererea originală.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>Previzualizarea nu este disponibilă pentru acest computer.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>Solicitantul trebuie să trimită o nouă cerere de actualizare.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>Pachetul Agent selectat a fost înlocuit. Actualizarea nu a început.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>Acest flux de lucru nu acceptă parametri.</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>Mașină necunoscută</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>Afirmare neverificată a solicitantului</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>Actualizați Agentul DMS pe {0}</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Risc foarte ridicat</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>Vizualizare execuția fluxului de lucru</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Cine poate aproba</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Retrăgând</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flux de lucru</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>Definiția fluxului de lucru</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>Versiunea workflow</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Rolul dvs. actual nu vă permite să solicitați această actualizare.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>băiți</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>ID {0}</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} identificatori de cerere și sarcină utilă brută</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>Motivul cererii {0}</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>Cererile de la {0}</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} ID solicitant</value>
   </data>
 
 </root>

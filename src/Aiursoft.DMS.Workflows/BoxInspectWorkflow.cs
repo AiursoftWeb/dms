@@ -312,9 +312,9 @@ public sealed class BoxInspectWorkflow(string root = "/swarm-vol", string git = 
     public override async Task<BoxInspectionResult> ExecuteAsync(MachineWorkflowContext context, EmptyInput input, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
-        var repository = BoxDeployWorkflow.FindRepository(root);
+        var repository = BoxRepository.FindRepository(root);
         await context.CallAsync(new ProcessWorkflow("/bin/bash",
-            ["-c", Inspect, "dms-box-inspect", repository, git, BoxDeployWorkflow.OfficialOriginPattern, docker]), token);
+            ["-c", Inspect, "dms-box-inspect", repository, git, BoxRepository.OfficialOriginPattern, docker]), token);
         return new BoxInspectionResult();
     }
 }

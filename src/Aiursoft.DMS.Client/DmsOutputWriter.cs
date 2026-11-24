@@ -9,7 +9,7 @@ public enum OutputFormat { Table, Json, Csv, Log }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true)
     {
         if (format == OutputFormat.Json)
         {
@@ -62,7 +62,7 @@ public static class DmsOutputWriter
             WriteLockboxStatus(output, summary, width);
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
-        else WriteHuman(output, data, width, color, true);
+        else WriteHuman(output, data, width, color, true, verbose);
     }
 
     public static void WriteResult(TextWriter output, object result, OutputFormat format, bool color, int width)
@@ -201,19 +201,23 @@ public static class DmsOutputWriter
     internal static string TerminalText(string? text) => text == null ? "-" :
         new string(text.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
 
-    private static void WriteHuman(TextWriter output, JToken value, int width, bool color, bool workflowMetadata = false)
+    private static void WriteHuman(TextWriter output, JToken value, int width, bool color, bool workflowMetadata = false, bool verbose = true)
     {
         value = Structured(value);
         if (value is JObject obj)
         {
             if (obj.Count == 0) { output.WriteLine("(empty)"); return; }
             var properties = obj.Properties().Select(p => (p.Name, Value: Structured(p.Value))).ToList();
-            var scalars = properties.Where(p => p.Name != "Result" && p.Value is not (JObject or JArray)).ToList();
+            var scalars = properties.Where(p => p.Name != "Result" &&
+                                                p.Value is not (JObject or JArray) &&
+                                                (verbose || p.Name is not ("Parameters" or "TargetMachines")) &&
+                                                !(p.Name == "LegacyApprovalWorkflowId" && (p.Value == null || p.Value.Type == JTokenType.Null || Cell(p.Value) is "" or "-"))).ToList();
             WriteRows(output, ["Property", "Value"], scalars.Select(p => new[] { p.Name, HumanScalar(p.Name, p.Value, workflowMetadata) }).ToList(), width, color && workflowMetadata);
-            foreach (var p in properties.Where(p => p.Name == "Result" || p.Value is JObject or JArray))
+            foreach (var p in properties.Where(p => (p.Name == "Result" || p.Value is JObject or JArray) &&
+                                                   (verbose || p.Name is not ("Parameters" or "TargetMachines"))))
             {
                 output.WriteLine(); output.WriteLine(p.Name); output.WriteLine(new string('-', p.Name.Length));
-                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "RiskPermissions" or "Entries");
+                WriteHuman(output, p.Value, width, color, workflowMetadata && p.Name is "Definitions" or "RiskPermissions" or "Entries", verbose);
             }
         }
         else if (value is JArray array)
@@ -226,7 +230,7 @@ public static class DmsOutputWriter
                 if (headers.Length > 0 && Widths(headers, rows).Sum() + (headers.Length - 1) * 2 <= width)
                     WriteRows(output, headers, rows, width, color && workflowMetadata);
                 else
-                    foreach (var item in array) { WriteHuman(output, item, width, color, workflowMetadata); output.WriteLine(); }
+                    foreach (var item in array) { WriteHuman(output, item, width, color, workflowMetadata, verbose); output.WriteLine(); }
             }
             else foreach (var item in array) WriteHuman(output, item, width, color);
         }

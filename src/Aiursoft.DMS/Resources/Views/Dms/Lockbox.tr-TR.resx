@@ -18,14 +18,59 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Approve" xml:space="preserve">
+      <data name="ALL ENABLED MACHINES" xml:space="preserve">
+    <value>TÜM ETKİN MAKİNELER</value>
+  </data>
+  <data name="APT package plan" xml:space="preserve">
+    <value>APT paket planı</value>
+  </data>
+  <data name="Additional upgrades in a plan that would remove packages" xml:space="preserve">
+    <value>Paketleri kaldıracağı ek yükseltmeler içeren bir plan</value>
+  </data>
+  <data name="Anti-spoofing verification:" xml:space="preserve">
+    <value>Sahtecilik önleme doğrulaması:</value>
+  </data>
+  <data name="Approve" xml:space="preserve">
     <value>Onayla</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Onaylandı</value>
   </data>
   <data name="Approved target machines" xml:space="preserve">
     <value>Onaylanan hedef makineler</value>
   </data>
+  <data name="Approved · Waiting to run" xml:space="preserve">
+    <value>Onaylandı · Çalışmayı Bekliyor</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>Onaylayan Kimliği</value>
+  </data>
+  <data name="Authoritative Execution Contract:" xml:space="preserve">
+    <value>Yetkili Çalıştırma Sözleşmesi:</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Otomatik onay</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Onay bekleniyor</value>
+  </data>
+  <data name="Back to approvals" xml:space="preserve">
+    <value>Onaylara Dön</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Komut</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Komut kopyalandı</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Kopyala</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Oluşturulma tarihi</value>
+  </data>
+  <data name="Currently available Agent package" xml:space="preserve">
+    <value>Şu anda kullanılabilir Agent paketi</value>
   </data>
   <data name="Decision" xml:space="preserve">
     <value>Karar</value>
@@ -33,11 +78,29 @@
   <data name="Decision reason" xml:space="preserve">
     <value>Karar gerekçesi</value>
   </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
   <data name="Deny" xml:space="preserve">
     <value>Reddet</value>
   </data>
+  <data name="Docker command in this {0} request" xml:space="preserve">
+    <value>Bu {0} isteğindeki Docker komutu</value>
+  </data>
+  <data name="Equivalent DMS command" xml:space="preserve">
+    <value>Eşdeğer DMS komutu</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Çalıştırma durumu</value>
+  </data>
+  <data name="Execution status is unavailable." xml:space="preserve">
+    <value>Çalıştırma durumu kullanılamıyor.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Dondurulmuş girdi dosyaları</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Yüksek risk</value>
   </data>
   <data name="Historical approval workflow" xml:space="preserve">
     <value>Geçmiş onay iş akışı</value>
@@ -45,14 +108,152 @@
   <data name="ID" xml:space="preserve">
     <value>Kimlik</value>
   </data>
+  <data name="Image" xml:space="preserve">
+    <value>Görsel</value>
+  </data>
+  <data name="Image scope" xml:space="preserve">
+    <value>Görüntü kapsamı</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Düşük risk</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Orta risk</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Yeni bir talep gerekiyor</value>
+  </data>
+  <data name="No eligible approvers right now." xml:space="preserve">
+    <value>Şu anda uygun onaylayıcı yok.</value>
+  </data>
+  <data name="No machine targets" xml:space="preserve">
+    <value>Makine hedefi yok</value>
+  </data>
+  <data name="No package changes planned." xml:space="preserve">
+    <value>Planlanan paket değişikliği yok.</value>
+  </data>
+  <data name="No reason was provided by the applicant." xml:space="preserve">
+    <value>Başvuru sahibi tarafından bir neden belirtilmedi.</value>
+  </data>
+  <data name="Open SSH management" xml:space="preserve">
+    <value>SSH yönetimini aç</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Açık iş akışı</value>
+  </data>
   <data name="Parameters" xml:space="preserve">
     <value>Parametreler</value>
+  </data>
+  <data name="Puller" xml:space="preserve">
+    <value>Çeken</value>
+  </data>
+  <data name="Raw Input JSON" xml:space="preserve">
+    <value>Ham Girdi JSON</value>
+  </data>
+  <data name="Reconstructed from the saved input and target machines." xml:space="preserve">
+    <value>Kaydedilen girdilerden ve hedef makinelerden yeniden oluşturuldu.</value>
+  </data>
+  <data name="Requested Agent package" xml:space="preserve">
+    <value>İstenen Agent paketi</value>
+  </data>
+  <data name="Review the current package and submit a new request for the same machines." xml:space="preserve">
+    <value>Mevcut paketi gözden geçirin ve aynı makineler için yeni bir talep gönderin.</value>
+  </data>
+  <data name="Review the exact contents submitted for execution." xml:space="preserve">
+    <value>Yürütme için gönderilen tam içeriği gözden geçirin.</value>
+  </data>
+  <data name="Reviewers must verify that the applicant&apos;s stated reason strictly matches the authoritative Workflow definition, Target Machines, and Frozen Input parameters below. Do not approve based on this text alone." xml:space="preserve">
+    <value>İnceleyiciler, başvuru sahibinin belirttiği gerekçenin aşağıdaki yetkili İş Akışı tanımındaki, Hedef Makineler ve Donmuş Girdi parametreleriyle kesin olarak eşleştiğini doğrulamalıdır. Yalnızca bu metne dayanarak onay vermeyin.</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risk</value>
   </data>
+  <data name="SSH key fingerprints" xml:space="preserve">
+    <value>SSH anahtarı parmak izleri</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Güvenli iş akışı</value>
+  </data>
+  <data name="Submit a new upgrade request" xml:space="preserve">
+    <value>Yeni bir yükseltme isteği gönderin</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Hedef makineler</value>
+  </data>
+  <data name="The Agent package is temporarily unavailable. Try again later." xml:space="preserve">
+    <value>Agent paketi geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.</value>
+  </data>
+  <data name="The Workflow definition, Target Machines, and Input parameters below are frozen and authoritative. They represent exactly what will execute upon approval." xml:space="preserve">
+    <value>Aşağıdaki İş Akışı tanımı, Hedef Makineler ve Girdi parametreleri dondurulmuş ve yetkilidir. Onaylandığında tam olarak nelerin çalıştırılacağını temsil ederler.</value>
+  </data>
+  <data name="The current Agent package changed again. Review it before submitting." xml:space="preserve">
+    <value>Mevcut Agent paketi tekrar değişti. Göndermeden önce inceleyin.</value>
+  </data>
+  <data name="The original Agent package is available again. Review the original request." xml:space="preserve">
+    <value>Orijinal Agent paketi tekrar kullanılabilir durumda. Orijinal isteği gözden geçirin.</value>
+  </data>
+  <data name="The preview is unavailable for this machine." xml:space="preserve">
+    <value>Bu makine için önizleme kullanılamıyor.</value>
+  </data>
+  <data name="The requester needs to submit a new upgrade request." xml:space="preserve">
+    <value>İstek sahibi yeni bir yükseltme talebi göndermelidir.</value>
+  </data>
+  <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
+    <value>Seçilen Agent paketi değiştirildi. Yükseltme başlatılmadı.</value>
+  </data>
+  <data name="This workflow takes no parameters." xml:space="preserve">
+    <value>Bu iş akışı hiçbir parametre almaz.</value>
+  </data>
+  <data name="Unknown machine" xml:space="preserve">
+    <value>Bilinmeyen makine</value>
+  </data>
+  <data name="Unverified applicant claim" xml:space="preserve">
+    <value>Doğrulanmamış başvuru iddiası</value>
+  </data>
+  <data name="Upgrade the DMS Agent on {0}" xml:space="preserve">
+    <value>{0} üzerinde DMS Ajanını yükseltin</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Çok yüksek risk</value>
+  </data>
+  <data name="View workflow execution" xml:space="preserve">
+    <value>İş akışı çalıştırmasını görüntüle</value>
+  </data>
+  <data name="Who can approve" xml:space="preserve">
+    <value>Kim onaylayabilir</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Geri Çekildi</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>İş Akışı</value>
+  </data>
+  <data name="Workflow definition" xml:space="preserve">
+    <value>İş Akışı tanımı</value>
+  </data>
+  <data name="Workflow version" xml:space="preserve">
+    <value>İş akışı sürümü</value>
+  </data>
+  <data name="Your current role does not allow you to request this upgrade." xml:space="preserve">
+    <value>Mevcut rolünüz bu yükseltmeyi talep etmenize izin vermez.</value>
+  </data>
+  <data name="bytes" xml:space="preserve">
+    <value>bayt</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} Kimliği</value>
+  </data>
+  <data name="{0} request identifiers and raw payload" xml:space="preserve">
+    <value>{0} istek tanımlayıcıları ve ham yük</value>
+  </data>
+  <data name="{0} request reason" xml:space="preserve">
+    <value>{0} istek nedeni</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} talep eden</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>{0} istekçi kimliği</value>
   </data>
 
 </root>
