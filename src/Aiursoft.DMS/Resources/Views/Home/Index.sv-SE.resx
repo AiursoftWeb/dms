@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lintkontroll</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0} registrerar vem som begärde en åtgärd, dess mål och beslutet om godkännande.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT-licens</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Filosofin</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Den centrala webbapplikationen och API:et. Den spårar maskiner, hanterar {0}-godkännanden och samordnar arbetsflöden.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Kommandoradsverktyget som du kör på din egen dator. Det ansluter till kontrollen så att du kan begära operationer och inspektera deras resultat.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Den definitiva, testade .NET-fundamentet för företag. Från Auth till AI har vi löst de svåra delarna så att du inte behöver göra det.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Navigeringsfältet anpassas automatiskt baserat på användarroller och behörigheter.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Tjänsten du installerar på varje hanterad maskin. Den ansluter till Controller, rapporterar sin status och exekverar godkända arbetsflöden lokalt.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Mallen är byggd för enkel distribution. Den inkluderar fullt Docker-stöd, så du kan containerisera din app och köra den var som helst. Du kan också distribuera den direkt till IIS, Azure App Service eller vilken server som helst som stöder ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>De tre delarna av DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Det här är ett mallprojekt</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Visa på GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Visa din maskinlager, Agent-anslutning, versioner och operationshistorik.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory tillgänglig</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API tillgänglig</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} registrerar vem som begärde en åtgärd, dess mål och beslutet om godkännande.</value>
   </data>
 
 </root>

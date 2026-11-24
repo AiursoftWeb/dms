@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Lint Kontrolü</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>{0}, bir işlemi kimin talep ettiğini, hedeflerini ve onay kararını kaydeder.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>MIT Lisansı</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Felsefe</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Merkezi web uygulaması ve API&apos;si. Makineleri izler, {0} onaylarını yönetir ve iş akışlarını koordine eder.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Kendi bilgisayarınızda çalıştırdığınız komut satırı aracı. İşlemleri istemenize ve sonuçlarını incelemenize olanak tanımak için Controller&apos;a bağlanır.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Kesin, savaştan sıyrılmış .NET enterprise temeli. Kimlik doğrulamadan yapay zekâya kadar, zor kısımları çözdük, sizin için yapmanıza gerek kalmadı.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Gezinme çubuğu, kullanıcı rollerine ve izinlerine göre otomatik olarak ayarlanır.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Yönetilen her makineye kurduğunuz hizmet. Denetleyiciye bağlanır, durumunu bildirir ve onaylanan iş akışlarını yerel olarak yürütür.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Şablon, kolay dağıtım için oluşturulmuştur. Tam Docker desteği içerir, böylece uygulamanızı konteynerleştirip her yerde çalıştırabilirsiniz. Ayrıca doğrudan IIS, Azure App Service veya ASP.NET Core destekleyen herhangi bir sunucuya dağıtabilirsiniz.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>DMS&apos;nin üç bileşeni</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Bu bir şablon projedir</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>GitHub&apos;da Görüntüle</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Makine envanterinizi, Agent bağlantısını, sürümleri ve işlem geçmişini görüntüleyin.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>WebApplicationFactory mevcut</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>java.time API mevcut</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0}, bir işlemi kimin talep ettiğini, hedeflerini ve onay kararını kaydeder.</value>
   </data>
 
 </root>

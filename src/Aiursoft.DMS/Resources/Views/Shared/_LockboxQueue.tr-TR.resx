@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Tüm {0} istekleri</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Filtreleri Uygula</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Onaylandı</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Onay bekleniyor</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Temizle</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Reddedildi</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Çalışma durumu</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Yüksek risk</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Düşük risk</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Orta risk</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Yeni bir istek gerekli</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>İncelemeniz için bekleyen {0} istek yok.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Bu filtrelerle eşleşen {0} isteği yok.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Açık iş akışı</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>İncelememe hazır</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>İncele</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Güvenli iş akışı</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>{0} isteklerini ara</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Bekleyen tüm {0} isteklerini görüntüle</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Göster</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Çok yüksek risk</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>{0} isteğini görüntüle</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Geri Çekilen</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>İş akışı, istek sahibi, neden veya {0} Kimliği</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} istek sayfası</value>
+  </data>
+
+</root>

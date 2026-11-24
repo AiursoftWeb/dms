@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Toate cererile {0}</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Aplică filtrele</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Aprobat</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>În așteptarea aprobării</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Șterge</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Respins</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Starea de execuție</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Risc ridicat</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Risc scăzut</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Risc mediu</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Necesită o cerere nouă</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Următorul</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Nicio cerere {0} nu așteaptă recenzia dvs.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Nicio cerere {0} nu corespunde acestor filtre.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Flux de lucru deschis</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Gata de revizuit de mine</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Revizuire</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Flux de lucru sigur</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Căutați cereri {0}</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Vezi toate cererile {0} în așteptare</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Afișează</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Risc foarte ridicat</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>Vizualizați cererea {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Retrăse</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Flux de lucru, solicitant, motiv sau ID {0}</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>Pagini de cereri {0}</value>
+  </data>
+
+</root>

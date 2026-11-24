@@ -21,8 +21,53 @@
       <data name="Approval context" xml:space="preserve">
     <value>Contextul aprobării</value>
   </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automat</value>
+  </data>
   <data name="Callstack" xml:space="preserve">
     <value>Stiva de apeluri</value>
+  </data>
+  <data name="Checked" xml:space="preserve">
+    <value>Verificat</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controller</value>
+  </data>
+  <data name="Duration" xml:space="preserve">
+    <value>Durata</value>
+  </data>
+  <data name="Established OpenSSH connections" xml:space="preserve">
+    <value>Conexiuni OpenSSH stabilite</value>
+  </data>
+  <data name="Execution identifiers and trigger" xml:space="preserve">
+    <value>Identificatori de execuție și declanșator</value>
+  </data>
+  <data name="Execution log" xml:space="preserve">
+    <value>Jurnal de execuție</value>
+  </data>
+  <data name="Execution log pages" xml:space="preserve">
+    <value>Pagini de jurnal de execuție</value>
+  </data>
+  <data name="Execution navigation" xml:space="preserve">
+    <value>Navigare execuție</value>
+  </data>
+  <data name="Execution steps" xml:space="preserve">
+    <value>Pași de execuție</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Finalizat</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Mașină</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Următorul</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Nerecunoscut</value>
+  </data>
+  <data name="OpenSSH listeners" xml:space="preserve">
+    <value>Ascultători OpenSSH</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Origine</value>
@@ -30,14 +75,59 @@
   <data name="Parent" xml:space="preserve">
     <value>Părinte</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Flux de lucru părinte</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Anterior</value>
+  </data>
+  <data name="Raw execution result" xml:space="preserve">
+    <value>Rezultatul brut de execuție</value>
+  </data>
+  <data name="Remaining connection details" xml:space="preserve">
+    <value>Detalii privind conexiunile rămase</value>
+  </data>
+  <data name="Remaining listener details" xml:space="preserve">
+    <value>Detalii ale ascultătorilor rămași</value>
+  </data>
   <data name="Result" xml:space="preserve">
     <value>Rezultat</value>
+  </data>
+  <data name="Root workflow" xml:space="preserve">
+    <value>Flux de lucru rădăcină</value>
+  </data>
+  <data name="SSH closure needs verification" xml:space="preserve">
+    <value>Închiderea SSH necesită verificare</value>
+  </data>
+  <data name="See all execution steps" xml:space="preserve">
+    <value>Vezi toți pașii de execuție</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Început</value>
   </data>
   <data name="State" xml:space="preserve">
     <value>Stare</value>
   </data>
+  <data name="Steps that need attention" xml:space="preserve">
+    <value>Pași care necesită atenție</value>
+  </data>
   <data name="System schedule" xml:space="preserve">
     <value>Programare de sistem</value>
+  </data>
+  <data name="Target machines" xml:space="preserve">
+    <value>Mașini țintă</value>
+  </data>
+  <data name="The SSH service and socket were masked and stopped." xml:space="preserve">
+    <value>Serviciul și soclul SSH au fost mascate și oprite.</value>
+  </data>
+  <data name="The execution log is unavailable. Pending events remain stored." xml:space="preserve">
+    <value>Jurnalul de execuție nu este disponibil. Evenimentele în așteptare rămân stocate.</value>
+  </data>
+  <data name="There are no archived events on this page." xml:space="preserve">
+    <value>Nu există evenimente arhivate pe această pagină.</value>
+  </data>
+  <data name="This run has no recorded listener or connection counts." xml:space="preserve">
+    <value>Această execuție nu are numărători înregistrate de ascultători sau conexiuni.</value>
   </data>
   <data name="Trace" xml:space="preserve">
     <value>Urmărire</value>
@@ -45,8 +135,20 @@
   <data name="Trigger" xml:space="preserve">
     <value>Declanșator</value>
   </data>
+  <data name="View the SSH verification log" xml:space="preserve">
+    <value>Vizualizați jurnalul de verificare SSH</value>
+  </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flux de lucru</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID workflow</value>
+  </data>
+  <data name="Workflow history" xml:space="preserve">
+    <value>Istoricul fluxului de lucru</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>cererea {0}</value>
   </data>
 
 </root>

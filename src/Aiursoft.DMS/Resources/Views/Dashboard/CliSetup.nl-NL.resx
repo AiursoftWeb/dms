@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. De CLI installeren</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. Maak een persoonlijke API-sleutel</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. Meld u aan bij deze Controller</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. Verifieer de verbinding</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>Terug naar DMS</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>Controleer welk account en welke rechten de CLI gebruikt.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>Bestaande DMS_SERVER- en DMS_API_KEY-omgevingsvariabelen overschrijven uw opgeslagen login. Wis deze om de opgeslagen instellingen te gebruiken.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>Geef de sleutel een naam en kopieer deze zodra deze verschijnt. DMS toont deze slechts één keer.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>Als de CLI al is geïnstalleerd, werkt u deze bij met de onderstaande opdracht.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Als u de machtiging heeft om Open-workflows uit te voeren, probeert u de machines met de CLI op te vragen.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>Installeer eerst de .NET 10 SDK en voer dit daarna uit in uw terminal.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>Open API-sleutels</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>Voer het inlogcommando uit, plak de persoonlijke API-sleutel op het verborgen prompt en druk op Enter.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>Voer deze commando&apos;s uit op uw computer om verbinding te maken met deze DMS Controller.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI instellen</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>De CLI bewaart dit adres en uw persoonlijke API-sleutel op uw computer.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>Deze Controller</value>
+  </data>
+
+</root>

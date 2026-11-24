@@ -18,11 +18,17 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Challenge expires at" xml:space="preserve">
+      <data name="Add SSH public key" xml:space="preserve">
+    <value>SSH-openbare sleutel toevoegen</value>
+  </data>
+  <data name="Challenge expires at" xml:space="preserve">
     <value>Uitdaging verloopt op</value>
   </data>
   <data name="Create signing challenge" xml:space="preserve">
     <value>Ondersteuning voor handtekeningen</value>
+  </data>
+  <data name="Fingerprint" xml:space="preserve">
+    <value>Vingerafdruk</value>
   </data>
   <data name="Key ID" xml:space="preserve">
     <value>Sleutel-ID</value>
@@ -30,11 +36,17 @@
   <data name="Name" xml:space="preserve">
     <value>Naam</value>
   </data>
+  <data name="No verified SSH public keys yet." xml:space="preserve">
+    <value>Nog geen geverifieerde SSH-openbare sleutels.</value>
+  </data>
   <data name="OpenSSH public key" xml:space="preserve">
     <value>OpenSSH publieke sleutel</value>
   </data>
   <data name="Register a public key" xml:space="preserve">
     <value>Een openbare sleutel registreren</value>
+  </data>
+  <data name="Resume adding a key" xml:space="preserve">
+    <value>Voeg een sleutel toe</value>
   </data>
   <data name="Revoke" xml:space="preserve">
     <value>Intrekken</value>

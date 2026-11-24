@@ -21,11 +21,17 @@
       <data name="About these permissions" xml:space="preserve">
     <value>Despre aceste permisiuni</value>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Aplică</value>
+  </data>
   <data name="Automatically approve" xml:space="preserve">
     <value>Aprobare automată</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Cluster</value>
+  </data>
+  <data name="Execution location" xml:space="preserve">
+    <value>Locația de execuție</value>
   </data>
   <data name="High" xml:space="preserve">
     <value>Ridicat</value>
@@ -57,13 +63,22 @@
   <data name="No public standard workflows are registered." xml:space="preserve">
     <value>Nu este înregistrat niciun flux de lucru standard public.</value>
   </data>
+  <data name="Open" xml:space="preserve">
+    <value>Deschis</value>
+  </data>
   <data name="Requires machine targets" xml:space="preserve">
     <value>Necesită ținte de mașini</value>
   </data>
   <data name="Risk" xml:space="preserve">
     <value>Risc</value>
   </data>
-  <data name="Role permissions apply to every machine in this DMS instance and each workflow's risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
+  <data name="Risk (highest first)" xml:space="preserve">
+    <value>Risc (cel mai mare mai întâi)</value>
+  </data>
+  <data name="Risk (lowest first)" xml:space="preserve">
+    <value>Risc (cel mai mic mai întâi)</value>
+  </data>
+  <data name="Role permissions apply to every machine in this DMS instance and each workflow&apos;s risk level. Automatic approval requires permission to request. Approving your own {0} request also requires self approval permission." xml:space="preserve">
     <value>Permisiunile de rol se aplică tuturor mașinilor din această instanță DMS și nivelului de risc al fiecărui flux de lucru. Aprobarea automată necesită permisiunea de a solicita. Aprobarea propriei cereri {0} necesită, de asemenea, permisiunea de autoaprobare.</value>
   </data>
   <data name="Safe" xml:space="preserve">
@@ -72,11 +87,17 @@
   <data name="Show workflows" xml:space="preserve">
     <value>Afișează fluxurile de lucru</value>
   </data>
+  <data name="Sort by" xml:space="preserve">
+    <value>Sortare după</value>
+  </data>
   <data name="Standard workflows" xml:space="preserve">
     <value>Fluxuri de lucru standard</value>
   </data>
   <data name="This catalog lists public standard workflows available on the Controller. Agent availability and supported versions are checked during execution. Special control operations and internal subworkflows are not listed." xml:space="preserve">
     <value>Acest catalog enumeră fluxurile de lucru standard publice disponibile pe Controller. Disponibilitatea agenților și versiunile acceptate sunt verificate în timpul execuției. Operațiunile speciale de control și subfluxurile interne nu sunt incluse.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Necunoscut</value>
   </data>
   <data name="Version" xml:space="preserve">
     <value>Versiune</value>
@@ -86,6 +107,12 @@
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Flux de lucru</value>
+  </data>
+  <data name="Workflow name (A–Z)" xml:space="preserve">
+    <value>Nume flux de lucru (A–Z)</value>
+  </data>
+  <data name="Workflow name (Z–A)" xml:space="preserve">
+    <value>Nume flux de lucru (Z–A)</value>
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Da</value>

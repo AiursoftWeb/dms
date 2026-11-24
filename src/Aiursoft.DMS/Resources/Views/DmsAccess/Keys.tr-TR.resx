@@ -39,6 +39,9 @@
   <data name="Revoke" xml:space="preserve">
     <value>İptal et</value>
   </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI&apos;yi yapılandır</value>
+  </data>
   <data name="Valid days" xml:space="preserve">
     <value>Geçerlilik süresi (gün)</value>
   </data>

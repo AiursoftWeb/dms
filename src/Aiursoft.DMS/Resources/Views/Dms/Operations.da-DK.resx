@@ -24,14 +24,44 @@
   <data name="All origins" xml:space="preserve">
     <value>Alle oprindelser</value>
   </data>
+  <data name="All states" xml:space="preserve">
+    <value>Alle tilstande</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Anvend filtre</value>
+  </data>
+  <data name="Automatic" xml:space="preserve">
+    <value>Automatisk</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Annulleret</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Ryd filtre</value>
+  </data>
   <data name="Cluster" xml:space="preserve">
     <value>Klynge</value>
   </data>
   <data name="Cluster workflows only" xml:space="preserve">
     <value>Kun klyngearbejdsgange</value>
   </data>
+  <data name="Completed with warnings" xml:space="preserve">
+    <value>Fuldført med advarsler</value>
+  </data>
+  <data name="Controller" xml:space="preserve">
+    <value>Controller</value>
+  </data>
   <data name="Created" xml:space="preserve">
     <value>Oprettet</value>
+  </data>
+  <data name="Execution pages" xml:space="preserve">
+    <value>Eksekveringssider</value>
+  </data>
+  <data name="Execution state" xml:space="preserve">
+    <value>Udførelsesstatus</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Fejlet</value>
   </data>
   <data name="Filter" xml:space="preserve">
     <value>Filtrer</value>
@@ -39,17 +69,44 @@
   <data name="Machine" xml:space="preserve">
     <value>Maskine</value>
   </data>
+  <data name="Manual" xml:space="preserve">
+    <value>Manuel</value>
+  </data>
+  <data name="Needs verification" xml:space="preserve">
+    <value>Kræver verificering</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Næste</value>
+  </data>
+  <data name="No executions match these filters." xml:space="preserve">
+    <value>Ingen eksekveringer matcher disse filtre.</value>
   </data>
   <data name="Origin" xml:space="preserve">
     <value>Oprindelse</value>
   </data>
+  <data name="Parent workflow" xml:space="preserve">
+    <value>Forældreworkflow</value>
+  </data>
   <data name="Previous" xml:space="preserve">
     <value>Forrige</value>
   </data>
+  <data name="Queued" xml:space="preserve">
+    <value>Kø</value>
+  </data>
+  <data name="Root executions only" xml:space="preserve">
+    <value>Kun rod-executions</value>
+  </data>
+  <data name="Running" xml:space="preserve">
+    <value>Kører</value>
+  </data>
   <data name="State" xml:space="preserve">
     <value>Tilstand</value>
+  </data>
+  <data name="Succeeded" xml:space="preserve">
+    <value>Lykkedes</value>
+  </data>
+  <data name="View execution" xml:space="preserve">
+    <value>Vis eksekvering</value>
   </data>
   <data name="Workflow" xml:space="preserve">
     <value>Arbejdsgang</value>

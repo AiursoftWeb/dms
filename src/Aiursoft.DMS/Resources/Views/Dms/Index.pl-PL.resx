@@ -18,11 +18,29 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-      <data name="Agent version" xml:space="preserve">
+      <data name="Add a machine" xml:space="preserve">
+    <value>Dodaj maszynę</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
     <value>Wersja agenta</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Wszystkie stany</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Zastosuj filtry</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Wyczyść filtry</value>
   </data>
   <data name="Cluster" xml:space="preserve">
     <value>Klaster</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>Status połączenia</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Wyłączona</value>
   </data>
   <data name="Last seen" xml:space="preserve">
     <value>Ostatnio widziano</value>
@@ -30,14 +48,41 @@
   <data name="Machine" xml:space="preserve">
     <value>Maszyna</value>
   </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>Nazwa maszyny</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>Strony maszyn</value>
+  </data>
   <data name="Machines" xml:space="preserve">
     <value>Maszyny</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>Nigdy nie połączono</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Następna</value>
   </data>
   <data name="No machines are visible. Configure cluster access, then use the CLI to request machine registration." xml:space="preserve">
     <value>Nie widać żadnych maszyn. Skonfiguruj dostęp do klastra, a następnie użyj interfejsu CLI, aby zażądać rejestracji maszyny.</value>
   </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>Nie dołączono jeszcze żadnych maszyn.</value>
+  </data>
   <data name="No machines have joined. Use a join key to request Agent registration." xml:space="preserve">
     <value>Brak dołączonych maszyn. Użyj klucza dołączenia, aby zawnioskować o rejestrację Agent.</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>Brak maszyn spełniających te filtry.</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Offline</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>Online</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Poprzednia</value>
   </data>
   <data name="Status" xml:space="preserve">
     <value>Status</value>
