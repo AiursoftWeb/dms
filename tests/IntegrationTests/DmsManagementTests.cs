@@ -164,9 +164,26 @@ public class DmsManagementTests : TestBase
         StringAssert.Contains(detail, "Baseline fixture result");
         StringAssert.Contains(detail, "data-run-state=\"Failed\"");
         StringAssert.Contains(detail, latest.Id.ToString());
+
+        var baselineSection = detail.Substring(detail.IndexOf("id=\"baseline-heading\"", StringComparison.Ordinal));
+        baselineSection = baselineSection.Substring(0, baselineSection.IndexOf("</section>", StringComparison.Ordinal));
+        StringAssert.Contains(baselineSection, latest.Id.ToString());
         foreach (var run in new[] { previous, manual, child, otherMachine, otherWorkflow })
-            Assert.DoesNotContain(run.Id.ToString(), detail);
-        StringAssert.Contains(await Http.GetStringAsync($"/Dms/Machine/{never.Id}"), "No scheduled baseline execution is recorded for this machine.");
+            Assert.DoesNotContain(run.Id.ToString(), baselineSection);
+
+        StringAssert.Contains(detail, "Recent executions");
+        StringAssert.Contains(detail, "Investigate machine");
+        StringAssert.Contains(detail, $"/Dms/Investigation?machineId={offline.Id}");
+        StringAssert.Contains(detail, "excludeHeartbeats=true");
+        StringAssert.Contains(detail, manual.Id.ToString());
+        StringAssert.Contains(detail, child.Id.ToString());
+        StringAssert.Contains(detail, previous.Id.ToString());
+        Assert.DoesNotContain(otherMachine.Id.ToString(), detail);
+        Assert.DoesNotContain(otherWorkflow.Id.ToString(), detail);
+
+        var neverDetail = WebUtility.HtmlDecode(await Http.GetStringAsync($"/Dms/Machine/{never.Id}"));
+        StringAssert.Contains(neverDetail, "No scheduled baseline execution is recorded for this machine.");
+        StringAssert.Contains(neverDetail, "No recent workflow executions recorded for this machine.");
     }
 
     [TestMethod]

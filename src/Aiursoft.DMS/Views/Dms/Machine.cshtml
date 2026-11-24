@@ -22,7 +22,10 @@
             <h1 class="mb-0">@machine.Name</h1>
             <partial name="_DmsMachineConnection" model="machine.Connection" />
         </div>
-        <a asp-action="Operations" asp-route-machineId="@machine.Id" class="btn btn-outline-secondary"><i data-lucide="history" aria-hidden="true"></i> @Localizer["Workflow history"]</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Investigation" asp-route-machineId="@machine.Id" class="btn btn-outline-secondary"><i data-lucide="search" aria-hidden="true"></i> @Localizer["Investigate machine"]</a>
+            <a asp-action="Operations" asp-route-machineId="@machine.Id" asp-route-excludeHeartbeats="true" class="btn btn-outline-secondary"><i data-lucide="history" aria-hidden="true"></i> @Localizer["Workflow history"]</a>
+        </div>
     </header>
 
     <section class="card dms-detail-card" id="ssh-management" aria-labelledby="ssh-heading">
@@ -125,7 +128,7 @@
                                 <dd><partial name="_DmsRunStatus" model="run.State" /></dd>
                             </div>
                             <div>
-                                <dt>@(run.FinishedAt.HasValue ? @Localizer["Finished"] : run.StartedAt.HasValue ? @Localizer["Started"] : @Localizer["Created"])</dt>
+                                <dt>@(run.FinishedAt.HasValue ? Localizer["Finished"] : run.StartedAt.HasValue ? Localizer["Started"] : Localizer["Created"])</dt>
                                 <dd><time datetime="@timestamp" data-utc-time="@timestamp">@runTime.ToString("u", CultureInfo.InvariantCulture)</time></dd>
                             </div>
                         </dl>
@@ -146,6 +149,50 @@
             </div>
         </section>
     </div>
+
+    <section class="card dms-detail-card mb-3" aria-labelledby="recent-heading">
+        <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h2 id="recent-heading" class="mb-0"><i data-lucide="activity" aria-hidden="true"></i> @Localizer["Recent executions"]</h2>
+                <a asp-action="Operations" asp-route-machineId="@machine.Id" asp-route-excludeHeartbeats="true" class="btn btn-sm btn-outline-secondary">@Localizer["View all history"]</a>
+            </div>
+            @if (Model.RecentRuns.Count == 0)
+            {
+                <p class="text-body-secondary mb-0">@Localizer["No recent workflow executions recorded for this machine."]</p>
+            }
+            else
+            {
+                <ul class="dms-items list-unstyled mb-0">
+                    @foreach (var recentRun in Model.RecentRuns)
+                    {
+                        var definition = recentRun.Definition == WorkflowNames.Batch && recentRun.LockboxId is { } boxId
+                            ? Model.RequestedDefinitions.GetValueOrDefault(boxId, recentRun.Definition)
+                            : recentRun.Definition;
+                        <li class="dms-item">
+                            <div class="dms-item-main">
+                                <div class="dms-item-icon"><i data-lucide="activity" aria-hidden="true"></i></div>
+                                <div class="dms-item-content">
+                                    <a class="dms-item-title" asp-action="Operation" asp-route-id="@recentRun.Id">
+                                        <partial name="_DmsWorkflowName" model="definition" />
+                                    </a>
+                                    <div class="dms-item-meta">
+                                        <span><i data-lucide="clock" aria-hidden="true"></i> <span data-utc-time="@recentRun.CreatedAt.ToHtmlDateTime()"></span></span>
+                                        <span>@(recentRun.Origin == WorkflowOrigin.Automatic ? Localizer["Automatic"] : Localizer["Manual"])</span>
+                                        @if (recentRun.ParentId != null)
+                                        {
+                                            <a asp-action="Operation" asp-route-id="@recentRun.ParentId">@Localizer["Parent workflow"]</a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dms-item-status"><partial name="_DmsRunStatus" model="recentRun.State" /></div>
+                            <div class="dms-item-action"><a class="btn btn-outline-secondary btn-sm" asp-action="Operation" asp-route-id="@recentRun.Id">@Localizer["View execution"]</a></div>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </section>
 
     <details class="card dms-details">
         <summary>@Localizer["Machine ID"]</summary>

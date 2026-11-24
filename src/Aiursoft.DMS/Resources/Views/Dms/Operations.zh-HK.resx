@@ -118,4 +118,7 @@
     <value>工作流類型</value>
   </data>
 
+  <data name="Exclude heartbeats" xml:space="preserve">
+    <value>排除心跳</value>
+  </data>
 </root>

@@ -8,7 +8,8 @@
         ["machineId"] = Model.MachineId?.ToString(), ["definition"] = Model.Definition,
         ["clusterWorkflowsOnly"] = Model.ClusterWorkflowsOnly ? "true" : null,
         ["origin"] = Model.Origin?.ToString(), ["state"] = Model.State?.ToString(),
-        ["rootOnly"] = Model.RootOnly ? "true" : null
+        ["rootOnly"] = Model.RootOnly ? "true" : null,
+        ["excludeHeartbeats"] = Model.ExcludeHeartbeats ? "true" : null
     };
 }
 
@@ -65,6 +66,10 @@
         </div>
         <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
         <div class="dms-filter-options">
+            <div class="form-check">
+                <input id="excludeHeartbeats" name="excludeHeartbeats" type="checkbox" value="true" checked="@Model.ExcludeHeartbeats" class="form-check-input" />
+                <label for="excludeHeartbeats" class="form-check-label">@Localizer["Exclude heartbeats"]</label>
+            </div>
             <div class="form-check">
                 <input id="rootOnly" name="rootOnly" type="checkbox" value="true" checked="@Model.RootOnly" class="form-check-input" />
                 <label for="rootOnly" class="form-check-label">@Localizer["Root executions only"]</label>
