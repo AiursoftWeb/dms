@@ -317,6 +317,70 @@ Each artifact is limited to one GiB; exports default to 256 MiB. Transfers use e
 
 Temporary transfers expire after 24 hours and are reclaimed when a new upload begins. Script and SQL source files referenced by submitted requests are retained for approval audit, including after a decision. Capacity defaults to ten GiB and can be configured with `Dms:Artifacts:MaximumTotalBytes` (one GiB to one TiB). Capacity exhaustion refuses new uploads. Keep this directory in the Controller's normal persistent-state and backup procedure.
 
+## SOAP and XML workflows
+
+Start with `fetch-wsdl → inspect-wsdl → query → assert-field`. Deploy the updated Controller, CLI and Agent first. On the machine that can reach the service, an administrator registers the endpoint and its allowed operations in `/etc/aiursoft-dms-agent/soap-services.json`. The directory and file must not be writable by group or others. The Controller never contacts SOAP services; it reads only the requester-owned artifacts named in the approved request.
+
+```sh
+dms machine soap fetch-wsdl --machine-id "$MACHINE_ID" --service qad-test --reason 'Fetch the QAD contract'
+dms soap inspect-wsdl --artifact-id "$CONTRACT_ID" --reason 'Identify response fields'
+dms machine soap query --machine-id "$MACHINE_ID" --service qad-test --operation Lookup \
+  --args-file ./args.json --reason 'Check a sample response'
+dms xml assert-field --artifact-id "$RESPONSE_ID" \
+  --path '/{http://schemas.xmlsoap.org/soap/envelope/}Envelope/{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:example}LookupResponse/{urn:example}Row/{urn:example}NewField' \
+  --expect nonempty --reason 'Check the new field on each returned row'
+dms artifact download --id "$RESPONSE_ID" --file ./response-result.xml
+```
+
+Follow each submission's Lockbox receipt to approval and its workflow ID. For Agent workflows, use `dms operation get-callstack --id "$WORKFLOW_ID"` to find the machine child, then `dms operation get-workflow --id "$CHILD_ID" --output-format json` to find `Artifact.Id`, the reported outcome and, for calls, HTTP status and elapsed time. For Controller workflows, read the result of the root workflow. Artifacts are private and expire after 24 hours; download them before expiry if needed. The argument file is also uploaded to DMS; do not put passwords or tokens in it. Do not put secrets in `--expect`, reasons or other approval inputs.
+
+Other commands (each requires `--reason`):
+
+```sh
+dms soap diff-wsdl --before "$OLD_CONTRACT_ID" --after "$CONTRACT_ID" --reason 'Review the interface changes'
+dms xml validate --xml-artifact-id "$XML_ID" --schema-artifact-id "$XSD_ID" --reason 'Validate the XML'
+dms machine soap call-test --machine-id "$MACHINE_ID" --service qad-test --operation SaveFixture \
+  --args-file ./test-args.json --reason 'Verify test-only write and receipt'
+```
+
+The contract inspector supports WSDL 1.1 operations and message fields, not bindings or endpoints. Oversized contracts or analysis results fail with an explicit limit error. Validation accepts a standalone XSD or the fetched contract bundle. Supply XML matching a global element in the schema (for a schema describing only the payload, upload the payload rather than the outer SOAP envelope). Schema references must be available in the bundle; instance schema hints are ignored. Validation reports sanitized diagnostics with line and column when available, distinguishing type mismatches, missing required attributes or child content, and unexpected structure where possible. Assertions use absolute element paths, not XPath. Write `{namespace-uri}localName` for namespaced elements (including elements with a default namespace) and a bare name only for elements with no namespace. Prefix spelling in the XML does not matter. Quote the path in the shell. Every matching parent of the final step is checked: `Parents` counts those parents, `Missing` counts parents without the field, and `Nil`, `Empty`, and `Nonempty` count parents with a matching field in each state. A parent with multiple matching fields can contribute to more than one state, but only once per state. `Matches` counts field elements; `MatchingExpectation` counts parents that satisfy the expectation. For `missing`, all matched parents must lack the field; for `present`, `nil`, `empty`, `nonempty`, or `equals:<text>`, every parent must contain the field and every matching field must satisfy the expectation. No matched parent means the assertion fails rather than passing vacuously. To verify a particular row, use the registered query's filters to narrow the returned rows. Validation failures and failed assertions return details with a warning status.
+
+### Agent SOAP profile example
+
+To fetch only the WSDL from a machine such as `rms`, register just `services.qad-test.wsdl` (the confirmed WSDL URL, not necessarily the POST URL), `environment: "test"`, and `wsdlDependencies` if it has imports. No invocation endpoint, operation, or arguments file is needed. The profile file and its parent directories must be root-owned and not group/other writable; symlinks are not accepted. Metadata GETs are unauthenticated and do not follow redirects. If the WSDL or any dependency requires authentication, this workflow cannot fetch it as implemented. After approval, download the machine child's `Artifact.Id` as `soap-contract.json`; `Documents[Root]` is the WSDL, and the other entries are its referenced documents.
+
+Replace the example URLs, operation names, SOAP envelope, and argument rules with the service's actual test configuration. `args.json` for this example is `{"id":"112233"}`. For the QAD R1 call, register `xxcaitmiqreq` as `read-only` after confirming its behavior. Use the existing request envelope as the template (including the QAD headers and session context), set `action` to the empty string, and replace the six request field values with `{{reqID}}`, `{{reqdate1}}`, `{{reqdate2}}`, `{{reqcanbr}}`, `{{reqitmlot}}` and `{{reqitmpart}}`. Pass those same keys in the JSON file, using empty strings for unused filters. The WSDL URL must be confirmed independently; it is not inferred from the POST URL.
+
+```json
+{
+  "services": {
+    "qad-test": {
+      "environment": "test",
+      "wsdl": "https://qad-test.example.invalid/service?wsdl",
+      "wsdlDependencies": ["https://qad-test.example.invalid/schemas/lookup.xsd"],
+      "endpoint": "https://qad-test.example.invalid/service",
+      "timeoutSeconds": 30,
+      "redactNames": ["PersonalIdentifier"],
+      "redactEntries": [{ "element": "ttContext", "matchChild": "propertyName" }],
+      "operations": {
+        "Lookup": {
+          "mode": "read-only",
+          "action": "urn:example:Lookup",
+          "template": "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:q=\"urn:example\"><s:Body><q:Lookup><q:Id>{{id}}</q:Id></q:Lookup></s:Body></s:Envelope>",
+          "arguments": { "id": { "type": "string", "maxLength": 24 } }
+        }
+      }
+    }
+  }
+}
+```
+
+The Agent accepts only registered service and operation names. List every WSDL/XSD dependency explicitly; dependencies must use the same origin as the registered WSDL. `query` accepts only `read-only` operations. `call-test` is for `test-only` operations on services marked `test`; it requires manual High-risk approval. Before the Agent will send a test write, its operation must declare both `"responseElement": "{urn:example}SaveFixtureResponse"` and `"businessSuccess": { "path": ["{urn:example}SaveFixtureResponse", "{urn:example}Success"], "equals": "true" }`. The response must match by namespace and local name; each step of the business path must resolve to exactly one non-nil element, and its final text must equal the configured value. A valid scalar reporting a different value is a business failure. An unrelated response or an absent, ambiguous, or nil confirmation field after sending the request yields `NeedsVerification`, not success. Verify the effect in the test system before resubmitting; DMS does not retry the POST.
+
+Restrict access to the profile and keep production and test services separate. For Basic auth, use HTTPS and set `basicAuth` to `{"username":"<account>","passwordFile":"/etc/aiursoft-dms-agent/qad-password"}` with a private password file (0600). Do not put authentication material in templates or argument files. All configured arguments must appear in the JSON object. Whole-element text placeholders are escaped as XML values; `{{dmsMessageId}}` generates a fresh WS-Addressing `urn:uuid:` value and is not supplied in JSON.
+
+Add service-specific element/attribute names to `redactNames`. Use `redactEntries` to remove an entire `element` when a direct `matchChild` matches the condition. In these rules, `{namespace-uri}name` matches exactly; a bare name matches the local name case-insensitively across namespaces. With `equals`, the trimmed child text must equal the configured value (case-sensitive); without it, the trimmed child text is checked against the built-in and configured sensitive names, ignoring case, hyphens and underscores. **Before upgrading an Agent that queries QAD, add the `ttContext` rule shown above to each QAD profile** to keep removing sensitive context entries. Do not add that rule to unrelated services. SOAP headers and raw fault details are not published. Treat the remaining business data as private.
+
 ## Database profiles and SQL
 
 An administrator registers connections in `/etc/aiursoft-dms-agent/database-connections.json`, readable only by the Agent account. Passwords live in separate 0600 files on the Agent host. For example, replace these demonstration values with the intended target and private password-file path:

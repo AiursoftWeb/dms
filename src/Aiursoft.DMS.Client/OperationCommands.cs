@@ -1454,9 +1454,9 @@ public static partial class DmsCommandApp
             baselinePath);
     }
 
-    private static ActionCommand PreparedOperation<TInput>(string name,
+    private static ActionCommand PreparedOperation<TInput, TResult>(string name,
         string description,
-        WorkflowDefinition<TInput, OperationResult> definition,
+        WorkflowDefinition<TInput, TResult> definition,
         Func<DmsApiClient, ParseResult, Guid, Task<TInput>> prepare,
         params Option[] options) =>
         new(name,
@@ -1466,7 +1466,7 @@ public static partial class DmsCommandApp
             options: options,
             preparedInput: async (client, context, requestId) =>
                 definition.Serialize(await prepare(client, context, requestId)),
-            readResult: definition.Risk == RiskLevel.Open ? result => definition.ReadResult(result) : null);
+            readResult: definition.Risk == RiskLevel.Open ? result => definition.ReadResult(result)! : null);
 
     private static async Task<ArtifactReference> PrepareOperationTextAsync(DmsApiClient client,
         string file,

@@ -49,7 +49,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     }
 
     private static bool CanAutoApprove(string definition, bool autoApprove) => autoApprove &&
-        definition != ClickHouseWorkflows.Execute.Name && !BoxSecretTransfers.RequiresIndependentApproval(definition);
+        definition != ClickHouseWorkflows.Execute.Name && definition != SoapWorkflows.CallTest.Name &&
+        !BoxSecretTransfers.RequiresIndependentApproval(definition);
 
     internal static AgentUpgradeInput ReadRequestedAgentUpgrade(LockboxRequest item) =>
         MachineWorkflows.AgentUpgrade.ReadInput(JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!.Input);
