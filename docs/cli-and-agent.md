@@ -74,7 +74,7 @@ dms access whoami
 dms machine list
 ```
 
-Run `dms login` again to change the saved Controller or key. `dms login --server https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
+Run `dms login` again to change the saved Controller or key. `dms login --dms-server-endpoint https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
 
 For scripts, command options override environment variables, which override saved authentication:
 
@@ -86,7 +86,7 @@ export DMS_API_KEY
 dms access whoami
 ```
 
-`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, effective workflow permissions, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
+`--dms-server-endpoint` and `--api-key` can also be supplied to individual commands. The endpoint is the DMS Controller URL. Machine commands take the managed machine's ID in `--machine-id`. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, effective workflow permissions, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
 
 The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox approval flow apply equally to both forms.
 

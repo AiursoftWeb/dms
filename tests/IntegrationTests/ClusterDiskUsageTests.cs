@@ -80,7 +80,7 @@ public class ClusterDiskUsageTests : TestBase
     public async Task ClusterCommandUsesApprovedSnapshotAndTwoActualAgents()
     {
         var setup = await ArrangeAsync();
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "disk-usage", "--all-machines", "--reason", "Real disk query", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "disk-usage", "--all-machines", "--reason", "Real disk query", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(l => l.RequesterId == setup.User));
         Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
@@ -118,7 +118,7 @@ public class ClusterDiskUsageTests : TestBase
             }
             foreach (var format in new[] { "table", "json", "csv" })
             {
-                var details = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", parent.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+                var details = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", parent.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
                 Assert.AreEqual(0, details.ProgramReturn, details.StdErr);
                 StringAssert.Contains(details.StdOut, "TotalBytes"); StringAssert.Contains(details.StdOut, "AvailableBytes");
                 foreach (var row in result.Machines) StringAssert.Contains(details.StdOut, row.Usage.WorkflowId.ToString());

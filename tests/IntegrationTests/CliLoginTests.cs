@@ -76,7 +76,7 @@ public class CliLoginTests : TestBase
     {
         await LoginAsync(await CreateKeyAsync());
         var previous = await File.ReadAllTextAsync(AuthPath);
-        var rejected = await RunAsync(["login", "--server", Http.BaseAddress!.ToString()], "invalid-test-key\n");
+        var rejected = await RunAsync(["login", "--dms-server-endpoint", Http.BaseAddress!.ToString()], "invalid-test-key\n");
         Assert.AreEqual(1, rejected.Code);
         Assert.IsFalse((rejected.Output + rejected.Error).Contains("invalid-test-key", StringComparison.Ordinal));
         Assert.AreEqual(previous, await File.ReadAllTextAsync(AuthPath));
@@ -97,7 +97,7 @@ public class CliLoginTests : TestBase
         var explicitKey = await RunAsync(["access", "whoami", "--api-key", key], environment: environment);
         Assert.AreEqual(0, explicitKey.Code, explicitKey.Error);
         environment["DMS_SERVER"] = "http://127.0.0.1:1"; environment["DMS_API_KEY"] = key;
-        var explicitEndpoint = await RunAsync(["access", "whoami", "--server", Http.BaseAddress.ToString()], environment: environment);
+        var explicitEndpoint = await RunAsync(["access", "whoami", "--dms-server-endpoint", Http.BaseAddress.ToString()], environment: environment);
         Assert.AreEqual(0, explicitEndpoint.Code, explicitEndpoint.Error);
     }
 
@@ -105,9 +105,35 @@ public class CliLoginTests : TestBase
     public async Task EndpointOverrideCannotReuseKeySavedForAnotherController()
     {
         await LoginAsync(await CreateKeyAsync());
-        var result = await RunAsync(["access", "whoami", "--server", "http://127.0.0.1:1"]);
+        var result = await RunAsync(["access", "whoami", "--dms-server-endpoint", "http://127.0.0.1:1"]);
         Assert.AreEqual(1, result.Code);
         StringAssert.Contains(result.Error, "for this Controller");
+    }
+
+    [TestMethod]
+    public async Task EndpointHelpUsesNewNameAndLegacyScriptsStillConnect()
+    {
+        foreach (var command in new[] { new[] { "login" }, new[] { "artifact", "ls" } })
+        {
+            var help = await RunAsync([.. command, "--help"]);
+            Assert.AreEqual(0, help.Code, help.Error);
+            StringAssert.Contains(help.Output, "--dms-server-endpoint");
+            Assert.DoesNotContain("--server", help.Output);
+        }
+
+        var invalid = await RunAsync(["artifact", "ls", "--dms-server-endpoint", Guid.NewGuid().ToString()]);
+        Assert.AreEqual(1, invalid.Code);
+        StringAssert.Contains(invalid.Error, "--dms-server-endpoint");
+        StringAssert.Contains(invalid.Error, "--machine-id");
+
+        var key = await CreateKeyAsync();
+        var endpoint = Http.BaseAddress!.ToString();
+        var login = await RunAsync(["login", "--server", endpoint], $"{key}\n");
+        Assert.AreEqual(0, login.Code, login.Error);
+        var legacy = await RunAsync(["access", "whoami", "--server", endpoint]);
+        Assert.AreEqual(0, legacy.Code, legacy.Error);
+        var explicitEndpoint = await RunAsync(["access", "whoami", "--dms-server-endpoint", endpoint, "--server", "http://127.0.0.1:1"]);
+        Assert.AreEqual(0, explicitEndpoint.Code, explicitEndpoint.Error);
     }
 
     [TestMethod]
@@ -119,7 +145,7 @@ public class CliLoginTests : TestBase
         Assert.AreEqual(1, rejected.Code);
         Assert.IsFalse(rejected.Error.Contains("invalid-test-secret", StringComparison.Ordinal));
         var key = await CreateKeyAsync();
-        var explicitCredentials = await RunAsync(["access", "whoami", "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+        var explicitCredentials = await RunAsync(["access", "whoami", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
         Assert.AreEqual(0, explicitCredentials.Code, explicitCredentials.Error);
         await LoginAsync(key);
         Assert.AreEqual(0, (await RunAsync(["access", "whoami"])).Code);

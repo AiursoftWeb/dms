@@ -10,7 +10,7 @@ internal sealed record DmsCredentials(string Endpoint, string ApiKey)
     {
         if (!Uri.TryCreate(endpoint.Trim(), UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https") ||
             !string.IsNullOrEmpty(uri.UserInfo) || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment))
-            throw new ArgumentException("Invalid Controller URL. Enter an HTTP or HTTPS endpoint without credentials, query or fragment.");
+            throw new ArgumentException($"Invalid DMS Controller URL. {DmsEndpointOptions.Name} expects an HTTP or HTTPS URL without credentials, query or fragment. Use --machine-id to select a machine in a machine command.");
         return uri.AbsoluteUri.TrimEnd('/');
     }
 
@@ -26,7 +26,7 @@ internal sealed record DmsCredentials(string Endpoint, string ApiKey)
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException or ArgumentException)
         {
-            throw new ArgumentException("Cannot read saved DMS authentication. Run 'dms login' to replace it, or supply both --server and --api-key.");
+            throw new ArgumentException($"Cannot read saved DMS authentication. Run 'dms login' to replace it, or supply both {DmsEndpointOptions.Name} and --api-key.");
         }
     }
 
@@ -35,7 +35,7 @@ internal sealed record DmsCredentials(string Endpoint, string ApiKey)
         endpoint ??= Environment.GetEnvironmentVariable("DMS_SERVER");
         key ??= Environment.GetEnvironmentVariable("DMS_API_KEY");
         var saved = endpoint == null || key == null ? Load() : null;
-        endpoint = NormalizeEndpoint(endpoint ?? saved?.Endpoint ?? throw new ArgumentException("Run 'dms login', or set --server or DMS_SERVER."));
+        endpoint = NormalizeEndpoint(endpoint ?? saved?.Endpoint ?? throw new ArgumentException($"Run 'dms login', or set {DmsEndpointOptions.Name} or DMS_SERVER."));
         // A stored key belongs to the endpoint verified at login, never a different override.
         key ??= saved?.Endpoint == endpoint ? saved.ApiKey : null;
         if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Run 'dms login', or set --api-key or DMS_API_KEY for this Controller.");

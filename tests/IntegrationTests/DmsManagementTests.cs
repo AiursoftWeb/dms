@@ -38,7 +38,7 @@ public class DmsManagementTests : TestBase
 
     private async Task<T> CliAsync<T>(string key, params string[] arguments)
     {
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         return JObject.Parse(cli.StdOut)["Data"]!.ToObject<T>()!;
     }

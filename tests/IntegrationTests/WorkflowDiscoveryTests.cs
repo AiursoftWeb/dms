@@ -105,7 +105,7 @@ public class WorkflowDiscoveryTests : TestBase
         var expectedCount = (await ReadAsync(setup.Key)).Definitions.Count;
         foreach (var format in new[] { "table", "json", "csv" })
         {
-            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "list-definitions", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+            var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "list-definitions", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             StringAssert.Contains(cli.StdOut, "example.repeat"); StringAssert.Contains(cli.StdOut, "repeat-1");
             Assert.DoesNotContain("example.unit", cli.StdOut); Assert.DoesNotContain("\u001b", cli.StdOut);
