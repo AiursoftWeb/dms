@@ -409,6 +409,7 @@ public class OperationsWorkflowTests
         Assert.HasCount(2, commands);
         CollectionAssert.Contains(commands[1].Arguments.ToArray(), id);
         CollectionAssert.Contains(commands[1].Arguments.ToArray(), "clickhouse-client");
+        CollectionAssert.DoesNotContain(commands[1].Arguments.ToArray(), "--config-file");
         CollectionAssert.Contains(commands[1].Arguments.ToArray(), "--readonly=1");
         Assert.AreEqual("SHOW TABLES FROM `logs`", commands[1].StandardInput);
         Assert.AreEqual("log_table", result.Facts!.Value[0].GetProperty("name").GetString());
