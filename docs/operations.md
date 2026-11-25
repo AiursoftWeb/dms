@@ -423,12 +423,7 @@ Typed filters accept `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `contains` and `is-null
 
 Tell DMS which machine to use. The Agent uses Docker to look for exactly one running server container whose image repository ends in `clickhouse-server`. This covers official and registry-mirrored images. If the number of matches differs from one, the command reports the count and candidate names. The Agent runs `clickhouse-client` against the loopback server inside the selected container with no shell.
 
-Provision private native-client configuration files inside that container. The files must be readable by its execution user.
-
-- `/etc/aiursoft-dms/clickhouse-read.xml` authenticates a dedicated account with the minimum metadata and SELECT grants for the relevant databases and tables.
-- `/etc/aiursoft-dms/clickhouse-write.xml` authenticates a separate account with only the INSERT, mutation and ALTER COLUMN privileges required for the approved tables. Mount this file only when the machine should support writes.
-
-Each file uses ClickHouse client XML with a `<config>` root and the required `<user>`, `<password>`, `<port>`, or other connection settings. Keep the files private and outside source control. The workflow enforces loopback, output format and resource limits independently of the profile.
+Agent 1.39.0 and newer use the native client's existing connection settings inside the container, including `CLICKHOUSE_USER` and `CLICKHOUSE_PASSWORD` inherited from its environment. No separate DMS database account, client XML file or additional mount is required. Credentials stay inside the container; DMS does not extract them into command arguments, results or traces. The existing database account determines which databases and tables are accessible. Read operations enforce a read-only session and resource limits; supported writes still require High-risk approval and the frozen container identity.
 
 ```sh
 dms machine clickhouse list-databases --machine-id "$MACHINE_ID"
