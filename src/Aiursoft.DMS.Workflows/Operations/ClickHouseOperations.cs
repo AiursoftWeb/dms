@@ -122,8 +122,7 @@ public static class ClickHouseOperations
     private static async Task<NativeResult> RunClientAsync(MachineWorkflowContext context, AgentEnvironment agent,
         string container, string sql, int seconds, int maxRows, bool write, CancellationToken token)
     {
-        var profile = write ? "/etc/aiursoft-dms/clickhouse-write.xml" : "/etc/aiursoft-dms/clickhouse-read.xml";
-        List<string> args = ["exec", "-i", container, "clickhouse-client", "--config-file", profile,
+        List<string> args = ["exec", "-i", container, "clickhouse-client",
             "--host", "127.0.0.1", "--format", "JSONEachRow",
             $"--max_execution_time={seconds.ToString(CultureInfo.InvariantCulture)}"];
         if (write) args.Add("--mutations_sync=2");
