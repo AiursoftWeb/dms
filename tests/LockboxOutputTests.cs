@@ -6,6 +6,41 @@ namespace Aiursoft.DMS.Tests;
 [TestClass]
 public class LockboxOutputTests
 {
+    [TestMethod]
+    public void StatusShowsHistoricalContractsAndEscapesUntrustedTerminalText()
+    {
+        var box = SampleLockbox() with
+        {
+            Definition = "retired.workflow", Version = "old-version", Reason = "Look harmless\u001b[2J\nApproved!",
+            Parameters = """{"Input":"{\"Command\":[\"a\\n\\u001b[2J\"],\"Optional\":null}"}"""
+        };
+        var status = new LockboxStatus(box.LockboxId, "Requester\u001b[2J", box.CreatedAt,
+            box.Decision, box.DecidedAt, "Reviewer", false, [], box.WorkflowId) { Details = box };
+        using var output = new StringWriter();
+        DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
+            callstack: false, color: false, width: 60, lockboxStatus: true);
+        var text = output.ToString();
+        foreach (var expected in new[] { "retired.workflow", "old-version", "Medium", "Unknown machine",
+                     "Command", "Optional", "null", "unverified requester statement", "\\u001b[2J", "\\n", "Reviewer" })
+            StringAssert.Contains(text, expected);
+        Assert.IsFalse(text.Contains('\u001b'));
+        StringAssert.Contains(string.Concat(text.Where(character => !char.IsWhiteSpace(character))),
+            "69a58ba0-2944-4e24-b34f-32d1d1338155");
+    }
+
+    [TestMethod]
+    public void StatusKeepsRawHistoricalRequestWhenInputCannotBeParsed()
+    {
+        var box = SampleLockbox() with { Parameters = "historical request" };
+        var status = new LockboxStatus(box.LockboxId, "Requester", box.CreatedAt,
+            DecisionState.Pending, null, null, false, [], null) { Details = box };
+        using var output = new StringWriter();
+        DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
+            callstack: false, color: false, lockboxStatus: true);
+        StringAssert.Contains(output.ToString(), "Unavailable; review the raw request below.");
+        StringAssert.Contains(output.ToString(), "historical request");
+    }
+
     private static LockboxDetails SampleLockbox(Guid? legacyApprovalWorkflowId = null)
     {
         return new LockboxDetails(
