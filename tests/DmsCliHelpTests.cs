@@ -37,13 +37,26 @@ public class DmsCliHelpTests
     }
 
     [TestMethod]
-    [DataRow("workflow", "trace")]
-    [DataRow("operation", "get-trace")]
-    public async Task TraceHelpShowsLogAsTheDefault(string group, string command)
+    public async Task TraceHelpShowsLogAsTheDefault()
     {
-        var result = await DmsCommandApp.Create().TestRunAsync([group, command, "--help"]);
+        var result = await DmsCommandApp.Create().TestRunAsync(["workflow", "trace", "--help"]);
         Assert.AreEqual(0, result.ProgramReturn);
         StringAssert.Contains(result.StdOut, "[default: Log]");
+    }
+
+    [TestMethod]
+    [DataRow("operation get-workflow", "get-workflow")]
+    [DataRow("operation get-callstack", "get-callstack")]
+    [DataRow("operation get-trace", "get-trace")]
+    [DataRow("machine performance cpu-sample --limit 2", "--limit")]
+    [DataRow("machine performance dstat-sample --limit 2", "--limit")]
+    [DataRow("machine nvidia sample --limit 2", "--limit")]
+    [DataRow("machine networking tls-check --host example.test --url https://example.test", "--url")]
+    public async Task RetiredCommandsAndParametersAreRejected(string invocation, string retiredToken)
+    {
+        var result = await DmsCommandApp.Create().TestRunAsync(invocation.Split(' '));
+        Assert.AreNotEqual(0, result.ProgramReturn);
+        StringAssert.Contains(result.StdErr, $"Unrecognized command or argument '{retiredToken}'");
     }
 
     [TestMethod]

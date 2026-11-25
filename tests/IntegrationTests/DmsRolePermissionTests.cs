@@ -597,7 +597,7 @@ public class DmsRolePermissionTests : TestBase
         StringAssert.Contains(await Cli(setup.Key, "workflow", "status", approved.WorkflowId.Value.ToString()), "WorkflowId");
         var workflowId = approved.WorkflowId.Value.ToString();
         StringAssert.Contains(await Cli(setup.Key, "workflow", "callstack", workflowId), workflowId);
-        StringAssert.Contains(await Cli(setup.Key, "operation", "get-callstack", workflowId), workflowId);
+        StringAssert.Contains(await Cli(setup.Key, "workflow", "callstack", workflowId), workflowId);
 
         var other = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
         var unauthorized = await Client.DmsCommandApp.Create().TestRunAsync(
@@ -677,7 +677,7 @@ public class DmsRolePermissionTests : TestBase
             Assert.AreEqual(root.Id, root.RootId); Assert.IsNull(root.ParentId);
             Assert.AreEqual(WorkflowNames.Batch, root.Definition);
             Assert.IsFalse(await db.WorkflowRuns.AnyAsync(r => r.LockboxId == parsed.Value && r.Definition == WorkflowNames.Lockbox));
-            var metadata = await Cli("operation", "get-workflow", "--id", workflow.ToString());
+            var metadata = await Cli("workflow", "status", workflow.ToString());
             Assert.AreEqual(id, metadata["LockboxId"]!.Value<string>());
         }
         else
@@ -822,7 +822,7 @@ public class DmsRolePermissionTests : TestBase
         Assert.DoesNotContain("Result", cli.StdOut);
         Assert.AreEqual("{}", System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
         if (!automatic) return;
-        var metadata = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", box.WorkflowId!.Value.ToString(),
+        var metadata = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", box.WorkflowId!.Value.ToString(),
             "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, metadata.ProgramReturn, metadata.StdErr);
         Assert.AreEqual(new LockboxId(box.Id).ToString(), JObject.Parse(metadata.StdOut)["Data"]!["LockboxId"]!.ToString());

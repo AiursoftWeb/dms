@@ -141,7 +141,7 @@ The compiled examples demonstrate these additions:
 
 No new request property, risk switch, machine whitelist, dispatch case, message field, database migration or scheduler change is needed for the example. The framework changes in this MR enable that experience; later workflow authors use the resulting API.
 
-Test valid/invalid input, public risk, internal-only access, approved input and targets, typed results, known failure handling and parent/root IDs. Use `dms operation get-workflow --id ...`, `get-callstack` and `get-trace` to investigate each instance. The same commands apply to every new workflow.
+Test valid/invalid input, public risk, internal-only access, approved input and targets, typed results, known failure handling and parent/root IDs. Use `dms workflow status ...`, `workflow callstack` and `workflow trace` to investigate each instance. The same commands apply to every new workflow.
 
 Run the existing test project, including `WorkflowAuthoringTests`; use the repository's normal build and lint commands. The execution stack belongs to the running process: after a crash, queued work can resume, but started work with unknown results is not automatically replayed.
 
@@ -192,4 +192,4 @@ Every execution has a normal Workflow ID. A disconnected Agent continues schedul
 
 Only one invocation of a plan runs on a machine at a time. The journal persists its UTC minute; repeated ticks, a restart in that minute or a backward clock adjustment cannot rerun it. Missed minutes are not replayed. `RunOnStartup` consumes the startup minute as well. Accepted but unstarted work resumes; started work with an unknown outcome becomes `NeedsVerification` and blocks further invocations of that plan until reconciled. Do not use this facility for non-repeatable destructive jobs. An Agent that is stopped runs no checks; there is no independent system timer.
 
-Cancellation affects that invocation and its children, not the installed schedule. Agent upgrade drains active work; shutdown propagates cancellation through the same runtime. Continue to investigate with `get-workflow`, `get-callstack`, `get-trace`, and `operation query-audit --origin Automatic`. Web history and investigation provide the same origin filter. `ScheduledWorkflowTests` and `ScheduledWorkflowIntegrationTests` cover declarations, offline execution, recovery, caught child failure and two real WebSocket Agents.
+Cancellation affects that invocation and its children, not the installed schedule. Agent upgrade drains active work; shutdown propagates cancellation through the same runtime. Continue to investigate with `workflow status`, `workflow callstack`, `workflow trace`, and `operation query-audit --origin Automatic`. Web history and investigation provide the same origin filter. `ScheduledWorkflowTests` and `ScheduledWorkflowIntegrationTests` cover declarations, offline execution, recovery, caught child failure and two real WebSocket Agents.

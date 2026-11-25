@@ -171,7 +171,7 @@ dms access whoami
 dms machine list
 ```
 
-`access whoami` shows your effective role permissions. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. Other server operations follow the configured request and approval permissions for their risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace`. Trace commands default to plain logs and accept `--output-format Table` to display trace metadata.
+`access whoami` shows your effective role permissions. `machine list` requires **Run open workflows**, automatically approves its Lockbox and prints the inventory. Other server operations follow the configured request and approval permissions for their risk level. Self approval is a separate permission. Use the returned IDs with `lockbox get`, `workflow status`, `workflow callstack` and `workflow trace`. Trace commands default to plain logs and accept `--output-format Table` to display trace metadata.
 
 ### Join and manage machines
 
