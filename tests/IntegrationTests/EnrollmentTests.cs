@@ -43,7 +43,7 @@ public class EnrollmentTests : TestBase
 
     private async Task<T> CliAsync<T>(string key, params string[] args)
     {
-        var result = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
+        var result = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
         return JObject.Parse(result.StdOut)["Data"]!.ToObject<T>()!;
     }

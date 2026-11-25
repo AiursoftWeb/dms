@@ -11,8 +11,8 @@ namespace Aiursoft.DMS.Client;
 
 internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
 {
-    protected readonly Option<string?> _server = new("--server")
-        { Description = "Controller URL. Defaults to DMS_SERVER or the saved login." };
+    private readonly DmsEndpointOptions _endpoint =
+        new("DMS Controller URL, such as https://dms.aiursoft.com. Defaults to DMS_SERVER or the saved login.");
     protected readonly Option<string?> _key = new("--api-key")
         { Description = "Personal API key. Defaults to DMS_API_KEY or the saved login." };
     private readonly Option<OutputFormat> _format;
@@ -48,7 +48,8 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
 
     protected sealed override IEnumerable<Option> GetCommandOptions()
     {
-        yield return _server; yield return _key; yield return _format;
+        foreach (var option in _endpoint.Options) yield return option;
+        yield return _key; yield return _format;
         foreach (var option in GetActionOptions()) yield return option;
     }
 
@@ -60,7 +61,7 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
             string? key = null;
             try
             {
-                var credentials = DmsCredentials.Resolve(context.GetValue(_server), context.GetValue(_key));
+                var credentials = DmsCredentials.Resolve(_endpoint.GetValue(context), context.GetValue(_key));
                 key = credentials.ApiKey;
                 await ExecuteAsync(context, credentials);
                 return 0;
@@ -86,7 +87,7 @@ internal abstract class DmsCommandHandler : ExecutableCommandHandlerBuilder
     }
 
     protected sealed override Task Execute(ParseResult context) =>
-        ExecuteAsync(context, DmsCredentials.Resolve(context.GetValue(_server), context.GetValue(_key)));
+        ExecuteAsync(context, DmsCredentials.Resolve(_endpoint.GetValue(context), context.GetValue(_key)));
 
     protected OutputFormat SelectedFormat(ParseResult context) => context.GetValue(_format);
 

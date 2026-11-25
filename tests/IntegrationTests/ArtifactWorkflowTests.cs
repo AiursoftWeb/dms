@@ -50,7 +50,7 @@ public class ArtifactWorkflowTests : TestBase
         });
 
         var requestId = Guid.NewGuid();
-        string[] args = ["artifact", "ls", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
+        string[] args = ["artifact", "ls", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
         var first = await Client.DmsCommandApp.Create().TestRunAsync([..args, "--limit", "1",
             "--output-format", "json", "--request-id", requestId.ToString()]);
         Assert.AreEqual(0, first.ProgramReturn, first.StdErr);
@@ -89,7 +89,7 @@ public class ArtifactWorkflowTests : TestBase
         Assert.DoesNotContain("unfinished.txt", table.StdOut);
         Assert.DoesNotContain("expired.txt", table.StdOut);
 
-        var denied = await Client.DmsCommandApp.Create().TestRunAsync(["artifact", "ls", "--server",
+        var denied = await Client.DmsCommandApp.Create().TestRunAsync(["artifact", "ls", "--dms-server-endpoint",
             Http.BaseAddress.ToString(), "--api-key", setup.ReviewerKey]);
         Assert.AreNotEqual(0, denied.ProgramReturn);
         Assert.IsTrue(string.IsNullOrWhiteSpace(denied.StdOut));
@@ -104,7 +104,7 @@ public class ArtifactWorkflowTests : TestBase
         {
             var destination = Path.Combine(directory.FullName, artifact.Name);
             var download = await Client.DmsCommandApp.Create().TestRunAsync(["artifact", "download",
-                "--id", artifact.Id.ToString(), "--file", destination, "--server", Http.BaseAddress!.ToString(),
+                "--id", artifact.Id.ToString(), "--file", destination, "--dms-server-endpoint", Http.BaseAddress!.ToString(),
                 "--api-key", setup.Key]);
             Assert.AreEqual(0, download.ProgramReturn, download.StdErr);
             Assert.AreEqual(artifact.Bytes, new FileInfo(destination).Length);
@@ -136,7 +136,7 @@ public class ArtifactWorkflowTests : TestBase
 
             async Task<string> RunCliAsync(string key, params string[] args)
             {
-                var output = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+                var output = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
                 Assert.AreEqual(0, output.ProgramReturn, output.StdErr);
                 return output.StdOut;
             }
@@ -191,7 +191,7 @@ public class ArtifactWorkflowTests : TestBase
             }
 
             string[] Args(Guid id, string format) => ["workflow", "result", id.ToString(), "--output-format", format,
-                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
             var root = await RunListingAsync(listing, 50);
             var json = await Client.DmsCommandApp.Create().TestRunAsync(Args(root, "json"));
             Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
@@ -254,7 +254,7 @@ public class ArtifactWorkflowTests : TestBase
             await File.WriteAllTextAsync(source, original); var requestId = Guid.NewGuid();
             string[] args = ["machine", "system", "execute-script", "--language", "bash", "--script-file", source,
                 "--machine-id", setup.Machine.ToString(), "--request-id", requestId.ToString(), "--reason", "Inspect the exact frozen source",
-                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key];
             Assert.AreEqual(0, (await Client.DmsCommandApp.Create().TestRunAsync(args)).ProgramReturn);
             Assert.AreEqual(0, (await Client.DmsCommandApp.Create().TestRunAsync(args)).ProgramReturn);
             var box = await DatabaseAsync(db => db.Lockboxes.SingleAsync(l => l.ClientRequestId == requestId));

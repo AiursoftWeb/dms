@@ -62,7 +62,7 @@ public class DmsRolePermissionTests : TestBase
         var requestId = Guid.NewGuid();
         async Task<Aiursoft.CommandFramework.Models.TestResult> ListAsync(string format, params string[] options) =>
             await Client.DmsCommandApp.Create().TestRunAsync(["machine", "list",
-                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key,
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key,
                 "--request-id", requestId.ToString(), "--output-format", format, ..options]);
 
         var denied = await ListAsync("json");
@@ -165,7 +165,7 @@ public class DmsRolePermissionTests : TestBase
         await db.SaveChangesAsync();
 
         var result = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "list",
-            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--request-id", request.RequestId.ToString(),
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--request-id", request.RequestId.ToString(),
             "--output-format", format]);
         Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
         if (format == "json")
@@ -205,7 +205,7 @@ public class DmsRolePermissionTests : TestBase
         db.AddRange(box, run);
         await db.SaveChangesAsync();
 
-        string[] args = ["machine", "list", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key,
+        string[] args = ["machine", "list", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key,
             "--request-id", request.RequestId.ToString()];
         foreach (var format in new[] { "table", "json", "csv" })
         {
@@ -307,7 +307,7 @@ public class DmsRolePermissionTests : TestBase
         var command = WebUtility.HtmlDecode(preview.Groups[1].Value + preview.Groups[2].Value)
             .ReplaceLineEndings("\n").Replace(" \\\n  ", " ");
         var statusArgs = new[] { "lockbox", "status", new LockboxId(original.Id).ToString(),
-            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
         var table = await Client.DmsCommandApp.Create().TestRunAsync(statusArgs);
         Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
         Assert.Contains(command, table.StdOut.ReplaceLineEndings("\n").Split('\n'));
@@ -337,7 +337,7 @@ public class DmsRolePermissionTests : TestBase
         // be removed before passing the resulting argument list to the CLI.
         var arguments = command.Replace("'", "").Split(' ');
         var result = await Client.DmsCommandApp.Create().TestRunAsync(
-            [.. arguments.Skip(1), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+            [.. arguments.Skip(1), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
         Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
 
         var replay = await db.Lockboxes.AsNoTracking().SingleAsync(
@@ -381,7 +381,7 @@ public class DmsRolePermissionTests : TestBase
 
         var status = await Client.DmsCommandApp.Create().TestRunAsync(
             ["lockbox", "status", new LockboxId(box.Id).ToString(), "--output-format", "json",
-                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
         Assert.AreEqual(0, status.ProgramReturn, status.StdErr);
         Assert.IsNull(JObject.Parse(status.StdOut)["Data"]!["EquivalentCommand"]);
     }
@@ -482,7 +482,7 @@ public class DmsRolePermissionTests : TestBase
         box.Parameters = stored.ToString();
         await db.SaveChangesAsync();
         var args = new[] { "lockbox", "status", new LockboxId(box.Id).ToString(),
-            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
         var table = await Client.DmsCommandApp.Create().TestRunAsync(args);
         Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
         foreach (var text in new[] { definition.Name, "Workflow version", definition.Risk.ToString(),
@@ -546,7 +546,7 @@ public class DmsRolePermissionTests : TestBase
         async Task<string> Cli(string key, params string[] command)
         {
             var result = await Client.DmsCommandApp.Create().TestRunAsync(
-                [.. command, "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+                [.. command, "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
             Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
             return result.StdOut;
         }
@@ -601,7 +601,7 @@ public class DmsRolePermissionTests : TestBase
 
         var other = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe));
         var unauthorized = await Client.DmsCommandApp.Create().TestRunAsync(
-            ["lockbox", "status", id, "--server", Http.BaseAddress!.ToString(), "--api-key", other.Key]);
+            ["lockbox", "status", id, "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", other.Key]);
         Assert.AreEqual(1, unauthorized.ProgramReturn);
         Assert.DoesNotContain("Sam", unauthorized.StdOut);
     }
@@ -643,7 +643,7 @@ public class DmsRolePermissionTests : TestBase
             DmsPermissions.Approve(RiskLevel.Safe), AppPermissionNames.CanApproveOwnWorkflow);
         async Task<JToken> Cli(params string[] command)
         {
-            var result = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--server", Http.BaseAddress!.ToString(),
+            var result = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--dms-server-endpoint", Http.BaseAddress!.ToString(),
                 "--api-key", setup.Key, "--output-format", "json"]);
             Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
             return JObject.Parse(result.StdOut)["Data"]!;
@@ -660,7 +660,7 @@ public class DmsRolePermissionTests : TestBase
         foreach (var format in new[] { "table", "csv" })
         {
             var list = await Client.DmsCommandApp.Create().TestRunAsync(["lockbox", "list", "--decision", "Pending",
-                "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
             Assert.AreEqual(0, list.ProgramReturn, list.StdErr); StringAssert.Contains(list.StdOut, id);
             if (format == "table") StringAssert.Contains(list.StdOut, "Pending");
             else { StringAssert.Contains(list.StdOut.Split('\n')[0], "LockboxId"); Assert.DoesNotContain("EventId", list.StdOut.Split('\n')[0]); }
@@ -691,7 +691,7 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(DecisionState.Pending, submission.Decision);
         Assert.HasCount(1, audit.Where(e => e.Kind == (approve ? WorkflowAuditKind.LockboxApproved : WorkflowAuditKind.LockboxDenied)));
         var repeated = await Client.DmsCommandApp.Create().TestRunAsync(["lockbox", "approve", "--id", id,
-            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key]);
         Assert.AreNotEqual(0, repeated.ProgramReturn);
         Assert.AreEqual(approve ? 1 : 0, await db.WorkflowRuns.CountAsync(r => r.LockboxId == parsed.Value && r.ParentId == null));
     }
@@ -763,7 +763,7 @@ public class DmsRolePermissionTests : TestBase
     {
         var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.High));
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy", "--machine-id", setup.First.ToString(),
-            "--stage", stage.ToString(), "--filter", "dms", "--reason", "Deploy reviewed Box configuration", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+            "--stage", stage.ToString(), "--filter", "dms", "--reason", "Deploy reviewed Box configuration", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
@@ -804,7 +804,7 @@ public class DmsRolePermissionTests : TestBase
         var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.Safe));
         if (automatic) await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Safe), true);
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "inspect", "--machine-id", setup.First.ToString(),
-            "--reason", "Inspect Box before deployment", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+            "--reason", "Inspect Box before deployment", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
@@ -823,7 +823,7 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual("{}", System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
         if (!automatic) return;
         var metadata = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", box.WorkflowId!.Value.ToString(),
-            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, metadata.ProgramReturn, metadata.StdErr);
         Assert.AreEqual(new LockboxId(box.Id).ToString(), JObject.Parse(metadata.StdOut)["Data"]!["LockboxId"]!.ToString());
     }
@@ -847,7 +847,7 @@ public class DmsRolePermissionTests : TestBase
             _ => ["machine", "box", operation, "--identity-file", "/home/anduin/.ssh/id_ed25519", "--known-hosts-file", "/home/anduin/.ssh/known_hosts"]
         };
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--machine-id", setup.First.ToString(),
-            "--reason", "Approved machine maintenance scope", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+            "--reason", "Approved machine maintenance scope", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
@@ -882,14 +882,14 @@ public class DmsRolePermissionTests : TestBase
         foreach (var extra in new[] { new[] { "--stage", "5" }, new[] { "--filter", "dms;id" } })
         {
             var invalid = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy", "--machine-id", setup.First.ToString(),
-                "--reason", "Invalid deployment", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, .. extra]);
+                "--reason", "Invalid deployment", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, .. extra]);
             Assert.AreNotEqual(0, invalid.ProgramReturn);
         }
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy", "--machine-id", setup.First.ToString(),
-            "--reason", "Deploy all stage-4 stacks", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
+            "--reason", "Deploy all stage-4 stacks", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
         var request = System.Text.Json.JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
@@ -978,7 +978,7 @@ public class DmsRolePermissionTests : TestBase
         Assert.IsTrue(identity.CanApproveOwnRequests);
         foreach (var format in new[] { "table", "json", "csv" })
         {
-            var result = await Client.DmsCommandApp.Create().TestRunAsync(["access", "whoami", "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+            var result = await Client.DmsCommandApp.Create().TestRunAsync(["access", "whoami", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
             Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
             StringAssert.Contains(result.StdOut, "CanRequest"); StringAssert.Contains(result.StdOut, "AutoApprove"); StringAssert.Contains(result.StdOut, "CanApprove");
             StringAssert.Contains(result.StdOut, "CanApproveOwnRequests");

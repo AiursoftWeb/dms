@@ -12,9 +12,9 @@ internal sealed class LoginCommand : ExecutableCommandHandlerBuilder
 {
     protected override string Name => "login";
     protected override string Description => "Sign in to a Controller with a personal API key.";
-    private readonly Option<string?> _server = new("--server")
-        { Description = "Controller URL. DMS prompts for it when omitted." };
-    protected override IEnumerable<Option> GetCommandOptions() => [_server];
+    private readonly DmsEndpointOptions _endpoint =
+        new("DMS Controller URL, such as https://dms.aiursoft.com. DMS prompts for it when omitted.");
+    protected override IEnumerable<Option> GetCommandOptions() => _endpoint.Options;
 
     public override Command BuildAsCommand()
     {
@@ -40,7 +40,7 @@ internal sealed class LoginCommand : ExecutableCommandHandlerBuilder
     protected override async Task Execute(ParseResult context)
     {
         var output = context.InvocationConfiguration.Output;
-        var endpoint = context.GetValue(_server);
+        var endpoint = _endpoint.GetValue(context);
         if (endpoint == null)
         {
             var suggested = Environment.GetEnvironmentVariable("DMS_SERVER") ?? "https://dms.aiursoft.com/";

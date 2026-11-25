@@ -113,7 +113,7 @@ public class AptMaintenanceIntegrationTests : TestBase
         async Task<(int ProgramReturn, string StdOut, string StdErr)> CliAsync(params string[] arguments)
         {
             var result = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "apt", .. arguments,
-                "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
             return (result.ProgramReturn, result.StdOut, result.StdErr);
         }
     }

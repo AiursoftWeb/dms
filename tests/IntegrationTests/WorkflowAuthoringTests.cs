@@ -109,7 +109,7 @@ public class WorkflowAuthoringTests : TestBase
             Assert.IsTrue(local.All(r => remote.Any(p => p.Id == r.ParentId && p.MachineId == r.MachineId) && r.Version == AuthoringExamples.Unit.Version));
             foreach (var format in new[] { "table", "json", "csv" })
             {
-                var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", box.WorkflowId!.Value.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+                var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", box.WorkflowId!.Value.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
                 Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
                 foreach (var run in tree) StringAssert.Contains(cli.StdOut, run.Id.ToString());
             }
