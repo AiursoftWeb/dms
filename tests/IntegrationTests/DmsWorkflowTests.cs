@@ -232,10 +232,10 @@ public class DmsWorkflowTests : TestBase
         {
             foreach (var (arguments, credential, expected) in new (string[], string, string)[]
             {
-                (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], key, "Workflow not found."),
-                (["operation", "get-trace", "--id", run.Id.ToString()], key, "ClickHouse is not configured."),
+                (["workflow", "status", Guid.NewGuid().ToString()], key, "Workflow not found."),
+                (["workflow", "trace", run.Id.ToString()], key, "ClickHouse is not configured."),
                 (["operation", "query-audit"], key, "ClickHouse is not configured."),
-                (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
+                (["workflow", "status", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
                 (["machine", "systemctl", "status", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
                 (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
                 (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
@@ -299,18 +299,18 @@ public class DmsWorkflowTests : TestBase
             Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);
             Assert.AreEqual(run.FinishedAt, details.FinishedAt);
         }
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "RootWorkflowId"); StringAssert.Contains(cli.StdOut, "ParentWorkflowId");
         StringAssert.Contains(cli.StdOut, child.Id.ToString()); StringAssert.Contains(cli.StdOut, parent.Id.ToString());
-        var table = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
         Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
         StringAssert.Contains(table.StdOut, "Property"); StringAssert.Contains(table.StdOut, "Value");
         StringAssert.Contains(table.StdOut, "Succeeded"); StringAssert.Contains(table.StdOut, "Output");
         StringAssert.Contains(table.StdOut, "disk, \"quoted\""); StringAssert.Contains(table.StdOut, "second line");
         Assert.DoesNotContain("\\n", table.StdOut); Assert.DoesNotContain("ProtocolVersion", table.StdOut);
         StringAssert.Contains(table.StdOut, child.Id.ToString()); StringAssert.Contains(table.StdOut, root.Id.ToString());
-        var csv = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "CsV"]);
+        var csv = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "CsV"]);
         Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
         using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.StdOut)))
         {
@@ -321,11 +321,11 @@ public class DmsWorkflowTests : TestBase
             Assert.AreEqual(child.Result, values[Array.IndexOf(headers, "Result")]);
             Assert.IsTrue(parser.EndOfData);
         }
-        var tree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", root.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
+        var tree = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "callstack", root.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
         Assert.AreEqual(0, tree.ProgramReturn, tree.StdErr);
         StringAssert.Contains(tree.StdOut, "├── "); StringAssert.Contains(tree.StdOut, "│   └── ");
         foreach (var id in new[] { root.Id, parent.Id, child.Id, sibling.Id }) StringAssert.Contains(tree.StdOut, id.ToString());
-        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", parent.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
+        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "callstack", parent.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, subtree.ProgramReturn, subtree.StdErr);
         StringAssert.Contains(subtree.StdOut, parent.Id.ToString()); StringAssert.Contains(subtree.StdOut, child.Id.ToString());
         Assert.DoesNotContain(sibling.Id.ToString(), subtree.StdOut); Assert.DoesNotContain("└──", subtree.StdOut);

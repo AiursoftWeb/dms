@@ -52,7 +52,7 @@ public sealed record LockboxDetails(
     LockboxId LockboxId, Guid ClientRequestId, string RequesterId, string Definition, string Version,
     RiskLevel Risk, string Parameters, string TargetMachines, string Reason, DateTime CreatedAt,
     DecisionState Decision, string? ApproverId, bool Automatic, DateTime? DecidedAt, string DecisionReason,
-    Guid? WorkflowId, Guid? LegacyApprovalWorkflowId);
+    Guid? WorkflowId);
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxPage(IReadOnlyList<LockboxDetails> Entries, int Page, bool HasNextPage);
 

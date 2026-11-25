@@ -300,9 +300,6 @@ public static partial class DmsCommandApp
                 "List workflow definitions, risk levels, and your permissions.",
                 "definitions"),
             new ActionCommand("query-audit", "Search archived Lockbox and workflow events.", "audit"),
-            new ActionCommand("get-workflow", "Show a workflow's execution status and result.", "workflow"),
-            new ActionCommand("get-callstack", "Show a workflow and its descendants as a tree.", "callstack"),
-            new ActionCommand("get-trace", "Read archived trace entries for a workflow and its descendants.", "trace"),
             new ActionCommand("kill-workflow",
                 "Request cancellation of a workflow and its descendants.",
                 ClusterWorkflows.Cancel.Name, ClusterWorkflows.Cancel,
@@ -838,7 +835,8 @@ public static partial class DmsCommandApp
                     _ => true
                 };
                 DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format, Callstack, color, width,
-                    catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose);
+                    catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose,
+                    lockboxDetails: action is "lockboxes" or "get" or "approve" or "deny" or "withdraw");
                 if (format == OutputFormat.Table && response.Data is JObject data)
                     WriteDirectoryNextStep(context.InvocationConfiguration.Output, data);
             }

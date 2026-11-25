@@ -118,7 +118,7 @@ public class ClusterDiskUsageTests : TestBase
             }
             foreach (var format in new[] { "table", "json", "csv" })
             {
-                var details = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", parent.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
+                var details = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", parent.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
                 Assert.AreEqual(0, details.ProgramReturn, details.StdErr);
                 StringAssert.Contains(details.StdOut, "TotalBytes"); StringAssert.Contains(details.StdOut, "AvailableBytes");
                 foreach (var row in result.Machines) StringAssert.Contains(details.StdOut, row.Usage.WorkflowId.ToString());

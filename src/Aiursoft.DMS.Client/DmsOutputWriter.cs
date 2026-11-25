@@ -9,8 +9,10 @@ public enum OutputFormat { Table, Json, Csv, Log }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true, bool lockboxDetails = false)
     {
+        if ((lockboxDetails || lockboxStatus) && response.Data is JObject lockbox)
+            RemoveRetiredLockboxField(lockbox);
         if (format == OutputFormat.Json)
         {
             output.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
@@ -63,6 +65,16 @@ public static class DmsOutputWriter
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
         else WriteHuman(output, data, width, color, true, verbose);
+    }
+
+    private static void RemoveRetiredLockboxField(JObject lockbox)
+    {
+        // Older Controllers can still send the retired field during a rolling upgrade.
+        const string field = "LegacyApprovalWorkflowId";
+        lockbox.Remove(field);
+        (lockbox["Details"] as JObject)?.Remove(field);
+        if (lockbox["Entries"] is JArray entries)
+            foreach (var entry in entries.OfType<JObject>()) entry.Remove(field);
     }
 
     public static void WriteResult(TextWriter output, object result, OutputFormat format, bool color, int width)
@@ -258,8 +270,7 @@ public static class DmsOutputWriter
             var properties = obj.Properties().Select(p => (p.Name, Value: Structured(p.Value))).ToList();
             var scalars = properties.Where(p => p.Name != "Result" &&
                                                 p.Value is not (JObject or JArray) &&
-                                                (verbose || p.Name is not ("Parameters" or "TargetMachines")) &&
-                                                !(p.Name == "LegacyApprovalWorkflowId" && (p.Value == null || p.Value.Type == JTokenType.Null || Cell(p.Value) is "" or "-"))).ToList();
+                                                (verbose || p.Name is not ("Parameters" or "TargetMachines"))).ToList();
             WriteRows(output, ["Property", "Value"], scalars.Select(p => new[] { p.Name, HumanScalar(p.Name, p.Value, workflowMetadata) }).ToList(), width, color && workflowMetadata);
             foreach (var p in properties.Where(p => (p.Name == "Result" || p.Value is JObject or JArray) &&
                                                    (verbose || p.Name is not ("Parameters" or "TargetMachines"))))

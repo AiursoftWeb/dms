@@ -11,9 +11,9 @@ dms machine disk-usage --machine-id MACHINE_ID_1 MACHINE_ID_2 --reason "Review s
 The command returns a Lockbox request. The global Safe permissions determine whether it is automatically approved or needs another approver. After approval, use the operation ID returned by `lockbox get`:
 
 ```bash
-dms operation get-workflow --id OPERATION_ID
-dms operation get-callstack --id OPERATION_ID
-dms operation get-trace --id OPERATION_ID
+dms workflow status OPERATION_ID
+dms workflow callstack OPERATION_ID
+dms workflow trace OPERATION_ID
 ```
 
 The result contains `TotalBytes`, `UsedBytes`, `AvailableBytes`, `MachineCount` and a per-machine `Machines` list. Each entry contains its `MachineId` and `Usage`, including the Machine child's full `WorkflowId`, byte counts and filesystem count. That ID opens the child through the same operation commands. Table, JSON and CSV output use the common `--output-format` option.
