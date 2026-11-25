@@ -465,6 +465,55 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task LockboxStatusShowsFrozenContractWithoutRequiringMachineListPermission()
+    {
+        var definition = OperationsWorkflows.SwarmServiceLogs;
+        var setup = await ArrangeAsync(DmsPermissions.Request(definition.Risk));
+        using var scope = Server!.Services.CreateScope();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var request = definition.Request(new SwarmLogsInput("esrpsign_app", 35),
+            "Check ESRP Sign first-boot app and migration results.", [setup.First]);
+        var box = await workflows.SubmitAsync(setup.User, request);
+        // Simulate a saved all-machines selector: status must still use only the frozen IDs.
+        var stored = JObject.Parse(box.Parameters);
+        stored["AllMachines"] = true;
+        stored["MachineIds"] = new JArray(setup.Second.ToString());
+        box.Parameters = stored.ToString();
+        await db.SaveChangesAsync();
+        var args = new[] { "lockbox", "status", new LockboxId(box.Id).ToString(),
+            "--server", Http.BaseAddress!.ToString(), "--api-key", setup.Key };
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(args);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        foreach (var text in new[] { definition.Name, "Workflow version", definition.Risk.ToString(),
+                     "First machine", setup.First.ToString(), "unverified requester statement", request.Reason,
+                     "Service", "\"esrpsign_app\"", "Lines", "35", "Since", "null", "Raw input JSON",
+                     "Requester ID", setup.User, "Client request ID", request.RequestId.ToString(), "Stored request JSON" })
+            StringAssert.Contains(table.StdOut, text);
+        Assert.DoesNotContain("Second machine", table.StdOut);
+
+        var json = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--output-format", "json"]);
+        Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
+        var status = JObject.Parse(json.StdOut)["Data"]!.ToObject<LockboxStatus>()!;
+        Assert.AreEqual(box.Details(), status.Details);
+        Assert.AreEqual("First machine", status.MachineNames![setup.First]);
+        Assert.IsFalse(status.MachineNames.ContainsKey(setup.Second));
+        var csv = await Client.DmsCommandApp.Create().TestRunAsync([.. args, "--output-format", "csv"]);
+        Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
+        StringAssert.Contains(csv.StdOut, "Details");
+        StringAssert.Contains(csv.StdOut, "MachineNames");
+        StringAssert.Contains(csv.StdOut, "esrpsign_app");
+
+        // A removed machine must remain visible as an ID rather than silently disappearing.
+        var missing = Guid.NewGuid();
+        box.TargetMachines = $"[\"{missing}\"]";
+        await db.SaveChangesAsync();
+        table = await Client.DmsCommandApp.Create().TestRunAsync(args);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        StringAssert.Contains(table.StdOut, missing.ToString());
+    }
+
+    [TestMethod]
     public async Task LockboxStatusUsesLiveApproverNamesAndSupportsPositionalWorkflowIds()
     {
         var approval = DmsPermissions.Approve(RiskLevel.Safe);
@@ -507,7 +556,7 @@ public class DmsRolePermissionTests : TestBase
         var pending = await Cli(setup.Key, "lockbox", "status", id);
         foreach (var expected in new[] { id, "Operator", "Requested at", "UTC", "Awaiting approval", "Eligible approvers now", "Sam" })
             StringAssert.Contains(pending, expected);
-        foreach (var hidden in new[] { "Workflow ID", "ClientRequestId", "RequesterId", "LockedReviewer", "AutomaticOnly", "DifferentRisk" })
+        foreach (var hidden in new[] { "Workflow ID", "LockedReviewer", "AutomaticOnly", "DifferentRisk" })
             Assert.DoesNotContain(hidden, pending);
         var json = await Cli(setup.Key, "lockbox", "status", id, "--output-format", "json");
         var summary = JObject.Parse(json)["Data"]!.ToObject<LockboxStatus>()!;
@@ -525,6 +574,7 @@ public class DmsRolePermissionTests : TestBase
         var approvedText = await Cli(setup.Key, "lockbox", "status", id);
         StringAssert.Contains(approvedText, "Approved at");
         StringAssert.Contains(approvedText, "Approved by");
+        StringAssert.Contains(approvedText, "Manual approval");
         StringAssert.Contains(approvedText, approved.WorkflowId!.Value.ToString());
         Assert.AreEqual("Sam", JObject.Parse(await Cli(setup.Key, "lockbox", "status", id, "--output-format", "json"))["Data"]!["DecidedBy"]!.Value<string>());
 

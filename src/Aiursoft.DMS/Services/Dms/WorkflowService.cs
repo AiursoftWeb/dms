@@ -405,11 +405,16 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         else await access.RequireViewAsync(user);
 
         var status = await DescribeLockboxAsync(item);
+        var targets = LockboxSnapshot.ReadTargets(item);
+        var names = await db.Machines.AsNoTracking().Where(machine => targets.Contains(machine.Id))
+            .ToDictionaryAsync(machine => machine.Id, machine => machine.Name);
         access.Audit(user, "lockbox.get", id);
         await db.SaveChangesAsync();
         return status with
         {
             Definition = includeDefinition ? item.Definition : null,
+            Details = item.Details(),
+            MachineNames = names,
             EquivalentCommand = LockboxSnapshot.ReadStatusCommand(item)
         };
     });
