@@ -72,6 +72,9 @@
   <data name="Comprehensive Documentation" xml:space="preserve">
     <value>विस्तृत दस्तावेज़ीकरण</value>
   </data>
+  <data name="Connect DMS CLI to this Controller" xml:space="preserve">
+    <value>इस कंट्रोलर से DMS CLI को कनेक्ट करें</value>
+  </data>
   <data name="Consistency Validation" xml:space="preserve">
     <value>सुसंगतता प्रमाणीकरण</value>
   </data>
@@ -117,6 +120,9 @@
   <data name="Includes extensive documentation and practical examples to get you started quickly." xml:space="preserve">
     <value>विस्तृत दस्तावेज़ीकरण और व्यावहारिक उदाहरण शामिल हैं ताकि आप जल्दी से शुरुआत कर सकें।</value>
   </data>
+  <data name="Install the CLI on your computer and sign in with a personal API key." xml:space="preserve">
+    <value>अपने कंप्यूटर पर CLI इंस्टॉल करें और एक व्यक्तिगत API कुंजी से साइन इन करें।</value>
+  </data>
   <data name="Integrated File Management" xml:space="preserve">
     <value>एकीकृत फ़ाइल प्रबंधन</value>
   </data>
@@ -147,11 +153,11 @@
   <data name="Responsive Design" xml:space="preserve">
     <value>उत्तरदायी डिज़ाइन</value>
   </data>
-  <data name="Review {0} requests" xml:space="preserve">
-    <value>{0} अनुरोध समीक्षा करें</value>
-  </data>
   <data name="Review the operation, parameters and fixed targets in each {0} request." xml:space="preserve">
     <value>{0} अनुरोधित संक्रिया, पैरामीटर और निश्चित लक्ष्यों की समीक्षा करें।</value>
+  </data>
+  <data name="Review {0} requests" xml:space="preserve">
+    <value>{0} अनुरोध समीक्षा करें</value>
   </data>
   <data name="Robust Integration Testing" xml:space="preserve">
     <value>दृढ़ एकीकरण परीक्षण</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="Seamlessly integrate with any OpenID Connect provider, with automatic role synchronization." xml:space="preserve">
     <value>किसी भी OpenID Connect प्रदाता के साथ सहज एकीकरण, स्वचालित भूमिका सिंक्रनाइज़ेशन के साथ।</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI सेटअप करें</value>
   </data>
   <data name="Smart Configuration Overrides" xml:space="preserve">
     <value>स्मार्ट कॉन्फ़िगरेशन ओवरराइड्स</value>

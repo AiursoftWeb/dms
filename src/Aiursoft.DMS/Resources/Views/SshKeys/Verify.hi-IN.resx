@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>कोई भी पब्लिक की की कॉपी कर सकता है। यह चरण यह साबित करता है कि आप उसकी प्राइवेट की के मालिक हैं, जो आपके कंप्यूटर पर ही रहती है।</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>SSH सार्वजनिक कुंजियों पर वापस जाएँ</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>इस कुंजी को जोड़ना रद्द करें</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>कमांड कॉपी हुई</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>कमांड कॉपी करें</value>
+  </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>मेरे पास YubiKey / हार्डवेयर की है</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>मैं एक निजी कुंजी फ़ाइल का उपयोग करता हूँ</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>यदि समय समाप्त हो जाता है, तो कुंजी को फिर से जोड़ें।</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>यदि आपकी निजी कुंजी कहीं और संग्रहीत है, तो -f के बाद पथ बदलें। फिर कमांड द्वारा प्रिंट की गई पूरी हस्ताक्षर पेश करें।</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>सुनिश्चित करें कि आपकी कुंजी आपके SSH एजेंट में लोड है (उदाहरण के लिए, निवासी कुंजियों के लिए ssh-add -K चलाकर), फिर चलाएँ:</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH हस्ताक्षर</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>फिर से शुरू करें</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>चरण 2 / 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>टर्मिनल कमांड</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>हस्ताक्षर मेल नहीं खाए। इस सार्वजनिक कुंजी के लिए निजी कुंजी के साथ उपरोक्त कमांड चलाएँ और परिणाम का पूरा परिणाम पेस्ट करें।</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>शेष समय</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>इस कुंजी को जोड़ने के काम को पूरा करने के लिए, नीचे दिए गए कमांड को उस कंप्यूटर पर चलाएँ जिसमें इसकी प्राइवेट कुंजी रखी है।</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>साइन करने के पूरा करने के लिए, जब यह चमके तो अपना YubiKey छुएं। फिर कमांड द्वारा छापे गए पूर्ण हस्ताक्षर को पेस्ट करें।</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>सत्यापन समाप्त हो गया। यह कुंजी जोड़ी नहीं गई।</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>सत्यापन समाप्ति समय</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>की की सत्यापित करें और जोड़ें</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>अपनी SSH पब्लिक की को सत्यापित करें</value>
+  </data>
+
+</root>

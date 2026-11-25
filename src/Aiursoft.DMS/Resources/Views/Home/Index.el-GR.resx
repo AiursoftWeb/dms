@@ -486,9 +486,6 @@
   <data name="Lint Check" xml:space="preserve">
     <value>Ελέγχους Lint</value>
   </data>
-  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
-    <value>Το {0} καταγράφει ποιος ζήτησε μια λειτουργία, τους στόχους της και την απόφαση έγκρισης.</value>
-  </data>
   <data name="MIT Licence" xml:space="preserve">
     <value>Άδεια MIT</value>
   </data>
@@ -744,14 +741,26 @@
   <data name="The Philosophy" xml:space="preserve">
     <value>Η Φιλοσοφία</value>
   </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Η κεντρική εφαρμογή web και API. Παρακολουθεί μηχανές, διαχειρίζεται εγκρίσεις {0} και συντονίζει ροές εργασίας.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Το εργαλείο γραμμής εντολών που εκτελείτε στον δικό σας υπολογιστή. Συνδέεται με τον Controller ώστε να μπορείτε να ζητάτε λειτουργίες και να ελέγχετε τα αποτελέσματά τους.</value>
+  </data>
   <data name="The definitive, battle-tested .NET enterprise foundation. From Auth to AI, we&apos;ve solved the hard parts so you don&apos;t have to." xml:space="preserve">
     <value>Η αποφασιστική, δοκιμασμένη στην πράξη βάση επιχειρηματικών εφαρμογών .NET. Από την Αυθεντικοποίηση μέχρι την Τεχνητή Νοημοσύνη, έχουμε λύσει τα δύσκολα μέρη, ώστε να μην χρειαστεί να τα κάνετε εσείς.</value>
   </data>
   <data name="The navigation bar automatically adjusts based on user roles and permissions." xml:space="preserve">
     <value>Η γραμμή πλοήγησης προσαρμόζεται αυτόματα με βάση τους ρόλους και τα δικαιώματα των χρηστών.</value>
   </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Η υπηρεσία που εγκαθιστάτε σε κάθε διαχειριζόμενο μηχάνημα. Συνδέεται με τον Controller, αναφέρει την κατάστασή του και εκτελεί εγκεκριμένες ροές εργασιών τοπικά.</value>
+  </data>
   <data name="The template is built for easy deployment. It includes full Docker support, so you can containerize your app and run it anywhere. You can also deploy it directly to IIS, Azure App Service, or any server that supports ASP.NET Core." xml:space="preserve">
     <value>Το πρότυπο είναι κατασκευασμένο για εύκολη ανάπτυξη. Περιλαμβάνει πλήρη υποστήριξη Docker, ώστε να μπορείτε να συσκευάσετε την εφαρμογή σας σε containers και να την εκτελέσετε οπουδήποτε. Μπορείτε επίσης να την αναπτύξετε απευθείας στο IIS, στο Azure App Service ή σε οποιονδήποτε διακομιστή που υποστηρίζει ASP.NET Core.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>Τα τρία μέρη του DMS</value>
   </data>
   <data name="This is a template project" xml:space="preserve">
     <value>Αυτό είναι ένα πρότυπο έργο</value>
@@ -785,6 +794,9 @@
   </data>
   <data name="View on GitHub" xml:space="preserve">
     <value>Προβολή στο GitHub</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Δείτε το απόθεμα των μηχανών σας, τη σύνδεση του Agent, τις εκδόσεις και το ιστορικό λειτουργιών.</value>
   </data>
   <data name="WebApplicationFactory available" xml:space="preserve">
     <value>Διαθέσιμο το WebApplicationFactory</value>
@@ -842,6 +854,9 @@
   </data>
   <data name="java.time API available" xml:space="preserve">
     <value>Διαθέσιμο API java.time</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>Το {0} καταγράφει ποιος ζήτησε μια λειτουργία, τους στόχους της και την απόφαση έγκρισης.</value>
   </data>
 
 </root>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. CLI इंस्टॉल करें</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. एक व्यक्तिगत API कुंजी बनाएं</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. इस कंट्रोलर में साइन इन करें</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. कनेक्शन की सत्यापित करें</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>DMS पर वापस जाएँ</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>जाँच करें कि CLI किस खाते और अनुमतियों का उपयोग कर रहा है।</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>मौजूदा DMS_SERVER और DMS_API_KEY पर्यावरण चर आपके सहेजे गए लॉगिन को ओवरराइड करते हैं। सहेजे गए सेटिंग्स का उपयोग करने के लिए उन्हें साफ़ करें।</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>की को एक नाम दें और जैसे ही यह प्रकट हो, इसे कॉपी कर लें। DMS इसे केवल एक बार प्रदर्शित करता है।</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>यदि CLI पहले से इंस्टॉल है, तो नीचे दिए गए कमांड के साथ इसे अपडेट करें।</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>यदि आपके पास Open वर्कफ़्लो चलाने की अनुमति है, तो CLI के साथ मशीनों की सूची देखने का प्रयास करें।</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>पहले .NET 10 SDK इंस्टॉल करें, फिर इसे अपने टर्मिनल में चलाएँ।</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>API कुंजियाँ खोलें</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>लॉगिन कमांड चलाएँ, छिपे हुए प्रॉम्प्ट पर व्यक्तिगत API कुंजी चिपकाएँ, और Enter दबाएँ।</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>इस DMS कंट्रोलर से कनेक्ट करने के लिए अपने कंप्यूटर पर ये कमांड चलाएं।</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>DMS CLI सेटअप करें</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>CLI इस पता और आपकी व्यक्तिगत API कुंजी आपके कंप्यूटर पर सहेजता है।</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>यह कंट्रोलर</value>
+  </data>
+
+</root>

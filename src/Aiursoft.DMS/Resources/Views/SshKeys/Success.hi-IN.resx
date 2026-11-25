@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Done" xml:space="preserve">
+    <value>पूर्ण</value>
+  </data>
+  <data name="Fingerprint" xml:space="preserve">
+    <value>फिंगरप्रिंट</value>
+  </data>
+  <data name="Key ID" xml:space="preserve">
+    <value>कुंजी ID</value>
+  </data>
+  <data name="SSH public key added" xml:space="preserve">
+    <value>SSH पब्लिक कुंजी जोड़ी गई</value>
+  </data>
+  <data name="This key is verified and ready to use when requesting temporary SSH access." xml:space="preserve">
+    <value>यह कुंजी सत्यापित है और अस्थायी SSH पहुँच अनुरोध करने के लिए उपयोग के लिए तैयार है।</value>
+  </data>
+
+</root>
