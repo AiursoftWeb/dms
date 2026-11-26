@@ -250,6 +250,12 @@ public class ArtifactWorkflowTests : TestBase
         var setup = await SetupAsync(); var directory = Directory.CreateTempSubdirectory("dms-script-review-").FullName;
         try
         {
+            await DatabaseAsync(async db =>
+            {
+                DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.VeryHigh), false);
+                DmsTestPermissions.Set(db, setup.Reviewer, DmsPermissions.Approve(RiskLevel.VeryHigh), false);
+                return await db.SaveChangesAsync();
+            });
             var source = Path.Combine(directory, "approved.sh"); var original = "printf '%s\\n' '<script>alert(1)</script>'\n";
             await File.WriteAllTextAsync(source, original); var requestId = Guid.NewGuid();
             string[] args = ["machine", "system", "execute-script", "--language", "bash", "--script-file", source,
@@ -258,6 +264,8 @@ public class ArtifactWorkflowTests : TestBase
             Assert.AreEqual(0, (await Client.DmsCommandApp.Create().TestRunAsync(args)).ProgramReturn);
             Assert.AreEqual(0, (await Client.DmsCommandApp.Create().TestRunAsync(args)).ProgramReturn);
             var box = await DatabaseAsync(db => db.Lockboxes.SingleAsync(l => l.ClientRequestId == requestId));
+            Assert.AreEqual(RiskLevel.High, box.Risk);
+            Assert.AreEqual(DecisionState.Pending, box.Decision);
             var request = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
             var input = OperationsWorkflows.SystemExecuteScript.ReadInput(request.Input);
             using (var scope = Server!.Services.CreateScope())
@@ -278,6 +286,11 @@ public class ArtifactWorkflowTests : TestBase
             var download = await Http.GetAsync("/Dms/DownloadArtifact?id=" + input.Artifact.Id);
             Assert.AreEqual(HttpStatusCode.OK, download.StatusCode); Assert.AreEqual(original, await download.Content.ReadAsStringAsync());
             Assert.AreEqual("attachment", download.Content.Headers.ContentDisposition?.DispositionType);
+            using var approvalScope = Server.Services.CreateScope();
+            var workflows = approvalScope.ServiceProvider.GetRequiredService<WorkflowService>();
+            var approved = await workflows.DecideAsync(setup.Reviewer, box.Id, true, "Reviewed the frozen script");
+            Assert.AreEqual(DecisionState.Approved, approved.Decision);
+            Assert.IsNotNull(approved.WorkflowId);
         }
         finally { Directory.Delete(directory, true); }
     }

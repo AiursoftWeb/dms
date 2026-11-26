@@ -304,9 +304,9 @@ public class BoxDeployTests
     }
 
     [TestMethod]
-    public async Task InspectionUsesSafeStandardDefinitionAndCannotAcceptAnArbitraryPathOrCommand()
+    public async Task InspectionUsesLowRiskStandardDefinitionAndCannotAcceptAnArbitraryPathOrCommand()
     {
-        Assert.AreEqual(RiskLevel.Safe, MachineWorkflows.BoxInspect.Risk);
+        Assert.AreEqual(RiskLevel.Low, MachineWorkflows.BoxInspect.Risk);
         Assert.IsTrue(MachineWorkflows.BoxInspect.PublicEntry);
         Assert.IsTrue(new MachineWorkflowRegistry().Contains(MachineWorkflows.BoxInspect.Name));
         Assert.Throws<JsonException>(() => MachineWorkflows.BoxInspect.ReadInput("{\"Path\":\"/etc\"}"));

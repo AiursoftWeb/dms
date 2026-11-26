@@ -1,6 +1,6 @@
 # Workflow permissions
 
-One DMS instance has one global authorization policy. Configure it in **Administration → Directory → Roles → Edit**, using the existing Template permission checkboxes. Permissions from all assigned roles and user claims are combined. Role names do not bypass these checks. OIDC synchronizes identity and role membership at login; permission checkboxes are local to each DMS instance.
+The [workflow risk classification policy](workflow-risk.md) defines the six levels and their selection criteria. One DMS instance has one global authorization policy. Configure it in **Administration → Directory → Roles → Edit**, using the existing Template permission checkboxes. Permissions from all assigned roles and user claims are combined. Role names do not bypass these checks. OIDC synchronizes identity and role membership at login; permission checkboxes are local to each DMS instance.
 
 | Risk | Request | Automatic approval | Approve / deny |
 | --- | --- | --- | --- |

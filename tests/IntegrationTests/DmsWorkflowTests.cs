@@ -557,13 +557,14 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
-    public async Task DockerCliFreezesLiteralArgumentsAndRequiresVeryHighPermissionForExec()
+    public async Task DockerCliFreezesLiteralArgumentsAndRequiresHighPermissionForExec()
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         db.PersonalApiKeys.Add(new PersonalApiKey { UserId = setup.User, Name = "Docker CLI", KeyHash = DmsKeyAuthenticationHandler.Hash(key), ExpiresAt = DateTime.UtcNow.AddHours(1) });
+        DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(RiskLevel.High), false);
         await db.SaveChangesAsync();
         var container = new string('a', 64);
         string[] common = ["--machine-id", setup.Machine.ToString(), "--reason", "Docker command",
@@ -572,12 +573,12 @@ public class DmsWorkflowTests : TestBase
         var denied = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(1, denied.ProgramReturn);
         Assert.AreEqual(0, await db.Lockboxes.CountAsync(l => l.RequesterId == setup.User));
-        DmsTestPermissions.Risk(db, setup.User, RiskLevel.VeryHigh, request: true, automatic: false, approve: false);
+        DmsTestPermissions.Risk(db, setup.User, RiskLevel.High, request: true, automatic: false, approve: false);
         await db.SaveChangesAsync();
         var accepted = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(0, accepted.ProgramReturn, accepted.StdErr);
         var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
-        Assert.AreEqual(RiskLevel.VeryHigh, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
+        Assert.AreEqual(RiskLevel.High, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision); Assert.IsNull(box.WorkflowId);
         var request = JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!;
         var input = MachineWorkflows.DockerExec.ReadInput(request.Input);
         Assert.AreEqual(container, input.Container);
@@ -598,7 +599,7 @@ public class DmsWorkflowTests : TestBase
         var kill = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "docker", "kill", .. common, "--container", container]);
         Assert.AreEqual(0, kill.ProgramReturn, kill.StdErr);
         var killBox = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User && l.Definition == "machine.docker.kill");
-        Assert.AreEqual(RiskLevel.High, killBox.Risk);
+        Assert.AreEqual(RiskLevel.Medium, killBox.Risk);
         Assert.IsNull(killBox.WorkflowId);
     }
 
@@ -1254,20 +1255,14 @@ await db.SaveChangesAsync();
     [DataRow(WorkflowNames.PullerForceUpdate, RiskLevel.Medium)]
     [DataRow("machine.docker.ps", RiskLevel.Low)]
     [DataRow("machine.docker.logs", RiskLevel.Low)]
-    [DataRow("machine.docker.exec", RiskLevel.VeryHigh)]
-    [DataRow("machine.docker.kill", RiskLevel.High)]
+    [DataRow("machine.docker.exec", RiskLevel.High)]
+    [DataRow("machine.docker.kill", RiskLevel.Medium)]
     public async Task MachineCommandsUseRiskGrantsAndApprovedFrozenBatch(string definition, RiskLevel risk)
     {
         var setup = await ArrangeAsync();
         using var scope = Server!.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
-        if (risk == RiskLevel.VeryHigh)
-        {
-            DmsTestPermissions.Risk(db, setup.User, risk, request: true, automatic: false, approve: false);
-            DmsTestPermissions.Risk(db, setup.Approver, risk, request: false, automatic: false, approve: true);
-            await db.SaveChangesAsync();
-        }
         DmsTestPermissions.Set(db, setup.User, DmsPermissions.Request(risk), false); await db.SaveChangesAsync();
         var input = Request(setup.Machine); input.Workflow = definition;
         input.Input = definition switch

@@ -51,7 +51,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<PcpHistoryInput, OperationResult> PerformancePcpHistory =
         new("machine.performance.pcp-history",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(PerformancePcpHistory)),
@@ -59,7 +59,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<BlockedProcessesInput, OperationResult>
         PerformanceBlockedProcesses = new("machine.performance.blocked-processes",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(PerformanceBlockedProcesses)),
@@ -67,7 +67,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<KernelEventsInput, OperationResult> SystemKernelEvents =
         new("machine.system.kernel-events",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemKernelEvents)),
@@ -127,7 +127,7 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<FindFilesInput, OperationResult> FilesystemFind =
         new("machine.filesystem.find", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemFind)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<MakeDirectoryInput, OperationResult> FilesystemMkdir =
         new("machine.filesystem.mkdir",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemMkdir)),
@@ -151,7 +151,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<ExportPathInput, OperationResult> FilesystemExport =
         new("machine.filesystem.export",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemExport)),
@@ -247,7 +247,7 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> PerformancePressure =
         new("machine.performance.pressure", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(PerformancePressure)), "1", PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EventWindowInput, OperationResult> PerformanceOomHistory =
         new("machine.performance.oom-history",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(PerformanceOomHistory)),
@@ -300,7 +300,7 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<ContainerEventsInput, OperationResult> DockerEvents =
         new("machine.docker.events", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DockerEvents)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DockerContainerInput, OperationResult> DockerDiagnoseStartup =
         new("machine.docker.diagnose-startup",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DockerDiagnoseStartup)),
@@ -308,15 +308,15 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<ContainerActionInput, OperationResult> DockerStop =
         new("machine.docker.stop", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DockerStop)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<DockerContainerInput, OperationResult> DockerStart =
         new("machine.docker.start", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DockerStart)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<ContainerActionInput, OperationResult> DockerRestart =
         new("machine.docker.restart", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DockerRestart)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
@@ -364,7 +364,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<SwarmLogsInput, OperationResult> SwarmServiceLogs =
         new("machine.swarm.service.logs",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceLogs)),
@@ -380,7 +380,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<SwarmChangeInput, OperationResult> SwarmServiceStop =
         new("machine.swarm.service.stop",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceStop)),
@@ -388,7 +388,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.ValidateFor("stop"),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<SwarmChangeInput, OperationResult> SwarmServiceStart =
         new("machine.swarm.service.start",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceStart)),
@@ -404,7 +404,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.ValidateFor("update"),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<SwarmChangeInput, OperationResult> SwarmServiceRollback =
         new("machine.swarm.service.rollback",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceRollback)),
@@ -432,11 +432,11 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<ServiceInput, OperationResult> SystemctlStop =
         new("machine.systemctl.stop", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemctlStop)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<JournalInput, OperationResult> SystemJournal =
         new("machine.system.journal",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemJournal)),
@@ -452,11 +452,11 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> AptInspect =
         new("machine.apt.inspect", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptInspect)), "1", PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<PackageInput, OperationResult> AptInstall =
         new("machine.apt.install", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptInstall)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<PackageUpgradeInput, OperationResult> AptUpgrade =
         new("machine.apt.upgrade", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptUpgrade)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
@@ -469,25 +469,25 @@ public static class OperationsWorkflows
         new("machine.apt.plan", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptPlan)),
             "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<AptApplyInput, OperationResult> AptUpgradeAll =
         new("machine.apt.upgrade-all", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptUpgradeAll)),
             "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<AptApplyInput, OperationResult> AptAutoremove =
         new("machine.apt.autoremove", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(AptAutoremove)),
             "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<RebootInput, OperationResult> SystemReboot =
         new("machine.system.reboot", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemReboot)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.VeryHigh)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<PoweroffInput, OperationResult> SystemPoweroff =
         new("machine.system.poweroff", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemPoweroff)), "1", ValidateInput: input => input.Validate(), PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.VeryHigh)]
+    [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<ScriptInput, OperationResult> SystemExecuteScript =
         new("machine.system.execute-script",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SystemExecuteScript)),
@@ -520,28 +520,28 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DatabaseQueryInput, OperationResult> DatabaseQueryTable =
         new("machine.database.query-table",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseQueryTable)),
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DatabaseSqlInput, OperationResult> DatabaseQuerySql =
         new("machine.database.query-sql",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseQuerySql)),
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.VeryHigh)]
+    [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<DatabaseSqlInput, OperationResult> DatabaseExecuteSql =
         new("machine.database.execute-sql",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseExecuteSql)),
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DatabaseInput, OperationResult> DatabaseDiagnostics =
         new("machine.database.diagnostics",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseDiagnostics)),
@@ -578,7 +578,7 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<SampleInput, OperationResult> NetworkingTrafficSample =
         new("machine.networking.traffic-sample",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NetworkingTrafficSample)),
@@ -641,7 +641,7 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SecurityCleanTrafficStatus =
         new("machine.security.clean-traffic-status", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityCleanTrafficStatus)), "1", PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EventWindowInput, OperationResult> SecurityAuthEvents =
         new("machine.security.auth-events",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityAuthEvents)),
@@ -649,11 +649,11 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> SecurityAccountsAudit =
         new("machine.security.accounts-audit", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityAccountsAudit)), "1", PublicEntry: true);
 
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<BaselineInput, OperationResult> SecurityBaselineAudit =
         new("machine.security.baseline-audit",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SecurityBaselineAudit)),

@@ -62,7 +62,7 @@ public class RemovePathWorkflowTests
         foreach (var path in new[] { "/", "//", "/tmp/", "/tmp/..", "/tmp//file", "/tmp/./file", "relative", "", "/tmp\nfile" })
             Assert.Throws<ArgumentException>(() => new RemovePathInput(path, true).Validate());
         Assert.Throws<JsonException>(() => MachineWorkflows.RemovePath.Validate("{\"Path\":\"/tmp/a\",\"Force\":true}"));
-        Assert.AreEqual(RiskLevel.High, MachineWorkflows.RemovePath.Risk);
+        Assert.AreEqual(RiskLevel.Medium, MachineWorkflows.RemovePath.Risk);
         Assert.IsTrue(MachineWorkflows.RemovePath.PublicEntry);
         Assert.IsTrue(new MachineWorkflowRegistry().Contains(MachineWorkflows.RemovePath.Name));
     }

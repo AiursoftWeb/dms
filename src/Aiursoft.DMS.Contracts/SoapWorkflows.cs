@@ -11,7 +11,7 @@ public static class SoapWorkflows
     public static readonly MachineWorkflowDefinition<SoapServiceInput, SoapFetchResult> FetchWsdl = new(
         "machine.soap.fetch-wsdl", WorkflowMetadata.Risk(typeof(SoapWorkflows), nameof(FetchWsdl)),
         ValidateInput: input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };
-    [WorkflowRisk(RiskLevel.Medium)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<SoapCallInput, SoapCallResult> Query = new(
         "machine.soap.query", WorkflowMetadata.Risk(typeof(SoapWorkflows), nameof(Query)),
         ValidateInput: input => input.Validate(), PublicEntry: true) { SingleMachineOnly = true };

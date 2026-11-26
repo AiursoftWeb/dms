@@ -289,7 +289,7 @@ public static partial class SystemOperations
         input.Validate();
         var script = await FilesystemOperations.ReadArtifactTextAsync(input.Artifact, agent, 262144, token);
         await context.TraceAsync(
-            "Executing the script text frozen in this VeryHigh-risk approval. " +
+            "Executing the script text frozen in this approval. " +
             "No automatic replay after an uncertain outcome.");
         await OperationOutput.CommandAsync(context,
             agent,
