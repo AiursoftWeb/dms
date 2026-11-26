@@ -511,7 +511,7 @@ public sealed record DatabaseSqlInput(
     }
 }
 
-public sealed record DnsQueryInput(string Host) : IOperationInput
+public sealed record DnsQueryInput([WorkflowOption("--host", "Hostname to resolve from the selected machine.")] string Host) : IOperationInput
 {
     public void Validate()
     {
