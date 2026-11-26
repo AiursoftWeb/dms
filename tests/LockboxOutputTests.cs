@@ -16,7 +16,7 @@ public class LockboxOutputTests
             Parameters = """{"Input":"{\"Command\":[\"a\\n\\u001b[2J\"],\"Optional\":null}"}"""
         };
         var status = new LockboxStatus(box.LockboxId, "Requester\u001b[2J", box.CreatedAt,
-            box.Decision, box.DecidedAt, "Reviewer", false, [], box.WorkflowId) { Details = box };
+            box.Decision, box.DecidedAt, "Reviewer", false, [], box.WorkflowId, box.ExpiresAt) { Details = box };
         using var output = new StringWriter();
         DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
             callstack: false, color: false, width: 60, lockboxStatus: true);
@@ -34,7 +34,7 @@ public class LockboxOutputTests
     {
         var box = SampleLockbox() with { Parameters = "historical request" };
         var status = new LockboxStatus(box.LockboxId, "Requester", box.CreatedAt,
-            DecisionState.Pending, null, null, false, [], null) { Details = box };
+            DecisionState.Pending, null, null, false, [], null, box.ExpiresAt) { Details = box };
         using var output = new StringWriter();
         DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
             callstack: false, color: false, lockboxStatus: true);
@@ -60,8 +60,25 @@ public class LockboxOutputTests
             Automatic: false,
             DecidedAt: new DateTime(2026, 11, 24, 7, 3, 50, DateTimeKind.Utc),
             DecisionReason: "approve Git SSH identity for China",
-            WorkflowId: Guid.Parse("3249337a-46f4-4deb-a0c7-8ab30a61755f")
+            WorkflowId: Guid.Parse("3249337a-46f4-4deb-a0c7-8ab30a61755f"),
+            ExpiresAt: new DateTime(2026, 11, 24, 11, 0, 0, DateTimeKind.Utc)
         );
+    }
+
+    [TestMethod]
+    public void StatusShowsExpiredRequestWithExpiryDeadline()
+    {
+        var box = SampleLockbox() with { Decision = DecisionState.Expired, WorkflowId = null };
+        var status = new LockboxStatus(box.LockboxId, "Requester", box.CreatedAt, box.Decision,
+            box.DecidedAt, null, false, [], null, box.ExpiresAt) { Details = box };
+        using var output = new StringWriter();
+        DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
+            callstack: false, color: false, width: 80, lockboxStatus: true);
+        var text = output.ToString();
+        StringAssert.Contains(text, "Expired (no decision within 4 hours)");
+        StringAssert.Contains(text, "Expires at");
+        StringAssert.Contains(text, "2026-11-24 11:00:00 UTC");
+        StringAssert.Contains(text, "System (automatic expiry)");
     }
 
     [TestMethod]
@@ -117,7 +134,7 @@ public class LockboxOutputTests
         Assert.IsNull(oldDetails[field]);
         oldDetails[field] = legacyId;
         var status = JObject.FromObject(new LockboxStatus(details.LockboxId, "Requester", details.CreatedAt,
-            details.Decision, details.DecidedAt, "Reviewer", false, [], details.WorkflowId));
+            details.Decision, details.DecidedAt, "Reviewer", false, [], details.WorkflowId, details.ExpiresAt));
         status["Details"] = oldDetails.DeepClone();
         var page = new JObject { ["Entries"] = new JArray(oldDetails.DeepClone()) };
         foreach (var (data, isStatus) in new[] { (oldDetails, false), (status, true), (page, false) })

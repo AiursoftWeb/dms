@@ -102,6 +102,21 @@ public class EnrollmentTests : TestBase
     }
 
     [TestMethod]
+    public async Task ExpiredEnrollmentLockboxReportsExpiredState()
+    {
+        var setup = await ArrangeAsync();
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Expiry state");
+        var input = Input("expiry-node");
+        var status = await SubmitAsync(issued.Key, input);
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        db.ChangeTracker.Clear();
+        (await db.Lockboxes.SingleAsync(l => l.Id == status.LockboxId.Value)).ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+        Assert.AreEqual("Expired", (await StatusAsync(input.ReceiptKey)).State);
+    }
+
+    [TestMethod]
     public async Task JoinKeysAndReceiptsCannotUseHumanOrAgentCapabilities()
     {
         var setup = await ArrangeAsync();

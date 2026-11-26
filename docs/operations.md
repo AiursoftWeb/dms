@@ -6,7 +6,7 @@ Client 1.3.0 and Agent 1.4.0 add 86 public Machine workflows in ten categories. 
 
 ## Submit and investigate
 
-Every request in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root.
+Every request in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root. Pending requests expire automatically 4 hours after submission and leave the default lists; expired requests are deleted 7 days after expiry.
 
 ```sh
 dms machine performance processes --machine-id "$MACHINE_ID" --sort memory --reason "Find the largest processes"

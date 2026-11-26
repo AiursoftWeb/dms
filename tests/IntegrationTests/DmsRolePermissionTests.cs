@@ -648,6 +648,33 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task ExpiredLockboxLeavesQueuesAndShowsExpiredWithoutApprovalButtons()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Low), DmsPermissions.Request(RiskLevel.Safe));
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var box = await workflows.SubmitAsync(setup.User,
+            MachineWorkflows.ServiceStatus.Request(new ServiceInput("sshd.service"), "Expiry acceptance", [setup.First]));
+        db.ChangeTracker.Clear();
+        (await db.Lockboxes.SingleAsync(l => l.Id == box.Id)).ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+
+        await LoginAsAdmin();
+        var id = Uri.EscapeDataString(new LockboxId(box.Id).ToString());
+        var page = await Http.GetStringAsync($"/Dms/Lockbox?id={id}");
+        StringAssert.Contains(page, "This request expired automatically after 4 hours without a decision.");
+        Assert.DoesNotContain("name=\"approve\"", page);
+
+        var expiredQueue = await Http.GetStringAsync("/Dms/Lockboxes?scope=expired");
+        StringAssert.Contains(expiredQueue, "Expiry acceptance");
+        StringAssert.Contains(expiredQueue, "data-decision=\"Expired\"");
+        Assert.DoesNotContain("Expiry acceptance", WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes?scope=pending")));
+        Assert.DoesNotContain("Expiry acceptance", WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes?scope=all")));
+        Assert.DoesNotContain("Expiry acceptance", WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes")));
+    }
+
+    [TestMethod]
     public async Task RequesterCanFollowOwnWebExecutionWithoutGlobalReadPermission()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Medium));

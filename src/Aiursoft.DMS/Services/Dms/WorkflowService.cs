@@ -111,6 +111,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
+            if (LockboxExpiry.IsDue(prior))
+                throw new DmsException(409, "This request expired before approval. Submit it again with a new request ID.");
             if (enrollmentId.HasValue) throw new DmsException(409, "Enrollment ID already belongs to another request.");
             var principal = await access.PrincipalAsync(user);
             if (prior.Risk == RiskLevel.Open && !DmsPermissions.ForRisk(principal, RiskLevel.Open).CanRequest)
@@ -223,7 +225,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         {
             ClientRequestId = request.RequestId, RequesterId = user,
             Definition = request.Workflow, Risk = risk, Version = definition.Version, Parameters = JsonSerializer.Serialize(request),
-            TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason
+            TargetMachines = JsonSerializer.Serialize(targets.Order()), Reason = request.Reason,
+            ExpiresAt = DateTime.UtcNow.Add(LockboxExpiry.RequestLifetime)
         };
         if (boxSecret != null && !boxSecrets.Stage(user, request.RequestId, reveal: false, boxSecret))
             throw new DmsException(503, "Box secret transfer storage is busy. Try again later.");
@@ -248,6 +251,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (!DmsPermissions.CanDecide(principal, item.Risk, item.RequesterId == user))
             throw new DmsException(403, "Approval permission for this risk level is required; your own Lockbox requests also require self-approval permission.");
         if (item.Decision != DecisionState.Pending) throw new DmsException(409, "This Lockbox request has already been decided.");
+        if (LockboxExpiry.IsDue(item))
+        {
+            MarkExpired(item);
+            await SaveDecisionAsync();
+            throw new DmsException(409, "This Lockbox request expired after 4 hours without a decision. Ask for a new request.");
+        }
         if (approve) await ApproveAsync(item, user, reason);
         else
         {
@@ -267,6 +276,14 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var item = await OwnedAsync();
         if (item.Decision == DecisionState.Pending)
         {
+            if (LockboxExpiry.IsDue(item))
+            {
+                MarkExpired(item);
+                // A concurrent sweep may have persisted the same expiry first; either way it is expired.
+                try { await SaveDecisionAsync(); }
+                catch (DmsException) { }
+                throw new DmsException(409, "This Lockbox request expired after 4 hours without a decision.");
+            }
             item.Decision = DecisionState.Withdrawn;
             item.DecidedAt = DateTime.UtcNow;
             item.DecisionReason = "Withdrawn by the requester.";
@@ -327,13 +344,29 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         catch { db.ChangeTracker.Clear(); throw; }
     }
 
+    private void MarkExpired(LockboxRequest item)
+    {
+        item.Decision = DecisionState.Expired;
+        item.DecidedAt = DateTime.UtcNow;
+        item.DecisionReason = "Expired automatically after 4 hours without a decision.";
+        access.Audit("system", "lockbox.expire", item.Id, $"ExpiresAt={item.ExpiresAt:O}");
+    }
+
     public Task<LockboxPage> ListLockboxesAsync(string user, int page = 0, DecisionState? decision = null) => gate.RunAsync(async () =>
     {
         await access.RequireViewAsync(user);
         if (page is < 0 or > 10000 || (decision != null && !Enum.IsDefined(decision.Value)))
             throw new DmsException(400, "Invalid Lockbox page or decision filter.");
+        var now = DateTime.UtcNow;
         var query = db.Lockboxes.AsNoTracking();
-        if (decision != null) query = query.Where(b => b.Decision == decision);
+        if (decision == DecisionState.Expired)
+            query = query.Where(b => b.ExpiresAt < now && b.ExpiresAt >= now - LockboxExpiry.Retention &&
+                (b.Decision == DecisionState.Expired || b.Decision == DecisionState.Pending));
+        else if (decision == DecisionState.Pending)
+            query = query.Where(b => b.Decision == decision && b.ExpiresAt >= now);
+        else if (decision != null) query = query.Where(b => b.Decision == decision);
+        else query = query.Where(b => b.Decision != DecisionState.Expired &&
+            (b.Decision != DecisionState.Pending || b.ExpiresAt >= now));
         var items = await query.OrderByDescending(b => b.CreatedAt).ThenBy(b => b.Id).Skip(page * 50).Take(51).ToListAsync();
         access.Audit(user, "lockbox.list"); await db.SaveChangesAsync();
         return new LockboxPage(items.Take(50).Select(b => b.Details()).ToList(), page, items.Count > 50);
@@ -408,7 +441,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var risks = Enum.GetValues<RiskLevel>().Where(risk => DmsPermissions.CanDecide(principal, risk, ownRequest: false)).ToArray();
         var selfApproval = DmsPermissions.CanApproveOwn(principal);
         var rawSecret = MachineWorkflows.BoxGetSecretRaw.Name;
-        var query = db.Lockboxes.AsNoTracking().Where(box => box.Decision == DecisionState.Pending && risks.Contains(box.Risk) &&
+        var now = DateTime.UtcNow;
+        var query = db.Lockboxes.AsNoTracking().Where(box => box.Decision == DecisionState.Pending && box.ExpiresAt >= now &&
+            risks.Contains(box.Risk) &&
             (box.RequesterId != user || (selfApproval && box.Definition != rawSecret &&
                 !box.Definition.EndsWith(BoxSecretTransfers.IndependentApprovalSuffix))));
         query = query.Where(CurrentApprovalDefinitions(risks));
@@ -513,11 +548,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
     {
         var item = await db.Lockboxes.AsNoTracking().NotCacheable().SingleOrDefaultAsync(box => box.Id == id)
             ?? throw new DmsException(404, "Lockbox not found.");
+        var decision = LockboxExpiry.EffectiveDecision(item);
         var ownRequest = item.RequesterId == user;
         var principal = ownRequest ? await access.PrincipalAsync(user) : await access.RequireViewAsync(user);
-        var definitionChanged = item.Decision == DecisionState.Pending &&
+        var definitionChanged = decision == DecisionState.Pending &&
             catalog.FindApprovable(item.Definition, item.Risk, item.Version) == null;
-        var canApprove = item.Decision == DecisionState.Pending && !definitionChanged &&
+        var canApprove = decision == DecisionState.Pending && !definitionChanged &&
             principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations) &&
             DmsPermissions.CanDecide(principal, item.Risk, ownRequest) &&
             !(ownRequest && BoxSecretTransfers.RequiresIndependentApproval(item.Definition)) &&
@@ -547,12 +583,14 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             .Select(person => new { person.Id, person.DisplayName, person.UserName })
             .ToDictionaryAsync(person => person.Id, person => AccessService.PersonName(person.DisplayName, person.UserName));
         var requester = people.GetValueOrDefault(item.RequesterId, "Unknown user");
-        var decidedBy = item.Decision == DecisionState.Withdrawn ? requester :
+        var decision = LockboxExpiry.EffectiveDecision(item);
+        var decidedBy = decision == DecisionState.Withdrawn ? requester :
             item.ApproverId == null ? null : people.GetValueOrDefault(item.ApproverId, "Unknown user");
         var approvers = await access.EligibleApproversAsync(item.Risk, item.RequesterId);
-        return new LockboxStatus(item.Id, requester, DateTime.SpecifyKind(item.CreatedAt, DateTimeKind.Utc), item.Decision,
+        return new LockboxStatus(item.Id, requester, DateTime.SpecifyKind(item.CreatedAt, DateTimeKind.Utc), decision,
             item.DecidedAt is { } decidedAt ? DateTime.SpecifyKind(decidedAt, DateTimeKind.Utc) : null,
-            decidedBy, item.Automatic, approvers, item.WorkflowId);
+            decidedBy, item.Automatic, approvers, item.WorkflowId,
+            DateTime.SpecifyKind(item.ExpiresAt, DateTimeKind.Utc));
     }
 
     public Task<OpenWorkflowResult> WaitForOpenResultAsync(string user, Guid id, CancellationToken token) =>

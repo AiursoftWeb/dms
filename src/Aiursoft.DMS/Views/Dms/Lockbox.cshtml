@@ -26,6 +26,7 @@
             @Localizer["Approved · Waiting to run"],
         DecisionState.Approved => @Localizer["Approved"],
         DecisionState.Denied => @Localizer["Denied"],
+        DecisionState.Expired => @Localizer["Expired"],
         _ => @Localizer["Withdrawn"]
     };
     var decisionTone = status.Decision switch
@@ -80,6 +81,11 @@
     @if (notice != null)
     {
         <div class="alert alert-warning" role="alert"><div class="alert-message">@notice</div></div>
+    }
+
+    @if (status.Decision == DecisionState.Expired)
+    {
+        <div class="alert alert-secondary" role="alert"><div class="alert-message">@Localizer["This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed."]</div></div>
     }
 
     <header class="card lockbox-header">

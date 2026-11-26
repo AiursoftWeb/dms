@@ -1,6 +1,6 @@
 namespace Aiursoft.DMS.Contracts;
 
-public enum WorkflowAuditKind { LockboxSubmitted, LockboxApproved, LockboxDenied, WorkflowCreated, WorkflowStateChanged, LockboxWithdrawn }
+public enum WorkflowAuditKind { LockboxSubmitted, LockboxApproved, LockboxDenied, WorkflowCreated, WorkflowStateChanged, LockboxWithdrawn, LockboxExpired }
 
 // Deliberately excludes parameters, results, free-text reasons and credentials.
 public sealed record WorkflowAuditEntry(
