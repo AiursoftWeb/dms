@@ -85,6 +85,12 @@ public class Startup : IWebStartup
         services.AddSingleton<Services.Dms.ClusterWorkflowRuntime>();
         services.AddHostedService<Services.Dms.WorkflowScheduler>();
         services.AddHostedService<Services.Dms.TraceFlushService>();
+        services.AddOptions<Services.Dms.LockboxEmailOptions>().BindConfiguration("Dms:LockboxEmail")
+            .Validate(options => options.IsValid(), "Configure a valid SMTP host, port, sender, and HTTPS Controller origin for Lockbox mail.")
+            .ValidateOnStart();
+        services.AddScoped<Services.Dms.ILockboxReminderEmail, Services.Dms.SmtpLockboxReminderEmail>();
+        services.AddScoped<Services.Dms.LockboxEmailReminders>();
+        services.AddHostedService<Services.Dms.LockboxEmailReminderService>();
 
         // Services
         services.AddMemoryCache();

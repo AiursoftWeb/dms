@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -445,6 +446,20 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         return Expression.Lambda<Func<LockboxRequest, bool>>(matches, box);
     }
 
+    internal bool IsCurrentForReview(LockboxRequest box) =>
+        catalog.FindApprovable(box.Definition, box.Risk, box.Version) != null && !HasSupersededAgentRelease(box);
+
+    private bool HasSupersededAgentRelease(LockboxRequest box) =>
+        box.Definition == WorkflowNames.AgentUpgrade && RequiresAgentUpgradeResubmission(box, releases.ReadAvailable());
+
+    internal static bool HasReviewPermission(LockboxRequest box, string user, ClaimsPrincipal principal)
+    {
+        var own = box.RequesterId == user;
+        return principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations) &&
+            DmsPermissions.CanDecide(principal, box.Risk, own) &&
+            !(own && BoxSecretTransfers.RequiresIndependentApproval(box.Definition));
+    }
+
     internal static bool RequiresAgentUpgradeResubmission(LockboxRequest box, IReadOnlyList<AgentRelease>? current) =>
         current != null && box.Decision == DecisionState.Pending && box.Definition == MachineWorkflows.AgentUpgrade.Name &&
         box.Version == MachineWorkflows.AgentUpgrade.Version &&
@@ -518,10 +533,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var definitionChanged = item.Decision == DecisionState.Pending &&
             catalog.FindApprovable(item.Definition, item.Risk, item.Version) == null;
         var canApprove = item.Decision == DecisionState.Pending && !definitionChanged &&
-            principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations) &&
-            DmsPermissions.CanDecide(principal, item.Risk, ownRequest) &&
-            !(ownRequest && BoxSecretTransfers.RequiresIndependentApproval(item.Definition)) &&
-            (item.Definition != MachineWorkflows.AgentUpgrade.Name || !RequiresAgentUpgradeResubmission(item, releases.ReadAvailable()));
+            HasReviewPermission(item, user, principal) && !HasSupersededAgentRelease(item);
 
         var status = await DescribeLockboxAsync(item);
         var targets = LockboxSnapshot.ReadTargets(item);

@@ -48,7 +48,9 @@ On **待我审批**, tap **值班提醒** and allow Android notifications. The v
 - Have another approver act or the requester withdraw after opening the details. Confirm that the app shows the updated state and does not resubmit. Also check status after a connection loss during submission.
 - On an actual on-call phone using a test Controller, enable **值班提醒**, background the app and lock the screen. Submit an eligible request; use 30 seconds from submission to phone alert as the initial acceptance target on a healthy network. Confirm the alert contains no request data and tapping it refreshes the queue. An ineligible or obsolete request must not alert. While a details load or decision is in flight, tap the notification and confirm the app opens the queue after that operation finishes; multiple taps during the same operation must not cause multiple navigations.
 - While the session is active, disconnect the phone from the network, submit an eligible request and leave it pending, then restore connectivity. Verify that the phone alerts without opening the app or restarting the session. Stop the session and verify that later requests no longer alert.
-- If direct notifications are unreliable on the on-call phones, prioritize a server-side escalation for requests still pending after an agreed interval through the existing on-call channel. This fallback is not implemented; do not switch to a separate push relay before verifying the direct path.
+- For a fallback independent of the app, configure [Lockbox email reminders](configuration.md#lockbox-email-reminders) on the Controller. A request pending for at least 15 minutes can trigger one email per currently eligible reviewer with a verified address. Test this with an isolated relay before production rollout.
+
+Email fallback validation (2026-11-26): the integration test covered the 15-minute threshold, reviewer eligibility, exclusion of closed and obsolete requests, and retry without resending successful deliveries. All 862 solution tests and `bash lint.sh` passed locally. No real SMTP messages were sent; relay delivery still needs deployment acceptance.
 
 ## #2423 validation record
 

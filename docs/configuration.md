@@ -29,6 +29,24 @@ Dms__Clickhouse__ConnectionString=Host=clickhouse;Protocol=http;Port=8123;Userna
 
 Keep real credentials outside Git. `Logging:Clickhouse` controls ordinary application logs separately from the DMS workflow trace archive.
 
+## Lockbox email reminders
+
+Enable this server-side fallback by configuring a trusted SMTP relay with STARTTLS (typically port 587) and the public HTTPS origin of the Controller, without a path. It is disabled by default. There is no Android requirement.
+
+```text
+Dms__LockboxEmail__Enabled=true
+Dms__LockboxEmail__SmtpHost=smtp.example.com
+Dms__LockboxEmail__SmtpPort=587
+Dms__LockboxEmail__From=dms@example.com
+Dms__LockboxEmail__ControllerOrigin=https://dms.example.com
+```
+
+If the relay requires authentication, inject `Dms__LockboxEmail__SmtpUsername` and `Dms__LockboxEmail__SmtpPassword` through the deployment's secret configuration; do not commit them. Implicit TLS on port 465 is not supported.
+
+The Controller checks once a minute for requests that have been pending for at least 15 minutes, including existing pending requests when first enabled. It emails only current, unlocked reviewers with the matching approval permissions, operations read access and a **verified** email address. An OIDC provider can supply a verified address; merely entering an address in a local account is not enough. Approvals, denials, withdrawals and obsolete requests do not qualify. Emails contain only a generic reminder and a link to the authenticated queue, not request details or approval actions.
+
+A successful send is recorded per request and reviewer in the Controller database, so normal restarts do not resend it. Delivery failures are retried while the request remains eligible; a crash between SMTP acceptance and persisting that receipt can cause a duplicate. A decision made while an SMTP send is already in flight cannot retract that email. Verify delivery with a test relay and test reviewer before enabling it in production.
+
 ## Persistent storage
 
 Run one Controller with its own persistent database and `Dms:StatePath` directory. The current design does not support multiple Controllers sharing a workflow store.
