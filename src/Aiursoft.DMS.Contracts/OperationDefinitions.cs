@@ -131,7 +131,6 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<MakeDirectoryInput, OperationResult> FilesystemMkdir =
         new("machine.filesystem.mkdir",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemMkdir)),
-            "2",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 

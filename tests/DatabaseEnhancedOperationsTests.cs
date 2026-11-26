@@ -58,7 +58,7 @@ public class DatabaseEnhancedOperationsTests
     {
         var validContainer = new string('a', 64);
 
-        Assert.Throws<ArgumentException>(() => new DatabaseInput(null, null).Validate());
+        Assert.Throws<ArgumentException>(() => new DatabaseInput(null).Validate());
         Assert.Throws<ArgumentException>(() => new DatabaseInput("prod", validContainer).Validate());
         Assert.Throws<ArgumentException>(() => new DatabaseInput(null, "short-id").Validate());
 
@@ -141,7 +141,7 @@ public class DatabaseEnhancedOperationsTests
             Assert.IsTrue(result.Complete);
 
             var factsJson = result.Facts!.Value.GetRawText();
-            var allTraces = string.Join('\n', events.Select(e => e.Message ?? ""));
+            var allTraces = string.Join('\n', events.Select(e => e.Message));
             Assert.IsFalse(factsJson.Contains("super-secret-mariadb-pw", StringComparison.Ordinal));
             Assert.IsFalse(factsJson.Contains("super-secret-pg-pw", StringComparison.Ordinal));
             Assert.IsFalse(allTraces.Contains("super-secret-mariadb-pw", StringComparison.Ordinal));
@@ -343,8 +343,8 @@ public class DatabaseEnhancedOperationsTests
         Assert.IsFalse(serializedResult.Contains(secretToken, StringComparison.Ordinal));
         foreach (var ev in events)
         {
-            Assert.IsFalse((ev.Message ?? "").Contains(secretToken, StringComparison.Ordinal));
-            Assert.IsFalse((ev.Result ?? "").Contains(secretToken, StringComparison.Ordinal));
+            Assert.IsFalse(ev.Message.Contains(secretToken, StringComparison.Ordinal));
+            Assert.IsFalse(ev.Result.Contains(secretToken, StringComparison.Ordinal));
         }
 
         var secretCols = result.Facts!.Value.GetProperty("SecretColumns").EnumerateArray().Select(e => e.GetString()).ToArray();

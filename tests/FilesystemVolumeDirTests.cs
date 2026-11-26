@@ -23,7 +23,7 @@ public class FilesystemVolumeDirTests
     [TestMethod]
     public async Task MkdirAppliesModeAndOwnerOnlyToNewlyCreatedDirectories()
     {
-        Assert.AreEqual(RiskLevel.High, OperationsWorkflows.FilesystemMkdir.Risk);
+        Assert.AreEqual(RiskLevel.Medium, OperationsWorkflows.FilesystemMkdir.Risk);
         Assert.AreEqual("2", OperationsWorkflows.FilesystemMkdir.Version);
 
         var root = Directory.CreateTempSubdirectory("dms-mkdir-test-").FullName;

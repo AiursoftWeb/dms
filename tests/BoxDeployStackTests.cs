@@ -75,7 +75,7 @@ public class BoxDeployStackTests
 
         public void Dispose()
         {
-            try { Directory.Delete(Root, recursive: true); } catch { }
+            try { Directory.Delete(Root, recursive: true); } catch (IOException) { }
         }
     }
 
@@ -128,8 +128,11 @@ public class BoxDeployStackTests
         var raw = await context.RunAsync(workflow, CancellationToken.None);
         var result = MachineWorkflows.BoxDeployStack.ReadResult(raw);
 
+        Assert.AreEqual(box.Repository, result.Repository);
         Assert.AreEqual("prbot", result.Stack);
         Assert.AreEqual("stage4/stacks/prbot/docker-compose.yml", result.ComposeFile);
+        Assert.AreEqual(0, result.ExitCode);
+        Assert.IsFalse(result.HealthVerified);
         Assert.AreNotEqual(result.PreviousCommit, result.Commit);
         Assert.IsNotNull(capturedDocker);
         Assert.AreEqual("docker", capturedDocker.Executable);
@@ -175,7 +178,8 @@ public class BoxDeployStackTests
         File.WriteAllText(outside, "services: {}\n");
         File.Delete(compose);
         File.CreateSymbolicLink(compose, outside);
-        await Assert.ThrowsAsync<IOException>(() => BoxDeployStackWorkflow.ResolveComposePath(box.Repository, "prbot") is var _ ? Task.CompletedTask : Task.CompletedTask);
+        var repo = box.Repository;
+        Assert.Throws<IOException>(() => BoxDeployStackWorkflow.ResolveComposePath(repo, "prbot"));
         Assert.IsFalse(dockerCalled);
     }
 

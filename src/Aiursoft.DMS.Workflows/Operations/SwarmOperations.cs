@@ -9,7 +9,9 @@ namespace Aiursoft.DMS.Workflows.Operations;
 
 public static partial class SwarmOperations
 {
+    // ReSharper disable NotAccessedPositionalProperty.Global
     public sealed record EnvironmentEntrySummary(string Key, string? Value, bool Redacted);
+    // ReSharper restore NotAccessedPositionalProperty.Global
 
     private static readonly string[] SensitiveKeyMarkers =
     [

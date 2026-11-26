@@ -2,7 +2,7 @@
 
 [Discover workflows and permissions](workflow-discovery.md) · [CLI and Agent setup](cli-and-agent.md) · [Operation options](operations.md)
 
-Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 134 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
+Each row shows the workflow ID you will see in execution history, how it starts, its schedule in UTC, and what it does. DMS has 139 requestable entries in this catalog and 9 scheduled or internal entries, including the Controller’s dispatch workflow.
 
 Enter a CLI command with `--help` to see its options. Workflow requests generally need a reason and, where applicable, a machine target. The `Open` inventory workflow uses the **Run open workflows** permission. For other risk levels, request, automatic approval, and manual approval are separate role permissions. Self-approval requires its own permission. Internal and scheduled entries show their registered risk and run through their parent or schedule. See [Role permissions](permissions.md).
 
@@ -31,6 +31,7 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Configure Box Git access | `machine.box.configure-git` | `dms machine box set-git-ssh-identity` (Medium) | — | Configures which existing SSH identity file and known-hosts file Box uses for Git pulls. |
 | Update a Box checkout | `machine.box.update-only` | `dms machine box update-only` (Medium) | — | Fast-forwards the checkout and reports the previous and current commits. |
 | Deploy a Box | `machine.box.deploy` | `dms machine box deploy` (High) | — | Updates the Box checkout and deploys from the selected stage onward. The service filter can limit the deployment. |
+| Deploy one Box stack | `machine.box.deploy-stack` | `dms machine box deploy-stack` (Medium) | — | Renders one named stack's Compose template in memory with Box `.env` and `.env.prod` secrets and deploys it via `docker stack deploy`, without running stage build scripts or touching other stacks. |
 | Inspect a Box checkout | `machine.box.inspect` | `dms machine box inspect` (Low) | — | Produces a structured report of Box Git status, stages, stacks, Swarm running stacks, service replica health, and secrets inventory. |
 | Refresh images with Box Puller | `machine.box.puller.force-update` | `dms machine box puller force-update` (Medium) | — | Refreshes a selected image or the configured image set through the specified Box Puller. |
 | Find a ClickHouse container | `machine.clickhouse.find-container` | `dms machine clickhouse find-container` (Open) | — | Find the unique running ClickHouse server container on the target machine. |
@@ -41,12 +42,13 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Change ClickHouse data or columns | `machine.clickhouse.execute` | `dms machine clickhouse sql` (High) | — | Apply an approved write to the frozen local container. |
 | Describe a database table | `machine.database.describe-table` | `dms machine database describe-table` (Low) | — | Show a database table's columns and types. |
 | Inspect database activity | `machine.database.diagnostics` | `dms machine database diagnostics` (Low) | — | Inspect a database's active queries, connections, and resource usage. |
-| Discover database services | `machine.database.discover` | `dms machine database discover` (Low) | — | Find local database containers and configured connection names. |
-| Execute SQL from a file | `machine.database.execute-sql` | `dms machine database execute-sql` (High) | — | Runs approved SQL from a file against a configured writable connection. The file can contain writes or schema changes. |
-| List databases | `machine.database.list-databases` | `dms machine database list-databases` (Low) | — | List databases available through a configured connection. |
+| Discover database services | `machine.database.discover` | `dms machine database discover` (Low) | — | Find local MySQL/MariaDB/PostgreSQL containers (with Swarm service/stack labels and default database metadata, never password values) and configured connection profiles. |
+| Execute SQL from a file | `machine.database.execute-sql` | `dms machine database execute-sql` (High) | — | Runs approved SQL from a file against a configured writable connection or local database container (`--container`). The file can contain writes or schema changes. |
+| List databases | `machine.database.list-databases` | `dms machine database list-databases` (Low) | — | List databases available through a configured connection or local database container (`--container`). |
 | List tables | `machine.database.list-tables` | `dms machine database list-tables` (Low) | — | List tables in the specified database. |
-| Query SQL from a file | `machine.database.query-sql` | `dms machine database query-sql` (Low) | — | Runs SQL from a local file through a configured read-only database connection with bounded output. |
+| Query SQL from a file | `machine.database.query-sql` | `dms machine database query-sql` (Low) | — | Runs read-only SQL from a local file through a configured read-only database connection or local database container (`--container`) in a read-only transaction with bounded output. |
 | Query table rows | `machine.database.query-table` | `dms machine database query-table` (Low) | — | Read selected table columns with optional filters and sorting. |
+| Upsert a database row | `machine.database.upsert` | `dms machine database upsert` (High) | — | Inserts or updates one row with structured typed columns. Optional `--secret-column` values use encrypted one-time transfer and never enter Lockbox, audit, or trace logs. |
 | Diagnose Docker startup | `machine.docker.diagnose-startup` | `dms machine docker diagnose-startup` (Low) | — | Gather a container's state, recent logs, and startup events. |
 | Read Docker events | `machine.docker.events` | `dms machine docker events` (Low) | — | Read recent Docker events for a container. |
 | Run a command in Docker | `machine.docker.exec` | `dms machine docker exec` (High) | — | Runs an approved executable and arguments inside the selected Docker container. |
@@ -73,7 +75,8 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Find files | `machine.filesystem.find` | `dms machine filesystem find` (Low) | — | Find files by name, size, or modification time. |
 | Import a file artifact | `machine.filesystem.import` | `dms machine filesystem import` (VeryHigh) | — | Writes the approved artifact to the destination path. Overwrite must be explicitly requested. |
 | List directory entries | `machine.filesystem.ls` | `dms machine filesystem ls` (Low) | — | List files and directories under a path. |
-| Create a directory | `machine.filesystem.mkdir` | `dms machine filesystem mkdir` (Medium) | — | Create a directory on a machine. |
+| Create a directory | `machine.filesystem.mkdir` | `dms machine filesystem mkdir` (Medium) | — | Create a directory on a machine with optional octal/decimal `--mode`, `--uid`, and `--gid` applied only to newly created directories. |
+| Prepare a Swarm volume directory | `machine.filesystem.prepare-volume-dir` | `dms machine filesystem prepare-volume-dir` (Medium) | — | Idempotently creates a data subdirectory under `/swarm-vol/` (excluding `boxfor*` and hidden directories) and ensures its mode and ownership. |
 | Move or rename files | `machine.filesystem.mv` | `dms machine filesystem mv` (VeryHigh) | — | Move or rename a file or directory on the same machine. |
 | Remove a file or directory | `machine.filesystem.rm` | `dms machine filesystem rm` (Medium) | — | Permanently removes the approved path. Directory recursion requires an explicit request. |
 | Inspect file metadata | `machine.filesystem.stat` | `dms machine filesystem stat` (Low) | — | Read a file's type, size, ownership, permissions, and timestamps. |
@@ -139,10 +142,12 @@ Run `dms operation list-definitions` to check the public definitions and your pe
 | Disable SSH | `machine.ssh.disable` | `dms machine ssh disable` (Medium) | — | Masks and stops the system SSH service and socket. An existing DMS lease is revoked immediately, with its sessions stopped and its temporary account and access removed. |
 | Reconcile SSH leases | `machine.ssh.reconcile-lease` | Agent schedule and startup (Medium) | Every 5 minutes and at Agent startup | Reclaims expired or invalid SSH leases on the Agent. Valid leases remain active. Without a lease, the existing SSH state is preserved. |
 | Open a temporary SSH lease | `machine.ssh.temp-allow-ssh` | `dms machine ssh temp-allow-ssh` (VeryHigh) | — | Opens a temporary account with the requester’s verified personal keys after managed closure is established. Use `--key-id` to select one. One lease per machine, 30 minutes by default, 30–270 minutes supported. Sudo is opt-in. |
+| Summarize Swarm service env | `machine.swarm.service.env-summary` | `dms machine swarm service env-summary` (Low) | — | Show a Swarm service's spec and running task environment variables with sensitive values redacted (`[redacted len=N]`). |
 | Inspect a Swarm service | `machine.swarm.service.inspect` | `dms machine swarm service inspect` (Low) | — | Show a Swarm service's configuration and current version. |
 | List Swarm services | `machine.swarm.service.list` | `dms machine swarm service list` (Low) | — | List Swarm services, images, and replica counts. |
 | Read Swarm service logs | `machine.swarm.service.logs` | `dms machine swarm service logs` (Low) | — | Read recent logs from a Swarm service. |
 | List Swarm service tasks | `machine.swarm.service.ps` | `dms machine swarm service ps` (Low) | — | Show Swarm service tasks, assigned nodes, and scheduling errors. |
+| Rolling-restart a Swarm service | `machine.swarm.service.rolling-restart` | `dms machine swarm service rolling-restart` (Medium) | — | Increments `TaskTemplate.ForceUpdate` to trigger a same-image rolling restart and waits for convergence; blocks `stop-first` services unless `--allow-downtime` is set. |
 | Roll back a Swarm service | `machine.swarm.service.rollback` | `dms machine swarm service rollback` (Medium) | — | Rolls back the selected service to its previous spec after checking the expected service version and approved Swarm nodes. |
 | Start a Swarm service | `machine.swarm.service.start` | `dms machine swarm service start` (Medium) | — | Scales a replicated Swarm service to the requested replica count after checking the service version and approved nodes. |
 | Stop a Swarm service | `machine.swarm.service.stop` | `dms machine swarm service stop` (Medium) | — | Scales a replicated Swarm service to zero after checking the service version and approved nodes. |

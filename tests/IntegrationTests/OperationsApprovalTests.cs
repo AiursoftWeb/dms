@@ -52,6 +52,9 @@ public class OperationsApprovalTests : TestBase
             "machine filesystem find");
         yield return (OperationsWorkflows.FilesystemMkdir, new MakeDirectoryInput("/tmp/dms-test/new"), RiskLevel.Medium,
             "machine filesystem mkdir");
+        yield return (OperationsWorkflows.FilesystemPrepareVolumeDir,
+            new PrepareVolumeDirectoryInput("/swarm-vol/dms-fixture/data"), RiskLevel.Medium,
+            "machine filesystem prepare-volume-dir");
         yield return (OperationsWorkflows.FilesystemCp,
             new CopyPathInput("/tmp/dms-test/source", "/tmp/dms-test/destination"), RiskLevel.VeryHigh,
             "machine filesystem cp");
@@ -129,8 +132,12 @@ public class OperationsApprovalTests : TestBase
             "machine swarm service ps");
         yield return (OperationsWorkflows.SwarmServiceLogs, new SwarmLogsInput("dms-fixture"), RiskLevel.Low,
             "machine swarm service logs");
+        yield return (OperationsWorkflows.SwarmServiceEnvSummary, new SwarmServiceInput("dms-fixture"), RiskLevel.Low,
+            "machine swarm service env-summary");
         yield return (OperationsWorkflows.SwarmServiceUpdateStatus, new SwarmServiceInput("dms-fixture"), RiskLevel.Low,
             "machine swarm service rollout-status");
+        yield return (OperationsWorkflows.SwarmServiceRollingRestart, new SwarmRollingRestartInput("dms-fixture"),
+            RiskLevel.Medium, "machine swarm service rolling-restart");
         yield return (OperationsWorkflows.SwarmServiceStop, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
             RiskLevel.Medium, "machine swarm service stop");
         yield return (OperationsWorkflows.SwarmServiceStart, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
@@ -177,6 +184,10 @@ public class OperationsApprovalTests : TestBase
             RiskLevel.Low, "machine database query-sql");
         yield return (OperationsWorkflows.DatabaseExecuteSql, new DatabaseSqlInput("fixture-read", artifact),
             RiskLevel.High, "machine database execute-sql");
+        yield return (OperationsWorkflows.DatabaseUpsert,
+            new DatabaseUpsertInput("fixture-read", "fixture", "events", ["id"],
+                new Dictionary<string, JsonElement> { ["id"] = JsonSerializer.SerializeToElement("1") }),
+            RiskLevel.High, "machine database upsert");
         yield return (OperationsWorkflows.DatabaseDiagnostics, new DatabaseInput("fixture-read"), RiskLevel.Low,
             "machine database diagnostics");
         yield return (OperationsWorkflows.NetworkingInterfaces, new EmptyInput(), RiskLevel.Low,
@@ -264,8 +275,8 @@ public class OperationsApprovalTests : TestBase
         Assert.AreEqual("2", OperationsWorkflows.FilesystemDownload.Version);
         Assert.AreEqual("1", OperationsWorkflows.FilesystemTailAsRoot.Version);
         Assert.AreEqual("1", OperationsWorkflows.FilesystemDownloadAsRoot.Version);
-        Assert.HasCount(102, cases);
-        Assert.AreEqual(102, cases.Select(c => c.Definition.Name).Distinct().Count());
+        Assert.HasCount(106, cases);
+        Assert.AreEqual(106, cases.Select(c => c.Definition.Name).Distinct().Count());
         var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
         var allMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", allMachines: true);
         var multipleMachines = OperationsWorkflows.SshDisable.Request(new EmptyInput(), "Verify target scope", [machine.Id, Guid.NewGuid()]);
