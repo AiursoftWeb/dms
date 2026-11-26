@@ -6,6 +6,7 @@ public sealed class TraceFlushService(IServiceScopeFactory scopes, TraceStore st
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var initializeTrace = true;
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = scopes.CreateScope();
@@ -22,7 +23,18 @@ public sealed class TraceFlushService(IServiceScopeFactory scopes, TraceStore st
             catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
             { logger.LogError(exception, "Structured workflow audit archive is unavailable; persisted backlog is retained. Last observed pending: {Pending}.", archive.Pending); }
             // Keep trace and structured-audit delivery independent, using the existing background loop.
-            try { await store.FlushAsync(scope.ServiceProvider.GetRequiredService<TraceDatabase>()); }
+            try
+            {
+                var database = scope.ServiceProvider.GetRequiredService<TraceDatabase>();
+                if (initializeTrace && database.Enabled)
+                {
+                    // Apply retention on startup even when the old archive receives no further events.
+                    await database.InitializeAsync();
+                    initializeTrace = false;
+                }
+                if (await store.FlushAsync(database, stoppingToken))
+                    continue;
+            }
             catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
             { logger.LogError(exception, "Trace archive is unavailable; durable backlog is retained."); }
             await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
