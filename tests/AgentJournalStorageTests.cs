@@ -48,6 +48,38 @@ public class AgentJournalStorageTests
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task UnexpectedFileLengthIsPreservedUntilTheJournalReopens(bool checkpoint)
+    {
+        var directory = Directory.CreateTempSubdirectory();
+        var id = Guid.NewGuid();
+        var path = Path.Combine(directory.FullName, $"{id:N}.json");
+        try
+        {
+            byte[] observed;
+            using (var journal = new TaskJournal(directory.FullName))
+            {
+                journal.Accept(new AgentMessage { TaskId = id });
+                var trace = new WorkflowEvent { WorkflowId = id, IsTrace = true, Message = "kept" };
+                await journal.ReportAsync(id, trace);
+                using (var file = new FileStream(path, FileMode.Append)) file.WriteByte(0x1e);
+                observed = await File.ReadAllBytesAsync(path);
+                if (checkpoint)
+                {
+                    Action<Guid, long> acknowledge = journal.Acknowledge;
+                    Assert.Throws<IOException>(() => acknowledge(id, 1));
+                }
+                else await Assert.ThrowsAsync<IOException>(() => journal.ReportAsync(id, trace));
+            }
+            CollectionAssert.AreEqual(observed, await File.ReadAllBytesAsync(path));
+            using var recovered = new TaskJournal(directory.FullName);
+            Assert.AreEqual("kept", recovered.Snapshot().Single().Pending.Single().Message);
+        }
+        finally { directory.Delete(true); }
+    }
+
+    [TestMethod]
     public async Task CommittedCorruptionFailsClosedAndReleasesTheJournalLock()
     {
         var directory = Directory.CreateTempSubdirectory();

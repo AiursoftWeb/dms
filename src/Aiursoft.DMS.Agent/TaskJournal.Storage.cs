@@ -70,7 +70,7 @@ public sealed partial class TaskJournal
     {
         EnsureWritable();
         using var stream = new FileStream(Path.Combine(_path, $"{task.Id:N}.json"), FileMode.Open, FileAccess.Write, FileShare.Read);
-        if (stream.Length != task.FileLength) throw new IOException("Agent journal length changed. Reopen the journal before writing.");
+        VerifyLength(task, stream.Length);
         stream.Position = task.FileLength;
         try
         {
@@ -93,6 +93,7 @@ public sealed partial class TaskJournal
     {
         EnsureWritable();
         var file = Path.Combine(_path, $"{task.Id:N}.json");
+        if (task.FileLength > 0) VerifyLength(task, new FileInfo(file).Length);
         var temporary = file + ".tmp";
         long length;
         using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -107,6 +108,13 @@ public sealed partial class TaskJournal
         task.FileLength = length;
         task.HasRecords = false;
         task.ReclaimableBytes = 0;
+    }
+
+    private void VerifyLength(JournalTask task, long actual)
+    {
+        if (task.FileLength == actual) return;
+        _faulted = true; // Disposal must also leave any unexpected bytes for recovery.
+        throw new IOException("Agent journal length changed. Reopen the journal before writing.");
     }
 
     private void EnsureWritable()
