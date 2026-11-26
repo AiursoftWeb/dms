@@ -36,6 +36,47 @@ public class InvestigationOutputTests
     }
 
     [TestMethod]
+    public void HistoryFormatsShowReadableNamesAndScopeColumns()
+    {
+        var at = DateTime.UtcNow; var lockbox = Guid.NewGuid();
+        var approval = new WorkflowAuditEntry(WorkflowAuditKind.LockboxApproved, at, at, null, null, null, lockbox,
+            null, null, null, "machine.frps.deploy", "1", "engineer-id", "reviewer-id", false, RiskLevel.Medium,
+            "machine.frps.deploy", "1", DecisionState.Approved, at, null, null);
+        var page = new HistoryPage([new HistoryRow(Guid.NewGuid(), 7, approval, "Engineer", "Reviewer", "gx10-02")],
+            new HistoryQuery { From = at.AddDays(-7), Until = at }, false);
+        var result = new DmsResponse { Message = "Request completed.", Data = page };
+        using var table = new StringWriter();
+        DmsOutputWriter.Write(table, result, OutputFormat.Table, false, false, history: true, lockboxHistory: true);
+        var text = table.ToString();
+        StringAssert.Contains(text, "Engineer"); StringAssert.Contains(text, "Reviewer"); StringAssert.Contains(text, "gx10-02");
+        StringAssert.Contains(text, "LockboxApproved"); StringAssert.Contains(text, "Approved"); StringAssert.Contains(text, lockbox.ToString());
+        StringAssert.Contains(text, "Archive window"); Assert.DoesNotContain("\u001b", text);
+        Assert.DoesNotContain("engineer-id", text); Assert.DoesNotContain(text, "Origin");
+        using var json = new StringWriter(); DmsOutputWriter.Write(json, result, OutputFormat.Json, false, false, history: true);
+        Assert.AreEqual("Engineer", JObject.Parse(json.ToString())["Data"]!["Entries"]![0]!["RequesterName"]!.Value<string>());
+        using var csvOutput = new StringWriter(); DmsOutputWriter.Write(csvOutput, result, OutputFormat.Csv, false, false, history: true);
+        using var csv = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csvOutput.ToString())); csv.SetDelimiters(",");
+        var headers = csv.ReadFields()!; var values = csv.ReadFields()!;
+        StringAssert.Contains(string.Join(',', headers), "RequesterName"); StringAssert.Contains(string.Join(',', headers), "MachineName");
+        StringAssert.Contains(string.Join(',', headers), "ApproverName");
+        Assert.AreEqual("Engineer", values[Array.IndexOf(headers, "RequesterName")]);
+        Assert.AreEqual("Reviewer", values[Array.IndexOf(headers, "ApproverName")]);
+        Assert.AreEqual("gx10-02", values[Array.IndexOf(headers, "MachineName")]);
+        Assert.IsTrue(csv.EndOfData);
+        using var workflow = new StringWriter();
+        var runFact = new WorkflowAuditEntry(WorkflowAuditKind.WorkflowStateChanged, at, at, lockbox, lockbox, null, null,
+            WorkflowLocation.Machine, Guid.NewGuid(), null, "machine.disk.free", "1", "engineer-id", null, null, RiskLevel.Safe,
+            null, null, null, null, RunState.Running, RunState.Failed, WorkflowOrigin.Automatic);
+        var runPage = new DmsResponse { Message = "Request completed.", Data = new HistoryPage([new HistoryRow(Guid.NewGuid(), 9, runFact, "Engineer", null, "gx10-02")], new HistoryQuery(), true) };
+        DmsOutputWriter.Write(workflow, runPage, OutputFormat.Table, false, false, 220, history: true);
+        StringAssert.Contains(workflow.ToString(), "Failed"); StringAssert.Contains(workflow.ToString(), "Automatic");
+        StringAssert.Contains(workflow.ToString(), "machine.disk.free");
+        using var empty = new StringWriter();
+        DmsOutputWriter.Write(empty, new DmsResponse { Message = "Request completed.", Data = new HistoryPage([], new HistoryQuery(), false) }, OutputFormat.Csv, false, false, history: true);
+        StringAssert.Contains(empty.ToString(), "WorkflowId"); StringAssert.Contains(empty.ToString(), "RequesterName");
+    }
+
+    [TestMethod]
     public void TraceLogWritesOnePlainLinePerEvent()
     {
         var data = new

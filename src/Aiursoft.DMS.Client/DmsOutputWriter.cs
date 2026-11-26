@@ -9,7 +9,7 @@ public enum OutputFormat { Table, Json, Csv, Log }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true, bool lockboxDetails = false)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true, bool lockboxDetails = false, bool history = false, bool lockboxHistory = false)
     {
         if ((lockboxDetails || lockboxStatus) && response.Data is JObject lockbox)
             RemoveRetiredLockboxField(lockbox);
@@ -48,6 +48,11 @@ public static class DmsOutputWriter
             }
             return;
         }
+        if (history && data is JObject historyPage && historyPage["Entries"] is JArray historyEvents)
+        {
+            WriteHistory(output, historyPage, historyEvents, format, color, width, lockboxHistory);
+            return;
+        }
         if (format == OutputFormat.Csv)
         {
             if (catalog && data is JObject details && details["Definitions"] is JArray definitions)
@@ -65,6 +70,45 @@ public static class DmsOutputWriter
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
         else WriteHuman(output, data, width, color, true, verbose);
+    }
+
+    private static void WriteHistory(TextWriter output, JObject page, JArray events, OutputFormat format, bool color, int width, bool lockboxHistory)
+    {
+        var flat = new JArray(events.OfType<JObject>().Select(item => new JObject(
+            new JProperty("EventId", item["EventId"]?.DeepClone()), new JProperty("ControllerSequence", item["ControllerSequence"]?.DeepClone()),
+            (item["Fact"] as JObject)?.Properties().Select(p => new JProperty(p.Name, p.Value.DeepClone())) ?? [],
+            new JProperty("RequesterName", item["RequesterName"]?.DeepClone()),
+            new JProperty("ApproverName", item["ApproverName"]?.DeepClone()),
+            new JProperty("MachineName", item["MachineName"]?.DeepClone()))));
+        if (format == OutputFormat.Csv)
+        {
+            WriteCsv(output, flat, new[] { "EventId", "ControllerSequence" }
+                .Concat(typeof(WorkflowAuditEntry).GetProperties().Select(p => p.Name))
+                .Concat(["RequesterName", "ApproverName", "MachineName"]));
+            return;
+        }
+        output.WriteLine($"Archive window: {page["Echo"]?["From"]} to {page["Echo"]?["Until"]} (exclusive); page {page["Echo"]?["Page"]}; more: {page["HasNextPage"]}.");
+        output.WriteLine("Archived events; recent changes may still be pending delivery. State is the event state, not a current snapshot.");
+        string Name(JObject row, string idField, string nameField) => Cell(row[nameField] is { Type: not JTokenType.Null } ? row[nameField] : row[idField]);
+        var rows = flat.OfType<JObject>().Select(e => new[]
+        {
+            e["RecordedAt"]!.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
+            ((WorkflowAuditKind)e["Kind"]!.Value<int>()).ToString(),
+            Cell((WorkflowAuditKind)e["Kind"]!.Value<int>() is WorkflowAuditKind.WorkflowCreated or WorkflowAuditKind.WorkflowStateChanged
+                ? e["Definition"] : e["RequestedDefinition"] ?? e["Definition"]),
+            Name(e, "RequesterId", "RequesterName"), Name(e, "ApproverId", "ApproverName"), Name(e, "MachineId", "MachineName"),
+            HumanScalar("Decision", e["Decision"], true), HumanScalar("State", e["State"], true),
+            HumanScalar("Origin", e["Origin"], true), Cell(e["LockboxId"]), Cell(e["WorkflowId"])
+        }).ToList();
+        if (rows.Count == 0) output.WriteLine("(empty)");
+        else if (lockboxHistory)
+            WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "Requester", "Machine", "Decision", "Approver", "LockboxId", "WorkflowId"],
+                rows.Select(r => new[] { r[0], r[1], r[2], r[3], r[5], r[6], r[4], r[9], r[10] }).ToList(), width, color,
+                [19, 16, Math.Max(12, width - 176), 18, 16, 12, 18, 39, 36]);
+        else
+            WriteRows(output, ["RecordedAt (UTC)", "Kind", "Operation", "State", "Requester", "Machine", "Origin", "LockboxId", "WorkflowId"],
+                rows.Select(r => new[] { r[0], r[1], r[2], r[7], r[3], r[5], r[8], r[9], r[10] }).ToList(), width, color,
+                [19, 20, Math.Max(12, width - 174), 17, 18, 16, 9, 39, 36]);
     }
 
     private static void RemoveRetiredLockboxField(JObject lockbox)

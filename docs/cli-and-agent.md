@@ -266,6 +266,14 @@ dms lockbox approve --id "lb/<UUID>" --reason "Reviewed scope"
 # Alternatively: dms lockbox deny --id "lb/<UUID>" --reason "Rejected scope"
 ```
 
+Any authenticated user can review past activity without special permission:
+`dms lockbox history` lists Lockbox lifecycle events and `dms workflow history`
+lists workflow executions, each filtered by `--requester`/`--approver` (name or
+ID), `--machine` (name or ID), `--definition`, `--state`/`--decision`, `--risk`,
+`--origin`/`--trigger`, `--lockbox-id`, `--workflow-id` and a `--from`/`--until`
+window that defaults to the last 7 days. See [workflow audit](workflow-audit.md)
+for the full filter reference and the permission-gated raw query.
+
 Then inspect the actual execution tree:
 
 ```sh

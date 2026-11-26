@@ -1,5 +1,6 @@
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
+using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Sqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -206,5 +207,31 @@ public class WorkflowAuditTests
         Assert.AreEqual(2, await db.WorkflowAuditOutbox.CountAsync());
         root.State = RunState.Running; db.SaveChanges(false); db.ChangeTracker.AcceptAllChanges();
         await db.SaveChangesAsync(); Assert.AreEqual(3, await db.WorkflowAuditOutbox.CountAsync());
+    }
+
+    [TestMethod]
+    public void AuditQueryPredicatesBindKindsRiskTriggerAndDecisionAsParameters()
+    {
+        var window = new { From = DateTimeOffset.UnixEpoch, Until = DateTimeOffset.UnixEpoch.AddDays(1) };
+        var (predicates, values) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery
+        {
+            From = window.From, Until = window.Until,
+            Kinds = [WorkflowAuditKind.LockboxSubmitted, WorkflowAuditKind.WorkflowStateChanged],
+            Risk = RiskLevel.Medium, Trigger = WorkflowTrigger.Cron, Decision = DecisionState.Denied
+        });
+        StringAssert.Contains(string.Join(' ', predicates), "Kind IN ({kind0:String}, {kind1:String})");
+        Assert.AreEqual("LockboxSubmitted", values["kind0"]);
+        Assert.AreEqual("WorkflowStateChanged", values["kind1"]);
+        Assert.AreEqual("Medium", values["risk"]);
+        Assert.AreEqual("Cron", values["trigger"]);
+        Assert.AreEqual("Denied", values["decision"]);
+        var (single, singleValues) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery
+        {
+            From = window.From, Until = window.Until, Kind = WorkflowAuditKind.LockboxDenied
+        });
+        StringAssert.Contains(string.Join(' ', single), "Kind = {kind:String}");
+        Assert.AreEqual("LockboxDenied", singleValues["kind"]);
+        Assert.IsFalse(singleValues.ContainsKey("risk"));
+        Assert.IsFalse(singleValues.ContainsKey("decision"));
     }
 }

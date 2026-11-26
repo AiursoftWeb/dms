@@ -61,6 +61,8 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
     public Task<DmsResponse> FilesystemResultAsync(Guid id) => http.Get<DmsResponse>(Endpoint($"operations/{id}/result"), autoRetry: false, headers: Headers);
     public Task<DmsResponse> ListDefinitionsAsync() => http.Get<DmsResponse>(Endpoint("workflow-definitions"), headers: Headers);
     public Task<DmsResponse> AuditEventsAsync(WorkflowAuditQuery query) => http.Get<DmsResponse>(Endpoint("audit-events", query), autoRetry: false, headers: Headers);
+    public Task<DmsResponse> LockboxHistoryAsync(HistoryQuery query) => http.Get<DmsResponse>(Endpoint("lockbox-history", query), autoRetry: false, headers: Headers);
+    public Task<DmsResponse> WorkflowHistoryAsync(HistoryQuery query) => http.Get<DmsResponse>(Endpoint("workflow-history", query), autoRetry: false, headers: Headers);
     public Task<DmsResponse> CallstackAsync(Guid id) => http.Get<DmsResponse>(Endpoint($"operations/{id}/callstack"), headers: Headers);
     public Task<DmsResponse> TraceAsync(Guid id, int skip) => TraceAsync(id, skip, recursive: false);
 
