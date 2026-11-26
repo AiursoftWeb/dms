@@ -80,6 +80,14 @@ public class SubworkflowTests : TestBase
     [TestMethod]
     public async Task ClusterAwaitsTwoRealAgentsAndNestedClusterWithIndependentIds()
     {
+        // This test reads the complete inventory. Keep machines from previous fixtures
+        // from consuming the workflow result limit before the two test agents join.
+        await DatabaseAsync(async db =>
+        {
+            db.Machines.RemoveRange(db.Machines);
+            await db.SaveChangesAsync();
+            return true;
+        });
         var nestedDefinition = new ClusterWorkflowDefinition<EmptyInput, List<Guid>>("test.nested", RiskLevel.Safe);
         Server!.Services.GetRequiredService<ClusterWorkflowRegistry>().Register(nestedDefinition, () => new ExampleWorkflow(async (context, token) =>
         {
