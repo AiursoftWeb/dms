@@ -257,7 +257,10 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
-    public async Task WorkflowInspectionShowsRootAndParentAndDoesNotCreateWork()
+    [DataRow(WorkflowNames.DiskFree)]
+    [DataRow("machine.box.inspect")]
+    [DataRow("machine.system.info")]
+    public async Task WorkflowInspectionShowsRootAndParentAndDoesNotCreateWork(string definition)
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
@@ -265,7 +268,7 @@ public class DmsWorkflowTests : TestBase
         var root = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
         root.RootId = root.Id;
         var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.Batch, State = RunState.Succeeded };
-        var child = new WorkflowRun { RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
+        var child = new WorkflowRun { RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = definition, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
         var sibling = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
 
         var lockboxId = Guid.NewGuid();
@@ -310,6 +313,14 @@ public class DmsWorkflowTests : TestBase
         StringAssert.Contains(table.StdOut, "disk, \"quoted\""); StringAssert.Contains(table.StdOut, "second line");
         Assert.DoesNotContain("\\n", table.StdOut); Assert.DoesNotContain("ProtocolVersion", table.StdOut);
         StringAssert.Contains(table.StdOut, child.Id.ToString()); StringAssert.Contains(table.StdOut, root.Id.ToString());
+        Assert.DoesNotContain("Child workflows and results", table.StdOut);
+        var batch = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", root.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
+        Assert.AreEqual(0, batch.ProgramReturn, batch.StdErr);
+        StringAssert.Contains(batch.StdOut, "Child workflows and results");
+        StringAssert.Contains(batch.StdOut, child.Id.ToString());
+        StringAssert.Contains(batch.StdOut, "disk, \"quoted\"");
+        StringAssert.Contains(batch.StdOut, $"{sibling.Definition} [Failed]");
+        StringAssert.Contains(batch.StdOut, "No result recorded.");
         var csv = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "CsV"]);
         Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
         using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.StdOut)))
@@ -333,6 +344,7 @@ public class DmsWorkflowTests : TestBase
         {
             var machine = await scope.ServiceProvider.GetRequiredService<TemplateDbContext>().Machines.SingleAsync(m => m.Id == setup.Machine);
             StringAssert.Contains(subtree.StdOut, $"\"MachineName\": \"{machine.Name}\"");
+            StringAssert.Contains(batch.StdOut, $"{machine.Name} · {child.Definition}");
         }
         Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}")).StatusCode);
         Assert.AreEqual(HttpStatusCode.OK, (await Http.GetAsync($"/api/v1/dms/operations/{hiddenRun.Id}/callstack")).StatusCode);
