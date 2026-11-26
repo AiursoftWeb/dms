@@ -922,6 +922,7 @@ public static partial class DmsCommandApp
                 };
                 DmsOutputWriter.Write(output, response, format, Callstack, color, width,
                     catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose,
+                    history: History, lockboxHistory: LockboxHistory,
                     lockboxDetails: action is "lockboxes" or "get" or "approve" or "deny" or "withdraw");
                 if (format == OutputFormat.Table && response.Data is JObject data)
                     WriteResultNextStep(output, data);

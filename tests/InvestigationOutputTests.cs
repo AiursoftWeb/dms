@@ -10,6 +10,48 @@ namespace Aiursoft.DMS.Tests;
 public class InvestigationOutputTests
 {
     [TestMethod]
+    [DataRow("lockbox", true)]
+    [DataRow("workflow", false)]
+    public async Task HistoryCliRendersSanitizedTablesAndFlatCsv(string group, bool lockbox)
+    {
+        var at = DateTime.UtcNow;
+        var fact = new WorkflowAuditEntry(lockbox ? WorkflowAuditKind.LockboxSubmitted : WorkflowAuditKind.WorkflowStateChanged,
+            at, at, null, null, null, Guid.NewGuid(), null, null, null, "machine.frps.status", "1",
+            "requester", null, null, RiskLevel.Low, "machine.frps.status", "1", DecisionState.Pending, null, null,
+            lockbox ? null : RunState.Succeeded);
+        var reply = new DmsResponse
+        {
+            Code = Code.ResultShown, Message = "Request completed.",
+            Data = new HistoryPage([new HistoryRow(Guid.NewGuid(), 1, fact, "Alice\u001b[2J", null, "Node A")],
+                new HistoryQuery { From = at.AddDays(-7), Until = at }, false)
+        };
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Logging.ClearProviders();
+        await using var app = builder.Build();
+        var path = lockbox ? "/api/v1/dms/lockbox-history" : "/api/v1/dms/workflow-history";
+        app.MapGet(path, () => Results.Text(JsonConvert.SerializeObject(reply), "application/json"));
+        await app.StartAsync();
+
+        string[] args = [group, "history", "--dms-server-endpoint", app.Urls.Single(), "--api-key", "fixture-key"];
+        var table = await DmsCommandApp.Create().TestRunAsync(args);
+        Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
+        StringAssert.Contains(table.StdOut, "Archive window");
+        StringAssert.Contains(table.StdOut, "Alice");
+        Assert.DoesNotContain("\u001b", table.StdOut);
+        var csv = await DmsCommandApp.Create().TestRunAsync([.. args, "--output-format", "Csv"]);
+        Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
+        using var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.StdOut));
+        parser.SetDelimiters(",");
+        var headers = parser.ReadFields()!;
+        var values = parser.ReadFields()!;
+        Assert.Contains("RequesterName", headers);
+        Assert.Contains("MachineName", headers);
+        Assert.AreEqual("Node A", values[Array.IndexOf(headers, "MachineName")]);
+        Assert.IsTrue(parser.EndOfData);
+    }
+
+    [TestMethod]
     public void HistoryTableMustNeutralizeControlCharactersInDisplayNames()
     {
         var at = DateTime.UtcNow;
