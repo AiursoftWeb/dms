@@ -90,7 +90,7 @@ public static partial class DmsCommandApp
             ]),
             new Group("frps", "Inspect or deploy the FRP server on a machine.",
             [
-                StandardCommand("status", "Report FRPS versions, systemd state, listeners, and recent journal counts.",
+                StandardCommand("status", "Request FRPS versions, systemd state, listeners, and recent journal counts. View the report with dms workflow status <WorkflowId>.",
                     MachineWorkflows.FrpsStatus, _ => new EmptyInput()),
                 FrpsDeployCommand()
             ]),
@@ -285,14 +285,14 @@ public static partial class DmsCommandApp
         .WithFeature(new Group("workflow", "Check execution status, results, child workflows, and trace.",
         [
             new ActionCommand("status",
-                "Show a workflow's execution status and result.",
+                "Show a workflow's execution status and result. The default table includes descendant workflows and their results.",
                 "workflow", positionalOnly: true),
             new ActionCommand("callstack",
                 "Show a workflow and its descendants as a tree.",
                 "callstack", positionalOnly: true),
             new ActionCommand("result", "View a directory listing from a machine filesystem ls request.",
                 "filesystem-result", positionalOnly: true),
-            new ActionCommand("trace", "Read archived trace entries for a workflow and its descendants.", "trace", positionalOnly: true)
+            new ActionCommand("trace", "Read archived logs for a workflow and its descendants. Use dms workflow status <WorkflowId> to see results.", "trace", positionalOnly: true)
         ]))
         .WithFeature(new Group("operation", "Browse the workflow catalog, search audit history, or request cancellation.",
         [
@@ -553,6 +553,8 @@ public static partial class DmsCommandApp
         Func<ParseResult, (string Workflow, string Input)>? selectOperation = null,
         string? targetDescription = null) : DmsCommandHandler(supportsLog: action == "trace")
     {
+        private sealed record WorkflowStatusView(JObject Selected, JArray Descendants);
+
         public string[] CommandAliases { private get; set; } = [];
         protected override string[] Alias => CommandAliases;
 
@@ -806,7 +808,7 @@ public static partial class DmsCommandApp
                     "approve" or "deny" => await client.DecideAsync(lockboxId,
                         action == "approve",
                         context.GetValue(_reason) ?? string.Empty),
-                    "workflow" => await client.GetWorkflowAsync(id),
+                    "workflow" => await ReadWorkflowStatusAsync(client, id, SelectedFormat(context)),
                     "callstack" => await client.CallstackAsync(id),
                     "apt-plan" => await ReadAptPlanAsync(client, id),
                     "filesystem-result" => await client.FilesystemResultAsync(id),
@@ -817,16 +819,35 @@ public static partial class DmsCommandApp
             return response;
         }
 
+        private static async Task<DmsResponse> ReadWorkflowStatusAsync(DmsApiClient client, Guid id, OutputFormat format)
+        {
+            var response = await client.GetWorkflowAsync(id);
+            if (format != OutputFormat.Table) return response;
+
+            var tree = await client.CallstackAsync(id);
+            if (response.Data is not JObject selected || tree.Data is not JArray nodes)
+                throw new ArgumentException("The Controller returned an invalid workflow status or callstack.");
+
+            var descendants = new JArray(nodes.OfType<JObject>()
+                .Where(node => node["Id"]?.ToObject<Guid>() != id));
+            response.Data = new WorkflowStatusView(selected, descendants);
+            return response;
+        }
+
         private bool ShouldWaitForOpenResult(ParseResult context) =>
             readResult != null && !context.GetValue(_showLockboxId);
 
         protected override void WriteResponse(ParseResult context, DmsResponse response, OutputFormat format, bool color, int width)
         {
+            var output = context.InvocationConfiguration.Output;
+            var error = context.InvocationConfiguration.Error;
             if (ShouldWaitForOpenResult(context) || action is "apt-plan" or "clickhouse-result")
-                DmsOutputWriter.WriteResult(context.InvocationConfiguration.Output, response.Data!, format, color, width);
+                DmsOutputWriter.WriteResult(output, response.Data!, format, color, width);
             else if (action == "filesystem-result")
-                DmsOutputWriter.WriteFilesystemResult(context.InvocationConfiguration.Output, context.InvocationConfiguration.Error,
+                DmsOutputWriter.WriteFilesystemResult(output, error,
                     ((JObject)response.Data!).ToObject<FilesystemListResult>()!, format, color, width);
+            else if (response.Data is WorkflowStatusView status)
+                DmsOutputWriter.WriteWorkflowStatus(output, status.Selected, status.Descendants, color, width);
             else
             {
                 var verbose = action switch
@@ -834,18 +855,25 @@ public static partial class DmsCommandApp
                     "approve" or "deny" or "withdraw" => context.GetValue(_verbose),
                     _ => true
                 };
-                DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format, Callstack, color, width,
+                DmsOutputWriter.Write(output, response, format, Callstack, color, width,
                     catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose,
                     lockboxDetails: action is "lockboxes" or "get" or "approve" or "deny" or "withdraw");
                 if (format == OutputFormat.Table && response.Data is JObject data)
-                    WriteDirectoryNextStep(context.InvocationConfiguration.Output, data);
+                    WriteResultNextStep(output, data);
+                if (action == "trace" && format is OutputFormat.Log or OutputFormat.Table &&
+                    response.Data is JObject page)
+                    DmsOutputWriter.WriteEmptyTraceHint(error, page, Guid.Parse(context.GetValue(_positionalId)!));
             }
         }
 
-        private void WriteDirectoryNextStep(TextWriter output, JObject data)
+        private void WriteResultNextStep(TextWriter output, JObject data)
         {
+            var workflow = action is "lockbox-status" or "approve" ? data["Definition"]?.Value<string>() : action;
+            var directoryListing = workflow == OperationsWorkflows.FilesystemLs.Name;
+            if (!directoryListing && workflow != MachineWorkflows.FrpsStatus.Name) return;
+
             Guid? workflowId;
-            if (action == OperationsWorkflows.FilesystemLs.Name && data.ToObject<LockboxReceipt>() is { } receipt)
+            if (IsSubmission && data.ToObject<LockboxReceipt>() is { } receipt)
             {
                 workflowId = receipt.WorkflowId;
                 if (workflowId == null)
@@ -857,7 +885,6 @@ public static partial class DmsCommandApp
                 }
             }
             else if (action is "lockbox-status" or "approve" &&
-                     data["Definition"]?.Value<string>() == OperationsWorkflows.FilesystemLs.Name &&
                      data["Decision"]?.Value<int>() == (int)DecisionState.Approved &&
                      Guid.TryParse(data["WorkflowId"]?.ToString(), out var approvedWorkflowId))
                 workflowId = approvedWorkflowId;
@@ -865,8 +892,10 @@ public static partial class DmsCommandApp
                 return;
 
             output.WriteLine();
-            output.WriteLine("View the directory listing after execution. Requires Read DMS operations.");
-            output.WriteLine($"  dms workflow result {workflowId}");
+            output.WriteLine(directoryListing
+                ? "View the directory listing after execution. Requires Read DMS operations."
+                : "Check execution status and view each machine's FRPS report. Requires Read DMS operations.");
+            output.WriteLine($"  dms workflow {(directoryListing ? "result" : "status")} {workflowId}");
         }
 
         private async Task<DmsResponse> ReadOpenResultAsync(DmsApiClient client, DmsResponse response, Guid requestId,

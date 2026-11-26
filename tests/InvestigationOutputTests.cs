@@ -1,5 +1,7 @@
+using Aiursoft.AiurProtocol.Models;
 using Aiursoft.DMS.Client;
 using Aiursoft.DMS.Contracts;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Tests;
@@ -69,6 +71,40 @@ public class InvestigationOutputTests
         response.Data = new { Entries = Array.Empty<object>(), PendingArchiveEvents = 3, NextOffset = 400 };
         DmsOutputWriter.Write(empty, response, OutputFormat.Log, false, true);
         Assert.AreEqual(string.Empty, empty.ToString());
+    }
+
+    [TestMethod]
+    public async Task EmptyRecursiveTracePointsToStatusWithoutWritingToStdout()
+    {
+        var id = Guid.NewGuid();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Logging.ClearProviders();
+        await using var app = builder.Build();
+        app.MapGet($"/api/v1/dms/operations/{id}/trace", (bool recursive) =>
+        {
+            if (!recursive) return Results.BadRequest();
+            var reply = new DmsResponse
+            {
+                Code = Code.ResultShown, Message = "Request completed.",
+                Data = new { Entries = Array.Empty<object>(), PendingArchiveEvents = 3, NextOffset = 200 }
+            };
+            return Results.Text(JsonConvert.SerializeObject(reply), "application/json");
+        });
+        await app.StartAsync();
+
+        string[] args = ["workflow", "trace", id.ToString(), "--dms-server-endpoint", app.Urls.Single(), "--api-key", "fixture-key"];
+        var log = await DmsCommandApp.Create().TestRunAsync(args);
+        Assert.AreEqual(0, log.ProgramReturn, log.StdErr);
+        Assert.AreEqual(string.Empty, log.StdOut);
+        StringAssert.Contains(log.StdErr, "No archived trace entries on this page.");
+        StringAssert.Contains(log.StdErr, "still waiting to be archived");
+        StringAssert.Contains(log.StdErr, $"dms workflow status {id}");
+
+        var json = await DmsCommandApp.Create().TestRunAsync([.. args, "--output-format", "json"]);
+        Assert.AreEqual(0, json.ProgramReturn, json.StdErr);
+        Assert.AreEqual(string.Empty, json.StdErr);
+        Assert.AreEqual(0, ((JArray)JObject.Parse(json.StdOut)["Data"]!["Entries"]!).Count);
     }
 
     [TestMethod]

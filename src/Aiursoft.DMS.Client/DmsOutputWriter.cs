@@ -77,6 +77,39 @@ public static class DmsOutputWriter
             foreach (var entry in entries.OfType<JObject>()) entry.Remove(field);
     }
 
+    internal static void WriteWorkflowStatus(TextWriter output, JObject selected, JArray descendants, bool color, int width)
+    {
+        var details = (JObject)selected.DeepClone();
+        if (!HasWorkflowResult(details["Result"])) details.Remove("Result");
+        WriteHuman(output, details, width, color, workflowMetadata: true);
+
+        if (descendants.Count == 0) return;
+        output.WriteLine();
+        output.WriteLine("Child workflows and results");
+        output.WriteLine("---------------------------");
+        foreach (var node in descendants.OfType<JObject>())
+        {
+            var definition = TerminalText(Cell(node["Definition"]));
+            var machine = node["MachineName"]?.Value<string>() ?? node["MachineId"]?.ToString();
+            var label = string.IsNullOrWhiteSpace(machine) ? definition : $"{TerminalText(machine)} · {definition}";
+            var state = node["State"]!.ToObject<RunState>();
+            output.WriteLine();
+            output.WriteLine($"{label} {WorkflowTreeRenderer.Colorize($"[{state}]", state, color)}");
+            output.WriteLine($"Workflow ID {Cell(node["Id"])}");
+            if (HasWorkflowResult(node["Result"]))
+                WriteHuman(output, node["Result"]!, width, color);
+            else
+                output.WriteLine("No result recorded.");
+        }
+    }
+
+    private static bool HasWorkflowResult(JToken? result) => result?.Type switch
+    {
+        null or JTokenType.Null => false,
+        JTokenType.String => !string.IsNullOrWhiteSpace(result.Value<string>()),
+        _ => true
+    };
+
     public static void WriteResult(TextWriter output, object result, OutputFormat format, bool color, int width)
     {
         var data = JToken.FromObject(result);
@@ -170,6 +203,17 @@ public static class DmsOutputWriter
             var message = TerminalText(Cell(entry["Message"]).ReplaceLineEndings("\\n"));
             output.WriteLine($"{Cell(entry["Time"])} [{level}] {message}");
         }
+    }
+
+    internal static void WriteEmptyTraceHint(TextWriter error, JObject page, Guid workflowId)
+    {
+        if (page["Entries"] is not JArray { Count: 0 }) return;
+
+        error.WriteLine("No archived trace entries on this page.");
+        if (page["PendingArchiveEvents"]?.Value<long>() is > 0)
+            error.WriteLine("Some Controller events are still waiting to be archived.");
+        error.WriteLine("Check execution status and available results with this command.");
+        error.WriteLine($"  dms workflow status {workflowId}");
     }
 
     private static void WriteLockboxStatus(TextWriter output, JObject summary, int width)
