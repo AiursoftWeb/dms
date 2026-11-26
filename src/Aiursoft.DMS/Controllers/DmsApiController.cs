@@ -81,6 +81,20 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
         return await investigation.ReadAsync(Actor, query);
     });
 
+    [HttpGet("lockbox-history")]
+    public Task<IActionResult> LockboxHistory([FromQuery] HistoryQuery query) => Handle(async () =>
+    {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid history filters.");
+        return await investigation.ReadHistoryAsync(Actor, lockboxScope: true, query);
+    });
+
+    [HttpGet("workflow-history")]
+    public Task<IActionResult> WorkflowHistory([FromQuery] HistoryQuery query) => Handle(async () =>
+    {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid history filters.");
+        return await investigation.ReadHistoryAsync(Actor, lockboxScope: false, query);
+    });
+
     [HttpGet("lockboxes")]
     public Task<IActionResult> Lockboxes(int page = 0, DecisionState? decision = null) => Handle(async () =>
     {

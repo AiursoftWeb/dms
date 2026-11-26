@@ -11,4 +11,5 @@ public sealed record WorkflowAuditEntry(
     string? RequestedDefinition, string? RequestedVersion,
     DecisionState? Decision, DateTime? DecidedAt, RunState? PreviousState, RunState? State,
     WorkflowOrigin Origin = WorkflowOrigin.Manual, WorkflowTrigger Trigger = WorkflowTrigger.ManualRequest,
-    string? ScheduleId = null, string? ScheduleExpression = null, DateTime? ScheduledAt = null);
+    string? ScheduleId = null, string? ScheduleExpression = null, DateTime? ScheduledAt = null,
+    IReadOnlyList<Guid>? TargetMachineIds = null);

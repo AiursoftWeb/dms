@@ -15,14 +15,14 @@ public sealed partial class TraceDatabase
             INSERT INTO DmsWorkflowAudit (
                 EventId, ControllerSequence, Kind, OccurredAt, RecordedAt,
                 WorkflowId, RootWorkflowId, ParentWorkflowId, LockboxId, Location, MachineId, InstallationId,
-                Definition, Version, RequesterId, ApproverId, AutomaticApproval, RequestedRisk, RequestedDefinition, RequestedVersion, Decision, DecidedAt, PreviousState, State, Origin, Trigger, ScheduleId, ScheduleExpression, ScheduledAt)
+                Definition, Version, RequesterId, ApproverId, AutomaticApproval, RequestedRisk, RequestedDefinition, RequestedVersion, Decision, DecidedAt, PreviousState, State, Origin, Trigger, ScheduleId, ScheduleExpression, ScheduledAt, TargetMachineIds)
             VALUES (
                 {event:String}, {sequence:Int64}, {kind:String}, {occurred:DateTime64(7)}, {recorded:DateTime64(7)},
                 {workflow:Nullable(String)}, {root:Nullable(String)}, {parent:Nullable(String)}, {lockbox:Nullable(String)}, {location:Nullable(String)},
                 {machine:Nullable(String)}, {installation:Nullable(String)}, {definition:String}, {version:String},
                 {requester:Nullable(String)}, {approver:Nullable(String)}, {automatic:Nullable(Bool)}, {risk:Nullable(String)},
                 {requestedDefinition:Nullable(String)}, {requestedVersion:Nullable(String)},
-                {decision:Nullable(String)}, {decided:Nullable(DateTime64(7))}, {previous:Nullable(String)}, {state:Nullable(String)}, {origin:String}, {trigger:String}, {schedule:Nullable(String)}, {expression:Nullable(String)}, {scheduled:Nullable(DateTime64(7))})
+                {decision:Nullable(String)}, {decided:Nullable(DateTime64(7))}, {previous:Nullable(String)}, {state:Nullable(String)}, {origin:String}, {trigger:String}, {schedule:Nullable(String)}, {expression:Nullable(String)}, {scheduled:Nullable(DateTime64(7))}, {targets:Array(String)})
             """;
         command.AddParameter("event", row.EventId.ToString()); command.AddParameter("sequence", row.Id);
         command.AddParameter("kind", item.Kind.ToString()); command.AddParameter("occurred", item.OccurredAt); command.AddParameter("recorded", item.RecordedAt);
@@ -38,6 +38,7 @@ public sealed partial class TraceDatabase
         command.AddParameter("previous", item.PreviousState?.ToString()); command.AddParameter("state", item.State?.ToString());
         command.AddParameter("origin", item.Origin.ToString()); command.AddParameter("trigger", item.Trigger.ToString());
         command.AddParameter("schedule", item.ScheduleId); command.AddParameter("expression", item.ScheduleExpression); command.AddParameter("scheduled", item.ScheduledAt);
+        command.AddParameter("targets", (item.TargetMachineIds ?? []).Select(id => id.ToString()).ToArray());
         foreach (DbParameter parameter in command.Parameters) parameter.Value ??= DBNull.Value;
         await command.ExecuteNonQueryAsync(token);
     }

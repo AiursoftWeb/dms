@@ -273,6 +273,7 @@ public static partial class DmsCommandApp
         ]))
         .WithFeature(new Group("lockbox", "View, approve, reject, or withdraw Lockbox requests.",
         [
+            new ActionCommand("history", "List Lockbox lifecycle events: submissions, approvals, denials, withdrawals, and expirations.", "lockbox-history"),
             new ActionCommand("list", "List Lockbox requests, optionally filtered by decision.", "lockboxes"),
             new ActionCommand("status",
                 "Show the frozen workflow, target machines, inputs, requester, decision, and eligible approvers.",
@@ -284,6 +285,7 @@ public static partial class DmsCommandApp
         ]))
         .WithFeature(new Group("workflow", "Check execution status, results, child workflows, and trace.",
         [
+            new ActionCommand("history", "List workflow execution events: creations and state changes, on any machine.", "workflow-history"),
             new ActionCommand("status",
                 "Show a workflow's execution status and result. The default table includes descendant workflows and their results.",
                 "workflow", positionalOnly: true),
@@ -622,6 +624,33 @@ public static partial class DmsCommandApp
                 "Exclusive archive recording time, ISO 8601 with UTC offset; defaults to now. Maximum range: 31 days."
         };
 
+        private readonly Option<DateTimeOffset?> _historyFrom = new("--from")
+        {
+            Description =
+                "Inclusive archive recording time, ISO 8601 with UTC offset; defaults to 7 days before --until."
+        };
+
+        private readonly Option<DateTimeOffset?> _historyUntil = new("--until")
+        {
+            Description =
+                "Exclusive archive recording time, ISO 8601 with UTC offset; defaults to now. Maximum range: 31 days."
+        };
+
+        private readonly Option<string?> _requesterName = new("--requester")
+            { Description = "Filter by requester: username, display name, or user ID." };
+
+        private readonly Option<string?> _approverName = new("--approver")
+            { Description = "Filter by approver: username, display name, or user ID." };
+
+        private readonly Option<string?> _machineName = new("--machine")
+            { Description = "Filter by machine: machine name or machine ID." };
+
+        private readonly Option<RiskLevel?> _risk = new("--risk")
+            { Description = "Filter by requested risk: Safe, Low, Medium, High, VeryHigh, or Open." };
+
+        private readonly Option<WorkflowTrigger?> _trigger = new("--trigger")
+            { Description = "Filter by trigger: ManualRequest, Subworkflow, Cron, or AgentStartup." };
+
         private readonly Option<Guid?> _machineFilter = new("--machine-id")
             { Description = "Filter events to the specified machine ID." };
         private readonly Option<Guid?> _workflowFilter = new("--workflow-id")
@@ -656,7 +685,12 @@ public static partial class DmsCommandApp
 
         private readonly Option<int> _page = new("--page")
         {
-            Description = action == "lockboxes" ? "Zero-based page of 50 Lockbox requests." : "Zero-based page of 50 audit events."
+            Description = action switch
+            {
+                "lockboxes" => "Zero-based page of 50 Lockbox requests.",
+                "lockbox-history" or "workflow-history" => "Zero-based page of 50 history events.",
+                _ => "Zero-based page of 50 audit events."
+            }
         };
 
         private static LockboxId? ParseLockboxId(ArgumentResult result)
@@ -717,6 +751,18 @@ public static partial class DmsCommandApp
                              _page
                          }) yield return option;
             }
+            else if (action is "lockbox-history" or "workflow-history")
+            {
+                foreach (var option in new Option[]
+                         {
+                             _historyFrom, _historyUntil, _requesterName, _approverName, _machineName,
+                             _definitionFilter, _lockboxFilter, _workflowFilter, _page
+                         }) yield return option;
+                if (action == "lockbox-history")
+                    foreach (var option in new Option[] { _decision, _risk, _automatic }) yield return option;
+                else
+                    foreach (var option in new Option[] { _state, _origin, _trigger, _rootFilter }) yield return option;
+            }
             else if (action == "lockboxes")
             {
                 yield return _page;
@@ -746,9 +792,27 @@ public static partial class DmsCommandApp
             }
         }
 
+        private Task<DmsResponse> HistoryAsync(DmsApiClient client, ParseResult context)
+        {
+            var query = new HistoryQuery
+            {
+                From = context.GetValue(_historyFrom), Until = context.GetValue(_historyUntil),
+                Requester = context.GetValue(_requesterName), Approver = context.GetValue(_approverName),
+                Machine = context.GetValue(_machineName), Definition = context.GetValue(_definitionFilter),
+                Risk = context.GetValue(_risk), Decision = context.GetValue(_decision),
+                AutomaticApproval = context.GetValue(_automatic), State = context.GetValue(_state),
+                Origin = context.GetValue(_origin), Trigger = context.GetValue(_trigger),
+                LockboxId = context.GetValue(_lockboxFilter), WorkflowId = context.GetValue(_workflowFilter),
+                RootWorkflowId = context.GetValue(_rootFilter), Page = context.GetValue(_page)
+            };
+            return action == "lockbox-history" ? client.LockboxHistoryAsync(query) : client.WorkflowHistoryAsync(query);
+        }
+
         protected override bool Callstack => action == "callstack";
         protected override bool Catalog => action == "definitions";
         protected override bool Audit => action == "audit";
+        protected override bool History => action is "lockbox-history" or "workflow-history";
+        protected override bool LockboxHistory => action == "lockbox-history";
         protected override bool LockboxStatus => action == "lockbox-status";
 
         protected override async Task<DmsResponse> RequestAsync(DmsApiClient client, ParseResult context)
@@ -799,6 +863,7 @@ public static partial class DmsCommandApp
                         Kind = context.GetValue(_kind), State = context.GetValue(_state),
                         Origin = context.GetValue(_origin), AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
                     }),
+                    "lockbox-history" or "workflow-history" => await HistoryAsync(client, context),
                     "definitions" => await client.ListDefinitionsAsync(),
                     "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page),
                         context.GetValue(_decision)),
@@ -857,6 +922,7 @@ public static partial class DmsCommandApp
                 };
                 DmsOutputWriter.Write(output, response, format, Callstack, color, width,
                     catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose,
+                    history: History, lockboxHistory: LockboxHistory,
                     lockboxDetails: action is "lockboxes" or "get" or "approve" or "deny" or "withdraw");
                 if (format == OutputFormat.Table && response.Data is JObject data)
                     WriteResultNextStep(output, data);

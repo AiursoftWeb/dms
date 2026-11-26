@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <Version>10.38.0</Version>
+    <Version>10.39.0</Version>
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Aiursoft.DMS.Contracts</AssemblyName>
     <RootNamespace>Aiursoft.DMS.Contracts</RootNamespace>

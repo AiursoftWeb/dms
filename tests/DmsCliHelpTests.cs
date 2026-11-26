@@ -45,6 +45,19 @@ public class DmsCliHelpTests
     }
 
     [TestMethod]
+    [DataRow("lockbox", "history", "lifecycle events")]
+    [DataRow("workflow", "history", "creations and state changes")]
+    public async Task HistoryHelpDescribesScopeAndNameFilters(string group, string command, string description)
+    {
+        var result = await DmsCommandApp.Create().TestRunAsync([group, command, "--help"]);
+        Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+        StringAssert.Contains(result.StdOut, description);
+        StringAssert.Contains(result.StdOut, "--requester");
+        StringAssert.Contains(result.StdOut, "--machine");
+        StringAssert.Contains(result.StdOut, "7 days before --until");
+    }
+
+    [TestMethod]
     [DataRow("operation get-workflow", "get-workflow")]
     [DataRow("operation get-callstack", "get-callstack")]
     [DataRow("operation get-trace", "get-trace")]
