@@ -225,6 +225,16 @@
                         <time class="small text-body-secondary font-monospace" datetime="@requestedAt" data-utc-now title="@requestedAt">@status.RequestedAt.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time>
                     </dd>
                 </div>
+                @if (status.Decision == DecisionState.Pending)
+                {
+                    var expiresAt = status.ExpiresAt.ToString(timestampFormat, CultureInfo.InvariantCulture);
+                    <div>
+                        <dt><i data-lucide="timer" aria-hidden="true"></i>@Localizer["Expires at"]</dt>
+                        <dd>
+                            <time class="small text-body-secondary font-monospace" datetime="@expiresAt" data-utc-now title="@expiresAt">@status.ExpiresAt.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture)</time>
+                        </dd>
+                    </div>
+                }
             </dl>
         </div>
     </header>
