@@ -1,4 +1,5 @@
 using Aiursoft.DMS.Authorization;
+using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using Aiursoft.AiurProtocol;
@@ -10,7 +11,6 @@ using Aiursoft.DMS.SDK;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
 
@@ -155,7 +155,7 @@ public class WorkflowInvestigationTests : TestBase
         Assert.AreEqual(1, await DatabaseAsync(db => db.AuditEvents.CountAsync(e => e.Action == "workflow.history-query" && e.ActorId == setup.User)));
         var record = await DatabaseAsync(db => db.AuditEvents.SingleAsync(e => e.Action == "workflow.history-query" && e.ActorId == setup.User));
         var parts = record.Detail.Split("; ").Select(part => part.Split('=', 2)).ToDictionary(pair => pair[0], pair => pair[1]);
-        Assert.AreEqual(7, (DateTime.Parse(parts["Until"]) - DateTime.Parse(parts["From"])).TotalDays);
+        Assert.AreEqual(7, (DateTimeOffset.Parse(parts["Until"], CultureInfo.InvariantCulture) - DateTimeOffset.Parse(parts["From"], CultureInfo.InvariantCulture)).TotalDays);
     }
 
     [TestMethod]
