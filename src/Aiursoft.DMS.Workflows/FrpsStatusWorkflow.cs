@@ -23,6 +23,7 @@ public sealed partial class FrpsStatusWorkflow(EmptyInput input, AgentEnvironmen
         if (standard is not null) services.Add(standard);
         var wrapped = await InspectAsync(WrappedUnit, true, token);
         if (wrapped is not null) services.Add(wrapped);
+        await context.TraceAsync($"FRPS inspection completed. Found {services.Count} service units. Versions, service states, listeners and journal counts are in the workflow result.");
         return new FrpsStatusResult(DateTimeOffset.UtcNow, services);
     }
 

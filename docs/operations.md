@@ -16,7 +16,7 @@ dms workflow trace "$WORKFLOW_ID"
 dms workflow trace "$CHILD_WORKFLOW_ID" --recursive false
 ```
 
-Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `workflow trace` for observations and command output, and `workflow status` for the typed result. Investigation commands support `--output-format Table`, `Json`, and `Csv`. Output formatting on a submission changes the receipt only.
+Use `dms lockbox status "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID. A pending request performs no machine operation. Run `workflow status` with the root ID to see the execution status, followed by child workflows and their results grouped by workflow and labeled with the machine name when available. The default submission receipt prints the command for checking approval or reading the result. `workflow status --output-format Json` and `Csv` describe the selected workflow. Use `workflow callstack --output-format Json` to get the subtree in one response.
 
 After approval and execution of a `machine filesystem ls` request, run `dms workflow result "$WORKFLOW_ID"` with the root ID to see each target's directory listing together. This requires the existing Read DMS operations permission. Empty directories, incomplete listings and failed machines have distinct statuses. JSON includes the machine statuses and entries; CSV writes one row per directory entry and reports statuses needing attention on standard error. Large historical listings depend on the retained trace data. The Controller reads the pending spool as well as the archive, so results can be available before trace archival finishes.
 
@@ -24,11 +24,13 @@ With Client 1.23.0 and an updated Controller, follow the command printed in the 
 
 Trace entries include their UTC time, Workflow ID, definition, source and text. Workflow authors use `TraceAsync` for execution context and `WarningAsync` for incomplete observations; native process output is written as `stdout` and `stderr`. Fixed operations report their tool, time limit, elapsed time, exit code and output character counts. Completed `OperationWorkflow` functions also write their result summary. These diagnostics do not dump arguments, standard input or environment variables; operations that suppress raw output retain that choice.
 
+Agent 1.40.0 records the SSH lease inspection outcome even when no lease needs recovery, and records the installed and Controller versions when a scheduled Agent upgrade finds no newer release. A baseline run that receives no policy records a warning, finishes with `Warning`, and returns `Complete=false` with the reason it skipped applying the baseline. FRPS inspections record a completion message pointing to their report. These logs are emitted by new runs after the Agent update.
+
 Machine events are persisted in the Agent journal before delivery through its outbound WebSocket. The Controller durably spools trace events before acknowledging them and flushes them to ClickHouse `DmsWorkflowTrace`. Unacknowledged events can be retransmitted; event IDs deduplicate archive reads. Workflow metadata and Lockbox decisions remain in the relational database, with structured investigation facts archived separately to `DmsWorkflowAudit`. ClickHouse downtime retains a bounded backlog rather than silently discarding trace. Trace queries can briefly lag execution; `PendingArchiveEvents` reports the Controller-wide backlog, not just the selected workflow.
 
 `workflow trace` combines the selected workflow and all its descendants by time. Pass a child ID to read that subtree, or use `--recursive false` to read a single workflow. Each page contains up to 200 archived events. Continue with `--skip 200`, `--skip 400` and so on, keeping the selected ID and recursive option the same. Direct API calls can request the same behavior with `?recursive=true`. The web operation page displays the selected node's first 200 archived entries with links to its children.
 
-Both trace commands default to plain log output. Use `--output-format Table` to display trace metadata and entries as a table.
+`workflow trace` defaults to plain log output. Use `--output-format Table` to display trace metadata and entries as a table. If the requested page contains no archived entries, the CLI prints a `workflow status` command to standard error so you can find any available results with the same ID. A successful workflow can return a result without emitting trace entries.
 
 ```sh
 dms workflow trace "$WORKFLOW_ID" | code -

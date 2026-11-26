@@ -11,6 +11,37 @@ namespace Aiursoft.DMS.Tests;
 public class AgentUpgradeTests
 {
     [TestMethod]
+    public async Task ScheduledUpgradeRecordsWhyAnAlreadyCurrentAgentNeedsNoUpgrade()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Logging.ClearProviders();
+        await using var app = builder.Build();
+        var release = new AgentRelease("linux-x64", AgentUpgrade.Version, new string('a', 64), new string('b', 64));
+        app.MapGet("/api/agent/scheduled-upgrade", () => new[] { release, release with { Architecture = "linux-arm64" } });
+        await app.StartAsync();
+        var directory = Directory.CreateTempSubdirectory("dms-current-scheduled-upgrade-");
+        try
+        {
+            using var journal = new TaskJournal(directory.FullName);
+            var client = new AgentClient(new Uri(app.Urls.Single()), "fixture-key", journal, installedState: directory.FullName);
+            client.TickSchedules(new DateTime(2026, 11, 26, 8, 0, 0, DateTimeKind.Utc));
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+            while (journal.Snapshot().Any(task => !task.State.Terminal()))
+                await Task.Delay(25, timeout.Token);
+            var task = journal.Snapshot().Single(item => item.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName);
+            Assert.AreEqual(RunState.Succeeded, task.State);
+            Assert.IsNull(task.ScheduledUpgradeRelease);
+            var trace = task.Pending.Single(item => item.IsTrace && item.Message.StartsWith("No newer Agent release", StringComparison.Ordinal));
+            StringAssert.Contains(trace.Message, $"Installed version={AgentUpgrade.Version}");
+            StringAssert.Contains(trace.Message, $"Controller version={AgentUpgrade.Version}");
+            StringAssert.Contains(task.Pending.Single(item => !item.IsTrace && item.State == RunState.Succeeded).Result,
+                "No newer Agent release is available.");
+        }
+        finally { directory.Delete(true); }
+    }
+
+    [TestMethod]
     public void AlreadyCurrentRequiresTheApprovedAssemblyAndInstallation()
     {
         var machine = Guid.NewGuid();

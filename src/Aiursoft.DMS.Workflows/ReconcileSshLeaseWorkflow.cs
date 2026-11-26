@@ -13,6 +13,7 @@ public sealed class ReconcileSshLeaseWorkflow : MachineWorkflow
     public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
     {
         var result = await context.CallAsync(OperationsWorkflows.SshCheckLease, new SshLeaseCheckInput { ReportStatus = true }, token);
+        await context.TraceAsync(result.Summary);
         return JsonSerializer.Serialize(new OperationResult(result.Summary));
     }
 }
