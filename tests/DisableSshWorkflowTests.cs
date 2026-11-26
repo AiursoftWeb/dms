@@ -201,7 +201,10 @@ public class DisableSshWorkflowTests
         using var fixture = new Fixture { SshListening = true };
         var settings = new SecurityBaselinePolicy("test", UfwEnabled: true);
         var unconfigured = await fixture.ApplyBaselineAsync(null);
-        StringAssert.Contains(unconfigured.Summary, "no scheduled security baseline");
+        StringAssert.Contains(unconfigured.Summary, "skipped");
+        Assert.IsFalse(unconfigured.Complete);
+        Assert.IsTrue(fixture.Events.Any(item => item.IsTrace && item.Source == "warning" && item.Message == unconfigured.Summary));
+        Assert.IsTrue(fixture.Events.Any(item => !item.IsTrace && item.Definition == "machine.security.apply-baseline" && item.State == RunState.Warning));
         Assert.AreEqual(0, fixture.MaskCount);
 
         var lease = Guid.NewGuid();
@@ -211,6 +214,17 @@ public class DisableSshWorkflowTests
         Assert.IsTrue(active.Facts!.Value.GetProperty("UfwDeferred").GetBoolean());
         Assert.IsFalse(active.Facts!.Value.GetProperty("Ssh").GetProperty("SshClosed").GetBoolean());
         Assert.IsTrue(fixture.SshListening);
+        Assert.AreEqual(0, fixture.MaskCount);
+    }
+
+    [TestMethod]
+    public async Task PeriodicLeaseCheckReportsThatNoLeaseNeedsRecovery()
+    {
+        if (!OperatingSystem.IsLinux()) Assert.Inconclusive("SSH baseline runs on Linux.");
+        using var fixture = new Fixture();
+        var result = await fixture.ReconcileAsync();
+        StringAssert.Contains(result.Summary, "No SSH lease needs recovery.");
+        Assert.IsTrue(fixture.Events.Any(item => item.IsTrace && item.Message == result.Summary));
         Assert.AreEqual(0, fixture.MaskCount);
     }
 
@@ -275,6 +289,9 @@ public class DisableSshWorkflowTests
 
         public async Task<OperationResult> ApplyBaselineAsync(SecurityBaselinePolicy? policy) =>
             JsonSerializer.Deserialize<OperationResult>(await InvokeAsync("machine.security.apply-baseline", "{}", policy))!;
+
+        public async Task<OperationResult> ReconcileAsync() =>
+            JsonSerializer.Deserialize<OperationResult>(await InvokeAsync("machine.ssh.reconcile-lease", "{}"))!;
 
         private async Task<string> InvokeAsync(string name, string input, SecurityBaselinePolicy? policy = null)
         {

@@ -17,7 +17,11 @@ public sealed class ApplySecurityBaselineWorkflow : MachineWorkflow
             ?? throw new NotSupportedException("The installed Agent must obtain the scheduled security baseline from its Controller.");
         var policy = await readPolicy(token);
         if (policy == null)
-            return JsonSerializer.Serialize(new OperationResult("This machine has no scheduled security baseline."));
+        {
+            const string summary = "Security baseline was skipped because the Controller returned no scheduled security baseline policy. SSH settings were not changed.";
+            await context.WarningAsync(summary);
+            return JsonSerializer.Serialize(new OperationResult(summary, Complete: false));
+        }
 
         policy.Validate();
         await context.TraceAsync($"Applying scheduled security baseline version {policy.Version}.");

@@ -870,7 +870,7 @@ public static partial class DmsCommandApp
         {
             var workflow = action is "lockbox-status" or "approve" ? data["Definition"]?.Value<string>() : action;
             var directoryListing = workflow == OperationsWorkflows.FilesystemLs.Name;
-            if (!directoryListing && workflow != MachineWorkflows.FrpsStatus.Name) return;
+            if (!IsSubmission && action is not ("lockbox-status" or "approve")) return;
 
             Guid? workflowId;
             if (IsSubmission && data.ToObject<LockboxReceipt>() is { } receipt)
@@ -894,7 +894,7 @@ public static partial class DmsCommandApp
             output.WriteLine();
             output.WriteLine(directoryListing
                 ? "View the directory listing after execution. Requires Read DMS operations."
-                : "Check execution status and view each machine's FRPS report. Requires Read DMS operations.");
+                : "Check execution status and available workflow results. Requires Read DMS operations.");
             output.WriteLine($"  dms workflow {(directoryListing ? "result" : "status")} {workflowId}");
         }
 

@@ -257,7 +257,10 @@ public class DmsWorkflowTests : TestBase
     }
 
     [TestMethod]
-    public async Task WorkflowInspectionShowsRootAndParentAndDoesNotCreateWork()
+    [DataRow(WorkflowNames.DiskFree)]
+    [DataRow("machine.box.inspect")]
+    [DataRow("machine.system.info")]
+    public async Task WorkflowInspectionShowsRootAndParentAndDoesNotCreateWork(string definition)
     {
         var setup = await ArrangeAsync();
         var key = DmsKeyAuthenticationHandler.CreateKey(false);
@@ -265,7 +268,7 @@ public class DmsWorkflowTests : TestBase
         var root = new WorkflowRun { Definition = WorkflowNames.Lockbox, State = RunState.Succeeded };
         root.RootId = root.Id;
         var parent = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.Batch, State = RunState.Succeeded };
-        var child = new WorkflowRun { RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = WorkflowNames.DiskFree, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
+        var child = new WorkflowRun { RootId = root.Id, ParentId = parent.Id, MachineId = setup.Machine, Definition = definition, State = RunState.Succeeded, Result = JsonSerializer.Serialize(new { ExitCode = 0, Output = "disk, \"quoted\"\nsecond line", ErrorOutput = "" }) };
         var sibling = new WorkflowRun { RootId = root.Id, ParentId = root.Id, Definition = WorkflowNames.ListMachines, State = RunState.Failed };
 
         var lockboxId = Guid.NewGuid();
