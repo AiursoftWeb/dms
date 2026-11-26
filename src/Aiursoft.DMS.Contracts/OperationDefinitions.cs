@@ -553,6 +553,7 @@ public static class OperationsWorkflows
         new("machine.networking.interfaces", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NetworkingInterfaces)), "1", PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.Low)]
+    [WorkflowCommand("Show routing tables and policy routing rules.")]
     public static readonly MachineWorkflowDefinition<EmptyInput, OperationResult> NetworkingRoutes =
         new("machine.networking.routes", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NetworkingRoutes)), "1", PublicEntry: true);
 
@@ -561,6 +562,7 @@ public static class OperationsWorkflows
         new("machine.networking.sockets", WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NetworkingSockets)), "1", PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.Low)]
+    [WorkflowCommand("Resolve a hostname from the selected machine.")]
     public static readonly MachineWorkflowDefinition<DnsQueryInput, OperationResult> NetworkingDnsQuery =
         new("machine.networking.dns-query",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(NetworkingDnsQuery)),

@@ -244,9 +244,8 @@ public static partial class DmsCommandApp
             new Group("networking", "Inspect interfaces, routes, firewall rules, and connectivity.",
             [
                 NewNetworkingInterfacesCommand(),
-                NewNetworkingRoutesCommand(),
+                .. DeclaredMachineCommands("machine.networking"),
                 NewNetworkingSocketsCommand(),
-                NewNetworkingDnsQueryCommand(),
                 NewNetworkingProbeCommand(),
                 NewNetworkingTrafficSampleCommand(),
                 NewNetworkingFirewallInfoCommand(),

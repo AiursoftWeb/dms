@@ -8,6 +8,19 @@ public sealed class WorkflowRiskAttribute(RiskLevel risk) : Attribute
     public RiskLevel Risk { get; } = Enum.IsDefined(risk) ? risk : throw new ArgumentOutOfRangeException(nameof(risk));
 }
 
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class WorkflowCommandAttribute(string description) : Attribute
+{
+    public string Description { get; } = description;
+}
+
+[AttributeUsage(AttributeTargets.Parameter)]
+public sealed class WorkflowOptionAttribute(string name, string description) : Attribute
+{
+    public string Name { get; } = name;
+    public string Description { get; } = description;
+}
+
 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
 public sealed class RunCronAttribute(string expression) : Attribute
 {

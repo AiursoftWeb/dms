@@ -11,6 +11,13 @@ namespace Aiursoft.DMS.Workflows.Operations;
 public static partial class NetworkingOperations
 {
     private static readonly HttpClient Http = new(new HttpClientHandler { AllowAutoRedirect = false, UseProxy = false });
+
+    internal static void Register(MachineWorkflowRegistry registry)
+    {
+        registry.RegisterOperation(OperationsWorkflows.NetworkingRoutes, RoutesAsync);
+        registry.RegisterOperation(OperationsWorkflows.NetworkingDnsQuery, DnsQueryAsync);
+    }
+
     public static async Task<OperationResult> InterfacesAsync(MachineWorkflowContext context, EmptyInput input, AgentEnvironment agent, CancellationToken token)
     {
         await OperationOutput.CommandAsync(context, agent, "ip", ["-json", "-statistics", "address", "show"], token);
