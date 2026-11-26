@@ -1,10 +1,12 @@
+using System.Data.Common;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Aiursoft.ClickhouseSdk;
 using Aiursoft.ClickhouseSdk.Abstractions;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
-using ClickHouse.Client.Utility;
+using ClickHouse.Client.Copy;
 
 namespace Aiursoft.DMS.Services.Dms;
 
@@ -22,31 +24,86 @@ public sealed class TraceEntry
     public string Message { get; set; } = string.Empty;
 }
 
-public sealed partial class TraceDatabase(IConfiguration configuration) : ClickhouseDbContext(
-    configuration.GetSection("Dms:Clickhouse").Get<ClickhouseOptions>() ?? new ClickhouseOptions())
+public sealed partial class TraceDatabase : ClickhouseDbContext
 {
-    public override Task SaveChangesAsync() => Task.CompletedTask;
+    private static readonly SemaphoreSlim TraceSchemaGate = new(1, 1);
+    private readonly int _retentionDays;
 
-    public async Task InitializeAsync()
+    public TraceDatabase(IConfiguration configuration) : this(
+        configuration.GetSection("Dms:Clickhouse").Get<ClickhouseOptions>() ?? new ClickhouseOptions()) { }
+
+    private TraceDatabase(ClickhouseOptions options) : base(options)
     {
-        var connection = await GetConnection();
-        await using var command = connection.CreateCommand();
-        command.CommandText = "CREATE TABLE IF NOT EXISTS DmsWorkflowTrace (EventId String, WorkflowId String, Time DateTime64(3, 'UTC'), Source String, Message String) ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)";
-        await command.ExecuteNonQueryAsync();
-        command.CommandText = "ALTER TABLE DmsWorkflowTrace ADD COLUMN IF NOT EXISTS Origin String DEFAULT 'Manual', ADD COLUMN IF NOT EXISTS Trigger String DEFAULT 'ManualRequest', ADD COLUMN IF NOT EXISTS ScheduleId Nullable(String)";
-        await command.ExecuteNonQueryAsync();
+        ArgumentOutOfRangeException.ThrowIfNegative(options.RetentionDays);
+        _retentionDays = options.RetentionDays;
     }
 
-    public async Task InsertAsync(TraceEntry item)
+    public override Task SaveChangesAsync() => Task.CompletedTask;
+
+    public async Task InitializeAsync(CancellationToken token = default)
     {
         var connection = await GetConnection();
+        var ttl = $"toDateTime(Time) + toIntervalDay({_retentionDays.ToString(CultureInfo.InvariantCulture)})";
+        var (currentTtl, metadataColumns) = await ReadTraceSchemaAsync(connection, token);
+        if (metadataColumns == 3 && (_retentionDays == 0 || currentTtl == ttl)) return;
+
+        // Concurrent first reads and the worker can discover the same legacy table.
+        // Only one of them should schedule a TTL mutation across existing parts.
+        await TraceSchemaGate.WaitAsync(token);
+        try
+        {
+            (currentTtl, metadataColumns) = await ReadTraceSchemaAsync(connection, token);
+            if (currentTtl == null)
+            {
+                await ExecuteAsync("""
+                    CREATE TABLE IF NOT EXISTS DmsWorkflowTrace (EventId String, WorkflowId String, Time DateTime64(3, 'UTC'),
+                        Source String, Message String, Origin String DEFAULT 'Manual', Trigger String DEFAULT 'ManualRequest', ScheduleId Nullable(String))
+                    ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)
+                    """ + (_retentionDays > 0 ? $" TTL {ttl}" : ""));
+                return;
+            }
+            if (metadataColumns < 3)
+                await ExecuteAsync("ALTER TABLE DmsWorkflowTrace ADD COLUMN IF NOT EXISTS Origin String DEFAULT 'Manual', ADD COLUMN IF NOT EXISTS Trigger String DEFAULT 'ManualRequest', ADD COLUMN IF NOT EXISTS ScheduleId Nullable(String)");
+            if (_retentionDays > 0 && currentTtl != ttl)
+                await ExecuteAsync($"ALTER TABLE DmsWorkflowTrace MODIFY TTL {ttl}");
+        }
+        finally { TraceSchemaGate.Release(); }
+
+        async Task ExecuteAsync(string sql)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            await command.ExecuteNonQueryAsync(token);
+        }
+    }
+
+    private static async Task<(string? Ttl, ulong MetadataColumns)> ReadTraceSchemaAsync(DbConnection connection, CancellationToken token)
+    {
         await using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO DmsWorkflowTrace (EventId, WorkflowId, Time, Source, Message, Origin, Trigger, ScheduleId) VALUES ({event:String}, {workflow:String}, {time:DateTime64(3)}, {source:String}, {message:String}, {origin:String}, {trigger:String}, {schedule:Nullable(String)})";
-        command.AddParameter("event", item.EventId); command.AddParameter("workflow", item.WorkflowId);
-        command.AddParameter("time", item.Time); command.AddParameter("source", item.Source); command.AddParameter("message", item.Message);
-        command.AddParameter("origin", item.Origin.ToString()); command.AddParameter("trigger", item.Trigger.ToString());
-        command.AddParameter("schedule", (object?)item.ScheduleId ?? DBNull.Value);
-        await command.ExecuteNonQueryAsync();
+        command.CommandText = """
+            SELECT extract(engine_full, ' TTL (.*?)(?: SETTINGS |$)'),
+                (SELECT count() FROM system.columns WHERE database = currentDatabase() AND table = 'DmsWorkflowTrace'
+                    AND name IN ('Origin', 'Trigger', 'ScheduleId'))
+            FROM system.tables WHERE database = currentDatabase() AND name = 'DmsWorkflowTrace'
+            """;
+        await using var reader = await command.ExecuteReaderAsync(token);
+        return await reader.ReadAsync(token) ? (reader.GetString(0), reader.GetFieldValue<ulong>(1)) : (null, 0UL);
+    }
+
+    public async Task InsertAsync(IReadOnlyList<TraceEntry> entries, CancellationToken token)
+    {
+        var connection = await GetConnection();
+        using var copy = new ClickHouseBulkCopy(connection)
+        {
+            DestinationTableName = "DmsWorkflowTrace",
+            ColumnNames = ["EventId", "WorkflowId", "Time", "Source", "Message", "Origin", "Trigger", "ScheduleId"],
+            BatchSize = entries.Count
+        };
+        await copy.InitAsync();
+        await copy.WriteToServerAsync(entries.Select(item => new[] {
+            item.EventId, item.WorkflowId, item.Time, item.Source, item.Message, item.Origin.ToString(),
+            item.Trigger.ToString(), (object?)item.ScheduleId ?? DBNull.Value
+        }), token);
     }
 
     public const int PageSize = 200;
@@ -77,8 +134,33 @@ public sealed partial class TraceDatabase(IConfiguration configuration) : Clickh
 
 public sealed class TraceStore(IConfiguration configuration)
 {
+    private const int BatchSize = 100;
+    private const long MaximumPendingBytes = 256L * 1024 * 1024;
+    // Each pending event has its own file, including short or empty messages.
+    private const long SpoolBlockBytes = 4096;
     private readonly string _path = Path.GetFullPath(configuration["Dms:StatePath"] ?? "dms-state");
     private readonly object _gate = new();
+    private long _pendingBytes;
+    private int _pendingCount = -1;
+
+    private static long SpoolBytes(long length) =>
+        Math.Max(1, (length + SpoolBlockBytes - 1) / SpoolBlockBytes) * SpoolBlockBytes;
+
+    private void LoadBacklog()
+    {
+        if (_pendingCount >= 0) return;
+        long bytes = 0;
+        var count = 0;
+        var directory = new DirectoryInfo(_path);
+        if (directory.Exists)
+            foreach (var file in directory.EnumerateFiles("*.json"))
+            {
+                bytes += SpoolBytes(file.Length);
+                count++;
+            }
+        _pendingBytes = bytes;
+        _pendingCount = count;
+    }
 
     public void Enqueue(Guid taskId, WorkflowEvent item, WorkflowRun? run = null)
     {
@@ -91,25 +173,60 @@ public sealed class TraceStore(IConfiguration configuration)
                 ScheduleId = run?.ScheduleId };
             var file = Path.Combine(_path, $"{taskId:N}-{item.Sequence:D20}.json");
             if (File.Exists(file)) return;
-            if (Directory.EnumerateFiles(_path, "*.json").Sum(f => new FileInfo(f).Length) > 256L * 1024 * 1024)
+            LoadBacklog();
+            var payload = JsonSerializer.SerializeToUtf8Bytes(entry);
+            var bytes = SpoolBytes(payload.Length);
+            if (_pendingBytes + bytes > MaximumPendingBytes)
                 throw new IOException("Controller trace backlog is full; Agent must retain unacknowledged events.");
             using (var stream = new FileStream(file + ".tmp", FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                JsonSerializer.Serialize(stream, entry); stream.Flush(flushToDisk: true);
+                stream.Write(payload);
+                stream.Flush(flushToDisk: true);
             }
             File.Move(file + ".tmp", file);
+            _pendingBytes += bytes;
+            _pendingCount++;
         }
     }
 
-    public async Task FlushAsync(TraceDatabase database)
+    public async Task<bool> FlushAsync(TraceDatabase database, CancellationToken token = default)
     {
-        if (!database.Enabled || !Directory.Exists(_path)) return;
-        await database.InitializeAsync();
-        foreach (var file in Directory.EnumerateFiles(_path, "*.json").Take(100))
+        if (!database.Enabled || PendingCount == 0) return false;
+        var entries = new List<TraceEntry>();
+        var files = new List<string>();
+        foreach (var file in Directory.EnumerateFiles(_path, "*.json").Take(BatchSize))
         {
-            var entry = JsonSerializer.Deserialize<TraceEntry>(await File.ReadAllTextAsync(file)) ?? throw new InvalidDataException("Invalid trace spool.");
-            await database.InsertAsync(entry);
-            File.Delete(file); // Repeated INSERT after a crash is collapsed by the query's FINAL.
+            token.ThrowIfCancellationRequested();
+            try
+            {
+                await using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                var entry = await JsonSerializer.DeserializeAsync<TraceEntry>(stream, cancellationToken: token);
+                entries.Add(entry ?? throw new InvalidDataException("Invalid trace spool."));
+                files.Add(file);
+            }
+            catch (FileNotFoundException) { } // A concurrent flush already archived this event.
+            catch (Exception ex) when (entries.Count > 0 && ex is JsonException or InvalidDataException)
+            {
+                // Deliver the readable prefix. The invalid file stays on disk for the next pass.
+                break;
+            }
+        }
+        if (entries.Count == 0) return false;
+        await database.InitializeAsync(token);
+        await database.InsertAsync(entries, token);
+        // Only release durable files after ClickHouse confirms the entire batch.
+        lock (_gate)
+        {
+            foreach (var path in files)
+            {
+                var file = new FileInfo(path);
+                if (!file.Exists) continue;
+                var bytes = SpoolBytes(file.Length);
+                file.Delete();
+                _pendingBytes -= bytes;
+                _pendingCount--;
+            }
+            return entries.Count == BatchSize && _pendingCount > 0;
         }
     }
 
@@ -133,5 +250,15 @@ public sealed class TraceStore(IConfiguration configuration)
         return entries;
     }
 
-    public int PendingCount => Directory.Exists(_path) ? Directory.EnumerateFiles(_path, "*.json").Count() : 0;
+    public int PendingCount
+    {
+        get
+        {
+            lock (_gate)
+            {
+                LoadBacklog();
+                return _pendingCount;
+            }
+        }
+    }
 }
