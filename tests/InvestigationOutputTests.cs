@@ -81,9 +81,9 @@ public class InvestigationOutputTests
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
         await using var app = builder.Build();
-        app.MapGet($"/api/v1/dms/operations/{id}/trace", (bool recursive) =>
+        app.MapGet("/api/v1/dms/operations/{workflowId:guid}/trace", (Guid workflowId, bool recursive) =>
         {
-            if (!recursive) return Results.BadRequest();
+            if (workflowId != id || !recursive) return Results.BadRequest();
             var reply = new DmsResponse
             {
                 Code = Code.ResultShown, Message = "Request completed.",
