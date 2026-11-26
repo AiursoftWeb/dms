@@ -5,6 +5,7 @@ using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,7 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
                 return BadRequest(new AiurCollection<string>([exception.Message]) { Code = Code.InvalidInput, Message = exception.Message });
             return StatusCode(exception.StatusCode, new DmsResponse { Code = exception.StatusCode switch
             {
-                403 => Code.Unauthorized, 404 => Code.NotFound, 409 => Code.Conflict, 503 => Code.RemoteNotAccessible, _ => Code.UnknownError
+                401 or 403 => Code.Unauthorized, 404 => Code.NotFound, 409 => Code.Conflict, 503 => Code.RemoteNotAccessible, _ => Code.UnknownError
             }, Message = exception.Message });
         }
     }
@@ -85,6 +86,31 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     {
         if (!ModelState.IsValid) throw new DmsException(400, "Invalid Lockbox filters.");
         return await workflows.ListLockboxesAsync(Actor, page, decision);
+    });
+
+    [HttpGet("lockboxes/review")]
+    public Task<IActionResult> ReviewQueue(int page = 0) => Handle(async () =>
+    {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid Lockbox page.");
+        return await workflows.ListReviewQueueAsync(Actor, page);
+    });
+
+    [HttpGet("lockboxes/review/history")]
+    public Task<IActionResult> ReviewHistory(int page = 0) => Handle(async () =>
+    {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid Lockbox page.");
+        return await workflows.ListReviewHistoryAsync(Actor, page);
+    });
+
+    [HttpGet("lockboxes/review/updates")]
+    public Task<IActionResult> ReviewUpdates(DateTimeOffset? after, CancellationToken token) => Handle(async () =>
+    {
+        if (!ModelState.IsValid) throw new DmsException(400, "Invalid Lockbox update cursor.");
+        var auth = await HttpContext.AuthenticateAsync(DmsKeyAuthenticationHandler.SchemeName);
+        if (auth.Properties?.Items.TryGetValue(DmsKeyAuthenticationHandler.PersonalKeyIdProperty, out var value) != true ||
+            !Guid.TryParse(value, out var keyId))
+            throw new DmsException(401, "A personal API Key is required.");
+        return await workflows.WaitForReviewUpdateAsync(Actor, keyId, after?.UtcDateTime, token);
     });
 
     [HttpGet("lockboxes/{id:guid}")]

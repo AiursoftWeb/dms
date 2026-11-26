@@ -56,6 +56,236 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task ReviewQueueFiltersBeforePagingAndRefreshesAfterDecisions()
+    {
+        var viewer = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, AppPermissionNames.CanApproveSafeRiskWorkflow);
+        var requester = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        // The queue is global to this reviewer; previous integration tests may have left pending requests.
+        var latest = await db.Lockboxes.MaxAsync(box => (DateTime?)box.CreatedAt);
+        var now = (latest ?? DateTime.UtcNow).AddSeconds(1);
+        LockboxRequest Box(string owner, int index, RiskLevel risk = RiskLevel.Safe,
+            DecisionState decision = DecisionState.Pending, string definition = WorkflowNames.AgentStatus) => new()
+        {
+            RequesterId = owner, ClientRequestId = Guid.NewGuid(), Definition = definition, Risk = risk,
+            Version = MachineWorkflows.AgentStatus.Version, CreatedAt = now.AddSeconds(index), Decision = decision,
+            Parameters = System.Text.Json.JsonSerializer.Serialize(new OperationRequest())
+        };
+        var eligible = Enumerable.Range(0, 51).Select(index => Box(requester.User, index)).ToArray();
+        var own = Box(viewer.User, 100);
+        var ownIndependent = Box(viewer.User, 101, MachineWorkflows.BoxGetSecretRaw.Risk,
+            definition: MachineWorkflows.BoxGetSecretRaw.Name);
+        ownIndependent.Version = MachineWorkflows.BoxGetSecretRaw.Version;
+        await SetRoleAsync(viewer.Role, DmsPermissions.Approve(ownIndependent.Risk), true);
+        LockboxRequest[] fixtures = [.. eligible, own, ownIndependent, Box(requester.User, 102, RiskLevel.High),
+            Box(requester.User, 103, decision: DecisionState.Approved)];
+        db.Lockboxes.AddRange(fixtures);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+
+        const string review = "/api/v1/dms/lockboxes/review";
+        using (var unauthenticated = await Http.GetAsync(review))
+            Assert.AreEqual(HttpStatusCode.Unauthorized, unauthenticated.StatusCode);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", requester.Key);
+        using (var forbidden = await Http.GetAsync(review))
+            Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", viewer.Key);
+        async Task<T> ReadAsync<T>(string path)
+        {
+            using var response = await Http.GetAsync(path);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            return JObject.Parse(await response.Content.ReadAsStringAsync())["Data"]!.ToObject<T>()!;
+        }
+        var first = await ReadAsync<LockboxReviewPage>(review);
+        Assert.IsTrue(first.HasNextPage);
+        CollectionAssert.AreEqual(eligible.Reverse().Take(50).Select(box => new LockboxId(box.Id)).ToArray(),
+            first.Entries.Select(entry => entry.LockboxId).ToArray());
+        StringAssert.Contains(first.Entries[0].Requester, "Operator");
+        var second = await ReadAsync<LockboxReviewPage>(review + "?page=1");
+        var fixtureIds = fixtures.Select(box => box.Id).ToHashSet();
+        Assert.AreEqual(new LockboxId(eligible[0].Id), second.Entries[0].LockboxId);
+        Assert.AreEqual(1, second.Entries.Count(entry => fixtureIds.Contains(entry.LockboxId.Value)));
+
+        await SetRoleAsync(viewer.Role, AppPermissionNames.CanApproveOwnWorkflow, true);
+        first = await ReadAsync<LockboxReviewPage>(review);
+        Assert.AreEqual(new LockboxId(own.Id), first.Entries[0].LockboxId);
+        var detail = $"/api/v1/dms/lockboxes/lb/{own.Id}";
+        Assert.AreEqual(true, (await ReadAsync<LockboxStatus>(detail + "/status")).CanApprove);
+        Assert.AreEqual(false, (await ReadAsync<LockboxStatus>($"/api/v1/dms/lockboxes/lb/{ownIndependent.Id}/status")).CanApprove);
+        using (var decision = await Http.PostAsJsonAsync(detail + "/decision", new { Approve = false, Reason = "Reviewed" }))
+            Assert.AreEqual(HttpStatusCode.OK, decision.StatusCode);
+        using (var duplicate = await Http.PostAsJsonAsync(detail + "/decision", new { Approve = false, Reason = "Already decided" }))
+            Assert.AreEqual(HttpStatusCode.Conflict, duplicate.StatusCode);
+        var updated = await ReadAsync<LockboxStatus>(detail + "/status");
+        Assert.AreEqual(DecisionState.Denied, updated.Decision);
+        Assert.AreEqual(false, updated.CanApprove);
+        Assert.AreEqual("Reviewed", updated.Details!.DecisionReason);
+        Assert.IsFalse((await ReadAsync<LockboxReviewPage>(review)).Entries.Any(entry => entry.LockboxId.Value == own.Id));
+        db.Lockboxes.RemoveRange(await db.Lockboxes.Where(box => fixtureIds.Contains(box.Id)).ToListAsync());
+        await db.SaveChangesAsync();
+    }
+
+    [TestMethod]
+    public async Task StaleRequestsAreExcludedFromQueueAndUpdatesButRemainReadable()
+    {
+        var definition = MachineWorkflows.AgentStatus;
+        var viewer = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations,
+            DmsPermissions.Approve(definition.Risk), DmsPermissions.Approve(RiskLevel.High));
+        var requester = await ArrangeAsync();
+        // Other integration fixtures can leave rows dated ahead of the clock in the shared test database.
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var latest = await db.Lockboxes.MaxAsync(box => (DateTime?)box.CreatedAt);
+        var now = (latest ?? DateTime.UtcNow).AddSeconds(1);
+        LockboxRequest Box(string name, RiskLevel risk, string version, int offset) => new()
+        {
+            RequesterId = requester.User, ClientRequestId = Guid.NewGuid(), Definition = name,
+            Risk = risk, Version = version, CreatedAt = now.AddSeconds(offset), Decision = DecisionState.Pending,
+            Parameters = System.Text.Json.JsonSerializer.Serialize(new OperationRequest())
+        };
+        var current = Box(definition.Name, definition.Risk, definition.Version, 0);
+        LockboxRequest[] stale =
+        [
+            Box(definition.Name, definition.Risk, "superseded", 1),
+            Box(definition.Name, RiskLevel.High, definition.Version, 2),
+            Box("machine.retired-example", definition.Risk, definition.Version, 3),
+            Box(MachineWorkflows.Process.Name, definition.Risk, MachineWorkflows.Process.Version, 4)
+        ];
+        db.Lockboxes.Add(current);
+        db.Lockboxes.AddRange(stale);
+        await db.SaveChangesAsync();
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", viewer.Key);
+        const string review = "/api/v1/dms/lockboxes/review";
+        async Task<T> ReadAsync<T>(string path)
+        {
+            using var response = await Http.GetAsync(path);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            return JObject.Parse(await response.Content.ReadAsStringAsync())["Data"]!.ToObject<T>()!;
+        }
+        var queue = await ReadAsync<LockboxReviewPage>(review);
+        var staleIds = stale.Select(box => box.Id).ToHashSet();
+        Assert.IsFalse(queue.Entries.Any(entry => staleIds.Contains(entry.LockboxId.Value)));
+        Assert.IsTrue(queue.Entries.Any(entry => entry.LockboxId.Value == current.Id));
+        var from = Uri.EscapeDataString(now.AddTicks(-1).ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+        var update = await ReadAsync<LockboxReviewUpdate>($"{review}/updates?after={from}");
+        Assert.AreEqual(now, update.LatestPendingAt);
+        foreach (var box in stale)
+        {
+            var path = $"/api/v1/dms/lockboxes/lb/{box.Id}";
+            var status = await ReadAsync<LockboxStatus>(path + "/status");
+            Assert.AreEqual(DecisionState.Pending, status.Decision);
+            Assert.AreEqual(false, status.CanApprove);
+            Assert.IsTrue(status.DefinitionChanged);
+            using var rejected = await Http.PostAsJsonAsync(path + "/decision", new { Approve = true, Reason = "Test stale approval" });
+            Assert.AreEqual(HttpStatusCode.Conflict, rejected.StatusCode);
+        }
+        db.Lockboxes.Remove(current);
+        db.Lockboxes.RemoveRange(stale);
+        await db.SaveChangesAsync();
+    }
+
+    [TestMethod]
+    public async Task ReviewHistoryReturnsOnlyTheCurrentReviewersManualDecisionsBeforePaging()
+    {
+        var reviewer = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations);
+        var other = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations);
+        var requester = await ArrangeAsync();
+        var now = DateTime.UtcNow;
+        LockboxRequest Box(string? approver, int index, DecisionState decision, bool automatic = false) => new()
+        {
+            ClientRequestId = Guid.NewGuid(), RequesterId = requester.User, ApproverId = approver,
+            CreatedAt = now.AddSeconds(-index), DecidedAt = decision == DecisionState.Pending ? null : now.AddSeconds(index),
+            Definition = WorkflowNames.AgentStatus, Risk = RiskLevel.Safe, Decision = decision, Automatic = automatic
+        };
+        var own = Enumerable.Range(0, 51).Select(i => Box(reviewer.User, i,
+            i % 2 == 0 ? DecisionState.Approved : DecisionState.Denied)).ToArray();
+        var someoneElses = Box(other.User, 52, DecisionState.Approved);
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            db.Lockboxes.AddRange(own);
+            db.Lockboxes.AddRange(someoneElses, Box(reviewer.User, 53, DecisionState.Withdrawn),
+                Box(reviewer.User, 54, DecisionState.Pending), Box(null, 55, DecisionState.Approved, automatic: true));
+            await db.SaveChangesAsync();
+        }
+
+        const string history = "/api/v1/dms/lockboxes/review/history";
+        using (var unauthorized = await Http.GetAsync(history))
+            Assert.AreEqual(HttpStatusCode.Unauthorized, unauthorized.StatusCode);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", requester.Key);
+        using (var forbidden = await Http.GetAsync(history))
+            Assert.AreEqual(HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", reviewer.Key);
+        using (var invalidPage = await Http.GetAsync(history + "?page=-1"))
+            Assert.AreEqual(HttpStatusCode.BadRequest, invalidPage.StatusCode);
+        async Task<LockboxHistoryPage> ReadAsync(string suffix = "")
+        {
+            using var response = await Http.GetAsync(history + suffix);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            return JObject.Parse(await response.Content.ReadAsStringAsync())["Data"]!.ToObject<LockboxHistoryPage>()!;
+        }
+        var first = await ReadAsync();
+        Assert.IsTrue(first.HasNextPage);
+        CollectionAssert.AreEqual(own.Reverse().Take(50).Select(box => new LockboxId(box.Id)).ToArray(),
+            first.Entries.Select(entry => entry.LockboxId).ToArray());
+        Assert.AreEqual(DecisionState.Denied, first.Entries[1].Decision);
+        StringAssert.Contains(first.Entries[0].Requester, "Operator");
+        var second = await ReadAsync("?page=1");
+        Assert.IsFalse(second.HasNextPage);
+        Assert.AreEqual(new LockboxId(own[0].Id), second.Entries.Single().LockboxId);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", other.Key);
+        Assert.AreEqual(new LockboxId(someoneElses.Id), (await ReadAsync()).Entries.Single().LockboxId);
+    }
+
+    [TestMethod]
+    public async Task ReviewUpdatesWakeOnlyForEligiblePendingRequestsAndRejectRevokedKeys()
+    {
+        var definition = MachineWorkflows.ServiceStatus;
+        var viewer = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Approve(definition.Risk));
+        var readOnly = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations);
+        var requester = await ArrangeAsync(DmsPermissions.Request(definition.Risk), DmsPermissions.Request(MachineWorkflows.Restart.Risk));
+        const string updates = "/api/v1/dms/lockboxes/review/updates";
+        async Task<HttpResponseMessage> SendAsync(string key, string uri, CancellationToken token)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", key);
+            return await Http.SendAsync(request, token);
+        }
+        using var testDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var token = testDeadline.Token;
+        var from = updates + "?after=" + Uri.EscapeDataString(DateTime.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+        var pending = SendAsync(viewer.Key, from, token);
+        var ineligible = SendAsync(readOnly.Key, from, token);
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", requester.Key);
+        using (var wrongRisk = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes",
+                   MachineWorkflows.Restart.Request(new ServiceInput("lockbox-test.service"), "Test wrong risk", [requester.First]), token))
+            Assert.AreEqual(HttpStatusCode.OK, wrongRisk.StatusCode);
+        using (var eligible = await Http.PostAsJsonAsync("/api/v1/dms/lockboxes",
+                   definition.Request(new ServiceInput("lockbox-test.service"), "Test notification", [requester.First]), token))
+            Assert.AreEqual(HttpStatusCode.OK, eligible.StatusCode);
+        using var notified = await pending;
+        Assert.AreEqual(HttpStatusCode.OK, notified.StatusCode);
+        var data = (JObject)JObject.Parse(await notified.Content.ReadAsStringAsync(token))["Data"]!;
+        Assert.AreEqual(1, data.Count); // The background response contains a cursor, never request details.
+        var cursor = data.ToObject<LockboxReviewUpdate>()!.LatestPendingAt;
+        Assert.IsNotNull(cursor);
+        Assert.IsFalse(ineligible.IsCompleted);
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var current = await db.Lockboxes.SingleAsync(box => box.Definition == definition.Name && box.RequesterId == requester.User, token);
+            Assert.AreEqual(DateTime.SpecifyKind(current.CreatedAt, DateTimeKind.Utc), cursor.Value);
+            db.PersonalApiKeys.Remove(await db.PersonalApiKeys.SingleAsync(k => k.UserId == viewer.User, token));
+            await db.SaveChangesAsync(token);
+        }
+        using var revoked = await SendAsync(viewer.Key, updates, token);
+        Assert.AreEqual(HttpStatusCode.Unauthorized, revoked.StatusCode);
+        await testDeadline.CancelAsync();
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => { using var ignored = await ineligible; });
+    }
+
+    [TestMethod]
     public async Task OpenMachineListRequiresItsOwnPermissionAndReturnsOnlyTheInventory()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Safe), DmsPermissions.AutoApprove(RiskLevel.Safe));

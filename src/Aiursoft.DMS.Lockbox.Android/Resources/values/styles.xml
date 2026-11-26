@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="Theme.Lockbox" parent="Theme.Material3.Light.NoActionBar">
+    <item name="colorPrimary">#174D45</item>
+    <item name="colorOnPrimary">#FFFFFF</item>
+    <item name="colorPrimaryContainer">#D7EFE7</item>
+    <item name="colorOnPrimaryContainer">#173F38</item>
+    <item name="colorSecondary">#536661</item>
+    <item name="colorOutline">#73847E</item>
+    <item name="colorOutlineVariant">#D8E3E0</item>
+    <item name="colorSurface">#FFFFFF</item>
+    <item name="colorOnSurface">#172D29</item>
+    <item name="colorOnSurfaceVariant">#536661</item>
+    <item name="android:windowBackground">#F2F6F5</item>
+    <item name="android:statusBarColor">#F2F6F5</item>
+    <item name="android:navigationBarColor">#F2F6F5</item>
+    <item name="android:windowLightStatusBar">true</item>
+    <item name="android:windowLightNavigationBar">true</item>
+    <item name="android:windowSoftInputMode">adjustResize</item>
+  </style>
+</resources>

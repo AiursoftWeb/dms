@@ -60,6 +60,7 @@ public class Startup : IWebStartup
             options.AddPolicy("DmsEnrollment", policy => policy.RequireClaim("DmsEnrollment"));
         });
         services.AddSingleton<Services.Dms.ControllerGate>();
+        services.AddSingleton<Services.Dms.LockboxReviewSignal>();
         services.AddSingleton<Services.Dms.AgentSessions>();
         services.AddSingleton<Services.Dms.TraceStore>();
         services.AddSingleton<Services.Dms.DmsArtifactStore>();

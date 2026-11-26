@@ -18,10 +18,12 @@ public sealed class AccessService(TemplateDbContext db, UserManager<User> users,
         return await principalFactory.CreateAsync(actor);
     }
 
-    public async Task RequireViewAsync(string user)
+    public async Task<ClaimsPrincipal> RequireViewAsync(string user)
     {
-        if (!(await PrincipalAsync(user)).HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations))
+        var principal = await PrincipalAsync(user);
+        if (!principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations))
             throw new DmsException(403, "Read DMS operations permission is required.");
+        return principal;
     }
 
     public async Task<IReadOnlyList<string>> EligibleApproversAsync(RiskLevel risk, string requesterId)

@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -11,7 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection, BoxSecretTransfers boxSecrets)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection, BoxSecretTransfers boxSecrets, LockboxReviewSignal reviewSignal)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user) => gate.RunAsync(async () =>
     {
@@ -233,6 +234,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
                 ? "Automatic approval by the Open workflow policy."
                 : "Automatic approval by the requester's role permissions.", enrollmentId);
         await SaveDecisionAsync();
+        if (lockbox.Decision == DecisionState.Pending) reviewSignal.Pulse();
         return lockbox;
     }
 
@@ -280,9 +282,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
 
     private async Task ApproveAsync(LockboxRequest item, string? user, string reason, Guid? enrollmentId = null)
     {
-        var definition = catalog.Find(item.Definition);
-        if (definition is not { PublicEntry: true } || definition.Risk != item.Risk || definition.Version != item.Version)
-            throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
+        var definition = catalog.FindApprovable(item.Definition, item.Risk, item.Version)
+            ?? throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
         var request = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!;
         LegacyClusterWorkflowInput.Normalize(request, item.Definition);
         var input = request.Input;
@@ -337,6 +338,117 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         access.Audit(user, "lockbox.list"); await db.SaveChangesAsync();
         return new LockboxPage(items.Take(50).Select(b => b.Details()).ToList(), page, items.Count > 50);
     });
+
+    public Task<LockboxReviewPage> ListReviewQueueAsync(string user, int page = 0) => gate.RunAsync(async () =>
+    {
+        if (page is < 0 or > 10000) throw new DmsException(400, "Invalid Lockbox page.");
+        var query = await ReviewQueueAsync(user);
+        const int pageSize = 50;
+        var rows = await (from box in query
+            join person in db.Users on box.RequesterId equals person.Id into people
+            from person in people.DefaultIfEmpty()
+            orderby box.CreatedAt descending, box.Id
+            select new { box.Id, box.Definition, box.Risk, box.CreatedAt, person!.DisplayName, person.UserName })
+            .Skip(page * pageSize).Take(pageSize + 1).NotCacheable().ToListAsync();
+        access.Audit(user, "lockbox.list", detail: "Scope=review");
+        await db.SaveChangesAsync();
+        return new LockboxReviewPage(rows.Take(pageSize).Select(row => new LockboxReviewEntry(row.Id,
+            AccessService.PersonName(row.DisplayName ?? "", row.UserName), row.Definition, row.Risk,
+            DateTime.SpecifyKind(row.CreatedAt, DateTimeKind.Utc))).ToList(), page, rows.Count > pageSize);
+    });
+
+    public Task<LockboxHistoryPage> ListReviewHistoryAsync(string user, int page = 0) => gate.RunAsync(async () =>
+    {
+        await access.RequireViewAsync(user);
+        if (page is < 0 or > 10000) throw new DmsException(400, "Invalid Lockbox page.");
+        const int pageSize = 50;
+        var rows = await (from box in db.Lockboxes.AsNoTracking()
+            where box.ApproverId == user && !box.Automatic && box.DecidedAt != null &&
+                (box.Decision == DecisionState.Approved || box.Decision == DecisionState.Denied)
+            join person in db.Users on box.RequesterId equals person.Id into people
+            from person in people.DefaultIfEmpty()
+            orderby box.DecidedAt descending, box.Id
+            select new { box.Id, box.Definition, box.Risk, box.Decision, box.DecidedAt, person!.DisplayName, person.UserName })
+            .Skip(page * pageSize).Take(pageSize + 1).NotCacheable().ToListAsync();
+        access.Audit(user, "lockbox.list", detail: "Scope=review-history");
+        await db.SaveChangesAsync();
+        return new LockboxHistoryPage(rows.Take(pageSize).Select(row => new LockboxHistoryEntry(row.Id,
+            AccessService.PersonName(row.DisplayName ?? "", row.UserName), row.Definition, row.Risk, row.Decision,
+            DateTime.SpecifyKind(row.DecidedAt!.Value, DateTimeKind.Utc))).ToList(), page, rows.Count > pageSize);
+    });
+
+    public async Task<LockboxReviewUpdate> WaitForReviewUpdateAsync(string user, Guid keyId, DateTime? after, CancellationToken token)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(TimeSpan.FromSeconds(20));
+        while (true)
+        {
+            // Observe the signal before the query so a submission racing the query cannot be missed.
+            var changed = reviewSignal.Snapshot();
+            var found = await gate.RunAsync(async () =>
+            {
+                var now = DateTime.UtcNow;
+                if (!await db.PersonalApiKeys.AsNoTracking().NotCacheable()
+                    .AnyAsync(key => key.Id == keyId && key.UserId == user && key.ExpiresAt > now, token))
+                    throw new DmsException(401, "The personal API Key has expired or been revoked.");
+                var query = await ReviewQueueAsync(user);
+                if (after is { } since) query = query.Where(box => box.CreatedAt > since);
+                return await query.OrderByDescending(box => box.CreatedAt).Select(box => (DateTime?)box.CreatedAt)
+                    .NotCacheable().FirstOrDefaultAsync(token);
+            });
+            if (found is { } latest) return new LockboxReviewUpdate(DateTime.SpecifyKind(latest, DateTimeKind.Utc));
+            try { await changed.WaitAsync(deadline.Token); }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested) { return new LockboxReviewUpdate(null); }
+        }
+    }
+
+    private async Task<IQueryable<LockboxRequest>> ReviewQueueAsync(string user)
+    {
+        var principal = await access.RequireViewAsync(user);
+        var risks = Enum.GetValues<RiskLevel>().Where(risk => DmsPermissions.CanDecide(principal, risk, ownRequest: false)).ToArray();
+        var selfApproval = DmsPermissions.CanApproveOwn(principal);
+        var rawSecret = MachineWorkflows.BoxGetSecretRaw.Name;
+        var query = db.Lockboxes.AsNoTracking().Where(box => box.Decision == DecisionState.Pending && risks.Contains(box.Risk) &&
+            (box.RequesterId != user || (selfApproval && box.Definition != rawSecret &&
+                !box.Definition.EndsWith(BoxSecretTransfers.IndependentApprovalSuffix))));
+        query = query.Where(CurrentApprovalDefinitions(risks));
+        if (releases.ReadAvailable() is { } current)
+        {
+            var upgradeName = MachineWorkflows.AgentUpgrade.Name;
+            var upgradeVersion = MachineWorkflows.AgentUpgrade.Version;
+            var upgrades = await query.Where(box => box.Definition == upgradeName && box.Version == upgradeVersion)
+                .NotCacheable().ToListAsync();
+            var stale = upgrades.Where(box => RequiresAgentUpgradeResubmission(box, current)).Select(box => box.Id).ToArray();
+            if (stale.Length > 0) query = query.Where(box => !stale.Contains(box.Id));
+        }
+        return query;
+    }
+
+    private Expression<Func<LockboxRequest, bool>> CurrentApprovalDefinitions(RiskLevel[] risks)
+    {
+        var box = Expression.Parameter(typeof(LockboxRequest), "box");
+        Expression matches = Expression.Constant(false);
+        var groups = catalog.PublicDefinitions().Where(definition => risks.Contains(definition.Risk))
+            .GroupBy(definition => (definition.Risk, definition.Version));
+        foreach (var group in groups)
+        {
+            var (risk, version) = group.Key;
+            var names = group.Select(definition => definition.Name).ToArray();
+            // Group the exact catalog tuples into SQL predicates before paging or selecting a notification cursor.
+            Expression<Func<LockboxRequest, bool>> current = db.Database.ProviderName == "Pomelo.EntityFrameworkCore.MySql"
+                ? request => request.Risk == risk && EF.Functions.Collate(request.Version, "utf8mb4_bin") == version &&
+                    request.Version.Length == version.Length && names.Contains(EF.Functions.Collate(request.Definition, "utf8mb4_bin")) &&
+                    request.Definition.Length == request.Definition.TrimEnd().Length
+                : request => request.Risk == risk && request.Version == version && names.Contains(request.Definition);
+            matches = Expression.OrElse(matches, Expression.Invoke(current, box));
+        }
+        return Expression.Lambda<Func<LockboxRequest, bool>>(matches, box);
+    }
+
+    internal static bool RequiresAgentUpgradeResubmission(LockboxRequest box, IReadOnlyList<AgentRelease>? current) =>
+        current != null && box.Decision == DecisionState.Pending && box.Definition == MachineWorkflows.AgentUpgrade.Name &&
+        box.Version == MachineWorkflows.AgentUpgrade.Version &&
+        !AgentReleaseStore.Matches(ReadRequestedAgentUpgrade(box).Releases, current);
 
     private async Task SelectClickHouseWorkflowAsync(string user, OperationRequest request)
     {
@@ -399,10 +511,17 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
 
     public Task<LockboxStatus> GetLockboxStatusAsync(string user, Guid id, bool includeDefinition = false) => gate.RunAsync(async () =>
     {
-        var item = await db.Lockboxes.AsNoTracking().SingleOrDefaultAsync(box => box.Id == id)
+        var item = await db.Lockboxes.AsNoTracking().NotCacheable().SingleOrDefaultAsync(box => box.Id == id)
             ?? throw new DmsException(404, "Lockbox not found.");
-        if (item.RequesterId == user) await access.PrincipalAsync(user);
-        else await access.RequireViewAsync(user);
+        var ownRequest = item.RequesterId == user;
+        var principal = ownRequest ? await access.PrincipalAsync(user) : await access.RequireViewAsync(user);
+        var definitionChanged = item.Decision == DecisionState.Pending &&
+            catalog.FindApprovable(item.Definition, item.Risk, item.Version) == null;
+        var canApprove = item.Decision == DecisionState.Pending && !definitionChanged &&
+            principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations) &&
+            DmsPermissions.CanDecide(principal, item.Risk, ownRequest) &&
+            !(ownRequest && BoxSecretTransfers.RequiresIndependentApproval(item.Definition)) &&
+            (item.Definition != MachineWorkflows.AgentUpgrade.Name || !RequiresAgentUpgradeResubmission(item, releases.ReadAvailable()));
 
         var status = await DescribeLockboxAsync(item);
         var targets = LockboxSnapshot.ReadTargets(item);
@@ -414,6 +533,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         {
             Definition = includeDefinition ? item.Definition : null,
             Details = item.Details(),
+            CanApprove = canApprove,
+            DefinitionChanged = definitionChanged,
             MachineNames = names,
             EquivalentCommand = LockboxSnapshot.ReadStatusCommand(item)
         };
