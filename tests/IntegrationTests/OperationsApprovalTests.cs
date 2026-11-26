@@ -26,11 +26,11 @@ public class OperationsApprovalTests : TestBase
         yield return (OperationsWorkflows.PerformanceHistoryNetwork, new HistoryInput(), RiskLevel.Low,
             "machine performance history network");
         yield return (OperationsWorkflows.PerformancePcpHistory,
-            new PcpHistoryInput(new string('a', 24), ["kernel.all.load"]), RiskLevel.Medium,
+            new PcpHistoryInput(new string('a', 24), ["kernel.all.load"]), RiskLevel.Low,
             "machine performance pcp-history");
-        yield return (OperationsWorkflows.PerformanceBlockedProcesses, new BlockedProcessesInput(), RiskLevel.Medium,
+        yield return (OperationsWorkflows.PerformanceBlockedProcesses, new BlockedProcessesInput(), RiskLevel.Low,
             "machine performance blocked-processes");
-        yield return (OperationsWorkflows.SystemKernelEvents, new KernelEventsInput(), RiskLevel.Medium,
+        yield return (OperationsWorkflows.SystemKernelEvents, new KernelEventsInput(), RiskLevel.Low,
             "machine system kernel-events");
         yield return (OperationsWorkflows.FilesystemLs, new ListPathInput("/tmp/dms-test"), RiskLevel.Low,
             "machine filesystem ls");
@@ -50,7 +50,7 @@ public class OperationsApprovalTests : TestBase
             "machine filesystem download-as-root");
         yield return (OperationsWorkflows.FilesystemFind, new FindFilesInput("/tmp/dms-test"), RiskLevel.Low,
             "machine filesystem find");
-        yield return (OperationsWorkflows.FilesystemMkdir, new MakeDirectoryInput("/tmp/dms-test/new"), RiskLevel.High,
+        yield return (OperationsWorkflows.FilesystemMkdir, new MakeDirectoryInput("/tmp/dms-test/new"), RiskLevel.Medium,
             "machine filesystem mkdir");
         yield return (OperationsWorkflows.FilesystemCp,
             new CopyPathInput("/tmp/dms-test/source", "/tmp/dms-test/destination"), RiskLevel.VeryHigh,
@@ -58,7 +58,7 @@ public class OperationsApprovalTests : TestBase
         yield return (OperationsWorkflows.FilesystemMv,
             new CopyPathInput("/tmp/dms-test/source", "/tmp/dms-test/destination"), RiskLevel.VeryHigh,
             "machine filesystem mv");
-        yield return (OperationsWorkflows.FilesystemExport, new ExportPathInput("/tmp/dms-test/source"), RiskLevel.High,
+        yield return (OperationsWorkflows.FilesystemExport, new ExportPathInput("/tmp/dms-test/source"), RiskLevel.Low,
             "machine filesystem export");
         yield return (OperationsWorkflows.FilesystemImport, new ImportPathInput(artifact, "/tmp/dms-test/destination"),
             RiskLevel.VeryHigh, "machine filesystem import");
@@ -88,7 +88,7 @@ public class OperationsApprovalTests : TestBase
             "machine performance dstat-sample");
         yield return (OperationsWorkflows.PerformancePressure, new EmptyInput(), RiskLevel.Safe,
             "machine performance pressure");
-        yield return (OperationsWorkflows.PerformanceOomHistory, new EventWindowInput(), RiskLevel.Medium,
+        yield return (OperationsWorkflows.PerformanceOomHistory, new EventWindowInput(), RiskLevel.Low,
             "machine performance oom-history");
         yield return (OperationsWorkflows.NvidiaOverview, new EmptyInput(), RiskLevel.Low, "machine nvidia overview");
         yield return (OperationsWorkflows.NvidiaSmi, new EmptyInput(), RiskLevel.Safe, "machine nvidia smi");
@@ -105,12 +105,12 @@ public class OperationsApprovalTests : TestBase
         yield return (OperationsWorkflows.DockerEvents, new ContainerEventsInput(new string('1', 64)), RiskLevel.Low,
             "machine docker events");
         yield return (OperationsWorkflows.DockerDiagnoseStartup, new DockerContainerInput(new string('1', 64)),
-            RiskLevel.Medium, "machine docker diagnose-startup");
-        yield return (OperationsWorkflows.DockerStop, new ContainerActionInput(new string('1', 64)), RiskLevel.High,
+            RiskLevel.Low, "machine docker diagnose-startup");
+        yield return (OperationsWorkflows.DockerStop, new ContainerActionInput(new string('1', 64)), RiskLevel.Medium,
             "machine docker stop");
-        yield return (OperationsWorkflows.DockerStart, new DockerContainerInput(new string('1', 64)), RiskLevel.High,
+        yield return (OperationsWorkflows.DockerStart, new DockerContainerInput(new string('1', 64)), RiskLevel.Medium,
             "machine docker start");
-        yield return (OperationsWorkflows.DockerRestart, new ContainerActionInput(new string('1', 64)), RiskLevel.High,
+        yield return (OperationsWorkflows.DockerRestart, new ContainerActionInput(new string('1', 64)), RiskLevel.Medium,
             "machine docker restart");
         yield return (OperationsWorkflows.DockerFilesystemExport,
             new ContainerExportInput(new string('1', 64), "/tmp/file"), RiskLevel.High,
@@ -127,39 +127,39 @@ public class OperationsApprovalTests : TestBase
             "machine swarm service inspect");
         yield return (OperationsWorkflows.SwarmServicePs, new SwarmServiceInput("dms-fixture"), RiskLevel.Low,
             "machine swarm service ps");
-        yield return (OperationsWorkflows.SwarmServiceLogs, new SwarmLogsInput("dms-fixture"), RiskLevel.Medium,
+        yield return (OperationsWorkflows.SwarmServiceLogs, new SwarmLogsInput("dms-fixture"), RiskLevel.Low,
             "machine swarm service logs");
         yield return (OperationsWorkflows.SwarmServiceUpdateStatus, new SwarmServiceInput("dms-fixture"), RiskLevel.Low,
             "machine swarm service rollout-status");
         yield return (OperationsWorkflows.SwarmServiceStop, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
-            RiskLevel.High, "machine swarm service stop");
+            RiskLevel.Medium, "machine swarm service stop");
         yield return (OperationsWorkflows.SwarmServiceStart, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
-            RiskLevel.High, "machine swarm service start");
+            RiskLevel.Medium, "machine swarm service start");
         yield return (OperationsWorkflows.SwarmServiceUpdate,
             new SwarmChangeInput("dms-fixture", 1, ["node-one"], "example:latest"), RiskLevel.High,
             "machine swarm service update");
         yield return (OperationsWorkflows.SwarmServiceRollback, new SwarmChangeInput("dms-fixture", 1, ["node-one"]),
-            RiskLevel.High, "machine swarm service rollback");
+            RiskLevel.Medium, "machine swarm service rollback");
         yield return (OperationsWorkflows.SystemInfo, new EmptyInput(), RiskLevel.Safe, "machine system info");
         yield return (OperationsWorkflows.SystemUptime, new EmptyInput(), RiskLevel.Safe, "machine system uptime");
         yield return (OperationsWorkflows.SystemctlList, new ServiceListInput(), RiskLevel.Low,
             "machine systemctl list");
         yield return (OperationsWorkflows.SystemctlStart, new ServiceInput("dms-fixture.service"), RiskLevel.Medium,
             "machine systemctl start");
-        yield return (OperationsWorkflows.SystemctlStop, new ServiceInput("dms-fixture.service"), RiskLevel.High,
+        yield return (OperationsWorkflows.SystemctlStop, new ServiceInput("dms-fixture.service"), RiskLevel.Medium,
             "machine systemctl stop");
         yield return (OperationsWorkflows.SystemJournal, new JournalInput(Service: "dms-fixture.service"),
-            RiskLevel.Medium, "machine system journal");
+            RiskLevel.Low, "machine system journal");
         yield return (OperationsWorkflows.SystemTimers, new EmptyInput(), RiskLevel.Medium, "machine system timers");
         yield return (OperationsWorkflows.AptInspect, new EmptyInput(), RiskLevel.Low, "machine apt inspect");
-        yield return (OperationsWorkflows.AptInstall, new PackageInput(["fixture-package=1.0"]), RiskLevel.High,
+        yield return (OperationsWorkflows.AptInstall, new PackageInput(["fixture-package=1.0"]), RiskLevel.Medium,
             "machine apt install");
-        yield return (OperationsWorkflows.AptUpgrade, new PackageUpgradeInput(["fixture-package=1.0"]), RiskLevel.High,
+        yield return (OperationsWorkflows.AptUpgrade, new PackageUpgradeInput(["fixture-package=1.0"]), RiskLevel.Medium,
             "machine apt upgrade");
-        yield return (OperationsWorkflows.SystemReboot, new RebootInput(), RiskLevel.High, "machine system reboot");
-        yield return (OperationsWorkflows.SystemPoweroff, new PoweroffInput(), RiskLevel.VeryHigh,
+        yield return (OperationsWorkflows.SystemReboot, new RebootInput(), RiskLevel.Medium, "machine system reboot");
+        yield return (OperationsWorkflows.SystemPoweroff, new PoweroffInput(), RiskLevel.Medium,
             "machine system poweroff");
-        yield return (OperationsWorkflows.SystemExecuteScript, new ScriptInput("bash", artifact), RiskLevel.VeryHigh,
+        yield return (OperationsWorkflows.SystemExecuteScript, new ScriptInput("bash", artifact), RiskLevel.High,
             "machine system execute-script");
         yield return (OperationsWorkflows.DatabaseDiscover, new EmptyInput(), RiskLevel.Low,
             "machine database discover");
@@ -171,13 +171,13 @@ public class OperationsApprovalTests : TestBase
             new DatabaseTableInput("fixture-read", "fixture", "events"), RiskLevel.Low,
             "machine database describe-table");
         yield return (OperationsWorkflows.DatabaseQueryTable,
-            new DatabaseQueryInput("fixture-read", "fixture", "events", ["id"]), RiskLevel.Medium,
+            new DatabaseQueryInput("fixture-read", "fixture", "events", ["id"]), RiskLevel.Low,
             "machine database query-table");
         yield return (OperationsWorkflows.DatabaseQuerySql, new DatabaseSqlInput("fixture-read", artifact),
-            RiskLevel.High, "machine database query-sql");
+            RiskLevel.Low, "machine database query-sql");
         yield return (OperationsWorkflows.DatabaseExecuteSql, new DatabaseSqlInput("fixture-read", artifact),
-            RiskLevel.VeryHigh, "machine database execute-sql");
-        yield return (OperationsWorkflows.DatabaseDiagnostics, new DatabaseInput("fixture-read"), RiskLevel.Medium,
+            RiskLevel.High, "machine database execute-sql");
+        yield return (OperationsWorkflows.DatabaseDiagnostics, new DatabaseInput("fixture-read"), RiskLevel.Low,
             "machine database diagnostics");
         yield return (OperationsWorkflows.NetworkingInterfaces, new EmptyInput(), RiskLevel.Low,
             "machine networking interfaces");
@@ -189,7 +189,7 @@ public class OperationsApprovalTests : TestBase
             "machine networking dns-query");
         yield return (OperationsWorkflows.NetworkingProbe, new NetworkProbeInput("localhost"), RiskLevel.Low,
             "machine networking probe");
-        yield return (OperationsWorkflows.NetworkingTrafficSample, new SampleInput(1), RiskLevel.Medium,
+        yield return (OperationsWorkflows.NetworkingTrafficSample, new SampleInput(1), RiskLevel.Low,
             "machine networking traffic-sample");
         yield return (OperationsWorkflows.NetworkingFirewallInfo, new EmptyInput(), RiskLevel.Low,
             "machine networking firewall-info");
@@ -207,11 +207,11 @@ public class OperationsApprovalTests : TestBase
             "machine security fail2ban-status");
         yield return (OperationsWorkflows.SecurityCleanTrafficStatus, new EmptyInput(), RiskLevel.Low,
             "machine security clean-traffic-status");
-        yield return (OperationsWorkflows.SecurityAuthEvents, new EventWindowInput(), RiskLevel.Medium,
+        yield return (OperationsWorkflows.SecurityAuthEvents, new EventWindowInput(), RiskLevel.Low,
             "machine security auth-events");
-        yield return (OperationsWorkflows.SecurityAccountsAudit, new EmptyInput(), RiskLevel.Medium,
+        yield return (OperationsWorkflows.SecurityAccountsAudit, new EmptyInput(), RiskLevel.Low,
             "machine security accounts-audit");
-        yield return (OperationsWorkflows.SecurityBaselineAudit, new BaselineInput(), RiskLevel.Medium,
+        yield return (OperationsWorkflows.SecurityBaselineAudit, new BaselineInput(), RiskLevel.Low,
             "machine security baseline-audit");
     }
 

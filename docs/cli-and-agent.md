@@ -121,7 +121,7 @@ dotnet ./bin/client/dms.dll machine docker exec --container <full-container-id> 
 dotnet ./bin/client/dms.dll machine docker kill --container <full-container-id> --reason "Stop this container"
 ```
 
-Use `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires VeryHigh, and kill requires High. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
+Use `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires High, and kill requires Medium. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
 
 Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an optional `--since` timestamp with UTC offset. They do not follow indefinitely. Logs and command output are available through `workflow trace`; they may contain application secrets, so grant access accordingly. Arguments after `--` are passed literally, without an implicit host shell. Do not put secrets in command arguments: approved inputs and output are recorded in the audit trail.
 
@@ -158,9 +158,9 @@ dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-file -
 dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-directory --recursive --reason "Remove the reviewed directory tree"
 ```
 
-`filesystem rm` is a standard **High** risk workflow. Request permission is
-`CanRequestHighRiskWorkflow`, automatic approval additionally requires
-`CanAutoApproveHighRiskWorkflow`, and reviewers need `CanApproveHighRiskWorkflow`.
+`filesystem rm` is a standard **Medium** risk workflow. Request permission is
+`CanRequestMediumRiskWorkflow`, automatic approval additionally requires
+`CanAutoApproveMediumRiskWorkflow`, and reviewers need `CanApproveMediumRiskWorkflow`.
 Self-review additionally needs `CanApproveOwnWorkflow`. The request records the
 machine, exact path and recursive flag. Submission returns `LockboxId` and nullable `WorkflowId`;
 inspect callstack and trace for execution and removed entries.
@@ -251,8 +251,8 @@ including recursive transfers containing it.
 dms machine box inspect --machine-id "$MACHINE_ID" --reason "Check Box before deployment"
 ```
 
-This is the standard **Safe** `machine.box.inspect` workflow. It creates a
-Lockbox, uses the existing Safe request/automatic-approval/reviewer permissions,
+This is the standard **Low** `machine.box.inspect` workflow. It creates a
+Lockbox, uses the existing Low request/automatic-approval/reviewer permissions,
 and executes only after approval. All workflow-submitting CLI commands return
 only `LockboxId` and nullable `WorkflowId` (also with JSON or CSV output). The
 Lockbox ID always has the form `lb/<UUID>`. Pending requests have no Workflow;
