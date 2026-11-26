@@ -84,6 +84,13 @@ public class SubworkflowTests : TestBase
         // from consuming the workflow result limit before the two test agents join.
         await DatabaseAsync(async db =>
         {
+            foreach (var run in await db.WorkflowRuns.ToListAsync())
+                if (!run.State.Terminal())
+                {
+                    run.State = RunState.Cancelled;
+                    run.FinishedAt = DateTime.UtcNow;
+                }
+            await db.SaveChangesAsync();
             db.Machines.RemoveRange(db.Machines);
             await db.SaveChangesAsync();
             return true;
