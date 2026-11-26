@@ -71,6 +71,25 @@ total += unit.Units;
 
 It has no remote-machine or inventory API. The child gets its own ID and version, and its parent is the calling Machine instance.
 
+### Register machine workflows from a class library
+
+Reference `Aiursoft.DMS.Workflows` from the class library and group its factories in one public method. The `AuthoringExamples` class registers two machine workflows this way. [Compiled example](../tests/WorkflowAuthoringExamples.cs)
+
+```csharp
+public static void RegisterMachines(MachineWorkflowRegistry registry)
+{
+    registry.Register(Unit, (input, _) => new UnitWorkflow(input));
+    registry.Register(Repeat, (input, environment) => new RepeatWorkflow(input, environment.InstallationId));
+}
+```
+
+Reference the library from both host projects. Each host calls `AuthoringExamples.RegisterMachines(registry)` once on its own registry. [Two-Agent integration test](../tests/IntegrationTests/WorkflowAuthoringTests.cs)
+
+- **Controller** — In `Startup.ConfigureServices`, call the method in the factory that creates the `MachineWorkflowRegistry` singleton. The Controller uses that registry to validate Lockbox requests. [Controller startup](../src/Aiursoft.DMS/Startup.cs)
+- **Agent** — In `AgentRuntime.RunAsync`, create a registry, call the method and pass that registry to the `AgentClient` constructor so the Agent can execute the workflows. [Agent startup](../src/Aiursoft.DMS.Agent/AgentRuntime.cs)
+
+Add the next workflow's factory to the same method. To offer a CLI command for a public definition such as `Repeat`, add a `StandardCommand` mapping to the appropriate `DmsCommandApp` group. [CLI command groups](../src/Aiursoft.DMS.Client/DmsCommandApp.cs)
+
 ## 3. Implement and register a Cluster workflow
 
 Derive from `ClusterWorkflow<TInput, TResult>` and implement `ExecuteAsync(WorkflowExecutionContext, TInput, CancellationToken)`. Register the shared definition and a factory in `ClusterWorkflowRegistry`:
