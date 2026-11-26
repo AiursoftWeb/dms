@@ -1,6 +1,6 @@
 # Lockbox for Android
 
-A native .NET for Android app for reviewing DMS Lockboxes. The UI uses Material 3 and AndroidX AppCompat: outlined connection fields, request cards with risk chips, and a confirmation dialog for approval decisions. The Android project is built separately so server and CLI builds do not need the Android workload.
+A native .NET for Android app for reviewing DMS Lockboxes. The UI follows the same Material 3 DayNight (light & dark), multi-Activity, Toolbar + DrawerLayout + SwipeRefreshLayout structure as Kanban and AlertCenter, with risk-accented cards, risk filtering, formatted JSON parameter previews, and high-risk approval confirmations. The Android project is built separately so server and CLI builds do not need the Android workload.
 
 ## Build and install a development APK
 
@@ -22,10 +22,31 @@ If workload installation reports success but the build still reports `NETSDK1147
 
 Install the `*-Signed.apk` from the project's `bin/Debug/net10.0-android/` directory on the test phone over USB, for example with `adb install -r <apk-path>`. Google Play is not required.
 
+## Authentication and OIDC setup
+
+The app discovers server configuration via `GET /api/v1/config` and supports three sign-in modes (all stored encrypted in Android Keystore AES-256-GCM bound to the HTTPS origin):
+
+1. **OIDC SSO (recommended)**: Register a **public/native** OIDC client (e.g. in Authentik) with Authorization Code + PKCE `S256` (no client secret):
+   - Client ID: `dms-android`
+   - Exact redirect URI: `com.aiursoft.dms.lockbox:/oauth2redirect`
+   - Scopes: `openid profile email offline_access`
+   - Signed access-token audience: `dms-android`
+   - Server configuration:
+     ```text
+     AppSettings__OIDC__MobileAuthority=https://auth.example.com/application/o/dms-android/
+     AppSettings__OIDC__MobileClientId=dms-android
+     AppSettings__OIDC__ApiAudience=dms-android
+     AppSettings__OIDC__MobileRedirectUri=com.aiursoft.dms.lockbox:/oauth2redirect
+     AppSettings__OIDC__ApiScope=
+     AppSettings__OIDC__RequireHttpsMetadata=true
+     ```
+2. **Local authentication**: When `AuthProvider=Local`, the app authenticates against `/api/v1/auth/local/login` (and `/register` if enabled) and uses a time-limited `dmsl_` Bearer token.
+3. **Personal API Key (`dmsu_`)**: Always available as a secondary option (and automatically selected when connecting to an older Controller without `/api/v1/config`).
+
 ## Connect and review
 
 1. Deploy a Controller that includes `GET /api/v1/dms/lockboxes/review`. Give the phone network access to its HTTPS origin with a trusted certificate; the app rejects HTTP and redirects.
-2. In **连接设置**, enter the Controller origin and a **DMS personal API key** (`dmsu_`), not a Kanban, agent, or join key. The key is verified against DMS and saved encrypted with a key owned by Android Keystore. Clearing the connection removes the device copy; revoke on the Controller if the key should no longer work.
+2. Enter the Controller origin (e.g. `https://dms.aiursoft.com`), tap **连接服务器**, and sign in via OIDC SSO, local account, or personal API key (`dmsu_`). Signing out stops on-call reminders and clears the encrypted session on the device (personal API keys are not revoked on the server).
 3. In **待我审批**, refresh the list. Before paging, the Controller filters by approval permissions and confirms each frozen workflow name, version and risk still match an active public definition. An obsolete request is omitted from the review queue and reminders; if its details are already open, refresh to see that it needs to be resubmitted. The request is not deleted. A pending request that passes its 4-hour expiry is omitted the same way and reported as 已过期. For current requests, check the parameters and frozen target list before deciding. If the request has changed or the submission result is uncertain, the app refreshes the status without automatically resubmitting.
 
 ## My approval history

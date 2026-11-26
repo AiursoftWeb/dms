@@ -11,13 +11,14 @@
     <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
     <ApplicationId>com.aiursoft.dms.lockbox</ApplicationId>
     <ApplicationTitle>DMS Lockbox</ApplicationTitle>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>0.2.0</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>0.3.0</ApplicationDisplayVersion>
     <AndroidManifest>AndroidManifest.xml</AndroidManifest>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.8.0" />
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.2.0.3" />
     <PackageReference Include="Xamarin.Google.Android.Material" Version="1.14.0.6" />
     <ProjectReference Include="../Aiursoft.DMS.Contracts/Aiursoft.DMS.Contracts.csproj" />
   </ItemGroup>
