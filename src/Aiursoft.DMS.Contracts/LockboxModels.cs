@@ -55,11 +55,15 @@ public sealed record LockboxDetails(
     Guid? WorkflowId);
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxPage(IReadOnlyList<LockboxDetails> Entries, int Page, bool HasNextPage);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by clients outside the server solution.")]
 public sealed record LockboxReviewEntry(LockboxId LockboxId, string Requester, string Definition, RiskLevel Risk, DateTime CreatedAt);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Page is part of the public paginated JSON response.")]
 public sealed record LockboxReviewPage(IReadOnlyList<LockboxReviewEntry> Entries, int Page, bool HasNextPage);
 public sealed record LockboxReviewUpdate(DateTime? LatestPendingAt);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by clients outside the server solution.")]
 public sealed record LockboxHistoryEntry(LockboxId LockboxId, string Requester, string Definition, RiskLevel Risk,
     DecisionState Decision, DateTime DecidedAt);
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Page is part of the public paginated JSON response.")]
 public sealed record LockboxHistoryPage(IReadOnlyList<LockboxHistoryEntry> Entries, int Page, bool HasNextPage);
 
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]

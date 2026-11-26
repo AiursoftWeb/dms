@@ -53,7 +53,7 @@ On **待我审批**, tap **值班提醒** and allow Android notifications. The v
 ## #2423 validation record
 
 - The Android debug APK built without warnings and its signature verified with `apksigner`. The manifest declares the non-exported on-call service, disables cleartext and requests Android notification permission.
-- The focused DMS regression run passed 64 tests, including the review queue, approval history, approval conflicts, authorization and authenticated notification delivery from the Controller.
+- The focused DMS regression run passed 64 tests, including the review queue, approval history, approval conflicts, authorization and authenticated notification delivery from the Controller. The repository's `bash lint.sh` also passed after documenting the public JSON contracts that are consumed outside the server solution.
 - Emulator UI walkthrough (2026-11-26): T3 discovered and booted `DMS_Lockbox_API_36` after the SDK exposed `cmdline-tools/latest` and the device hub could find `java` on its PATH. The standard APK installed and opened the connection screen; Android masked its screenshots as intended. A separate demo application ID with synthetic responses and capture enabled was used to take actual emulator screenshots of connection settings, the review queue and review details. The standard APK was unchanged.
 - Material 3 UI (2026-11-26): rebuilt the signed APK and walked through the redesigned settings, review queue, and details on the Android 36 emulator with synthetic records. Verified that toolbar navigation works after page changes with system-bar insets applied. The standard app keeps capture protection.
 - Direct notification follow-up (2026-11-26): both targeted review-queue and notification authorization tests passed.
