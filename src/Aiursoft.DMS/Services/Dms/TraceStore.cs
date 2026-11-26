@@ -91,7 +91,7 @@ public sealed partial class TraceDatabase : ClickhouseDbContext
             BatchSize = entries.Count
         };
         await copy.InitAsync();
-        await copy.WriteToServerAsync(entries.Select(item => new object[] {
+        await copy.WriteToServerAsync(entries.Select(item => new[] {
             item.EventId, item.WorkflowId, item.Time, item.Source, item.Message, item.Origin.ToString(),
             item.Trigger.ToString(), (object?)item.ScheduleId ?? DBNull.Value
         }), token);

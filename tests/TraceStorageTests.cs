@@ -46,24 +46,18 @@ public class TraceStorageTests
         var name = $"dms_trace_test_{Guid.NewGuid():N}";
         await using var admin = new ClickHouseConnection(endpoint);
         await admin.OpenAsync();
-        async Task ExecuteAsync(string sql)
-        {
-            await using var command = admin.CreateCommand();
-            command.CommandText = sql;
-            await command.ExecuteNonQueryAsync();
-        }
         var directory = Directory.CreateTempSubdirectory();
         try
         {
-            await ExecuteAsync($"CREATE DATABASE {name}");
+            await ExecuteAsync(admin, $"CREATE DATABASE {name}");
             var table = $"{name}.DmsWorkflowTrace";
-            await ExecuteAsync($"CREATE TABLE {table} (EventId String, WorkflowId String, Time DateTime64(3, 'UTC'), Source String, Message String) ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)");
-            await ExecuteAsync($"INSERT INTO {table} VALUES ('old','legacy',now() - INTERVAL 121 DAY,'data','expired'), ('old-log','legacy',now() - INTERVAL 121 DAY,'stdout','expired'), ('recent','legacy',now() - INTERVAL 119 DAY,'data','retained report'), ('recent-log','legacy',now() - INTERVAL 119 DAY,'stdout','retained log')");
+            await ExecuteAsync(admin, $"CREATE TABLE {table} (EventId String, WorkflowId String, Time DateTime64(3, 'UTC'), Source String, Message String) ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)");
+            await ExecuteAsync(admin, $"INSERT INTO {table} VALUES ('old','legacy',now() - INTERVAL 121 DAY,'data','expired'), ('old-log','legacy',now() - INTERVAL 121 DAY,'stdout','expired'), ('recent','legacy',now() - INTERVAL 119 DAY,'data','retained report'), ('recent-log','legacy',now() - INTERVAL 119 DAY,'stdout','retained log')");
             var connection = new DbConnectionStringBuilder { ConnectionString = endpoint, ["Database"] = name }.ConnectionString;
             var config = Configuration(directory.FullName, connection);
             await using var archive = new TraceDatabase(config);
             await archive.InitializeAsync();
-            await ExecuteAsync($"ALTER TABLE {table} MATERIALIZE TTL SETTINGS mutations_sync = 1");
+            await ExecuteAsync(admin, $"ALTER TABLE {table} MATERIALIZE TTL SETTINGS mutations_sync = 1");
             var legacy = await archive.ReadAsync(["legacy"], 0);
             CollectionAssert.AreEquivalent(new[] { "retained report", "retained log" }, legacy.Select(e => e.Message).ToArray());
 
@@ -78,10 +72,10 @@ public class TraceStorageTests
                 item.Sequence = i;
                 store.Enqueue(id, item, run);
             }
-            await ExecuteAsync($"ALTER TABLE {table} ADD CONSTRAINT reject_fixture CHECK Source != 'data'");
+            await ExecuteAsync(admin, $"ALTER TABLE {table} ADD CONSTRAINT reject_fixture CHECK Source != 'data'");
             await Assert.ThrowsAsync<ClickHouse.Client.ClickHouseServerException>(() => store.FlushAsync(archive));
             Assert.AreEqual(101, store.PendingCount);
-            await ExecuteAsync($"ALTER TABLE {table} DROP CONSTRAINT reject_fixture");
+            await ExecuteAsync(admin, $"ALTER TABLE {table} DROP CONSTRAINT reject_fixture");
             Assert.IsTrue(await store.FlushAsync(archive));
             Assert.AreEqual(1, store.PendingCount);
             Assert.IsFalse(await store.FlushAsync(archive));
@@ -103,15 +97,22 @@ public class TraceStorageTests
             await using var ddl = admin.CreateCommand();
             ddl.CommandText = $"SHOW CREATE TABLE {table}";
             StringAssert.Contains((string)(await ddl.ExecuteScalarAsync())!, "toIntervalDay(240)");
-            await ExecuteAsync($"DROP TABLE {table} SYNC");
+            await ExecuteAsync(admin, $"DROP TABLE {table} SYNC");
             await unmanaged.InitializeAsync();
             Assert.DoesNotContain("TTL", (string)(await ddl.ExecuteScalarAsync())!);
         }
         finally
         {
             directory.Delete(true);
-            await ExecuteAsync($"DROP DATABASE IF EXISTS {name} SYNC");
+            await ExecuteAsync(admin, $"DROP DATABASE IF EXISTS {name} SYNC");
         }
+    }
+
+    private static async Task ExecuteAsync(ClickHouseConnection connection, string sql)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        await command.ExecuteNonQueryAsync();
     }
 
     private static IConfiguration Configuration(string path, string? connection = null) =>
