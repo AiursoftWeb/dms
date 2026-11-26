@@ -29,7 +29,7 @@ public sealed class TraceFlushService(IServiceScopeFactory scopes, TraceStore st
                 if (initializeTrace && database.Enabled)
                 {
                     // Apply retention on startup even when the old archive receives no further events.
-                    await database.InitializeAsync();
+                    await database.InitializeAsync(stoppingToken);
                     initializeTrace = false;
                 }
                 if (await store.FlushAsync(database, stoppingToken))

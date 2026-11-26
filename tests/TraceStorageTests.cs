@@ -56,7 +56,17 @@ public class TraceStorageTests
             var connection = new DbConnectionStringBuilder { ConnectionString = endpoint, ["Database"] = name }.ConnectionString;
             var config = Configuration(directory.FullName, connection);
             await using var archive = new TraceDatabase(config);
+            await Task.WhenAll(Enumerable.Range(0, 12).Select(async _ =>
+            {
+                await using var reader = new TraceDatabase(config);
+                await reader.InitializeAsync();
+            }));
             await archive.InitializeAsync();
+            await using (var check = admin.CreateCommand())
+            {
+                check.CommandText = $"SELECT count() FROM system.mutations WHERE database = '{name}' AND table = 'DmsWorkflowTrace'";
+                Assert.IsTrue(Convert.ToUInt64(await check.ExecuteScalarAsync()) <= 1);
+            }
             await ExecuteAsync(admin, $"ALTER TABLE {table} MATERIALIZE TTL SETTINGS mutations_sync = 1");
             var legacy = await archive.ReadAsync(["legacy"], 0);
             CollectionAssert.AreEquivalent(new[] { "retained report", "retained log" }, legacy.Select(e => e.Message).ToArray());

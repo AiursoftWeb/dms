@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -25,6 +26,7 @@ public sealed class TraceEntry
 
 public sealed partial class TraceDatabase : ClickhouseDbContext
 {
+    private static readonly SemaphoreSlim TraceSchemaGate = new(1, 1);
     private readonly int _retentionDays;
 
     public TraceDatabase(IConfiguration configuration) : this(
@@ -38,47 +40,54 @@ public sealed partial class TraceDatabase : ClickhouseDbContext
 
     public override Task SaveChangesAsync() => Task.CompletedTask;
 
-    public async Task InitializeAsync()
+    public async Task InitializeAsync(CancellationToken token = default)
     {
         var connection = await GetConnection();
-        await using var command = connection.CreateCommand();
         var ttl = $"toDateTime(Time) + toIntervalDay({_retentionDays.ToString(CultureInfo.InvariantCulture)})";
+        var (currentTtl, metadataColumns) = await ReadTraceSchemaAsync(connection, token);
+        if (metadataColumns == 3 && (_retentionDays == 0 || currentTtl == ttl)) return;
+
+        // Concurrent first reads and the worker can discover the same legacy table.
+        // Only one of them should schedule a TTL mutation across existing parts.
+        await TraceSchemaGate.WaitAsync(token);
+        try
+        {
+            (currentTtl, metadataColumns) = await ReadTraceSchemaAsync(connection, token);
+            if (currentTtl == null)
+            {
+                await ExecuteAsync("""
+                    CREATE TABLE IF NOT EXISTS DmsWorkflowTrace (EventId String, WorkflowId String, Time DateTime64(3, 'UTC'),
+                        Source String, Message String, Origin String DEFAULT 'Manual', Trigger String DEFAULT 'ManualRequest', ScheduleId Nullable(String))
+                    ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)
+                    """ + (_retentionDays > 0 ? $" TTL {ttl}" : ""));
+                return;
+            }
+            if (metadataColumns < 3)
+                await ExecuteAsync("ALTER TABLE DmsWorkflowTrace ADD COLUMN IF NOT EXISTS Origin String DEFAULT 'Manual', ADD COLUMN IF NOT EXISTS Trigger String DEFAULT 'ManualRequest', ADD COLUMN IF NOT EXISTS ScheduleId Nullable(String)");
+            if (_retentionDays > 0 && currentTtl != ttl)
+                await ExecuteAsync($"ALTER TABLE DmsWorkflowTrace MODIFY TTL {ttl}");
+        }
+        finally { TraceSchemaGate.Release(); }
+
+        async Task ExecuteAsync(string sql)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            await command.ExecuteNonQueryAsync(token);
+        }
+    }
+
+    private static async Task<(string? Ttl, ulong MetadataColumns)> ReadTraceSchemaAsync(DbConnection connection, CancellationToken token)
+    {
+        await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT extract(engine_full, ' TTL (.*?)(?: SETTINGS |$)'),
                 (SELECT count() FROM system.columns WHERE database = currentDatabase() AND table = 'DmsWorkflowTrace'
                     AND name IN ('Origin', 'Trigger', 'ScheduleId'))
             FROM system.tables WHERE database = currentDatabase() AND name = 'DmsWorkflowTrace'
             """;
-        string? currentTtl = null;
-        ulong metadataColumns = 0;
-        await using (var reader = await command.ExecuteReaderAsync())
-        {
-            if (await reader.ReadAsync())
-            {
-                currentTtl = reader.GetString(0);
-                metadataColumns = reader.GetFieldValue<ulong>(1);
-            }
-        }
-        if (currentTtl == null)
-        {
-            command.CommandText = """
-                CREATE TABLE IF NOT EXISTS DmsWorkflowTrace (EventId String, WorkflowId String, Time DateTime64(3, 'UTC'),
-                    Source String, Message String, Origin String DEFAULT 'Manual', Trigger String DEFAULT 'ManualRequest', ScheduleId Nullable(String))
-                ENGINE = ReplacingMergeTree ORDER BY (WorkflowId, EventId)
-                """ + (_retentionDays > 0 ? $" TTL {ttl}" : "");
-            await command.ExecuteNonQueryAsync();
-            return;
-        }
-        if (metadataColumns < 3)
-        {
-            command.CommandText = "ALTER TABLE DmsWorkflowTrace ADD COLUMN IF NOT EXISTS Origin String DEFAULT 'Manual', ADD COLUMN IF NOT EXISTS Trigger String DEFAULT 'ManualRequest', ADD COLUMN IF NOT EXISTS ScheduleId Nullable(String)";
-            await command.ExecuteNonQueryAsync();
-        }
-        if (_retentionDays > 0 && currentTtl != ttl)
-        {
-            command.CommandText = $"ALTER TABLE DmsWorkflowTrace MODIFY TTL {ttl}";
-            await command.ExecuteNonQueryAsync();
-        }
+        await using var reader = await command.ExecuteReaderAsync(token);
+        return await reader.ReadAsync(token) ? (reader.GetString(0), reader.GetFieldValue<ulong>(1)) : (null, 0UL);
     }
 
     public async Task InsertAsync(IReadOnlyList<TraceEntry> entries, CancellationToken token)
@@ -203,7 +212,7 @@ public sealed class TraceStore(IConfiguration configuration)
             }
         }
         if (entries.Count == 0) return false;
-        await database.InitializeAsync();
+        await database.InitializeAsync(token);
         await database.InsertAsync(entries, token);
         // Only release durable files after ClickHouse confirms the entire batch.
         lock (_gate)
