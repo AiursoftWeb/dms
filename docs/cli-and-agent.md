@@ -74,7 +74,7 @@ dms access whoami
 dms machine list
 ```
 
-Run `dms login` again to change the saved Controller or key. `dms login --server https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
+Run `dms login` again to change the saved Controller or key. `dms login --dms-server-endpoint https://dms.example.com/` skips the endpoint prompt. Delete `~/.DMS/auth.json` to remove the local login; revoke the key on the Controller's **API Keys** page to invalidate it.
 
 For scripts, command options override environment variables, which override saved authentication:
 
@@ -86,7 +86,7 @@ export DMS_API_KEY
 dms access whoami
 ```
 
-`--server` and `--api-key` can also be supplied to individual commands. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, effective workflow permissions, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
+`--dms-server-endpoint` and `--api-key` can also be supplied to individual commands. The endpoint is the DMS Controller URL. Machine commands take the managed machine's ID in `--machine-id`. A saved key is used only for its verified Controller endpoint; an endpoint override pointing elsewhere requires its own key. Unset `DMS_SERVER` and `DMS_API_KEY` to return to the saved login. `whoami` shows the current user's ID, roles, effective workflow permissions, effective self-approval capability and raw permissions. Table is the default; JSON and CSV are also supported. Machine keys authenticate Agents and cannot be used as personal login keys.
 
 The examples below that use `dotnet ./bin/client/dms.dll` also work with `dms` after installing the global tool. Output formats and the Lockbox approval flow apply equally to both forms.
 
@@ -123,7 +123,7 @@ dotnet ./bin/client/dms.dll machine docker kill --container <full-container-id> 
 
 Use `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires VeryHigh, and kill requires High. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
 
-Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an optional `--since` timestamp with UTC offset. They do not follow indefinitely. Logs and command output are available through `operation get-trace`; they may contain application secrets, so grant access accordingly. Arguments after `--` are passed literally, without an implicit host shell. Do not put secrets in command arguments: approved inputs and output are recorded in the audit trail.
+Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an optional `--since` timestamp with UTC offset. They do not follow indefinitely. Logs and command output are available through `workflow trace`; they may contain application secrets, so grant access accordingly. Arguments after `--` are passed literally, without an implicit host shell. Do not put secrets in command arguments: approved inputs and output are recorded in the audit trail.
 
 `exec` waits for completion and streams output. It does not detach or automatically retry. A disconnect, cancellation or failed Docker execution is marked **NeedsVerification** because the Docker client cannot prove whether the container command stopped; inspect the trace and application state before retrying. Killing a DMS workflow is not the same as killing the container. A successful exec confirms the command's exit, not the completion of any background work it started.
 
@@ -136,7 +136,7 @@ dms machine docker system df --machine-id "$MACHINE_ID" --reason "Inspect Docker
 ```
 
 These are standard workflows; submissions return `LockboxId` and nullable `WorkflowId`. Use
-`operation get-callstack` to find their Process children and `operation get-trace`
+`workflow callstack` to find their Process children and `workflow trace`
 for output. `layout df` is Safe and excludes overlay, tmpfs, devtmpfs, squashfs
 and efivarfs mounts. It streams local filesystem rows to trace instead of storing
 the report in the workflow result. Directory usage and Docker disk usage are Low;
@@ -269,9 +269,9 @@ dms lockbox approve --id "lb/<UUID>" --reason "Reviewed scope"
 Then inspect the actual execution tree:
 
 ```sh
-dms operation get-workflow --id "$WORKFLOW_ID"
-dms operation get-callstack --id "$WORKFLOW_ID"
-dms operation get-trace --id "$PROCESS_WORKFLOW_ID"
+dms workflow status "$WORKFLOW_ID"
+dms workflow callstack "$WORKFLOW_ID"
+dms workflow trace "$PROCESS_WORKFLOW_ID"
 ```
 
 Use the callstack to find the inspection's Process child ID. Its trace contains
@@ -454,7 +454,7 @@ The Low risk workflow reports standard `frps.service` and the supported encrypte
 The Controller and target Agent must both support the workflow. Approval follows the existing Low risk policy for the requesting account. Use the receipt's workflow ID to read the report once execution finishes.
 
 ```sh
-dms operation get-callstack <workflow-id> --output-format Json
+dms workflow callstack <workflow-id> --output-format Json
 ```
 
 ## Deploy FRPS
@@ -553,9 +553,9 @@ execution Workflow ID returned after approval:
 ```bash
 dms lockbox get --id "$LOCKBOX_ID"
 dms lockbox approve --id "$LOCKBOX_ID" --reason "Approve mirror refresh"
-dms operation get-workflow --id "$WORKFLOW_ID"
-dms operation get-callstack --id "$WORKFLOW_ID"
-dms operation get-trace --id "$WORKFLOW_ID"
+dms workflow status "$WORKFLOW_ID"
+dms workflow callstack "$WORKFLOW_ID"
+dms workflow trace "$WORKFLOW_ID"
 ```
 
 ## Install and join an Agent
@@ -654,7 +654,7 @@ This creates a **Medium** risk Lockbox. The role must grant Medium request permi
 
 The installed Agent downloads its architecture-specific upgrade bundle from its registered Controller, verifies the approved identity, pauses new task starts and waits up to one minute for running work to finish. Uncertain tasks must be reconciled first. The bundle includes an independent native helper, the Tool package and its package/assembly digests, all covered by the approved archive digest. A one-shot systemd unit installs the Tool from that local package, verifies the installed assembly, switches the service executable and restarts `dms-agent.service`. The machine keeps its installation identity, credential and task journal. Existing native services migrate through the same approved workflow; if they lack the .NET 10 SDK, the helper prepares `dotnet10` through APT before stopping the old service. Later Tool upgrades use only the Controller and the installed SDK, with no inbound SSH or public NuGet connection.
 
-Follow the same Workflow ID using `operation get-workflow`, `get-callstack` and `get-trace`. Success is reported only by the matching new Agent over its authenticated Controller connection. A failed download leaves the old service running. An interrupted or unconfirmed switch requires verification and is never retried automatically. Cancellation after the handoff cannot roll back the switch. A child upgrade does not resume an interrupted parent's C# stack.
+Follow the same Workflow ID using `workflow status`, `workflow callstack` and `workflow trace`. Success is reported only by the matching new Agent over its authenticated Controller connection. A failed download leaves the old service running. An interrupted or unconfirmed switch requires verification and is never retried automatically. Cancellation after the handoff cannot roll back the switch. A child upgrade does not resume an interrupted parent's C# stack.
 
 Use an installed Agent release that already supports this workflow for the first upgrade. Development Agents started from arbitrary publish directories cannot update themselves. The manual command does not provide a historical version repository or automatic rollback. Hosts whose Agent cannot contact the Controller need an operator to restore connectivity.
 
@@ -709,9 +709,9 @@ dotnet ./bin/client/dms.dll machine layout df \
 dotnet ./bin/client/dms.dll machine systemctl restart \
   --machine-id <machine-id> \
   --service example.service --reason 'Approved maintenance'
-dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id>
-dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id>
-dotnet ./bin/client/dms.dll operation get-trace --id <workflow-id>
+dotnet ./bin/client/dms.dll workflow status <workflow-id>
+dotnet ./bin/client/dms.dll workflow callstack <workflow-id>
+dotnet ./bin/client/dms.dll workflow trace <workflow-id>
 ```
 
 Each operational command creates a Lockbox before execution. A Lockbox is a separate approval record and is never itself a new Workflow. Before approval or after denial its WorkflowId is null. Approval creates exactly one execution root; repeated decisions cannot create another. An execution failure leaves the original Approved decision intact. Inspection and `lockbox approve`/`deny` use authenticated management APIs without creating another Lockbox.
@@ -724,20 +724,20 @@ Agent status, performance information, `layout lsblk` and `layout df` use the Sa
 
 Read-only process results contain `ExitCode`, `Output` and `ErrorOutput`; the output is also available in the workflow trace. Each output stream is limited to 8192 characters, and the serialized result to 24000 characters. Larger queries fail explicitly rather than returning truncated data. A missing tool, failed query or nonexistent service is reported as a failed workflow.
 
-`operation get-workflow` returns the instance's `WorkflowId`, `RootWorkflowId` and `ParentWorkflowId`, along with its state and result. The root points to itself and has no parent. Each subworkflow has its own ID. These inspection commands are authenticated and audited; they do not create a Lockbox.
+`workflow status` returns the instance's `WorkflowId`, `RootWorkflowId` and `ParentWorkflowId`, along with its state and result. The root points to itself and has no parent. Each subworkflow has its own ID. These inspection commands are authenticated and audited; they do not create a Lockbox.
 
-`operation get-callstack` prints the selected instance and its descendants as a tree, including every full workflow ID, definition and state. Interactive output uses green for success, red for failure, blue for running and yellow for warnings. Redirected output preserves the tree and state names without terminal colors. Use `--output-format json` to obtain the full protocol response with parent and root IDs.
+`workflow callstack` prints the selected instance and its descendants as a tree, including every full workflow ID, definition and state. Interactive output uses green for success, red for failure, blue for running and yellow for warnings. Redirected output preserves the tree and state names without terminal colors. Use `--output-format json` to obtain the full protocol response with parent and root IDs.
 
 ## Output formats
 
-Commands default to human-readable tables. Single-object details use `Property` and `Value` columns; collections use one row per record. State, decision and risk values are shown by name. Structured results are expanded separately, and multiline output remains readable. Full IDs are preserved; wide collections fall back to individual property tables. `get-callstack` uses its colored tree in table mode. Redirected output has no added terminal colors.
+Commands default to human-readable tables. Single-object details use `Property` and `Value` columns; collections use one row per record. State, decision and risk values are shown by name. Structured results are expanded separately, and multiline output remains readable. Full IDs are preserved; wide collections fall back to individual property tables. `workflow callstack` uses its colored tree in table mode. Redirected output has no added terminal colors.
 
 Use `--output-format json` for the complete, unchanged AiurProtocol response, including pagination metadata. Use `--output-format csv` for business records with alphabetically ordered columns and quoted commas, quotes and line breaks. Nested values remain JSON in a cell; API numeric enums and full timestamps are preserved. Trace CSV contains event records, including column headers on an empty page; pagination and archive metadata are available in table and JSON output. Format names are case insensitive. Invalid formats are rejected before submitting any request.
 
 ```sh
-dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id>
-dotnet ./bin/client/dms.dll operation get-workflow --id <workflow-id> --output-format json
-dotnet ./bin/client/dms.dll operation get-callstack --id <workflow-id> --output-format csv
+dotnet ./bin/client/dms.dll workflow status <workflow-id>
+dotnet ./bin/client/dms.dll workflow status <workflow-id> --output-format json
+dotnet ./bin/client/dms.dll workflow callstack <workflow-id> --output-format csv
 ```
 
 
@@ -778,7 +778,7 @@ An Open workflow that finishes successfully with only logs prints its `WorkflowI
 
 `GET /api/v1/dms/lockboxes?page=0&decision=Pending` lists 50 requests per page, with `Entries`, `Page` and `HasNextPage`. `GET /api/v1/dms/lockboxes/lb/<UUID>` returns the request, frozen input/targets, decision context and optional execution ID. `POST /api/v1/dms/lockboxes/lb/<UUID>/decision` accepts `{ "Approve": true, "Reason": "Reviewed scope" }`. These management endpoints need a personal API Key; reads require Read DMS operations, decisions require the corresponding risk approval permission and self-approval permission when applicable. They create no approval workflow and can be used directly by an independent approval app.
 
-Use the ID printed by the submission to see who requested the action, when it was requested and decided, and who can currently approve at that risk.
+Use the ID printed by the submission to review the frozen workflow definition, version, risk, target machine IDs and input parameters, together with the requester, decision and currently eligible approvers.
 
 ```sh
 dms lockbox status "$LOCKBOX_ID"
@@ -788,7 +788,9 @@ dms workflow callstack "$WORKFLOW_ID"
 dms workflow trace "$WORKFLOW_ID"
 ```
 
-The requester can check their own Lockbox. Viewing another person's Lockbox or inspecting a Workflow requires operations read permission. The approver list reflects current effective permissions, including self-approval and account lockout. Automatic approvals show the system as the decision maker. The Workflow ID appears when a linked execution exists. Use `dms lockbox get --id "$LOCKBOX_ID"` for the full request record.
+With Client 1.35.0 and an updated Controller, `status` includes the complete review by default: current machine names beside the frozen IDs, typed JSON input values, raw input and stored request JSON, request identifiers and the decision reason. The requester reason is labelled as an unverified statement; compare it against the frozen execution contract before approving. JSON and CSV retain their existing fields and add `Details` (the full Lockbox record) and `MachineNames`. Removed machines remain visible by their frozen IDs. The CLI does not resolve the original machine selector again. Older Controllers still return the available summary.
+
+The requester can check their own Lockbox. Viewing another person's Lockbox or inspecting a Workflow requires operations read permission. The approver list reflects current effective permissions, including self-approval and account lockout. Automatic approvals show the system as the decision maker. The Workflow ID appears when a linked execution exists. `dms lockbox get --id "$LOCKBOX_ID"` continues to return the full request record.
 
 While a request is pending, its requester can run `dms lockbox withdraw --id lb/<UUID>`, use **DMS → My Lockboxes → Withdraw request**, or POST to `/api/v1/dms/lockboxes/lb/<UUID>/withdraw` with their personal API key. Withdrawal takes effect immediately, including after the requester loses the original risk permission. An identical retry returns the withdrawn request. Use `dms lockbox list --decision Withdrawn` with operations read permission to find withdrawn requests.
 

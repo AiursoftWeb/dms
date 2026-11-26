@@ -117,7 +117,7 @@ public sealed class SshLeaseApprovalTests : TestBase
         var requestId = Guid.NewGuid();
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "ssh", "temp-allow-ssh",
             "--machine-id", target.Id.ToString(), "--reason", reason, "--request-id", requestId.ToString(),
-            "--server", Http.BaseAddress!.ToString(), "--api-key", apiKey]);
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", apiKey]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var item = db.Lockboxes.Single(box => box.RequesterId == requester.Id && box.ClientRequestId == requestId);
         Assert.AreEqual(DecisionState.Pending, item.Decision);

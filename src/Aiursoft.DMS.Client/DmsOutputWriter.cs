@@ -9,8 +9,10 @@ public enum OutputFormat { Table, Json, Csv, Log }
 
 public static class DmsOutputWriter
 {
-    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true)
+    public static void Write(TextWriter output, DmsResponse response, OutputFormat format, bool callstack, bool color, int width = 120, bool catalog = false, bool audit = false, bool lockboxStatus = false, bool verbose = true, bool lockboxDetails = false)
     {
+        if ((lockboxDetails || lockboxStatus) && response.Data is JObject lockbox)
+            RemoveRetiredLockboxField(lockbox);
         if (format == OutputFormat.Json)
         {
             output.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
@@ -63,6 +65,16 @@ public static class DmsOutputWriter
         else if (callstack && data is JArray nodes)
             foreach (var line in WorkflowTreeRenderer.Render(nodes, color)) output.WriteLine(line);
         else WriteHuman(output, data, width, color, true, verbose);
+    }
+
+    private static void RemoveRetiredLockboxField(JObject lockbox)
+    {
+        // Older Controllers can still send the retired field during a rolling upgrade.
+        const string field = "LegacyApprovalWorkflowId";
+        lockbox.Remove(field);
+        (lockbox["Details"] as JObject)?.Remove(field);
+        if (lockbox["Entries"] is JArray entries)
+            foreach (var entry in entries.OfType<JObject>()) entry.Remove(field);
     }
 
     public static void WriteResult(TextWriter output, object result, OutputFormat format, bool color, int width)
@@ -176,18 +188,66 @@ public static class DmsOutputWriter
                 _ => decision.ToString()
             }]
         ];
+        var details = summary["Details"] as JObject;
+        if (details != null)
+        {
+            rows.Add(["Workflow definition", TerminalText(Cell(details["Definition"]))]);
+            rows.Add(["Workflow version", TerminalText(Cell(details["Version"]))]);
+            rows.Add(["Risk", HumanScalar("Risk", details["Risk"], true)]);
+            var targets = Structured(details["TargetMachines"] ?? JValue.CreateNull()) as JArray;
+            rows.Add(["Frozen target machines", targets is not { Count: > 0 } ? "None (Controller workflow)" :
+                string.Join('\n', targets.Select(id =>
+                    $"{TerminalText(summary["MachineNames"]?[Cell(id)]?.Value<string>() ?? "Unknown machine")} ({TerminalText(Cell(id))})"))]);
+        }
+        else if (summary["Definition"] != null)
+            rows.Add(["Workflow definition", TerminalText(Cell(summary["Definition"]))]);
         if (decision != DecisionState.Pending)
         {
             var verb = decision == DecisionState.Denied ? "Rejected" : decision.ToString();
             rows.Add([$"{verb} at", HumanScalar("DecidedAt", summary["DecidedAt"])]);
             rows.Add([$"{verb} by", summary["Automatic"]?.Value<bool>() == true
                 ? "System (automatic approval)" : TerminalText(HumanScalar("DecidedBy", summary["DecidedBy"]))]);
+            if (details != null)
+                rows.Add(["Decision reason", TerminalText(Cell(details["DecisionReason"]))]);
         }
         rows.Add(["Eligible approvers now",
             approvers.Length == 0 ? "None" : string.Join('\n', approvers.Select(TerminalText))]);
         if (summary["WorkflowId"]?.Type is JTokenType.String or JTokenType.Guid)
             rows.Add(["Workflow ID", Cell(summary["WorkflowId"])]);
         WriteRows(output, ["Property", "Value"], rows, width, false);
+
+        if (details != null)
+        {
+            output.WriteLine();
+            output.WriteLine("Authoritative execution contract: workflow, version, risk, target IDs and inputs are frozen.");
+            output.WriteLine("Request reason (unverified requester statement)");
+            output.WriteLine(TerminalText(Cell(details["Reason"])));
+            output.WriteLine("Verify the reason against the frozen execution contract before approving.");
+            output.WriteLine();
+            output.WriteLine("Frozen input parameters (JSON values)");
+            var request = Structured(details["Parameters"] ?? JValue.CreateNull());
+            var storedInput = (request as JObject)?["Input"];
+            var input = storedInput != null ? Structured(storedInput) : null;
+            if (input is JObject parameters && parameters.Count > 0)
+                WriteRows(output, ["Parameter", "JSON value"], parameters.Properties().Select(p =>
+                    new[] { TerminalText(p.Name), TerminalText(p.Value.ToString(Formatting.None)) }).ToList(), width, false,
+                    [Math.Min(28, Math.Max(12, width / 3)), Math.Max(20, width - 30)]);
+            else
+                output.WriteLine(input?.ToString(Formatting.Indented) ?? "Unavailable; review the raw request below.");
+            output.WriteLine();
+            output.WriteLine("Raw input JSON");
+            output.WriteLine(storedInput != null ? TerminalText(Cell(storedInput)) : "Unavailable");
+            output.WriteLine();
+            WriteRows(output, ["Property", "Value"], new List<string[]>
+            {
+                new[] { "Client request ID", TerminalText(Cell(details["ClientRequestId"])) },
+                new[] { "Requester ID", TerminalText(Cell(details["RequesterId"])) },
+                new[] { "Approver ID", TerminalText(Cell(details["ApproverId"])) }
+            }, width, false);
+            output.WriteLine();
+            output.WriteLine("Stored request JSON (POST /api/v1/dms/lockboxes)");
+            output.WriteLine(TerminalText(Cell(details["Parameters"])));
+        }
 
         if (summary["EquivalentCommand"] is JValue { Value: string command } &&
             command.Length > 0 && !command.Any(char.IsControl))
@@ -210,8 +270,7 @@ public static class DmsOutputWriter
             var properties = obj.Properties().Select(p => (p.Name, Value: Structured(p.Value))).ToList();
             var scalars = properties.Where(p => p.Name != "Result" &&
                                                 p.Value is not (JObject or JArray) &&
-                                                (verbose || p.Name is not ("Parameters" or "TargetMachines")) &&
-                                                !(p.Name == "LegacyApprovalWorkflowId" && (p.Value == null || p.Value.Type == JTokenType.Null || Cell(p.Value) is "" or "-"))).ToList();
+                                                (verbose || p.Name is not ("Parameters" or "TargetMachines"))).ToList();
             WriteRows(output, ["Property", "Value"], scalars.Select(p => new[] { p.Name, HumanScalar(p.Name, p.Value, workflowMetadata) }).ToList(), width, color && workflowMetadata);
             foreach (var p in properties.Where(p => (p.Name == "Result" || p.Value is JObject or JArray) &&
                                                    (verbose || p.Name is not ("Parameters" or "TargetMachines"))))

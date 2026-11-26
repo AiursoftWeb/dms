@@ -27,7 +27,7 @@ For the company roles, root is intended to have all request and manual approval 
 
 Personal API keys resolve the user's current Identity permissions on each request, so changing roles does not require a replacement key. Delegated machine enrollment uses the join-key issuer's current request permissions. Web sessions retain the normal Template identity/session lifecycle; operational decisions and the effective matrix are resolved from current Identity claims.
 
-Update the Controller and CLI together (`Aiursoft.DMS.Client` 1.1.0). Agent task/response payloads do not change; existing Agent installations can stay connected and upgrade through DMS. Agent 1.1.0 supplies the scope-free join CLI. See the [inventory upgrade procedure](configuration.md#upgrade-to-instance-wide-inventory) before migrating existing data. Operations still return Lockbox/workflow IDs and use the same `lockbox get`, `operation get-workflow`, `operation get-callstack` and `operation get-trace` commands.
+Update the Controller and CLI together (`Aiursoft.DMS.Client` 1.1.0). Agent task/response payloads do not change; existing Agent installations can stay connected and upgrade through DMS. Agent 1.1.0 supplies the scope-free join CLI. See the [inventory upgrade procedure](configuration.md#upgrade-to-instance-wide-inventory) before migrating existing data. Operations still return Lockbox/workflow IDs and use the same `lockbox get`, `workflow status`, `workflow callstack` and `workflow trace` commands.
 
 ## Open inventory workflow
 

@@ -308,15 +308,12 @@ public static partial class DmsCommandApp
             DefaultValueFactory = _ => 1,
             Description = "Seconds between samples. Use at least 1 and at most the total sampling time."
         };
-        var limit = new Option<int>("--limit")
-            { DefaultValueFactory = _ => 50, Description = "Compatibility option. All available cores are sampled." };
         return StandardCommand("cpu-sample",
             "Sample CPU utilization, I/O wait, and steal time by core.",
             OperationsWorkflows.PerformanceCpuSample,
-            p => new SampleInput(p.GetValue(seconds), p.GetValue(interval), p.GetValue(limit)),
+            p => new SampleInput(p.GetValue(seconds), p.GetValue(interval)),
             seconds,
-            interval,
-            limit);
+            interval);
     }
 
     private static ActionCommand NewPerformanceMemoryBreakdownCommand()
@@ -356,15 +353,12 @@ public static partial class DmsCommandApp
             DefaultValueFactory = _ => 1,
             Description = "Seconds between samples. Use at least 1 and at most the total sampling time."
         };
-        var limit = new Option<int>("--limit")
-            { DefaultValueFactory = _ => 50, Description = "Compatibility option. All disks and interfaces are sampled." };
         return StandardCommand("dstat-sample",
             "Sample CPU, memory, disk, and network activity together.",
             OperationsWorkflows.PerformanceDstatSample,
-            p => new SampleInput(p.GetValue(seconds), p.GetValue(interval), p.GetValue(limit)),
+            p => new SampleInput(p.GetValue(seconds), p.GetValue(interval)),
             seconds,
-            interval,
-            limit);
+            interval);
     }
 
     private static ActionCommand NewPerformancePressureCommand()
@@ -428,15 +422,12 @@ public static partial class DmsCommandApp
             DefaultValueFactory = _ => 1,
             Description = "Seconds between samples. Use at least 1 and at most the total sampling time."
         };
-        var limit = new Option<int>("--limit")
-            { DefaultValueFactory = _ => 50, Description = "Compatibility option. All detected GPUs are sampled." };
         return StandardCommand("sample",
             "Sample NVIDIA GPU utilization and memory over time.",
             OperationsWorkflows.NvidiaSample,
-            p => new SampleInput(p.GetValue(seconds), p.GetValue(interval), p.GetValue(limit)),
+            p => new SampleInput(p.GetValue(seconds), p.GetValue(interval)),
             seconds,
-            interval,
-            limit);
+            interval);
     }
 
     private static ActionCommand NewNvidiaErrorsCommand()
@@ -1318,11 +1309,6 @@ public static partial class DmsCommandApp
         var host = new Option<string>("--host")
             { Required = true, Description = "Remote hostname or IP address used for TLS verification." };
         var port = new Option<int>("--port") { DefaultValueFactory = _ => 443, Description = "Destination TCP port." };
-        var url = new Option<string?>("--url")
-        {
-            DefaultValueFactory = _ => null,
-            Description = "Compatibility option. TLS checks the supplied --host and --port."
-        };
         var timeoutSeconds = new Option<int>("--timeout-seconds")
             { DefaultValueFactory = _ => 10, Description = "Maximum time to wait, in seconds." };
         return StandardCommand("tls-check",
@@ -1330,11 +1316,9 @@ public static partial class DmsCommandApp
             OperationsWorkflows.NetworkingTlsCheck,
             p => new NetworkProbeInput(p.GetValue(host)!,
                 p.GetValue(port),
-                p.GetValue(url),
-                p.GetValue(timeoutSeconds)),
+                TimeoutSeconds: p.GetValue(timeoutSeconds)),
             host,
             port,
-            url,
             timeoutSeconds);
     }
 

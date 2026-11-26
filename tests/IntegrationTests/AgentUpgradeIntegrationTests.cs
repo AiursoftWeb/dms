@@ -234,7 +234,7 @@ public class AgentUpgradeIntegrationTests : TestBase
                 await db.SaveChangesAsync();
             }
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "agent", "upgrade",
-                "--machine-id", machineId.ToString(), "--reason", "Upgrade to the frozen Controller release", "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+                "--machine-id", machineId.ToString(), "--reason", "Upgrade to the frozen Controller release", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             using var inspection = Server.Services.CreateScope();
             var database = inspection.ServiceProvider.GetRequiredService<TemplateDbContext>();

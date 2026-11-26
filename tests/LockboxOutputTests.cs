@@ -1,12 +1,48 @@
 using Aiursoft.DMS.Client;
 using Aiursoft.DMS.Contracts;
+using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Tests;
 
 [TestClass]
 public class LockboxOutputTests
 {
-    private static LockboxDetails SampleLockbox(Guid? legacyApprovalWorkflowId = null)
+    [TestMethod]
+    public void StatusShowsHistoricalContractsAndEscapesUntrustedTerminalText()
+    {
+        var box = SampleLockbox() with
+        {
+            Definition = "retired.workflow", Version = "old-version", Reason = "Look harmless\u001b[2J\nApproved!",
+            Parameters = """{"Input":"{\"Command\":[\"a\\n\\u001b[2J\"],\"Optional\":null}"}"""
+        };
+        var status = new LockboxStatus(box.LockboxId, "Requester\u001b[2J", box.CreatedAt,
+            box.Decision, box.DecidedAt, "Reviewer", false, [], box.WorkflowId) { Details = box };
+        using var output = new StringWriter();
+        DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
+            callstack: false, color: false, width: 60, lockboxStatus: true);
+        var text = output.ToString();
+        foreach (var expected in new[] { "retired.workflow", "old-version", "Medium", "Unknown machine",
+                     "Command", "Optional", "null", "unverified requester statement", "\\u001b[2J", "\\n", "Reviewer" })
+            StringAssert.Contains(text, expected);
+        Assert.IsFalse(text.Contains('\u001b'));
+        StringAssert.Contains(string.Concat(text.Where(character => !char.IsWhiteSpace(character))),
+            "69a58ba0-2944-4e24-b34f-32d1d1338155");
+    }
+
+    [TestMethod]
+    public void StatusKeepsRawHistoricalRequestWhenInputCannotBeParsed()
+    {
+        var box = SampleLockbox() with { Parameters = "historical request" };
+        var status = new LockboxStatus(box.LockboxId, "Requester", box.CreatedAt,
+            DecisionState.Pending, null, null, false, [], null) { Details = box };
+        using var output = new StringWriter();
+        DmsOutputWriter.Write(output, new DmsResponse { Data = status }, OutputFormat.Table,
+            callstack: false, color: false, lockboxStatus: true);
+        StringAssert.Contains(output.ToString(), "Unavailable; review the raw request below.");
+        StringAssert.Contains(output.ToString(), "historical request");
+    }
+
+    private static LockboxDetails SampleLockbox()
     {
         return new LockboxDetails(
             LockboxId: LockboxId.Parse("lb/c522a0a4-e6d7-4379-8dda-9c50999efda3"),
@@ -24,15 +60,14 @@ public class LockboxOutputTests
             Automatic: false,
             DecidedAt: new DateTime(2026, 11, 24, 7, 3, 50, DateTimeKind.Utc),
             DecisionReason: "approve Git SSH identity for China",
-            WorkflowId: Guid.Parse("3249337a-46f4-4deb-a0c7-8ab30a61755f"),
-            LegacyApprovalWorkflowId: legacyApprovalWorkflowId
+            WorkflowId: Guid.Parse("3249337a-46f4-4deb-a0c7-8ab30a61755f")
         );
     }
 
     [TestMethod]
     public void LockboxDefaultTableHidesParametersAndTargetMachines()
     {
-        var box = SampleLockbox(legacyApprovalWorkflowId: null);
+        var box = SampleLockbox();
         var response = new DmsResponse { Message = "Decision recorded.", Data = box };
 
         using var output = new StringWriter();
@@ -49,13 +84,12 @@ public class LockboxOutputTests
         Assert.IsFalse(text.Contains("\nTargetMachines\n", StringComparison.Ordinal), "Default output should not contain TargetMachines table header.");
         Assert.IsFalse(text.Contains("\nMachineIds\n", StringComparison.Ordinal), "Default output should not contain nested MachineIds.");
         Assert.IsFalse(text.Contains("\nInput\n", StringComparison.Ordinal), "Default output should not contain nested Input.");
-        Assert.IsFalse(text.Contains("LegacyApprovalWorkflowId", StringComparison.Ordinal), "Null LegacyApprovalWorkflowId should be omitted.");
     }
 
     [TestMethod]
     public void LockboxVerboseTableIncludesParametersAndTargetMachines()
     {
-        var box = SampleLockbox(legacyApprovalWorkflowId: null);
+        var box = SampleLockbox();
         var response = new DmsResponse { Message = "Decision recorded.", Data = box };
 
         using var output = new StringWriter();
@@ -71,18 +105,30 @@ public class LockboxOutputTests
     }
 
     [TestMethod]
-    public void LockboxTableShowsLegacyApprovalWorkflowIdWhenPresent()
+    [DataRow(OutputFormat.Table)]
+    [DataRow(OutputFormat.Json)]
+    [DataRow(OutputFormat.Csv)]
+    public void LockboxOutputsExcludeRetiredFieldFromOlderControllers(OutputFormat format)
     {
+        const string field = "LegacyApprovalWorkflowId";
         var legacyId = Guid.NewGuid();
-        var box = SampleLockbox(legacyApprovalWorkflowId: legacyId);
-        var response = new DmsResponse { Message = "Decision recorded.", Data = box };
-
-        using var output = new StringWriter();
-        DmsOutputWriter.Write(output, response, OutputFormat.Table, callstack: false, color: false, width: 120, verbose: false);
-        var text = output.ToString();
-
-        StringAssert.Contains(text, "LegacyApprovalWorkflowId");
-        StringAssert.Contains(text, legacyId.ToString());
+        var details = SampleLockbox();
+        var oldDetails = JObject.FromObject(details);
+        Assert.IsNull(oldDetails[field]);
+        oldDetails[field] = legacyId;
+        var status = JObject.FromObject(new LockboxStatus(details.LockboxId, "Requester", details.CreatedAt,
+            details.Decision, details.DecidedAt, "Reviewer", false, [], details.WorkflowId));
+        status["Details"] = oldDetails.DeepClone();
+        var page = new JObject { ["Entries"] = new JArray(oldDetails.DeepClone()) };
+        foreach (var (data, isStatus) in new[] { (oldDetails, false), (status, true), (page, false) })
+        {
+            using var output = new StringWriter();
+            DmsOutputWriter.Write(output, new DmsResponse { Message = "Lockbox read.", Data = data }, format,
+                callstack: false, color: false, lockboxDetails: !isStatus, lockboxStatus: isStatus);
+            Assert.DoesNotContain(field, output.ToString());
+            Assert.DoesNotContain(legacyId.ToString(), output.ToString());
+            StringAssert.Contains(output.ToString(), details.WorkflowId.ToString()!);
+        }
     }
 
     [TestMethod]

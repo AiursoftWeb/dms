@@ -275,7 +275,7 @@ public static partial class DmsCommandApp
         [
             new ActionCommand("list", "List Lockbox requests, optionally filtered by decision.", "lockboxes"),
             new ActionCommand("status",
-                "Show the requester, decision, eligible approvers, and equivalent command when available.",
+                "Show the frozen workflow, target machines, inputs, requester, decision, and eligible approvers.",
                 "lockbox-status", positionalOnly: true),
             new ActionCommand("get", "Read the full Lockbox record, including the submitted parameters.", "get"),
             new ActionCommand("approve", "Approve a pending Lockbox and queue its workflow.", "approve"),
@@ -300,9 +300,6 @@ public static partial class DmsCommandApp
                 "List workflow definitions, risk levels, and your permissions.",
                 "definitions"),
             new ActionCommand("query-audit", "Search archived Lockbox and workflow events.", "audit"),
-            new ActionCommand("get-workflow", "Show a workflow's execution status and result.", "workflow"),
-            new ActionCommand("get-callstack", "Show a workflow and its descendants as a tree.", "callstack"),
-            new ActionCommand("get-trace", "Read archived trace entries for a workflow and its descendants.", "trace"),
             new ActionCommand("kill-workflow",
                 "Request cancellation of a workflow and its descendants.",
                 ClusterWorkflows.Cancel.Name, ClusterWorkflows.Cancel,
@@ -838,7 +835,8 @@ public static partial class DmsCommandApp
                     _ => true
                 };
                 DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format, Callstack, color, width,
-                    catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose);
+                    catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose,
+                    lockboxDetails: action is "lockboxes" or "get" or "approve" or "deny" or "withdraw");
                 if (format == OutputFormat.Table && response.Data is JObject data)
                     WriteDirectoryNextStep(context.InvocationConfiguration.Output, data);
             }

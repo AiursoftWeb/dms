@@ -232,17 +232,17 @@ public class DmsWorkflowTests : TestBase
         {
             foreach (var (arguments, credential, expected) in new (string[], string, string)[]
             {
-                (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], key, "Workflow not found."),
-                (["operation", "get-trace", "--id", run.Id.ToString()], key, "ClickHouse is not configured."),
+                (["workflow", "status", Guid.NewGuid().ToString()], key, "Workflow not found."),
+                (["workflow", "trace", run.Id.ToString()], key, "ClickHouse is not configured."),
                 (["operation", "query-audit"], key, "ClickHouse is not configured."),
-                (["operation", "get-workflow", "--id", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
+                (["workflow", "status", Guid.NewGuid().ToString()], DmsKeyAuthenticationHandler.CreateKey(false), "Authentication failed."),
                 (["machine", "systemctl", "status", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid input must not submit", "--service", "*.service"], key, "A concrete .service unit name is required."),
                 (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid image must not submit", "--image", "aiursoft/dms;id"], key, "Supply one concrete image name"),
                 (["machine", "box", "puller", "force-update", "--machine-id", setup.Machine.ToString(), "--reason", "Invalid Puller must not submit", "--image", "aiursoft/dms", "--puller", "all"], key, "Select a Puller"),
                 (["machine", "list", "--reason", new string('a', 2001)], key, "The optional reason must be at most 2000 characters.")
             })
             {
-                var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--server", Http.BaseAddress!.ToString(), "--api-key", credential, "--output-format", format]);
+                var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. arguments, "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", credential, "--output-format", format]);
                 Assert.AreEqual(1, cli.ProgramReturn, cli.StdErr);
                 Assert.AreEqual(string.Empty, cli.StdOut);
                 StringAssert.StartsWith(cli.StdErr, "Error: ");
@@ -299,18 +299,18 @@ public class DmsWorkflowTests : TestBase
             Assert.AreEqual(run.CreatedAt, details.CreatedAt); Assert.AreEqual(run.StartedAt, details.StartedAt);
             Assert.AreEqual(run.FinishedAt, details.FinishedAt);
         }
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "RootWorkflowId"); StringAssert.Contains(cli.StdOut, "ParentWorkflowId");
         StringAssert.Contains(cli.StdOut, child.Id.ToString()); StringAssert.Contains(cli.StdOut, parent.Id.ToString());
-        var table = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+        var table = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
         Assert.AreEqual(0, table.ProgramReturn, table.StdErr);
         StringAssert.Contains(table.StdOut, "Property"); StringAssert.Contains(table.StdOut, "Value");
         StringAssert.Contains(table.StdOut, "Succeeded"); StringAssert.Contains(table.StdOut, "Output");
         StringAssert.Contains(table.StdOut, "disk, \"quoted\""); StringAssert.Contains(table.StdOut, "second line");
         Assert.DoesNotContain("\\n", table.StdOut); Assert.DoesNotContain("ProtocolVersion", table.StdOut);
         StringAssert.Contains(table.StdOut, child.Id.ToString()); StringAssert.Contains(table.StdOut, root.Id.ToString());
-        var csv = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-workflow", "--id", child.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "CsV"]);
+        var csv = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "status", child.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "CsV"]);
         Assert.AreEqual(0, csv.ProgramReturn, csv.StdErr);
         using (var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(new StringReader(csv.StdOut)))
         {
@@ -321,11 +321,11 @@ public class DmsWorkflowTests : TestBase
             Assert.AreEqual(child.Result, values[Array.IndexOf(headers, "Result")]);
             Assert.IsTrue(parser.EndOfData);
         }
-        var tree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", root.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+        var tree = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "callstack", root.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
         Assert.AreEqual(0, tree.ProgramReturn, tree.StdErr);
         StringAssert.Contains(tree.StdOut, "├── "); StringAssert.Contains(tree.StdOut, "│   └── ");
         foreach (var id in new[] { root.Id, parent.Id, child.Id, sibling.Id }) StringAssert.Contains(tree.StdOut, id.ToString());
-        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["operation", "get-callstack", "--id", parent.Id.ToString(), "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
+        var subtree = await Client.DmsCommandApp.Create().TestRunAsync(["workflow", "callstack", parent.Id.ToString(), "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"]);
         Assert.AreEqual(0, subtree.ProgramReturn, subtree.StdErr);
         StringAssert.Contains(subtree.StdOut, parent.Id.ToString()); StringAssert.Contains(subtree.StdOut, child.Id.ToString());
         Assert.DoesNotContain(sibling.Id.ToString(), subtree.StdOut); Assert.DoesNotContain("└──", subtree.StdOut);
@@ -533,7 +533,7 @@ public class DmsWorkflowTests : TestBase
         await db.SaveChangesAsync();
         var container = new string('a', 64);
         string[] common = ["--machine-id", setup.Machine.ToString(), "--reason", "Docker command",
-            "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"];
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", "json"];
         string[] exec = ["machine", "docker", "exec", .. common, "--container", container, "--", "/start.sh", "a b", "$(id)", "--server", "unchanged"];
         var denied = await Client.DmsCommandApp.Create().TestRunAsync(exec);
         Assert.AreEqual(1, denied.ProgramReturn);
@@ -688,13 +688,13 @@ await db.SaveChangesAsync();
         Assert.AreEqual(HttpStatusCode.OK, accepted.StatusCode);
         var websocket = await Http.GetAsync("/api/agent/channel"); Assert.AreEqual(HttpStatusCode.Forbidden, websocket.StatusCode);
         var cli = await Client.DmsCommandApp.Create().TestRunAsync([
-            "machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
+            "machine", "performance", "info", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", personal,
             "--machine-id", setup.Machine.ToString(), "--reason", "CLI acceptance", "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         StringAssert.Contains(cli.StdOut, "WorkflowId");
         foreach (var command in new[] { new[] { "agent", "status" }, new[] { "systemctl", "status" }, new[] { "layout", "lsblk" }, new[] { "layout", "df" } })
         {
-            var args = new List<string> { "machine", command[0], command[1], "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
+            var args = new List<string> { "machine", command[0], command[1], "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", personal,
                 "--machine-id", setup.Machine.ToString(), "--reason", "Read only CLI", "--output-format", "json" };
             if (command[0] == "systemctl") args.AddRange(["--service", "dms-test.service"]);
             var result = await Client.DmsCommandApp.Create().TestRunAsync(args.ToArray());
@@ -705,7 +705,7 @@ await db.SaveChangesAsync();
         using (var countScope = Server!.Services.CreateScope()) beforeInvalidFormat = await countScope.ServiceProvider.GetRequiredService<TemplateDbContext>().Lockboxes.CountAsync();
         foreach (var format in new[] { "yaml", "999" })
         {
-            var badFormat = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "performance", "info", "--server", Http.BaseAddress!.ToString(), "--api-key", personal,
+            var badFormat = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "performance", "info", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", personal,
                 "--machine-id", setup.Machine.ToString(), "--reason", "Must not submit", "--output-format", format]);
             Assert.AreNotEqual(0, badFormat.ProgramReturn);
         }
@@ -740,7 +740,7 @@ await db.SaveChangesAsync();
         for (var i = 0; i < 2; i++)
         {
             var result = await Client.DmsCommandApp.Create().TestRunAsync(["lockbox", "withdraw", "--id", new LockboxId(box.Id).ToString(),
-                "--server", Http.BaseAddress!.ToString(), "--api-key", key]);
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key]);
             Assert.AreEqual(0, result.ProgramReturn);
         }
         db.ChangeTracker.Clear();
@@ -788,7 +788,7 @@ await db.SaveChangesAsync();
         }
 
         string[] command = cancel ? ["operation", "kill-workflow", "--id", target.Id.ToString()] : ["machine", "add", "--name", name];
-        var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--server", Http.BaseAddress!.ToString(),
+        var cli = await Client.DmsCommandApp.Create().TestRunAsync([.. command, "--dms-server-endpoint", Http.BaseAddress!.ToString(),
             "--api-key", key, "--reason", reason, "--request-id", request.RequestId.ToString(), "--output-format", "json"]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var receipt = Newtonsoft.Json.Linq.JObject.Parse(cli.StdOut)["Data"]!.ToObject<LockboxReceipt>()!;
@@ -1011,7 +1011,7 @@ await db.SaveChangesAsync();
             var request = Guid.NewGuid();
             var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update",
                 "--machine-id", setup.Machine.ToString(), "--image", "aiursoft/dms:latest", "--puller", puller, "--reason", "Update DMS mirror", "--request-id", request.ToString(),
-                "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
+                "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
             Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
             var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
             Assert.AreEqual(WorkflowNames.PullerForceUpdate, box.Definition); Assert.AreEqual("2", box.Version);
@@ -1039,7 +1039,7 @@ await db.SaveChangesAsync();
         await db.SaveChangesAsync();
         var request = Guid.NewGuid();
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "puller", "force-update", "--reason", "Refresh configured mirrors", "--request-id", request.ToString(),
-            "--server", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
+            "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", key, "--output-format", format]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
         var box = await db.Lockboxes.AsNoTracking().SingleAsync(l => l.ClientRequestId == request);
         Assert.AreEqual(RiskLevel.Medium, box.Risk); Assert.AreEqual(DecisionState.Pending, box.Decision);
