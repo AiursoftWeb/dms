@@ -60,7 +60,11 @@ public class DmsRolePermissionTests : TestBase
     {
         var viewer = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, AppPermissionNames.CanApproveSafeRiskWorkflow);
         var requester = await ArrangeAsync();
-        var now = DateTime.UtcNow;
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        // The queue is global to this reviewer; previous integration tests may have left pending requests.
+        var latest = await db.Lockboxes.MaxAsync(box => (DateTime?)box.CreatedAt);
+        var now = (latest ?? DateTime.UtcNow).AddSeconds(1);
         LockboxRequest Box(string owner, int index, RiskLevel risk = RiskLevel.Safe,
             DecisionState decision = DecisionState.Pending, string definition = WorkflowNames.AgentStatus) => new()
         {
@@ -74,14 +78,11 @@ public class DmsRolePermissionTests : TestBase
             definition: MachineWorkflows.BoxGetSecretRaw.Name);
         ownIndependent.Version = MachineWorkflows.BoxGetSecretRaw.Version;
         await SetRoleAsync(viewer.Role, DmsPermissions.Approve(ownIndependent.Risk), true);
-        using (var scope = Server!.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
-            db.Lockboxes.AddRange(eligible);
-            db.Lockboxes.AddRange(own, ownIndependent, Box(requester.User, 102, RiskLevel.High),
-                Box(requester.User, 103, decision: DecisionState.Approved));
-            await db.SaveChangesAsync();
-        }
+        LockboxRequest[] fixtures = [.. eligible, own, ownIndependent, Box(requester.User, 102, RiskLevel.High),
+            Box(requester.User, 103, decision: DecisionState.Approved)];
+        db.Lockboxes.AddRange(fixtures);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
 
         const string review = "/api/v1/dms/lockboxes/review";
         using (var unauthenticated = await Http.GetAsync(review))
@@ -102,8 +103,9 @@ public class DmsRolePermissionTests : TestBase
             first.Entries.Select(entry => entry.LockboxId).ToArray());
         StringAssert.Contains(first.Entries[0].Requester, "Operator");
         var second = await ReadAsync<LockboxReviewPage>(review + "?page=1");
-        Assert.IsFalse(second.HasNextPage);
-        Assert.AreEqual(new LockboxId(eligible[0].Id), second.Entries.Single().LockboxId);
+        var fixtureIds = fixtures.Select(box => box.Id).ToHashSet();
+        Assert.AreEqual(new LockboxId(eligible[0].Id), second.Entries[0].LockboxId);
+        Assert.AreEqual(1, second.Entries.Count(entry => fixtureIds.Contains(entry.LockboxId.Value)));
 
         await SetRoleAsync(viewer.Role, AppPermissionNames.CanApproveOwnWorkflow, true);
         first = await ReadAsync<LockboxReviewPage>(review);
@@ -120,6 +122,8 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(false, updated.CanApprove);
         Assert.AreEqual("Reviewed", updated.Details!.DecisionReason);
         Assert.IsFalse((await ReadAsync<LockboxReviewPage>(review)).Entries.Any(entry => entry.LockboxId.Value == own.Id));
+        db.Lockboxes.RemoveRange(await db.Lockboxes.Where(box => fixtureIds.Contains(box.Id)).ToListAsync());
+        await db.SaveChangesAsync();
     }
 
     [TestMethod]
