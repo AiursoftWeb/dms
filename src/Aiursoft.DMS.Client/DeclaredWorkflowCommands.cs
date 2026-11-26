@@ -41,6 +41,6 @@ public static partial class DmsCommandApp
 
         return StandardCommand(name, description, definition,
             parsed => (TInput)constructor.Invoke(BindingFlags.DoNotWrapExceptions, null,
-                options.Select(option => parsed.GetValue(option)).ToArray(), null), options);
+                [.. options.Select(option => parsed.GetValue(option))], null), [.. options]);
     }
 }
