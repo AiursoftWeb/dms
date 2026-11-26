@@ -242,6 +242,7 @@ public static partial class DmsCommandApp
                 NewDatabaseQueryTableCommand(),
                 NewDatabaseQuerySqlCommand(),
                 NewDatabaseExecuteSqlCommand(),
+                new DatabaseUpsertCommand(),
                 NewDatabaseDiagnosticsCommand()
             ]),
             ClickHouseCommands(),

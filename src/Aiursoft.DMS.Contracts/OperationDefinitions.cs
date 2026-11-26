@@ -565,6 +565,15 @@ public static class OperationsWorkflows
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
 
+    [WorkflowRisk(RiskLevel.High)]
+    public static readonly MachineWorkflowDefinition<DatabaseUpsertInput, OperationResult> DatabaseUpsert =
+        new("machine.database.upsert",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseUpsert)),
+            "1",
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true)
+        { SingleMachineOnly = true };
+
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DatabaseInput, OperationResult> DatabaseDiagnostics =
         new("machine.database.diagnostics",

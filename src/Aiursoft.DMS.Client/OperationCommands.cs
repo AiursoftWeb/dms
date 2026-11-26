@@ -1165,51 +1165,60 @@ public static partial class DmsCommandApp
             _ => new EmptyInput());
     }
 
+    private static Option<string?> DatabaseConnectionOption() => new("--connection")
+        { Description = "Registered connection profile name from dms machine database discover (mutually exclusive with --container)." };
+
+    private static Option<string?> DatabaseContainerOption() => new("--container")
+        { Description = "Local database container full 64-hex ID from dms machine database discover (mutually exclusive with --connection)." };
+
     private static ActionCommand NewDatabaseListDatabasesCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         return StandardCommand("list-databases",
-            "List databases available through a configured connection.",
+            "List databases available through a configured connection or local database container.",
             OperationsWorkflows.DatabaseListDatabases,
-            p => new DatabaseInput(p.GetValue(connection)!),
-            connection);
+            p => new DatabaseInput(p.GetValue(connection), p.GetValue(container)),
+            connection,
+            container);
     }
 
     private static ActionCommand NewDatabaseListTablesCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         var database = new Option<string>("--database")
             { Required = true, Description = "Database name from list-databases." };
         return StandardCommand("list-tables",
             "List tables in the specified database.",
             OperationsWorkflows.DatabaseListTables,
-            p => new DatabaseNameInput(p.GetValue(connection)!, p.GetValue(database)!),
+            p => new DatabaseNameInput(p.GetValue(connection), p.GetValue(database)!, p.GetValue(container)),
             connection,
+            container,
             database);
     }
 
     private static ActionCommand NewDatabaseDescribeTableCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         var database = new Option<string>("--database")
             { Required = true, Description = "Database name from list-databases." };
         var table = new Option<string>("--table") { Required = true, Description = "Table name from list-tables." };
         return StandardCommand("describe-table",
             "Show a database table's columns and types.",
             OperationsWorkflows.DatabaseDescribeTable,
-            p => new DatabaseTableInput(p.GetValue(connection)!, p.GetValue(database)!, p.GetValue(table)!),
+            p => new DatabaseTableInput(p.GetValue(connection), p.GetValue(database)!, p.GetValue(table)!, p.GetValue(container)),
             connection,
+            container,
             database,
             table);
     }
 
     private static ActionCommand NewDatabaseQueryTableCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         var database = new Option<string>("--database")
             { Required = true, Description = "Database name from list-databases." };
         var table = new Option<string>("--table") { Required = true, Description = "Table name from list-tables." };
@@ -1234,7 +1243,7 @@ public static partial class DmsCommandApp
         return StandardCommand("query-table",
             "Read selected table columns with optional filters and sorting.",
             OperationsWorkflows.DatabaseQueryTable,
-            p => new DatabaseQueryInput(p.GetValue(connection)!,
+            p => new DatabaseQueryInput(p.GetValue(connection),
                 p.GetValue(database)!,
                 p.GetValue(table)!,
                 p.GetValue(column)!,
@@ -1242,8 +1251,10 @@ public static partial class DmsCommandApp
                 p.GetValue(sortBy),
                 p.GetValue(descending),
                 p.GetValue(limit),
-                p.GetValue(offset)),
+                p.GetValue(offset),
+                p.GetValue(container)),
             connection,
+            container,
             database,
             table,
             column,
@@ -1256,8 +1267,10 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewDatabaseQuerySqlCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
+        var database = new Option<string?>("--database")
+            { Description = "Optional default database name when targeting a container with --container." };
         var sqlFile = new Option<string>("--sql-file")
             { Required = true, Description = "Path to a local SQL file. Its contents are uploaded for review." };
         var timeoutSeconds = new Option<int>("--timeout-seconds")
@@ -1267,11 +1280,15 @@ public static partial class DmsCommandApp
         return PreparedOperation("query-sql",
             "Run a read-only SQL query from a local file.",
             OperationsWorkflows.DatabaseQuerySql,
-            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection)!,
+            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection),
                 await PrepareOperationTextAsync(client, p.GetValue(sqlFile)!, 131072, requestId),
                 p.GetValue(timeoutSeconds),
-                p.GetValue(maxRows)),
+                p.GetValue(maxRows),
+                p.GetValue(container),
+                p.GetValue(database)),
             connection,
+            container,
+            database,
             sqlFile,
             timeoutSeconds,
             maxRows);
@@ -1279,8 +1296,10 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewDatabaseExecuteSqlCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
+        var database = new Option<string?>("--database")
+            { Description = "Optional default database name when targeting a container with --container." };
         var sqlFile = new Option<string>("--sql-file")
             { Required = true, Description = "Path to a local SQL file. Its contents are uploaded for review." };
         var timeoutSeconds = new Option<int>("--timeout-seconds")
@@ -1290,11 +1309,15 @@ public static partial class DmsCommandApp
         return PreparedOperation("execute-sql",
             "Execute SQL from a file, including writes or schema changes.",
             OperationsWorkflows.DatabaseExecuteSql,
-            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection)!,
+            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection),
                 await PrepareOperationTextAsync(client, p.GetValue(sqlFile)!, 131072, requestId),
                 p.GetValue(timeoutSeconds),
-                p.GetValue(maxRows)),
+                p.GetValue(maxRows),
+                p.GetValue(container),
+                p.GetValue(database)),
             connection,
+            container,
+            database,
             sqlFile,
             timeoutSeconds,
             maxRows);
@@ -1302,13 +1325,14 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewDatabaseDiagnosticsCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         return StandardCommand("diagnostics",
             "Inspect a database's active queries, connections, and resource usage.",
             OperationsWorkflows.DatabaseDiagnostics,
-            p => new DatabaseInput(p.GetValue(connection)!),
-            connection);
+            p => new DatabaseInput(p.GetValue(connection), p.GetValue(container)),
+            connection,
+            container);
     }
 
     private static ActionCommand NewNetworkingInterfacesCommand()

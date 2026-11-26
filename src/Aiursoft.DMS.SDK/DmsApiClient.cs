@@ -35,13 +35,20 @@ public sealed class DmsApiClient(AiurProtocolClient http, string endpoint, strin
             BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
     }
 
+    public Task<DmsResponse> SubmitDatabaseUpsertAsync(DatabaseUpsertSubmission submission)
+    {
+        RequireSecretHttps("Database secret transfer requires an HTTPS Controller.");
+        return http.Post<DmsResponse>(Endpoint("database-secrets/upsert"), new AiurApiPayload(submission),
+            BodyFormat.HttpJsonBody, autoRetry: false, headers: Headers);
+    }
+
     public Task<DmsResponse> BoxSecretMetadataAsync(LockboxId id) =>
         http.Get<DmsResponse>(Endpoint($"lockboxes/{id}/box-secret-metadata"), autoRetry: false, headers: Headers);
 
-    private void RequireSecretHttps()
+    private void RequireSecretHttps(string message = "Box secret transfer requires an HTTPS Controller.")
     {
         if (new Uri(endpoint).Scheme != Uri.UriSchemeHttps)
-            throw new ArgumentException("Box secret transfer requires an HTTPS Controller.");
+            throw new ArgumentException(message);
     }
 
     public Task<DmsResponse> ListLockboxesAsync(int page = 0, DecisionState? decision = null) => http.Get<DmsResponse>(Endpoint("lockboxes", new { page, decision }), headers: Headers);

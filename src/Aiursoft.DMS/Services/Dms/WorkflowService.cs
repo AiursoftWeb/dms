@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection, BoxSecretTransfers boxSecrets, LockboxReviewSignal reviewSignal)
+public sealed class WorkflowService(TemplateDbContext db, AccessService access, ControllerGate gate, WorkflowCatalog catalog, AgentReleaseStore releases, DmsArtifactStore artifacts, PersonalSshKeys sshKeys, IDataProtectionProvider protection, BoxSecretTransfers boxSecrets, DatabaseSecretTransfers databaseSecrets, LockboxReviewSignal reviewSignal)
 {
     public Task<WorkflowCatalogResult> ListDefinitionsAsync(string user) => gate.RunAsync(async () =>
     {
@@ -49,6 +49,25 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             submission.Key, submission.Reason, [submission.MachineId]), boxSecret: submission.Value));
     }
 
+    public Task<LockboxRequest> SubmitDatabaseUpsertAsync(string user, DatabaseUpsertSubmission submission)
+    {
+        if (submission.MachineId == Guid.Empty || string.IsNullOrWhiteSpace(submission.UpsertInputJson))
+            throw new DmsException(400, "Select one machine and provide a valid database upsert specification.");
+        DatabaseUpsertInput upsert;
+        try
+        {
+            upsert = OperationsWorkflows.DatabaseUpsert.ReadInput(submission.UpsertInputJson);
+            upsert.Validate();
+            if (upsert.SecretColumns is not { Length: > 0 })
+                throw new ArgumentException("Declare at least one --secret-column when using the secret upsert endpoint.");
+            new DatabaseUpsertSecretsPayload(submission.Secrets).Validate(upsert.SecretColumns);
+        }
+        catch (Exception exception) when (exception is ArgumentException or JsonException or InvalidDataException)
+        { throw new DmsException(400, exception.Message); }
+        return gate.RunAsync(() => SubmitCoreAsync(user, OperationsWorkflows.DatabaseUpsert.Request(
+            upsert, submission.Reason, [submission.MachineId]), databaseSecretsPayload: submission.Secrets));
+    }
+
     private static bool CanAutoApprove(string definition, bool autoApprove) => autoApprove &&
         definition != ClickHouseWorkflows.Execute.Name && definition != SoapWorkflows.CallTest.Name &&
         !BoxSecretTransfers.RequiresIndependentApproval(definition);
@@ -80,7 +99,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         });
 
     // Enrollment uses the same approval path while holding ControllerGate and a database transaction.
-    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request, Guid? enrollmentId = null, string? boxSecret = null)
+    internal async Task<LockboxRequest> SubmitCoreAsync(string user, OperationRequest request, Guid? enrollmentId = null, string? boxSecret = null, Dictionary<string, string>? databaseSecretsPayload = null)
     {
         if (request.Reason == null || request.MachineName == null || request.MachineIds == null || request.Workflow == null || request.Input == null)
             throw new DmsException(400, "Request fields cannot be null.");
@@ -99,6 +118,12 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         if (request.Input.Length > 24000) throw new DmsException(400, "Workflow input exceeds the size limit.");
         if (request.Workflow == MachineWorkflows.BoxSetSecret.Name && boxSecret == null)
             throw new DmsException(400, "Use the dedicated Box secret submission endpoint.");
+        if (request.Workflow == OperationsWorkflows.DatabaseUpsert.Name)
+        {
+            var upsert = OperationsWorkflows.DatabaseUpsert.ReadInput(request.Input);
+            if (upsert.SecretColumns is { Length: > 0 } && databaseSecretsPayload == null)
+                throw new DmsException(400, "Use the dedicated database secret upsert endpoint when SecretColumns are declared.");
+        }
         FrpsDeployInput? frpsInput = null;
         if (request.Workflow == MachineWorkflows.FrpsDeploy.Name)
         {
@@ -230,6 +255,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         };
         if (boxSecret != null && !boxSecrets.Stage(user, request.RequestId, reveal: false, boxSecret))
             throw new DmsException(503, "Box secret transfer storage is busy. Try again later.");
+        if (databaseSecretsPayload != null && !databaseSecrets.Stage(user, request.RequestId, databaseSecretsPayload))
+            throw new DmsException(503, "Database secret transfer storage is busy. Try again later.");
         db.Lockboxes.Add(lockbox);
         access.Audit(user, "lockbox.submit", lockbox.Id, $"Risk={risk}; Targets={targets.Count}");
         if (CanAutoApprove(definition.Name, grant.AutoApprove))

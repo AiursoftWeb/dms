@@ -473,6 +473,11 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 DatabaseOperations.ExecuteSqlAsync,
                 agent));
+        Register(OperationsWorkflows.DatabaseUpsert,
+            (input, agent) => new OperationWorkflow<DatabaseUpsertInput>(OperationsWorkflows.DatabaseUpsert,
+                input,
+                DatabaseOperations.UpsertAsync,
+                agent));
         Register(OperationsWorkflows.DatabaseDiagnostics,
             (input, agent) => new OperationWorkflow<DatabaseInput>(OperationsWorkflows.DatabaseDiagnostics,
                 input,

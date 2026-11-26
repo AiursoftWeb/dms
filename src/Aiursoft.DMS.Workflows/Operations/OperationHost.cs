@@ -119,6 +119,7 @@ public sealed class OperationWorkflow<TInput>(MachineWorkflowDefinition<TInput, 
         {
             SampleInput sample => sample.Seconds + 10, SmartTestInput smart => smart.WaitSeconds + 90,
             ScriptInput script => script.TimeoutSeconds + 10, DatabaseSqlInput sql => sql.TimeoutSeconds + 30,
+            DatabaseUpsertInput upsert => upsert.TimeoutSeconds + 30,
             SwarmChangeInput service => service.TimeoutSeconds + 90,
             SwarmRollingRestartInput restart => restart.TimeoutSeconds + 90,
             RebootInput => 960, PoweroffInput poweroff => Math.Max(180, poweroff.DelaySeconds + 60),

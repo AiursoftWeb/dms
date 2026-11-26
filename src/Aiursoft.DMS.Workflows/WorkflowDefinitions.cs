@@ -3,6 +3,11 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
+public interface IDatabaseSecretTransport
+{
+    Task<Dictionary<string, string>> TakeUpsertSecretsAsync(Guid workflowId, CancellationToken token);
+}
+
 // ReSharper disable NotAccessedPositionalProperty.Global
 public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents,
     Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null,
@@ -15,7 +20,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null,
     AptTransactionHook? AptTransactionHook = null,
     Func<Guid, CancellationToken, Task<string>>? GetFrpsDeployToken = null,
-    IBoxSecretTransport? BoxSecrets = null);
+    IBoxSecretTransport? BoxSecrets = null,
+    IDatabaseSecretTransport? DatabaseSecrets = null);
 
 public sealed partial class MachineWorkflowRegistry
 {
