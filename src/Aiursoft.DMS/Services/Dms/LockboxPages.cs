@@ -160,8 +160,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         item.Definition == WorkflowNames.AgentUpgrade && item.Version == MachineWorkflows.AgentUpgrade.Version;
 
     private static bool RequiresResubmission(LockboxRequest box, IReadOnlyList<AgentRelease>? current) =>
-        current != null && box.Decision == DecisionState.Pending && IsAgentUpgrade(box) &&
-        !AgentReleaseStore.Matches(WorkflowService.ReadRequestedAgentUpgrade(box).Releases, current);
+        WorkflowService.RequiresAgentUpgradeResubmission(box, current);
 
     private Task<Dictionary<Guid, string>> MachineNamesAsync(IReadOnlyList<Guid> ids) => db.Machines.AsNoTracking()
         .Where(machine => ids.Contains(machine.Id)).ToDictionaryAsync(machine => machine.Id, machine => machine.Name);

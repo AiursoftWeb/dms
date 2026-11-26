@@ -17,6 +17,7 @@ public sealed class DmsKeyAuthenticationHandler(
     : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
 {
     public const string SchemeName = "DmsKey";
+    internal const string PersonalKeyIdProperty = "DmsPersonalKeyId";
     public static string Hash(string key) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)));
     public static string CreateKey(bool machine) => (machine ? "dmsa_" : "dmsu_") + Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 
@@ -52,6 +53,8 @@ public sealed class DmsKeyAuthenticationHandler(
         var user = await users.FindByIdAsync(key.UserId);
         if (user == null || await users.IsLockedOutAsync(user)) return AuthenticateResult.Fail("Key owner unavailable.");
         var principal = await principalFactory.CreateAsync(user);
-        return AuthenticateResult.Success(new AuthenticationTicket(principal, SchemeName));
+        var properties = new AuthenticationProperties();
+        properties.Items[PersonalKeyIdProperty] = key.Id.ToString("D");
+        return AuthenticateResult.Success(new AuthenticationTicket(principal, properties, SchemeName));
     }
 }

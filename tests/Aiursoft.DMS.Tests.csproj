@@ -19,6 +19,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="4.5.3" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../src/Aiursoft.DMS.Lockbox.Android/DeferredReviewNavigation.cs" Link="Android/DeferredReviewNavigation.cs" />
     <ProjectReference Include="..\src\Aiursoft.DMS\Aiursoft.DMS.csproj" />
   </ItemGroup>
   <ItemGroup>

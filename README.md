@@ -81,6 +81,10 @@ dotnet add package Aiursoft.DMS.SDK
 
 The SDK connects to your own DMS server; install and configure that server separately. The existing release pipeline publishes the same package to NuGet.org and the internal Nupkg registry. See the [SDK source](https://github.com/aiursoftweb/dms/tree/master/src/Aiursoft.DMS.SDK) for the available client methods and models.
 
+## Lockbox for Android
+
+The [Lockbox Android app](docs/lockbox-android.md) provides an approvals queue, review details, personal approval history, and optional on-call notifications. It can be installed directly as an APK and connects to a DMS Controller using a personal API key. Notifications do not use Google Play Services or an external relay.
+
 ## Try
 
 Try a running DMS [here](https://dms.aiursoft.com). Sign in with an authorized company account. Role permissions determine which risk levels you can request and approve across all machines.

@@ -47,9 +47,11 @@ public sealed class BoxSecretTransfers(IDataProtectionProvider protection) : IDi
     private static MemoryCacheEntryOptions Options(DateTimeOffset expires) =>
         new() { AbsoluteExpiration = expires, Size = 1, Priority = CacheItemPriority.NeverRemove };
 
+    internal const string IndependentApprovalSuffix = "-as-root";
+
     internal static bool RequiresIndependentApproval(string definition) =>
         definition == MachineWorkflows.BoxGetSecretRaw.Name ||
-        definition.EndsWith("-as-root", StringComparison.Ordinal);
+        definition.EndsWith(IndependentApprovalSuffix, StringComparison.Ordinal);
 
     internal static bool IndependentlyApproved(LockboxRequest box) =>
         box.Decision == DecisionState.Approved && !box.Automatic && box.ApproverId != null && box.ApproverId != box.RequesterId;

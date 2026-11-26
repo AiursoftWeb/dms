@@ -14,6 +14,10 @@ public sealed class WorkflowCatalog(MachineWorkflowRegistry machines, ClusterWor
         return definitions.Where(d => d.PublicEntry).OrderBy(d => d.Name, StringComparer.Ordinal).ToList();
     }
 
+    public WorkflowDefinition? FindApprovable(string name, RiskLevel risk, string version) =>
+        Find(name) is { PublicEntry: true } definition && definition.Risk == risk && definition.Version == version
+            ? definition : null;
+
     public WorkflowDefinition? Find(string name)
     {
         var machine = machines.FindDefinition(name);
