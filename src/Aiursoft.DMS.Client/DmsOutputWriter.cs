@@ -269,10 +269,12 @@ public static class DmsOutputWriter
             ["Lockbox ID", Cell(summary["LockboxId"])],
             ["Requested by", TerminalText(Cell(summary["RequestedBy"]))],
             ["Requested at", HumanScalar("RequestedAt", summary["RequestedAt"])],
+            ["Expires at", HumanScalar("ExpiresAt", summary["ExpiresAt"])],
             ["Status", decision switch
             {
                 DecisionState.Pending => "Awaiting approval",
                 DecisionState.Denied => "Rejected",
+                DecisionState.Expired => "Expired (no decision within 4 hours)",
                 _ => decision.ToString()
             }]
         ];
@@ -293,7 +295,8 @@ public static class DmsOutputWriter
         {
             var verb = decision == DecisionState.Denied ? "Rejected" : decision.ToString();
             rows.Add([$"{verb} at", HumanScalar("DecidedAt", summary["DecidedAt"])]);
-            rows.Add([$"{verb} by", summary["Automatic"]?.Value<bool>() == true
+            rows.Add([$"{verb} by", decision == DecisionState.Expired ? "System (automatic expiry)" :
+                summary["Automatic"]?.Value<bool>() == true
                 ? "System (automatic approval)" : TerminalText(HumanScalar("DecidedBy", summary["DecidedBy"]))]);
             if (details != null)
                 rows.Add(["Decision reason", TerminalText(Cell(details["DecisionReason"]))]);

@@ -9,12 +9,34 @@ using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Workflows;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
 
 [TestClass]
 public class DmsWorkflowTests : TestBase
 {
+    [TestMethod]
+    public async Task PersistedExpiryStillRejectsSubmissionRetry()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var request = Request(setup.Machine);
+        var box = await service.SubmitAsync(setup.User, request);
+        box.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request))).StatusCode);
+        var sweep = new LockboxExpiryService(Server.Services.GetRequiredService<IServiceScopeFactory>(),
+            Server.Services.GetRequiredService<ControllerGate>(), NullLogger<LockboxExpiryService>.Instance);
+        await sweep.SweepAsync(CancellationToken.None);
+        db.ChangeTracker.Clear();
+        Assert.AreEqual(DecisionState.Expired, (await db.Lockboxes.SingleAsync(item => item.Id == box.Id)).Decision);
+        var error = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request));
+        Assert.AreEqual(409, error.StatusCode);
+    }
+
     private sealed class UnavailableWorkflow(string name) : MachineWorkflow
     {
         public override string Name => name;
@@ -764,6 +786,96 @@ await db.SaveChangesAsync();
         var fact = (await db.WorkflowAuditOutbox.ToListAsync()).Select(e => e.Read()).Single(e => e.LockboxId == box.Id && e.Kind == WorkflowAuditKind.LockboxWithdrawn);
         Assert.AreEqual(setup.User, fact.RequesterId); Assert.IsNull(fact.AutomaticApproval); Assert.IsNull(fact.WorkflowId);
         Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, box.Id, true, "Late approval"))).StatusCode);
+    }
+
+    [TestMethod]
+    public async Task PendingRequestsExpireAfterFourHoursAndLateDecisionsAreRejected()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var box = await service.SubmitAsync(setup.User, Request(setup.Machine));
+        Assert.IsTrue(Math.Abs((box.ExpiresAt - DateTime.UtcNow.AddHours(4)).TotalSeconds) < 5);        Assert.AreEqual(DecisionState.Pending, box.Details().Decision);
+
+        db.ChangeTracker.Clear();
+        (await db.Lockboxes.SingleAsync(l => l.Id == box.Id)).ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.DecideAsync(setup.Approver, box.Id, true, "Too late"))).StatusCode);
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.WithdrawAsync(setup.User, box.Id))).StatusCode);
+        db.ChangeTracker.Clear();
+        var expired = await db.Lockboxes.SingleAsync(l => l.Id == box.Id);
+        Assert.AreEqual(DecisionState.Expired, expired.Decision);
+        Assert.AreEqual(DecisionState.Expired, expired.Details().Decision);
+        Assert.IsNull(expired.WorkflowId);
+        Assert.IsFalse(await db.WorkflowRuns.AnyAsync(r => r.LockboxId == box.Id));
+        var fact = (await db.WorkflowAuditOutbox.ToListAsync()).Select(e => e.Read())
+            .Single(e => e.LockboxId == box.Id && e.Kind == WorkflowAuditKind.LockboxExpired);
+        Assert.IsNull(fact.ApproverId); Assert.IsNull(fact.AutomaticApproval);
+    }
+
+    [TestMethod]
+    public async Task ExpiredRequestsLeaveDefaultListsButStayQueryable()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var fresh = await service.SubmitAsync(setup.User, Request(setup.Machine));
+        var request = Request(setup.Machine);
+        var box = await service.SubmitAsync(setup.User, request);
+        db.ChangeTracker.Clear();
+        (await db.Lockboxes.SingleAsync(l => l.Id == box.Id)).ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+
+        var all = (await service.ListLockboxesAsync(setup.Approver)).Entries;
+        Assert.IsTrue(all.Any(e => e.LockboxId.Value == fresh.Id));
+        Assert.IsFalse(all.Any(e => e.LockboxId.Value == box.Id));
+        var pending = (await service.ListLockboxesAsync(setup.Approver, decision: DecisionState.Pending)).Entries;
+        Assert.IsTrue(pending.Any(e => e.LockboxId.Value == fresh.Id));
+        Assert.IsFalse(pending.Any(e => e.LockboxId.Value == box.Id));
+        var expired = (await service.ListLockboxesAsync(setup.Approver, decision: DecisionState.Expired)).Entries;
+        var expiredBox = expired.Single(e => e.LockboxId.Value == box.Id);
+        Assert.AreEqual(DecisionState.Expired, expiredBox.Decision);
+        var status = await service.GetLockboxStatusAsync(setup.User, box.Id);
+        Assert.AreEqual(DecisionState.Expired, status.Decision);
+        Assert.IsFalse(status.CanApprove!.Value);
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(
+            () => service.SubmitAsync(setup.User, request))).StatusCode);
+    }
+
+    [TestMethod]
+    public async Task ExpirySweepPersistsDueRequestsAndPurgesAfterRetention()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var due = await service.SubmitAsync(setup.User, Request(setup.Machine));
+        var kept = await service.SubmitAsync(setup.User, Request(setup.Machine));
+        var stale = await service.SubmitAsync(setup.User, Request(setup.Machine));
+        await service.DecideAsync(setup.Approver, kept.Id, true, "Approved in time");
+        var joinKey = new JoinKey { IssuerId = setup.User, Name = "Purge fixture", KeyHash = new string('b', 64), ExpiresAt = DateTime.UtcNow.AddDays(1) };
+        db.JoinKeys.Add(joinKey);
+        db.AgentEnrollments.Add(new AgentEnrollment { JoinKeyId = joinKey.Id, LockboxId = stale.Id, InstallationId = Guid.NewGuid(),
+            MachineName = "Purge target", ReceiptHash = new string('c', 64), AgentKeyHash = new string('d', 64), MachineId = null });
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        (await db.Lockboxes.SingleAsync(l => l.Id == due.Id)).ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        (await db.Lockboxes.SingleAsync(l => l.Id == stale.Id)).ExpiresAt = DateTime.UtcNow.AddDays(-8);
+        await db.SaveChangesAsync();
+
+        var sweep = new LockboxExpiryService(Server.Services.GetRequiredService<IServiceScopeFactory>(),
+            Server.Services.GetRequiredService<ControllerGate>(), NullLogger<LockboxExpiryService>.Instance);
+        await sweep.SweepAsync(CancellationToken.None);
+
+        db.ChangeTracker.Clear();
+        Assert.AreEqual(DecisionState.Expired, (await db.Lockboxes.SingleAsync(l => l.Id == due.Id)).Decision);
+        Assert.AreEqual(DecisionState.Approved, (await db.Lockboxes.SingleAsync(l => l.Id == kept.Id)).Decision);
+        Assert.IsFalse(await db.Lockboxes.AnyAsync(l => l.Id == stale.Id));
+        Assert.IsFalse(await db.AgentEnrollments.AnyAsync(l => l.LockboxId == stale.Id));
+        Assert.IsTrue(await db.JoinKeys.AnyAsync(l => l.Id == joinKey.Id));
     }
 
     [TestMethod]

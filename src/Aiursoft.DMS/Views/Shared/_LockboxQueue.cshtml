@@ -45,6 +45,7 @@
                 <option value="approved" selected="@(Model.Scope == "approved")">@Localizer["Approved"]</option>
                 <option value="denied" selected="@(Model.Scope == "denied")">@Localizer["Denied"]</option>
                 <option value="withdrawn" selected="@(Model.Scope == "withdrawn")">@Localizer["Withdrawn"]</option>
+                <option value="expired" selected="@(Model.Scope == "expired")">@Localizer["Expired"]</option>
                 <option value="all" selected="@(Model.Scope == "all")">@LockboxText.Format(@Localizer["All {0} requests"].Value)</option>
             </select>
         </div>

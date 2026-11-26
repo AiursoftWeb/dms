@@ -666,7 +666,7 @@ public static partial class DmsCommandApp
             { Description = "Include full execution parameters and target machines in the output." };
 
         private readonly Option<DecisionState?> _decision = new("--decision")
-            { Description = "Filter by Pending, Approved, Denied, or Withdrawn." };
+            { Description = "Filter by Pending, Approved, Denied, Withdrawn, or Expired." };
         private readonly Option<string?> _requester = new("--requester-id")
             { Description = "Filter events to the specified requester user ID." };
         private readonly Option<string?> _approver = new("--approver-id")
