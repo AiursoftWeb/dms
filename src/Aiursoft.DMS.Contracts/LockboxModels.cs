@@ -55,6 +55,12 @@ public sealed record LockboxDetails(
     Guid? WorkflowId);
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxPage(IReadOnlyList<LockboxDetails> Entries, int Page, bool HasNextPage);
+public sealed record LockboxReviewEntry(LockboxId LockboxId, string Requester, string Definition, RiskLevel Risk, DateTime CreatedAt);
+public sealed record LockboxReviewPage(IReadOnlyList<LockboxReviewEntry> Entries, int Page, bool HasNextPage);
+public sealed record LockboxReviewUpdate(DateTime? LatestPendingAt);
+public sealed record LockboxHistoryEntry(LockboxId LockboxId, string Requester, string Definition, RiskLevel Risk,
+    DecisionState Decision, DateTime DecidedAt);
+public sealed record LockboxHistoryPage(IReadOnlyList<LockboxHistoryEntry> Entries, int Page, bool HasNextPage);
 
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxStatus(
@@ -64,6 +70,10 @@ public sealed record LockboxStatus(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
     public LockboxDetails? Details { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+    public bool? CanApprove { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [Newtonsoft.Json.JsonProperty(NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
