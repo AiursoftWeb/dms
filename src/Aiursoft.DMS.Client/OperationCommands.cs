@@ -1,5 +1,7 @@
 using Aiursoft.CommandFramework.Framework;
 using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Globalization;
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
@@ -107,6 +109,33 @@ public static partial class DmsCommandApp
             depth);
     }
 
+    private static int ParseUnixMode(ArgumentResult result, int fallback)
+    {
+        if (result.Tokens.Count == 0) return fallback;
+        var raw = result.Tokens[0].Value.Trim();
+        int parsed;
+        try
+        {
+            if (raw.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+                parsed = Convert.ToInt32(raw[2..], 8);
+            else if (raw.Length > 1 && raw[0] == '0')
+                parsed = Convert.ToInt32(raw, 8);
+            else
+                parsed = int.Parse(raw, CultureInfo.InvariantCulture);
+        }
+        catch (Exception)
+        {
+            result.AddError("Mode must be octal (for example 0700 or 0755) or decimal (0 to 511).");
+            return fallback;
+        }
+        if (parsed is < 0 or > 511)
+        {
+            result.AddError("Mode must contain only the nine rwx permission bits (0000 to 0777 / 0 to 511).");
+            return fallback;
+        }
+        return parsed;
+    }
+
     private static ActionCommand NewFilesystemMkdirCommand()
     {
         var path = new Option<string>("--path")
@@ -114,14 +143,48 @@ public static partial class DmsCommandApp
         var parents = new Option<bool>("--parents")
             { DefaultValueFactory = _ => false, Description = "Create missing parent directories." };
         var mode = new Option<int>("--mode")
-            { DefaultValueFactory = _ => 448, Description = "Directory mode in decimal (448 is octal 0700)." };
+        {
+            DefaultValueFactory = _ => 448,
+            CustomParser = r => ParseUnixMode(r, 448),
+            Description = "Directory mode in octal (0700, 0755) or decimal (448 = 0700)."
+        };
+        var uid = new Option<int?>("--uid")
+            { Description = "Optional numeric UID to apply to newly created directories only." };
+        var gid = new Option<int?>("--gid")
+            { Description = "Optional numeric GID to apply to newly created directories only." };
         return StandardCommand("mkdir",
             "Create a directory on a machine.",
             OperationsWorkflows.FilesystemMkdir,
-            p => new MakeDirectoryInput(p.GetValue(path)!, p.GetValue(parents), p.GetValue(mode)),
+            p => new MakeDirectoryInput(p.GetValue(path)!, p.GetValue(parents), p.GetValue(mode), p.GetValue(uid), p.GetValue(gid)),
             path,
             parents,
-            mode);
+            mode,
+            uid,
+            gid);
+    }
+
+    private static ActionCommand NewFilesystemPrepareVolumeDirCommand()
+    {
+        var path = new Option<string>("--path")
+            { Required = true, Description = "Subdirectory path under /swarm-vol/ (excluding boxfor* repos)." };
+        var mode = new Option<int>("--mode")
+        {
+            DefaultValueFactory = _ => 493,
+            CustomParser = r => ParseUnixMode(r, 493),
+            Description = "Directory mode in octal (default 0755) or decimal (493 = 0755)."
+        };
+        var uid = new Option<int?>("--uid")
+            { Description = "Optional numeric UID to apply to the prepared volume directory." };
+        var gid = new Option<int?>("--gid")
+            { Description = "Optional numeric GID to apply to the prepared volume directory." };
+        return StandardCommand("prepare-volume-dir",
+            "Idempotently create and set permissions/ownership on a service data directory under /swarm-vol/.",
+            OperationsWorkflows.FilesystemPrepareVolumeDir,
+            p => new PrepareVolumeDirectoryInput(p.GetValue(path)!, p.GetValue(mode), p.GetValue(uid), p.GetValue(gid)),
+            path,
+            mode,
+            uid,
+            gid);
     }
 
     private static ActionCommand NewFilesystemCpCommand()

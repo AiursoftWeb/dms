@@ -198,14 +198,97 @@ public static class FilesystemOperations
         }
         return await OperationOutput.ReportAsync(context, $"Found {rows.Count} matching entries after inspecting {inspected}.", rows, complete);
     }
+    private static List<string> MissingDirectories(string path, bool parents, string? stopAt = null)
+    {
+        List<string> missing = [];
+        var current = path;
+        while (!string.IsNullOrEmpty(current) && current != stopAt)
+        {
+            if (Directory.Exists(current) || File.Exists(current)) break;
+            missing.Add(current);
+            if (!parents) break;
+            var parent = Path.GetDirectoryName(current);
+            if (string.IsNullOrEmpty(parent) || parent == current) break;
+            current = parent;
+        }
+        missing.Reverse();
+        return missing;
+    }
+
+    private static string FormatOctalMode(int mode) => Convert.ToString(mode, 8).PadLeft(4, '0');
+
+    private static string? FormatOwnerSpec(int? uid, int? gid) => (uid, gid) switch
+    {
+        ({ } u, { } g) => $"{u.ToString(CultureInfo.InvariantCulture)}:{g.ToString(CultureInfo.InvariantCulture)}",
+        ({ } u, null) => u.ToString(CultureInfo.InvariantCulture),
+        (null, { } g) => $":{g.ToString(CultureInfo.InvariantCulture)}",
+        _ => null
+    };
+
     public static async Task<OperationResult> MkdirAsync(MachineWorkflowContext context, MakeDirectoryInput input, AgentEnvironment agent, CancellationToken token)
     {
         input.Validate(); SafeOperationPaths.Check(input.Path, missingParents: input.Parents);
         if (Directory.Exists(input.Path) || File.Exists(input.Path)) throw new IOException("The target already exists.");
         if (!input.Parents && !Directory.Exists(Path.GetDirectoryName(input.Path))) throw new DirectoryNotFoundException("The parent directory does not exist.");
-        List<string> args = ["--mode=" + Convert.ToString(input.Mode, 8)]; if (input.Parents) args.Add("--parents"); args.AddRange(["--", input.Path]);
+        var created = MissingDirectories(input.Path, input.Parents);
+        var mode = FormatOctalMode(input.Mode);
+        List<string> args = ["--mode=" + mode]; if (input.Parents) args.Add("--parents"); args.AddRange(["--", input.Path]);
         await OperationOutput.CommandAsync(context, agent, "mkdir", args, token, change: true);
-        return await OperationOutput.ReportAsync(context, "Directory created.", SafeOperationPaths.Metadata(input.Path));
+        var owner = FormatOwnerSpec(input.Uid, input.Gid);
+        foreach (var dir in created)
+        {
+            SafeOperationPaths.Check(dir);
+            await OperationOutput.CommandAsync(context, agent, "chmod", [mode, "--", dir], token, change: true);
+            if (owner != null)
+                await OperationOutput.CommandAsync(context, agent, "chown", ["--no-dereference", owner, "--", dir], token, change: true);
+        }
+        return await OperationOutput.ReportAsync(context, "Directory created.", new
+        {
+            Metadata = SafeOperationPaths.Metadata(input.Path),
+            CreatedDirectories = created,
+            Mode = mode,
+            input.Uid,
+            input.Gid
+        });
+    }
+
+    public static async Task<OperationResult> PrepareVolumeDirAsync(MachineWorkflowContext context, PrepareVolumeDirectoryInput input, AgentEnvironment agent, CancellationToken token)
+    {
+        input.Validate();
+        var host = OperationOutput.Host(agent);
+        var volumeRoot = host.FilePath(PrepareVolumeDirectoryInput.AllowedRoot);
+        if (!Directory.Exists(volumeRoot))
+            throw new DirectoryNotFoundException($"Volume root {PrepareVolumeDirectoryInput.AllowedRoot} does not exist.");
+        var physicalTarget = host.FilePath(input.Path);
+        SafeOperationPaths.Check(physicalTarget, missingParents: true);
+        if (File.Exists(physicalTarget))
+            throw new IOException("The target path exists as a file, not a directory.");
+
+        var created = MissingDirectories(physicalTarget, parents: true, stopAt: volumeRoot);
+        var mode = FormatOctalMode(input.Mode);
+        if (created.Count > 0)
+            await OperationOutput.CommandAsync(context, agent, "mkdir", ["--parents", "--mode=" + mode, "--", physicalTarget], token, change: true);
+
+        var targets = created.Count > 0 ? created : [physicalTarget];
+        var owner = FormatOwnerSpec(input.Uid, input.Gid);
+        foreach (var dir in targets)
+        {
+            SafeOperationPaths.Check(dir);
+            await OperationOutput.CommandAsync(context, agent, "chmod", [mode, "--", dir], token, change: true);
+            if (owner != null)
+                await OperationOutput.CommandAsync(context, agent, "chown", ["--no-dereference", owner, "--", dir], token, change: true);
+        }
+
+        return await OperationOutput.ReportAsync(context,
+            created.Count > 0 ? "Volume directory created and permissions applied." : "Existing volume directory permissions ensured.",
+            new
+            {
+                Metadata = SafeOperationPaths.Metadata(physicalTarget),
+                CreatedCount = created.Count,
+                Mode = mode,
+                input.Uid,
+                input.Gid
+            });
     }
     public static Task<OperationResult> CpAsync(MachineWorkflowContext context, CopyPathInput input, AgentEnvironment agent, CancellationToken token) => CopyAsync(context, input, agent, false, token);
     public static Task<OperationResult> MvAsync(MachineWorkflowContext context, CopyPathInput input, AgentEnvironment agent, CancellationToken token) => CopyAsync(context, input, agent, true, token);

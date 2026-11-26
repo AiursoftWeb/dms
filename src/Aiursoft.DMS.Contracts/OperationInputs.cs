@@ -102,13 +102,38 @@ public sealed record FindFilesInput(
     }
 }
 
-public sealed record MakeDirectoryInput(string Path, bool Parents = false, int Mode = 448) : IOperationInput
+public sealed record MakeDirectoryInput(string Path, bool Parents = false, int Mode = 448, int? Uid = null, int? Gid = null) : IOperationInput
 {
     public void Validate()
     {
         OperationValidation.Path(Path, false);
         if (Mode is < 0 or > 511)
             throw new ArgumentException("Mode must contain only the nine rwx permission bits (default 448 = 0700).");
+        if (Uid is < 0 || Gid is < 0)
+            throw new ArgumentException("UID and GID must be non-negative integers.");
+    }
+}
+
+public sealed record PrepareVolumeDirectoryInput(string Path, int Mode = 493, int? Uid = null, int? Gid = null) : IOperationInput
+{
+    public const string AllowedRoot = "/swarm-vol";
+
+    public void Validate()
+    {
+        OperationValidation.Path(Path, false);
+        if (Mode is < 0 or > 511)
+            throw new ArgumentException("Mode must contain only the nine rwx permission bits (default 493 = 0755).");
+        if (Uid is < 0 || Gid is < 0)
+            throw new ArgumentException("UID and GID must be non-negative integers.");
+        if (!Path.StartsWith(AllowedRoot + "/", StringComparison.Ordinal))
+            throw new ArgumentException($"Path must be a subdirectory under {AllowedRoot}/.");
+        var relative = Path[(AllowedRoot.Length + 1)..];
+        var segments = relative.Split('/');
+        if (segments.Length == 0 || segments.Any(s => string.IsNullOrEmpty(s) || s is "." or ".."))
+            throw new ArgumentException($"Path must be a normalized subdirectory under {AllowedRoot}/.");
+        var topSegment = segments[0];
+        if (topSegment.StartsWith("boxfor", StringComparison.OrdinalIgnoreCase) || topSegment.StartsWith('.'))
+            throw new ArgumentException("Box repository directories and hidden top-level entries under /swarm-vol cannot be modified by prepare-volume-dir.");
     }
 }
 

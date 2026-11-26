@@ -107,6 +107,11 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 FilesystemOperations.MkdirAsync,
                 agent));
+        Register(OperationsWorkflows.FilesystemPrepareVolumeDir,
+            (input, agent) => new OperationWorkflow<PrepareVolumeDirectoryInput>(OperationsWorkflows.FilesystemPrepareVolumeDir,
+                input,
+                FilesystemOperations.PrepareVolumeDirAsync,
+                agent));
         Register(OperationsWorkflows.FilesystemCp,
             (input, agent) => new OperationWorkflow<CopyPathInput>(OperationsWorkflows.FilesystemCp,
                 input,

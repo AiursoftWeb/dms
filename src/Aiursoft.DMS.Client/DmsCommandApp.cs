@@ -83,6 +83,7 @@ public static partial class DmsCommandApp
                 NewFilesystemDownloadCommand(asRoot: true),
                 NewFilesystemFindCommand(),
                 NewFilesystemMkdirCommand(),
+                NewFilesystemPrepareVolumeDirCommand(),
                 NewFilesystemCpCommand(),
                 NewFilesystemMvCommand(),
                 NewFilesystemExportCommand(),
