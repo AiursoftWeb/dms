@@ -77,7 +77,8 @@ public class ScheduledWorkflowIntegrationTests : TestBase
         public override string Name => "test.offline-probe";
         public override async Task<string> ExecuteAsync(MachineWorkflowContext context, CancellationToken token)
         {
-            await context.TraceAsync("Scheduled inspection continues while Controller authentication is unavailable.");
+            for (var i = 0; i < 130; i++)
+                await context.TraceAsync($"offline report {i}", "data");
             var status = await context.CallAsync(MachineWorkflows.AgentStatus, new EmptyInput(), token);
             return System.Text.Json.JsonSerializer.Serialize(status);
         }
@@ -119,6 +120,11 @@ public class ScheduledWorkflowIntegrationTests : TestBase
             Assert.HasCount(2, restored);
             Assert.IsTrue(restored.All(r => r.Origin == WorkflowOrigin.Automatic && r.LockboxId == null));
             Assert.AreEqual(WorkflowTrigger.Cron, restored.Single(r => r.Id == task.Id).Trigger);
+            while (journal.Snapshot().Single(t => t.Id == task.Id).Pending.Count != 0) await Task.Delay(20, stop.Token);
+            Assert.AreEqual(task.Sequence, restored.Single(r => r.Id == task.Id).LastSequence);
+            var chunks = await Server.Services.GetRequiredService<TraceStore>().ReadPendingDataAsync(task.Id, 131, stop.Token);
+            CollectionAssert.AreEqual(Enumerable.Range(0, 130).Select(i => $"offline report {i}").ToArray(),
+                chunks.OrderBy(e => e.EventId, StringComparer.Ordinal).Select(e => e.Message).ToArray());
         }
         finally
         {
