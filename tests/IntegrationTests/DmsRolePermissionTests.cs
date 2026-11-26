@@ -65,11 +65,15 @@ public class DmsRolePermissionTests : TestBase
             DecisionState decision = DecisionState.Pending, string definition = WorkflowNames.AgentStatus) => new()
         {
             RequesterId = owner, ClientRequestId = Guid.NewGuid(), Definition = definition, Risk = risk,
-            CreatedAt = now.AddSeconds(index), Decision = decision, Parameters = System.Text.Json.JsonSerializer.Serialize(new OperationRequest())
+            Version = MachineWorkflows.AgentStatus.Version, CreatedAt = now.AddSeconds(index), Decision = decision,
+            Parameters = System.Text.Json.JsonSerializer.Serialize(new OperationRequest())
         };
         var eligible = Enumerable.Range(0, 51).Select(index => Box(requester.User, index)).ToArray();
         var own = Box(viewer.User, 100);
-        var ownIndependent = Box(viewer.User, 101, definition: MachineWorkflows.BoxGetSecretRaw.Name);
+        var ownIndependent = Box(viewer.User, 101, MachineWorkflows.BoxGetSecretRaw.Risk,
+            definition: MachineWorkflows.BoxGetSecretRaw.Name);
+        ownIndependent.Version = MachineWorkflows.BoxGetSecretRaw.Version;
+        await SetRoleAsync(viewer.Role, DmsPermissions.Approve(ownIndependent.Risk), true);
         using (var scope = Server!.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
@@ -116,6 +120,65 @@ public class DmsRolePermissionTests : TestBase
         Assert.AreEqual(false, updated.CanApprove);
         Assert.AreEqual("Reviewed", updated.Details!.DecisionReason);
         Assert.IsFalse((await ReadAsync<LockboxReviewPage>(review)).Entries.Any(entry => entry.LockboxId.Value == own.Id));
+    }
+
+    [TestMethod]
+    public async Task StaleRequestsAreExcludedFromQueueAndUpdatesButRemainReadable()
+    {
+        var definition = MachineWorkflows.AgentStatus;
+        var viewer = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations,
+            DmsPermissions.Approve(definition.Risk), DmsPermissions.Approve(RiskLevel.High));
+        var requester = await ArrangeAsync();
+        // Other integration fixtures can leave rows dated ahead of the clock in the shared test database.
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var latest = await db.Lockboxes.MaxAsync(box => (DateTime?)box.CreatedAt);
+        var now = (latest ?? DateTime.UtcNow).AddSeconds(1);
+        LockboxRequest Box(string name, RiskLevel risk, string version, int offset) => new()
+        {
+            RequesterId = requester.User, ClientRequestId = Guid.NewGuid(), Definition = name,
+            Risk = risk, Version = version, CreatedAt = now.AddSeconds(offset), Decision = DecisionState.Pending,
+            Parameters = System.Text.Json.JsonSerializer.Serialize(new OperationRequest())
+        };
+        var current = Box(definition.Name, definition.Risk, definition.Version, 0);
+        LockboxRequest[] stale =
+        [
+            Box(definition.Name, definition.Risk, "superseded", 1),
+            Box(definition.Name, RiskLevel.High, definition.Version, 2),
+            Box("machine.retired-example", definition.Risk, definition.Version, 3),
+            Box(MachineWorkflows.Process.Name, definition.Risk, MachineWorkflows.Process.Version, 4)
+        ];
+        db.Lockboxes.Add(current);
+        db.Lockboxes.AddRange(stale);
+        await db.SaveChangesAsync();
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", viewer.Key);
+        const string review = "/api/v1/dms/lockboxes/review";
+        async Task<T> ReadAsync<T>(string path)
+        {
+            using var response = await Http.GetAsync(path);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            return JObject.Parse(await response.Content.ReadAsStringAsync())["Data"]!.ToObject<T>()!;
+        }
+        var queue = await ReadAsync<LockboxReviewPage>(review);
+        var staleIds = stale.Select(box => box.Id).ToHashSet();
+        Assert.IsFalse(queue.Entries.Any(entry => staleIds.Contains(entry.LockboxId.Value)));
+        Assert.IsTrue(queue.Entries.Any(entry => entry.LockboxId.Value == current.Id));
+        var from = Uri.EscapeDataString(now.AddTicks(-1).ToString("O", System.Globalization.CultureInfo.InvariantCulture));
+        var update = await ReadAsync<LockboxReviewUpdate>($"{review}/updates?after={from}");
+        Assert.AreEqual(now, update.LatestPendingAt);
+        foreach (var box in stale)
+        {
+            var path = $"/api/v1/dms/lockboxes/lb/{box.Id}";
+            var status = await ReadAsync<LockboxStatus>(path + "/status");
+            Assert.AreEqual(DecisionState.Pending, status.Decision);
+            Assert.AreEqual(false, status.CanApprove);
+            Assert.IsTrue(status.DefinitionChanged);
+            using var rejected = await Http.PostAsJsonAsync(path + "/decision", new { Approve = true, Reason = "Test stale approval" });
+            Assert.AreEqual(HttpStatusCode.Conflict, rejected.StatusCode);
+        }
+        db.Lockboxes.Remove(current);
+        db.Lockboxes.RemoveRange(stale);
+        await db.SaveChangesAsync();
     }
 
     [TestMethod]

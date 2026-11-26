@@ -23,6 +23,7 @@ public sealed partial class MainActivity : AppCompatActivity
     private readonly List<View> _buttons = [];
     private const int NotificationPermissionRequest = 1;
     private bool _busy;
+    private readonly DeferredReviewNavigation _notificationNavigation = new();
 
     protected override void OnCreate(Bundle? savedInstanceState)
     {
@@ -42,7 +43,9 @@ public sealed partial class MainActivity : AppCompatActivity
     protected override void OnNewIntent(Intent? intent)
     {
         base.OnNewIntent(intent);
-        if (intent?.Action == ReviewNotificationService.OpenQueue && _client is not null) OpenQueue();
+        if (intent?.Action != ReviewNotificationService.OpenQueue || _client is null) return;
+        _notificationNavigation.Request();
+        OpenQueueFromNotification();
     }
 
     private void ToggleNotifications()
@@ -134,6 +137,11 @@ public sealed partial class MainActivity : AppCompatActivity
     }
 
     private void OpenQueue() => Run(token => LoadQueueAsync(0, token));
+
+    private void OpenQueueFromNotification()
+    {
+        if (_notificationNavigation.TryConsume(_busy, _lifetime.Token) && _client is not null) OpenQueue();
+    }
 
     private async Task LoadQueueAsync(int page, CancellationToken token, string notice = "")
     {
@@ -261,7 +269,10 @@ public sealed partial class MainActivity : AppCompatActivity
         if (fromHistory || status.Decision != DecisionState.Pending) return;
         if (status.CanApprove != true)
         {
-            Section("当前不能审批此请求");
+            if (status.DefinitionChanged)
+                Section("工作流定义已变更", "此请求不能批准，请让申请人重新提交。");
+            else
+                Section("当前不能审批此请求");
             return;
         }
         var decision = Section("处理请求", "请核对操作和目标，再提交决定。");
@@ -329,7 +340,11 @@ public sealed partial class MainActivity : AppCompatActivity
         finally
         {
             _busy = false;
-            if (!token.IsCancellationRequested) SetButtons(true);
+            if (!token.IsCancellationRequested)
+            {
+                SetButtons(true);
+                OpenQueueFromNotification();
+            }
         }
     }
 

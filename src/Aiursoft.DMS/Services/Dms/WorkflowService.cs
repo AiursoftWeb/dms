@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -281,9 +282,8 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
 
     private async Task ApproveAsync(LockboxRequest item, string? user, string reason, Guid? enrollmentId = null)
     {
-        var definition = catalog.Find(item.Definition);
-        if (definition is not { PublicEntry: true } || definition.Risk != item.Risk || definition.Version != item.Version)
-            throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
+        var definition = catalog.FindApprovable(item.Definition, item.Risk, item.Version)
+            ?? throw new DmsException(409, "The requested workflow definition has changed; submit a new Lockbox request.");
         var request = JsonSerializer.Deserialize<OperationRequest>(item.Parameters)!;
         LegacyClusterWorkflowInput.Normalize(request, item.Definition);
         var input = request.Input;
@@ -411,6 +411,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var query = db.Lockboxes.AsNoTracking().Where(box => box.Decision == DecisionState.Pending && risks.Contains(box.Risk) &&
             (box.RequesterId != user || (selfApproval && box.Definition != rawSecret &&
                 !box.Definition.EndsWith(BoxSecretTransfers.IndependentApprovalSuffix))));
+        query = query.Where(CurrentApprovalDefinitions(risks));
         if (releases.ReadAvailable() is { } current)
         {
             var upgradeName = MachineWorkflows.AgentUpgrade.Name;
@@ -421,6 +422,27 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             if (stale.Length > 0) query = query.Where(box => !stale.Contains(box.Id));
         }
         return query;
+    }
+
+    private Expression<Func<LockboxRequest, bool>> CurrentApprovalDefinitions(RiskLevel[] risks)
+    {
+        var box = Expression.Parameter(typeof(LockboxRequest), "box");
+        Expression matches = Expression.Constant(false);
+        var groups = catalog.PublicDefinitions().Where(definition => risks.Contains(definition.Risk))
+            .GroupBy(definition => (definition.Risk, definition.Version));
+        foreach (var group in groups)
+        {
+            var (risk, version) = group.Key;
+            var names = group.Select(definition => definition.Name).ToArray();
+            // Group the exact catalog tuples into SQL predicates before paging or selecting a notification cursor.
+            Expression<Func<LockboxRequest, bool>> current = db.Database.ProviderName == "Pomelo.EntityFrameworkCore.MySql"
+                ? request => request.Risk == risk && EF.Functions.Collate(request.Version, "utf8mb4_bin") == version &&
+                    request.Version.Length == version.Length && names.Contains(EF.Functions.Collate(request.Definition, "utf8mb4_bin")) &&
+                    request.Definition.Length == request.Definition.TrimEnd().Length
+                : request => request.Risk == risk && request.Version == version && names.Contains(request.Definition);
+            matches = Expression.OrElse(matches, Expression.Invoke(current, box));
+        }
+        return Expression.Lambda<Func<LockboxRequest, bool>>(matches, box);
     }
 
     internal static bool RequiresAgentUpgradeResubmission(LockboxRequest box, IReadOnlyList<AgentRelease>? current) =>
@@ -493,7 +515,9 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             ?? throw new DmsException(404, "Lockbox not found.");
         var ownRequest = item.RequesterId == user;
         var principal = ownRequest ? await access.PrincipalAsync(user) : await access.RequireViewAsync(user);
-        var canApprove = item.Decision == DecisionState.Pending &&
+        var definitionChanged = item.Decision == DecisionState.Pending &&
+            catalog.FindApprovable(item.Definition, item.Risk, item.Version) == null;
+        var canApprove = item.Decision == DecisionState.Pending && !definitionChanged &&
             principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations) &&
             DmsPermissions.CanDecide(principal, item.Risk, ownRequest) &&
             !(ownRequest && BoxSecretTransfers.RequiresIndependentApproval(item.Definition)) &&
@@ -510,6 +534,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             Definition = includeDefinition ? item.Definition : null,
             Details = item.Details(),
             CanApprove = canApprove,
+            DefinitionChanged = definitionChanged,
             MachineNames = names,
             EquivalentCommand = LockboxSnapshot.ReadStatusCommand(item)
         };
