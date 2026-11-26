@@ -1,11 +1,16 @@
 using Aiursoft.DMS.Authorization;
 using System.Net;
 using System.Net.Http.Headers;
+using Aiursoft.AiurProtocol;
+using Aiursoft.AiurProtocol.Exceptions;
+using Aiursoft.AiurProtocol.Services;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
+using Aiursoft.DMS.SDK;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
 
@@ -181,5 +186,23 @@ public class WorkflowInvestigationTests : TestBase
         });
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync("/api/v1/dms/lockbox-history?Approver=" + Uri.EscapeDataString(username))).StatusCode);
         Assert.AreEqual(HttpStatusCode.BadRequest, (await Http.GetAsync("/api/v1/dms/workflow-history?Machine=" + Uri.EscapeDataString(sharedMachine))).StatusCode);
+    }
+
+    [TestMethod]
+    public async Task SdkHistoryClientSerializesFiltersAndSurfacesArchiveAvailability()
+    {
+        var setup = await ArrangeAsync();
+        var username = await DatabaseAsync(async db => await db.Users.Where(u => u.Id == setup.User).Select(u => u.UserName).SingleAsync()) ?? string.Empty;
+        using var provider = new ServiceCollection().AddLogging().AddAiurProtocolClient().BuildServiceProvider();
+        var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), Http.BaseAddress!.ToString(), setup.Key);
+        var unavailable = await Assert.ThrowsAsync<AiurUnexpectedServerResponseException>(
+            () => client.LockboxHistoryAsync(new HistoryQuery { Requester = username, LockboxId = new LockboxId(Guid.NewGuid()) }));
+        StringAssert.Contains(unavailable.Response.Message, "durable backlog");
+        var unknown = await Assert.ThrowsAsync<AiurUnexpectedServerResponseException>(
+            () => client.WorkflowHistoryAsync(new HistoryQuery { Machine = "missing-machine" }));
+        StringAssert.Contains(unknown.Response.Message, "No machine named");
+        var invalid = await Assert.ThrowsAsync<AiurUnexpectedServerResponseException>(
+            () => client.WorkflowHistoryAsync(new HistoryQuery { Page = -1 }));
+        StringAssert.Contains(invalid.Response.Message, "valid time range");
     }
 }
