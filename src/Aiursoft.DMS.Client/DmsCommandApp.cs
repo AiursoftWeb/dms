@@ -273,7 +273,7 @@ public static partial class DmsCommandApp
         ]))
         .WithFeature(new Group("lockbox", "View, approve, reject, or withdraw Lockbox requests.",
         [
-            new ActionCommand("history", "List Lockbox lifecycle events: submissions, approvals, denials, and withdrawals.", "lockbox-history"),
+            new ActionCommand("history", "List Lockbox lifecycle events: submissions, approvals, denials, withdrawals, and expirations.", "lockbox-history"),
             new ActionCommand("list", "List Lockbox requests, optionally filtered by decision.", "lockboxes"),
             new ActionCommand("status",
                 "Show the frozen workflow, target machines, inputs, requester, decision, and eligible approvers.",

@@ -53,7 +53,7 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         {
             From = from, Until = until, Page = query.Page,
             Kinds = lockboxScope
-                ? [WorkflowAuditKind.LockboxSubmitted, WorkflowAuditKind.LockboxApproved, WorkflowAuditKind.LockboxDenied, WorkflowAuditKind.LockboxWithdrawn]
+                ? [WorkflowAuditKind.LockboxSubmitted, WorkflowAuditKind.LockboxApproved, WorkflowAuditKind.LockboxDenied, WorkflowAuditKind.LockboxWithdrawn, WorkflowAuditKind.LockboxExpired]
                 : [WorkflowAuditKind.WorkflowCreated, WorkflowAuditKind.WorkflowStateChanged],
             RequesterId = requester, ApproverId = approver, MachineId = machine,
             Definition = query.Definition, Risk = query.Risk, Decision = query.Decision,
