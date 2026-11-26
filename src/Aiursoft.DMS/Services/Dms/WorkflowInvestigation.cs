@@ -120,7 +120,7 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         if (Guid.TryParse(value, out var id)) return id.ToString();
         var name = value.Trim();
         var matches = await db.Users.AsNoTracking().NotCacheable()
-            .Where(user => user.UserName!.ToLower() == name.ToLower() || user.DisplayName!.ToLower() == name.ToLower())
+            .Where(user => user.UserName.ToLower() == name.ToLower() || user.DisplayName.ToLower() == name.ToLower())
             .Select(user => user.Id).Distinct().ToListAsync();
         if (matches.Count == 0) throw new DmsException(400, $"No user matches '{name}'. Pass a username, display name, or user ID.");
         if (matches.Count > 1) throw new DmsException(400, $"Multiple users match '{name}'. Pass the user ID instead.");
