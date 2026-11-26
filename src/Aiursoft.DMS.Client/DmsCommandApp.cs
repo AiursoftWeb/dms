@@ -199,9 +199,11 @@ public static partial class DmsCommandApp
                 [
                     NewSwarmServiceListCommand(),
                     NewSwarmServiceInspectCommand(),
+                    NewSwarmServiceEnvSummaryCommand(),
                     NewSwarmServicePsCommand(),
                     NewSwarmServiceLogsCommand(),
                     NewSwarmServiceRolloutStatusCommand(),
+                    NewSwarmServiceRollingRestartCommand(),
                     NewSwarmServiceStopCommand(),
                     NewSwarmServiceStartCommand(),
                     NewSwarmServiceUpdateCommand(),

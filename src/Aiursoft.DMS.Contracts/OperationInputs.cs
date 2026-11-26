@@ -282,6 +282,16 @@ public sealed record SwarmLogsInput(string Service, int Lines = 100, DateTimeOff
     }
 }
 
+public sealed record SwarmRollingRestartInput(string Service, bool AllowDowntime = false, int TimeoutSeconds = 180) : IOperationInput
+{
+    public void Validate()
+    {
+        OperationValidation.Name(Service);
+        if (TimeoutSeconds is < 10 or > 600)
+            throw new ArgumentException("Convergence timeout must be 10 to 600 seconds.");
+    }
+}
+
 public sealed record SwarmChangeInput(
     string Service,
     long ExpectedVersion,

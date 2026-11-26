@@ -308,10 +308,20 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 SwarmOperations.ServiceLogsAsync,
                 agent));
+        Register(OperationsWorkflows.SwarmServiceEnvSummary,
+            (input, agent) => new OperationWorkflow<SwarmServiceInput>(OperationsWorkflows.SwarmServiceEnvSummary,
+                input,
+                SwarmOperations.ServiceEnvSummaryAsync,
+                agent));
         Register(OperationsWorkflows.SwarmServiceUpdateStatus,
             (input, agent) => new OperationWorkflow<SwarmServiceInput>(OperationsWorkflows.SwarmServiceUpdateStatus,
                 input,
                 SwarmOperations.ServiceUpdateStatusAsync,
+                agent));
+        Register(OperationsWorkflows.SwarmServiceRollingRestart,
+            (input, agent) => new OperationWorkflow<SwarmRollingRestartInput>(OperationsWorkflows.SwarmServiceRollingRestart,
+                input,
+                SwarmOperations.ServiceRollingRestartAsync,
                 agent));
         Register(OperationsWorkflows.SwarmServiceStop,
             (input, agent) => new OperationWorkflow<SwarmChangeInput>(OperationsWorkflows.SwarmServiceStop,

@@ -691,6 +691,16 @@ public static partial class DmsCommandApp
             since);
     }
 
+    private static ActionCommand NewSwarmServiceEnvSummaryCommand()
+    {
+        var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
+        return StandardCommand("env-summary",
+            "Show a Swarm service's spec and running task environment variables with sensitive values redacted.",
+            OperationsWorkflows.SwarmServiceEnvSummary,
+            p => new SwarmServiceInput(p.GetValue(service)!),
+            service);
+    }
+
     private static ActionCommand NewSwarmServiceRolloutStatusCommand()
     {
         var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
@@ -701,6 +711,28 @@ public static partial class DmsCommandApp
             service);
         command.CommandAliases = ["update-status"];
         return command;
+    }
+
+    private static ActionCommand NewSwarmServiceRollingRestartCommand()
+    {
+        var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
+        var allowDowntime = new Option<bool>("--allow-downtime")
+        {
+            DefaultValueFactory = _ => false,
+            Description = "Allow rolling restart when UpdateConfig.Order is stop-first (causes brief downtime)."
+        };
+        var timeoutSeconds = new Option<int>("--timeout-seconds")
+        {
+            DefaultValueFactory = _ => 180,
+            Description = "Seconds to wait for replacement tasks to converge (10 to 600)."
+        };
+        return StandardCommand("rolling-restart",
+            "Force a same-image rolling restart of a replicated Swarm service and wait for convergence.",
+            OperationsWorkflows.SwarmServiceRollingRestart,
+            p => new SwarmRollingRestartInput(p.GetValue(service)!, p.GetValue(allowDowntime), p.GetValue(timeoutSeconds)),
+            service,
+            allowDowntime,
+            timeoutSeconds);
     }
 
     private static ActionCommand NewSwarmServiceStopCommand()
