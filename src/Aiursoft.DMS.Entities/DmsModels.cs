@@ -36,6 +36,8 @@ public class LockboxRequest
     public string TargetMachines { get; set; } = "[]";
     [MaxLength(2000)] public string Reason { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    // New requests live for 4 hours; direct entity fixtures keep the same default lifetime.
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.Add(LockboxExpiry.RequestLifetime);
     public DecisionState Decision { get; set; }
     [MaxLength(450)] public string? ApproverId { get; set; }
     public bool Automatic { get; set; }

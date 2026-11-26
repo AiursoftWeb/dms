@@ -88,10 +88,12 @@ public sealed class EnrollmentService(TemplateDbContext db, AccessService access
 
     private async Task<EnrollmentStatus> StatusCoreAsync(AgentEnrollment item)
     {
-        var state = item.MachineId != null ? "Joined" : item.Lockbox.Decision == DecisionState.Denied ? "Denied"
-            : item.Lockbox.Decision == DecisionState.Withdrawn ? "Withdrawn"
+        var decision = LockboxExpiry.EffectiveDecision(item.Lockbox);
+        var state = item.MachineId != null ? "Joined" : decision == DecisionState.Denied ? "Denied"
+            : decision == DecisionState.Withdrawn ? "Withdrawn"
+            : decision == DecisionState.Expired ? "Expired"
             : item.JoinKey.Revoked || item.JoinKey.ExpiresAt <= DateTime.UtcNow ? "Unavailable"
-            : item.Lockbox.Decision == DecisionState.Pending ? "PendingApproval" : "Registering";
+            : decision == DecisionState.Pending ? "PendingApproval" : "Registering";
         if (item.MachineId == null && item.Lockbox.WorkflowId is { } operation)
         {
             var run = await db.WorkflowRuns.AsNoTracking().NotCacheable().SingleAsync(r => r.Id == operation);

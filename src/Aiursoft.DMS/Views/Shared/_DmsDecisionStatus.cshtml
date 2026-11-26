@@ -6,6 +6,7 @@
         DecisionState.Pending => (@Localizer["Awaiting approval"], "warning"),
         DecisionState.Approved => (@Localizer["Approved"], "success"),
         DecisionState.Denied => (@Localizer["Denied"], "danger"),
+        DecisionState.Expired => (@Localizer["Expired"], "secondary"),
         _ => (@Localizer["Withdrawn"], "secondary")
     };
 }

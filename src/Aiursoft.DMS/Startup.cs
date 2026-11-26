@@ -84,6 +84,7 @@ public class Startup : IWebStartup
         services.AddSingleton<Services.Dms.ClusterWorkflowRegistry>();
         services.AddSingleton<Services.Dms.ClusterWorkflowRuntime>();
         services.AddHostedService<Services.Dms.WorkflowScheduler>();
+        services.AddHostedService<Services.Dms.LockboxExpiryService>();
         services.AddHostedService<Services.Dms.TraceFlushService>();
 
         // Services

@@ -30,6 +30,7 @@ public abstract partial class TemplateDbContext
                         DecisionState.Approved => WorkflowAuditKind.LockboxApproved,
                         DecisionState.Denied => WorkflowAuditKind.LockboxDenied,
                         DecisionState.Withdrawn => WorkflowAuditKind.LockboxWithdrawn,
+                        DecisionState.Expired => WorkflowAuditKind.LockboxExpired,
                         _ => throw new InvalidOperationException("Unknown Lockbox decision.")
                     },
                         box.DecidedAt ?? recorded, null, null).ConfigureAwait(false);
@@ -62,7 +63,7 @@ public abstract partial class TemplateDbContext
                     run == null ? null : run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run?.MachineId, machine?.InstallationId, run?.Definition ?? box!.Definition, run?.Version ?? box!.Version,
                     launch?.RequesterId ?? box?.RequesterId, submitted ? null : launch?.ApproverId ?? box?.ApproverId,
-                    submitted || box?.Decision == DecisionState.Withdrawn ? null : launch?.Automatic ?? box?.Automatic,
+                    submitted || box?.Decision is DecisionState.Withdrawn or DecisionState.Expired ? null : launch?.Automatic ?? box?.Automatic,
                     launch?.Risk ?? box?.Risk, launch?.Definition ?? box?.Definition, launch?.Version ?? box?.Version,
                     submitted ? DecisionState.Pending : launch != null ? DecisionState.Approved : box?.Decision,
                     submitted ? null : launch?.DecidedAt ?? box?.DecidedAt, previous, state,
