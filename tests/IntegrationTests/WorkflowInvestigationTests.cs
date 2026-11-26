@@ -17,6 +17,15 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class WorkflowInvestigationTests : TestBase
 {
+    [TestMethod]
+    public async Task HistoryRejectsAnUntilWhoseDefaultFromUnderflows()
+    {
+        var setup = await ArrangeAsync();
+        Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", setup.Key);
+        var response = await Http.GetAsync("/api/v1/dms/workflow-history?Until=0001-01-02T00:00:00Z");
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private Task<T> DatabaseAsync<T>(Func<TemplateDbContext, Task<T>> action) =>
         Server!.Services.GetRequiredService<ControllerGate>().RunAsync(async () =>
         {

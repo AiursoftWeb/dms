@@ -274,6 +274,8 @@ ID), `--machine` (name or ID), `--definition`, `--state`/`--decision`, `--risk`,
 window that defaults to the last 7 days. See [workflow audit](workflow-audit.md)
 for the full filter reference and the permission-gated raw query.
 
+Lockbox machine filters match the frozen target machine list, including requests for multiple machines and requests that were never approved. New audit facts preserve TargetMachineIds. Older audit rows use the retained Lockbox snapshot to recover their targets. Historical rows whose target metadata and request snapshot have both been removed cannot be associated with a machine. History tables sanitize terminal control characters in names, and invalid end dates are rejected before calculating the default start date.
+
 Then inspect the actual execution tree:
 
 ```sh

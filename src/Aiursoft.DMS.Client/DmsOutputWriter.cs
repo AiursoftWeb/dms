@@ -89,7 +89,7 @@ public static class DmsOutputWriter
         }
         output.WriteLine($"Archive window: {page["Echo"]?["From"]} to {page["Echo"]?["Until"]} (exclusive); page {page["Echo"]?["Page"]}; more: {page["HasNextPage"]}.");
         output.WriteLine("Archived events; recent changes may still be pending delivery. State is the event state, not a current snapshot.");
-        string Name(JObject row, string idField, string nameField) => Cell(row[nameField] is { Type: not JTokenType.Null } ? row[nameField] : row[idField]);
+        string Name(JObject row, string idField, string nameField) => TerminalText(Cell(row[nameField] is { Type: not JTokenType.Null } ? row[nameField] : row[idField]));
         var rows = flat.OfType<JObject>().Select(e => new[]
         {
             e["RecordedAt"]!.Value<DateTime>().ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),

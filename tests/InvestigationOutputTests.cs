@@ -10,6 +10,19 @@ namespace Aiursoft.DMS.Tests;
 public class InvestigationOutputTests
 {
     [TestMethod]
+    public void HistoryTableMustNeutralizeControlCharactersInDisplayNames()
+    {
+        var at = DateTime.UtcNow;
+        var fact = new WorkflowAuditEntry(WorkflowAuditKind.LockboxSubmitted, at, at, null, null, null, Guid.NewGuid(),
+            null, null, null, "machine.frps.status", "1", "engineer", null, null, RiskLevel.Low,
+            "machine.frps.status", "1", DecisionState.Pending, null, null, null);
+        var page = new HistoryPage([new HistoryRow(Guid.NewGuid(), 1, fact, "Alice\u001b[2J", null, null)], new HistoryQuery(), false);
+        using var output = new StringWriter();
+        DmsOutputWriter.Write(output, new DmsResponse { Data = page }, OutputFormat.Table, false, false, history: true, lockboxHistory: true);
+        Assert.DoesNotContain("\u001b", output.ToString(), "Untrusted display names must not emit terminal escape sequences.");
+    }
+
+    [TestMethod]
     public void InvestigationFormatsRetainIdsHistoricalStatesAndFlatCsvFacts()
     {
         var workflow = Guid.NewGuid(); var at = DateTime.UtcNow;

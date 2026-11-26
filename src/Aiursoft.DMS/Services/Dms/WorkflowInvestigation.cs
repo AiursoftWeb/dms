@@ -2,6 +2,7 @@ using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Aiursoft.DMS.Services.Dms;
 
@@ -33,6 +34,8 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         // History is open to every authenticated human key: facts exclude parameters,
         // results, free-text reasons and credentials. Only the query itself is audited.
         var until = query.Until?.ToUniversalTime() ?? DateTimeOffset.UtcNow;
+        if (until < DateTimeOffset.UnixEpoch || until.Year > 2261)
+            throw new DmsException(400, "Choose a valid time range of at most 31 days, page, and history filters.");
         var from = query.From?.ToUniversalTime() ?? until.AddDays(-7);
         if (from < DateTimeOffset.UnixEpoch || until.Year > 2261 || from >= until || until - from > TimeSpan.FromDays(31) || query.Page is < 0 or > 10000 ||
             (query.Risk != null && !Enum.IsDefined(query.Risk.Value)) ||
@@ -61,7 +64,7 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         access.Audit(actor, lockboxScope ? "lockbox.history-query" : "workflow.history-query",
             detail: $"From={from:O}; Until={until:O}; Page={query.Page}");
         await db.SaveChangesAsync();
-        return await QueryArchiveAsync(auditQuery, query);
+        return await QueryArchiveAsync(auditQuery, query, lockboxScope);
     }
 
     private async Task<WorkflowAuditPage> QueryArchiveAsync(WorkflowAuditQuery query)
@@ -80,13 +83,20 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         }
     }
 
-    private async Task<HistoryPage> QueryArchiveAsync(WorkflowAuditQuery query, HistoryQuery echo)
+    private async Task<HistoryPage> QueryArchiveAsync(WorkflowAuditQuery query, HistoryQuery echo, bool lockboxScope)
     {
         if (!database.Enabled) throw new DmsException(503, "ClickHouse is not configured. Investigation events remain in the durable backlog.");
         try
         {
             await database.InitializeAuditAsync();
-            var rows = await database.ReadAuditAsync(query);
+            // Legacy audit facts have no target array. The frozen request snapshot still
+            // supplies targets for pending, rejected and approved historical requests.
+            var legacyTargets = lockboxScope && query.MachineId is { } machineId
+                ? await db.Lockboxes.AsNoTracking().NotCacheable()
+                    .Where(box => box.TargetMachines.Contains(machineId.ToString()))
+                    .Select(box => box.Id).ToListAsync()
+                : null;
+            var rows = await database.ReadAuditAsync(query, legacyTargets);
             var page = rows.Take(50).ToList();
             return new HistoryPage(await EnrichAsync(page), echo, rows.Count > 50);
         }
@@ -99,9 +109,18 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
 
     private async Task<IReadOnlyList<HistoryRow>> EnrichAsync(List<WorkflowAuditRow> rows)
     {
+        var legacyIds = rows.Where(row => row.Fact.TargetMachineIds is not { Count: > 0 } && row.Fact.LockboxId.HasValue)
+            .Select(row => row.Fact.LockboxId!.Value.Value).Distinct().ToArray();
+        var snapshots = await db.Lockboxes.AsNoTracking().NotCacheable().Where(box => legacyIds.Contains(box.Id))
+            .Select(box => new { box.Id, box.TargetMachines })
+            .ToDictionaryAsync(box => box.Id, box => JsonSerializer.Deserialize<Guid[]>(box.TargetMachines) ?? []);
+        rows = rows.Select(row => row.Fact.TargetMachineIds is not { Count: > 0 } &&
+                row.Fact.LockboxId is { } lockbox && snapshots.TryGetValue(lockbox.Value, out var targets)
+            ? row with { Fact = row.Fact with { TargetMachineIds = targets } } : row).ToList();
         var userIds = rows.SelectMany(row => new[] { row.Fact.RequesterId, row.Fact.ApproverId })
             .OfType<string>().Distinct().ToArray();
-        var machineIds = rows.Select(row => row.Fact.MachineId).OfType<Guid>().Distinct().ToArray();
+        var machineIds = rows.SelectMany(row => row.Fact.MachineId is { } id ? [id] : row.Fact.TargetMachineIds ?? [])
+            .Distinct().ToArray();
         var users = userIds.Length == 0 ? new Dictionary<string, string>() :
             await db.Users.AsNoTracking().Where(user => userIds.Contains(user.Id))
                 .ToDictionaryAsync(user => user.Id, user => AccessService.PersonName(user.DisplayName, user.UserName));
@@ -111,7 +130,8 @@ public sealed class WorkflowInvestigation(TemplateDbContext db, AccessService ac
         return rows.Select(row => new HistoryRow(row.EventId, row.ControllerSequence, row.Fact,
             row.Fact.RequesterId != null && users.TryGetValue(row.Fact.RequesterId, out var requester) ? requester : null,
             row.Fact.ApproverId != null && users.TryGetValue(row.Fact.ApproverId, out var approver) ? approver : null,
-            row.Fact.MachineId != null && machines.TryGetValue(row.Fact.MachineId.Value, out var machine) ? machine : null)).ToList();
+            row.Fact.MachineId is { } id ? machines.GetValueOrDefault(id, id.ToString()) :
+                string.Join(", ", (row.Fact.TargetMachineIds ?? []).Select(target => machines.GetValueOrDefault(target, target.ToString()))))).ToList();
     }
 
     private async Task<string?> ResolveUserAsync(string? value, string role)

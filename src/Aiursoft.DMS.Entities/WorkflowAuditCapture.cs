@@ -68,7 +68,8 @@ public abstract partial class TemplateDbContext
                     submitted ? null : launch?.DecidedAt ?? box?.DecidedAt, previous, state,
                     run?.Origin ?? WorkflowOrigin.Manual,
                     run?.ParentId != null ? WorkflowTrigger.Subworkflow : run?.Trigger ?? WorkflowTrigger.ManualRequest,
-                    run?.ScheduleId, run?.ScheduleExpression, run?.ScheduledAt);
+                    run?.ScheduleId, run?.ScheduleExpression, run?.ScheduledAt,
+                    box == null ? null : JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
                 captured.Add(new WorkflowAuditOutbox { Metadata = JsonSerializer.Serialize(item) });
             }
         }
