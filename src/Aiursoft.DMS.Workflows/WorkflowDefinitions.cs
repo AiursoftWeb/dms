@@ -52,6 +52,7 @@ public sealed partial class MachineWorkflowRegistry
         Register(MachineWorkflows.BoxGetSecretRaw, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretResult>(
             MachineWorkflows.BoxGetSecretRaw, input, agent.BoxSecrets, (file, id, token) => file.PublishAsync(input.Name, id, token)));
         Register(MachineWorkflows.BoxDeploy, (input, _) => new BoxDeployWorkflow(input));
+        Register(MachineWorkflows.BoxDeployStack, (input, agent) => new BoxDeployStackWorkflow(input, agent));
         Register(MachineWorkflows.Performance, (_, _) => new PerformanceInfoWorkflow());
         Register(MachineWorkflows.Restart, (input, _) => new RestartServiceWorkflow(input.Service));
         Register(MachineWorkflows.ServiceStatus, (input, _) => new ServiceStatusWorkflow(input.Service));

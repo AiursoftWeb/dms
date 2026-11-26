@@ -122,6 +122,8 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DockerDiskUsage = new("machine.docker.system.df", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerDiskUsage)), "1", PublicEntry: true);
     [WorkflowRisk(RiskLevel.High)]
     public static readonly MachineWorkflowDefinition<BoxDeployInput, BoxDeployResult> BoxDeploy = new("machine.box.deploy", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxDeploy)), "1", input => input.Validate(), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<BoxDeployStackInput, BoxDeployStackResult> BoxDeployStack = new("machine.box.deploy-stack", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxDeployStack)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxSecretsResult> BoxListSecret =
         new("machine.box.list-secret", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxListSecret)), "1", PublicEntry: true) { SingleMachineOnly = true };
