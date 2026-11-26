@@ -6,8 +6,10 @@ using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
+using Aiursoft.DMS.Services.Dms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Aiursoft.DMS.Tests.IntegrationTests;
@@ -15,6 +17,45 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class EnrollmentTests : TestBase
 {
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task AgentJoinCreatesANewAttemptAfterExpiry(bool purged)
+    {
+        var setup = await ArrangeAsync();
+        var issued = await CliAsync<IssuedJoinKey>(setup.Key, "access", "create-join-key", "--name", "Review expired enrollment");
+        var directory = Directory.CreateTempSubdirectory("mr153-enrollment-");
+        try
+        {
+            string[] args = ["join", "--controller-url", Http.BaseAddress!.ToString(), "--api-key", issued.Key, "--state-path", directory.FullName];
+            var first = await AgentCommandApp.Create().TestRunAsync(args);
+            Assert.AreEqual(0, first.ProgramReturn, first.StdErr);
+            var config = AgentConfiguration.Load(directory.FullName)!;
+            var pending = await StatusAsync(config.ReceiptKey);
+            using (var scope = Server!.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+                (await db.Lockboxes.SingleAsync(item => item.Id == pending.LockboxId.Value)).ExpiresAt =
+                    purged ? DateTime.UtcNow.AddDays(-8) : DateTime.UtcNow.AddMinutes(-1);
+                await db.SaveChangesAsync();
+            }
+            Assert.AreEqual("Expired", (await StatusAsync(config.ReceiptKey)).State);
+            if (purged)
+                await new LockboxExpiryService(
+                    Server!.Services.GetRequiredService<IServiceScopeFactory>(),
+                    Server.Services.GetRequiredService<ControllerGate>(),
+                    NullLogger<LockboxExpiryService>.Instance)
+                    .SweepAsync(CancellationToken.None);
+            var retry = await AgentCommandApp.Create().TestRunAsync(args);
+            Assert.AreEqual(0, retry.ProgramReturn, retry.StdErr);
+            var next = AgentConfiguration.Load(directory.FullName)!;
+            Assert.AreEqual(config.InstallationId, next.InstallationId);
+            Assert.AreNotEqual(config.EnrollmentId, next.EnrollmentId, "Expired enrollment must be replaced when joining again.");
+            Assert.AreEqual("PendingApproval", (await StatusAsync(next.ReceiptKey)).State);
+        }
+        finally { directory.Delete(true); }
+    }
+
     private async Task<(string User, string Key)> ArrangeAsync(bool automatic = false)
     {
         using var scope = Server!.Services.CreateScope();

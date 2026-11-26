@@ -111,7 +111,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         var prior = await db.Lockboxes.SingleOrDefaultAsync(l => l.RequesterId == user && l.ClientRequestId == request.RequestId);
         if (prior != null)
         {
-            if (LockboxExpiry.IsDue(prior))
+            if (LockboxExpiry.EffectiveDecision(prior) == DecisionState.Expired)
                 throw new DmsException(409, "This request expired before approval. Submit it again with a new request ID.");
             if (enrollmentId.HasValue) throw new DmsException(409, "Enrollment ID already belongs to another request.");
             var principal = await access.PrincipalAsync(user);

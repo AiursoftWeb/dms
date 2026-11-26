@@ -16,6 +16,27 @@ namespace Aiursoft.DMS.Tests.IntegrationTests;
 [TestClass]
 public class DmsWorkflowTests : TestBase
 {
+    [TestMethod]
+    public async Task PersistedExpiryStillRejectsSubmissionRetry()
+    {
+        var setup = await ArrangeAsync();
+        using var scope = Server!.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var request = Request(setup.Machine);
+        var box = await service.SubmitAsync(setup.User, request);
+        box.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+        Assert.AreEqual(409, (await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request))).StatusCode);
+        var sweep = new LockboxExpiryService(Server.Services.GetRequiredService<IServiceScopeFactory>(),
+            Server.Services.GetRequiredService<ControllerGate>(), NullLogger<LockboxExpiryService>.Instance);
+        await sweep.SweepAsync(CancellationToken.None);
+        db.ChangeTracker.Clear();
+        Assert.AreEqual(DecisionState.Expired, (await db.Lockboxes.SingleAsync(item => item.Id == box.Id)).Decision);
+        var error = await Assert.ThrowsAsync<DmsException>(() => service.SubmitAsync(setup.User, request));
+        Assert.AreEqual(409, error.StatusCode);
+    }
+
     private sealed class UnavailableWorkflow(string name) : MachineWorkflow
     {
         public override string Name => name;

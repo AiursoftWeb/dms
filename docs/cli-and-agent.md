@@ -798,6 +798,8 @@ The requester can check their own Lockbox. Viewing another person's Lockbox or i
 
 While a request is pending, its requester can run `dms lockbox withdraw --id lb/<UUID>`, use **DMS → My Lockboxes → Withdraw request**, or POST to `/api/v1/dms/lockboxes/lb/<UUID>/withdraw` with their personal API key. Withdrawal takes effect immediately, including after the requester loses the original risk permission. An identical retry returns the withdrawn request. Use `dms lockbox list --decision Withdrawn` with operations read permission to find withdrawn requests. A pending request that passes its 4-hour expiry can no longer be approved or withdrawn; it is reported as `Expired` and must be submitted again with a new request ID.
 
+Agent 1.41.0 handles Expired as a terminal enrollment state. Running join again creates a new attempt while preserving the installation journal identity, including after an expired receipt has been purged. Existing joined machines retain their current enrollment.
+
 Approval, denial and withdrawal compete for the same pending request. The first committed decision wins. If approval wins, withdrawal returns HTTP 409 with the workflow ID. To stop that execution, submit `dms operation kill-workflow --id <workflow-id> --reason "Stop requested"`, which follows its own approval policy. Automatically approved submissions already have an execution ID when they return.
 
 
