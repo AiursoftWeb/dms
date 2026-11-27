@@ -8,6 +8,44 @@ namespace Aiursoft.DMS.Tests;
 [TestClass]
 public class AgentJournalTests
 {
+    [TestMethod]
+    public async Task AcknowledgingOneCompletedTaskKeepsTheOtherTaskReadyToReplayAfterRestart()
+    {
+        var directory = Directory.CreateTempSubdirectory("dms-journal-replay-");
+        var acknowledged = Guid.NewGuid();
+        var awaitingReceipt = Guid.NewGuid();
+        try
+        {
+            using (var journal = new TaskJournal(directory.FullName))
+            {
+                foreach (var id in new[] { acknowledged, awaitingReceipt })
+                {
+                    journal.Accept(new AgentMessage { TaskId = id, Definition = WorkflowNames.Performance });
+                    Assert.IsNotNull(journal.Start(id));
+                    await journal.ReportAsync(id, new WorkflowEvent { WorkflowId = id, State = RunState.Succeeded });
+                }
+
+                journal.Acknowledge(acknowledged, 1);
+            }
+
+            using var recovered = new TaskJournal(directory.FullName);
+            var pendingTask = recovered.Snapshot(activeOnly: true).Single();
+            Assert.AreEqual(awaitingReceipt, pendingTask.Id);
+            var pending = pendingTask.Pending.Single();
+            Assert.AreEqual(awaitingReceipt, pending.WorkflowId);
+            Assert.AreEqual(RunState.Succeeded, pending.State);
+            Assert.AreEqual(1L, pending.Sequence);
+            Assert.IsNull(recovered.Start(awaitingReceipt));
+
+            recovered.Acknowledge(awaitingReceipt, pending.Sequence);
+            Assert.IsEmpty(recovered.Snapshot(activeOnly: true));
+        }
+        finally
+        {
+            directory.Delete(true);
+        }
+    }
+
     private sealed class WaitingWorkflow : MachineWorkflow
     {
         public override string Name => WorkflowNames.Performance;
