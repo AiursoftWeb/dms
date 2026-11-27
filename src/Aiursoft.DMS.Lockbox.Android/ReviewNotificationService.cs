@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Aiursoft.DMS.Lockbox.Android.Oidc;
 using Cancelled = System.OperationCanceledException;
 
 namespace Aiursoft.DMS.Lockbox.Android;
@@ -54,7 +55,7 @@ public sealed class ReviewNotificationService : Service
         }
         if (_session is not null) return StartCommandResult.NotSticky;
         CreateChannels();
-        using var foreground = Build(SessionChannel, "Lockbox 值班提醒已开启", "正在监听 DMS；下班后可停止提醒。", ongoing: true);
+        using var foreground = Build(SessionChannel, "Lockbox 值班提醒已开启", "正在监听 DMS 待审请求；下班后可随时停止。", ongoing: true);
         if (OperatingSystem.IsAndroidVersionAtLeast(34))
             StartForeground(SessionNotification, foreground, ForegroundService.TypeSpecialUse);
         else
@@ -77,8 +78,11 @@ public sealed class ReviewNotificationService : Service
     {
         try
         {
-            var client = new ConnectionStore(this).Load();
+            var session = ((LockboxApplication)Application!).Session;
+            if (!session.IsAuthenticated && !session.TryRestoreFromDisk()) return;
+            var client = session.Client;
             if (client is null) return;
+
             DateTime? cursor = null;
             var delay = 1;
             while (!token.IsCancellationRequested)
@@ -90,12 +94,18 @@ public sealed class ReviewNotificationService : Service
                     delay = 1;
                     if (update.LatestPendingAt is not { } latest || latest <= cursor) continue;
                     cursor = latest;
-                    Notify("有 Lockbox 请求待你审批", "打开 DMS Lockbox 查看待审列表。");
+                    Notify("有 Lockbox 请求待你审批", "点击打开 DMS Lockbox 查看待审列表。");
+                }
+                catch (LockboxAuthRequiredException)
+                {
+                    if (!token.IsCancellationRequested)
+                        Notify("Lockbox 值班提醒已停止", "登录会话已过期，请打开应用重新登录。");
+                    return;
                 }
                 catch (LockboxHttpException ex) when (ex.Status is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden or HttpStatusCode.NotFound)
                 {
                     if (!token.IsCancellationRequested)
-                        Notify("Lockbox 值班提醒已停止", "请检查 DMS 连接、个人 API Key 和审批权限。");
+                        Notify("Lockbox 值班提醒已停止", "请检查 DMS 登录状态和审批权限。");
                     return;
                 }
                 catch (Exception) when (!token.IsCancellationRequested)
@@ -108,7 +118,7 @@ public sealed class ReviewNotificationService : Service
         catch (Cancelled) when (token.IsCancellationRequested) { }
         catch (Exception)
         {
-            if (!token.IsCancellationRequested) Notify("Lockbox 值班提醒已停止", "无法读取本机连接，请重新连接 DMS。");
+            if (!token.IsCancellationRequested) Notify("Lockbox 值班提醒已停止", "无法读取本机登录会话，请重新登录 DMS。");
         }
         finally { if (!token.IsCancellationRequested) StopSelf(); }
     }
@@ -136,7 +146,7 @@ public sealed class ReviewNotificationService : Service
         using var open = new Intent(this, typeof(MainActivity)).SetAction(OpenQueue)!
             .AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop)!;
         using var launch = PendingIntent.GetActivity(this, 0, open, PendingIntentFlags.Immutable | PendingIntentFlags.UpdateCurrent);
-#pragma warning disable CS0618 // Android 6–7 have no notification channels.
+#pragma warning disable CS0618
         using var builder = OperatingSystem.IsAndroidVersionAtLeast(26)
             ? new Notification.Builder(this, channel)
             : new Notification.Builder(this);
@@ -148,7 +158,7 @@ public sealed class ReviewNotificationService : Service
 #pragma warning restore CS0618
         builder.SetContentTitle(title);
         builder.SetContentText(text);
-        builder.SetSmallIcon(global::Android.Resource.Drawable.IcDialogInfo);
+        builder.SetSmallIcon(Resource.Drawable.ic_lockbox);
         builder.SetOngoing(ongoing);
         builder.SetAutoCancel(!ongoing);
         builder.SetContentIntent(launch);

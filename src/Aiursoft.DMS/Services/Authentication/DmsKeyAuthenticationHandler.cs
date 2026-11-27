@@ -21,11 +21,18 @@ public sealed class DmsKeyAuthenticationHandler(
     public static string Hash(string key) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(key)));
     public static string CreateKey(bool machine) => (machine ? "dmsa_" : "dmsu_") + Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
 
+    internal static bool IsDmsKeyPrefix(string raw) =>
+        raw.StartsWith("dmsu_", StringComparison.Ordinal) ||
+        raw.StartsWith("dmsa_", StringComparison.Ordinal) ||
+        raw.StartsWith("dmsj_", StringComparison.Ordinal) ||
+        raw.StartsWith("dmsr_", StringComparison.Ordinal);
+
     protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var header = Request.Headers.Authorization.ToString();
         if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) return AuthenticateResult.NoResult();
-        var raw = header[7..];
+        var raw = header[7..].Trim();
+        if (!IsDmsKeyPrefix(raw)) return AuthenticateResult.NoResult();
         if (raw.Length != 69 || !raw[5..].All(char.IsAsciiHexDigit)) return AuthenticateResult.Fail("Invalid API Key.");
         var hash = Hash(raw);
         if (raw.StartsWith("dmsj_", StringComparison.Ordinal))
@@ -47,7 +54,6 @@ public sealed class DmsKeyAuthenticationHandler(
             var identity = new ClaimsIdentity([new Claim("DmsMachine", machine.Id.ToString())], SchemeName);
             return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName));
         }
-        if (!raw.StartsWith("dmsu_", StringComparison.Ordinal)) return AuthenticateResult.Fail("Invalid API Key.");
         var key = await db.PersonalApiKeys.AsNoTracking().NotCacheable().SingleOrDefaultAsync(k => k.KeyHash == hash && k.ExpiresAt > DateTime.UtcNow);
         if (key == null) return AuthenticateResult.Fail("Invalid or expired API Key.");
         var user = await users.FindByIdAsync(key.UserId);

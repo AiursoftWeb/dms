@@ -438,7 +438,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             DateTime.SpecifyKind(row.DecidedAt!.Value, DateTimeKind.Utc))).ToList(), page, rows.Count > pageSize);
     });
 
-    public async Task<LockboxReviewUpdate> WaitForReviewUpdateAsync(string user, Guid keyId, DateTime? after, CancellationToken token)
+    public async Task<LockboxReviewUpdate> WaitForReviewUpdateAsync(string user, Guid? keyId, DateTimeOffset? tokenExpiresAt, DateTime? after, CancellationToken token)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         deadline.CancelAfter(TimeSpan.FromSeconds(20));
@@ -449,9 +449,16 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
             var found = await gate.RunAsync(async () =>
             {
                 var now = DateTime.UtcNow;
-                if (!await db.PersonalApiKeys.AsNoTracking().NotCacheable()
-                    .AnyAsync(key => key.Id == keyId && key.UserId == user && key.ExpiresAt > now, token))
-                    throw new DmsException(401, "The personal API Key has expired or been revoked.");
+                if (keyId is { } personalKeyId)
+                {
+                    if (!await db.PersonalApiKeys.AsNoTracking().NotCacheable()
+                        .AnyAsync(key => key.Id == personalKeyId && key.UserId == user && key.ExpiresAt > now, token))
+                        throw new DmsException(401, "The personal API Key has expired or been revoked.");
+                }
+                else if (tokenExpiresAt is { } expiresAt && expiresAt <= DateTimeOffset.UtcNow)
+                {
+                    throw new DmsException(401, "The session token has expired.");
+                }
                 var query = await ReviewQueueAsync(user);
                 if (after is { } since) query = query.Where(box => box.CreatedAt > since);
                 return await query.OrderByDescending(box => box.CreatedAt).Select(box => (DateTime?)box.CreatedAt)

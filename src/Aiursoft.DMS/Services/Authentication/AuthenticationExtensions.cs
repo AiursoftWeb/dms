@@ -1,13 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Configuration;
 using Aiursoft.DMS.Entities;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using JwtTokenValidatedContext = Microsoft.AspNetCore.Authentication.JwtBearer.TokenValidatedContext;
+using OidcTokenValidatedContext = Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenValidatedContext;
 
 namespace Aiursoft.DMS.Services.Authentication;
 
@@ -92,6 +96,52 @@ public static class AuthenticationExtensions
             });
         }
 
+        authBuilder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            if (appSettings.OIDCEnabled)
+            {
+                options.Authority = appSettings.OIDC.GetMobileAuthority();
+                options.RequireHttpsMetadata = appSettings.OIDC.RequireHttpsMetadata;
+                options.Audience = appSettings.OIDC.ApiAudience;
+            }
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidAudience = appSettings.OIDC.ApiAudience,
+                NameClaimType = appSettings.OIDC.UsernamePropertyName,
+                RoleClaimType = appSettings.OIDC.RolePropertyName
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var authorization = context.Request.Headers.Authorization.ToString();
+                    if (!appSettings.OIDCEnabled ||
+                        !authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.NoResult();
+                        return Task.CompletedTask;
+                    }
+
+                    var raw = authorization["Bearer ".Length..].Trim();
+                    if (DmsKeyAuthenticationHandler.IsDmsKeyPrefix(raw) ||
+                        raw.StartsWith(LocalApiAuthenticationDefaults.TokenPrefix, StringComparison.Ordinal))
+                    {
+                        context.NoResult();
+                    }
+
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = SyncBearerContext
+            };
+        });
+
+        authBuilder.AddScheme<AuthenticationSchemeOptions, LocalApiAuthenticationHandler>(
+            LocalApiAuthenticationDefaults.AuthenticationScheme, _ => { });
+        services.AddSingleton<LocalApiTokenService>();
+
         services.AddAuthorization(options =>
         {
             foreach (var permission in AppPermissions.GetAllPermissions())
@@ -140,7 +190,7 @@ public static class AuthenticationExtensions
         // Unexpected failures propagate to the exception middleware; do not log them twice here.
     }
 
-    private static async Task SyncOidcContext(TokenValidatedContext context)
+    private static async Task SyncOidcContext(OidcTokenValidatedContext context)
     {
         var accountSynchronizer = context.HttpContext.RequestServices.GetRequiredService<OidcAccountSynchronizer>();
         var appSettings = context.HttpContext.RequestServices.GetRequiredService<IOptions<AppSettings>>().Value;
@@ -182,6 +232,69 @@ public static class AuthenticationExtensions
         {
             var errors = string.Join(", ", syncResult.Errors.Select(error => error.Description));
             context.Fail(new InvalidOperationException($"Failed to synchronize the OIDC account: {errors}"));
+        }
+    }
+
+    private static async Task SyncBearerContext(JwtTokenValidatedContext context)
+    {
+        var principal = context.Principal!;
+        var services = context.HttpContext.RequestServices;
+        var appSettings = services.GetRequiredService<IOptions<AppSettings>>().Value;
+        var userManager = services.GetRequiredService<UserManager<User>>();
+        var principalFactory = services.GetRequiredService<IUserClaimsPrincipalFactory<User>>();
+        var providerKey = principal.FindFirst(appSettings.OIDC.UserIdentityPropertyName)?.Value;
+        if (string.IsNullOrWhiteSpace(providerKey))
+        {
+            context.Fail("The access token does not contain the configured immutable user identifier claim.");
+            return;
+        }
+
+        var localUser = await userManager.FindByLoginAsync(OpenIdConnectDefaults.AuthenticationScheme, providerKey);
+        var username = principal.FindFirst(appSettings.OIDC.UsernamePropertyName)?.Value;
+        var displayName = principal.FindFirst(appSettings.OIDC.UserDisplayNamePropertyName)?.Value;
+        var email = principal.FindFirst(appSettings.OIDC.EmailPropertyName)?.Value;
+
+        if (!string.IsNullOrWhiteSpace(username) &&
+            !string.IsNullOrWhiteSpace(email))
+        {
+            var roles = principal.FindAll(appSettings.OIDC.RolePropertyName)
+                .Select(claim => claim.Value)
+                .ToHashSet();
+            if (!string.IsNullOrWhiteSpace(appSettings.DefaultRole))
+            {
+                roles.Add(appSettings.DefaultRole);
+            }
+
+            var synchronizer = services.GetRequiredService<OidcAccountSynchronizer>();
+            var result = await synchronizer.SynchronizeAsync(new OidcUserProfile(
+                LoginProvider: OpenIdConnectDefaults.AuthenticationScheme,
+                ProviderKey: providerKey,
+                UserName: username,
+                DisplayName: string.IsNullOrWhiteSpace(displayName) ? username : displayName,
+                Email: email,
+                Roles: roles));
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(error => error.Description));
+                context.Fail($"Failed to synchronize the OIDC account: {errors}");
+                return;
+            }
+
+            localUser = await userManager.FindByLoginAsync(OpenIdConnectDefaults.AuthenticationScheme, providerKey);
+        }
+
+        if (localUser == null || await userManager.IsLockedOutAsync(localUser))
+        {
+            context.Fail("The authenticated OIDC account is not available.");
+            return;
+        }
+
+        context.Principal = await principalFactory.CreateAsync(localUser);
+        if (context.SecurityToken.ValidTo > DateTime.MinValue)
+        {
+            context.Properties.Items[LocalApiAuthenticationDefaults.TokenExpiresAtProperty] =
+                new DateTimeOffset(DateTime.SpecifyKind(context.SecurityToken.ValidTo, DateTimeKind.Utc))
+                    .ToString("O", CultureInfo.InvariantCulture);
         }
     }
 }

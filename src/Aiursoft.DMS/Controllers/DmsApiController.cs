@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using Aiursoft.AiurProtocol.Models;
 using Aiursoft.DMS.Contracts;
@@ -6,12 +7,13 @@ using Aiursoft.DMS.Entities;
 using Aiursoft.DMS.Services.Authentication;
 using Aiursoft.DMS.Services.Dms;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Aiursoft.DMS.Controllers;
 
-[Authorize(AuthenticationSchemes = DmsKeyAuthenticationHandler.SchemeName, Policy = "DmsHuman")]
+[Authorize(AuthenticationSchemes = LocalApiAuthenticationDefaults.HumanApiSchemes, Policy = "DmsHuman")]
 [Route("api/v1/dms")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 public class DmsApiController(WorkflowService workflows, TemplateDbContext db, AccessService access, TraceDatabase traces, TraceStore spool, WorkflowInvestigation investigation, ILogger<DmsApiController> logger, DmsManagementService management, EnrollmentService enrollment) : ControllerBase
@@ -120,11 +122,36 @@ public class DmsApiController(WorkflowService workflows, TemplateDbContext db, A
     public Task<IActionResult> ReviewUpdates(DateTimeOffset? after, CancellationToken token) => Handle(async () =>
     {
         if (!ModelState.IsValid) throw new DmsException(400, "Invalid Lockbox update cursor.");
-        var auth = await HttpContext.AuthenticateAsync(DmsKeyAuthenticationHandler.SchemeName);
-        if (auth.Properties?.Items.TryGetValue(DmsKeyAuthenticationHandler.PersonalKeyIdProperty, out var value) != true ||
-            !Guid.TryParse(value, out var keyId))
-            throw new DmsException(401, "A personal API Key is required.");
-        return await workflows.WaitForReviewUpdateAsync(Actor, keyId, after?.UtcDateTime, token);
+        Guid? keyId = null;
+        DateTimeOffset? tokenExpiresAt = null;
+        var keyAuth = await HttpContext.AuthenticateAsync(DmsKeyAuthenticationHandler.SchemeName);
+        if (keyAuth.Succeeded &&
+            keyAuth.Properties?.Items.TryGetValue(DmsKeyAuthenticationHandler.PersonalKeyIdProperty, out var value) == true &&
+            Guid.TryParse(value, out var parsedKeyId))
+        {
+            keyId = parsedKeyId;
+        }
+        else
+        {
+            var mobileAuth = await HttpContext.AuthenticateAsync(LocalApiAuthenticationDefaults.AuthenticationScheme);
+            if (!mobileAuth.Succeeded)
+            {
+                mobileAuth = await HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            }
+
+            if (!mobileAuth.Succeeded)
+            {
+                throw new DmsException(401, "Valid authentication is required.");
+            }
+
+            if (mobileAuth.Properties?.Items.TryGetValue(LocalApiAuthenticationDefaults.TokenExpiresAtProperty, out var expValue) == true &&
+                DateTimeOffset.TryParse(expValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var parsedExp))
+            {
+                tokenExpiresAt = parsedExp;
+            }
+        }
+
+        return await workflows.WaitForReviewUpdateAsync(Actor, keyId, tokenExpiresAt, after?.UtcDateTime, token);
     });
 
     [HttpGet("lockboxes/{id:guid}")]

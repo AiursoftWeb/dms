@@ -72,4 +72,38 @@ public class OidcSettings
     /// This is used as the `ProviderKey` to link the external account to a local user. The standard OIDC claim for this is "sub".
     /// </summary>
     public required string UserIdentityPropertyName { get; init; } = "sub";
+
+    /// <summary>
+    /// Optional separate OIDC authority for native mobile clients (PKCE public client).
+    /// Falls back to <see cref="Authority"/> when empty.
+    /// </summary>
+    public string MobileAuthority { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Public/native OIDC client identifier for the DMS mobile app.
+    /// </summary>
+    public string MobileClientId { get; init; } = "dms-android";
+
+    /// <summary>
+    /// Expected JWT audience for mobile API bearer tokens.
+    /// </summary>
+    public string ApiAudience { get; init; } = "dms-android";
+
+    /// <summary>
+    /// Exact redirect URI registered on the native OIDC client.
+    /// </summary>
+    public string MobileRedirectUri { get; init; } = "com.aiursoft.dms.lockbox:/oauth2redirect";
+
+    /// <summary>
+    /// Optional additional API scope requested by mobile OIDC clients.
+    /// </summary>
+    public string ApiScope { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Require HTTPS when fetching OIDC metadata for JWT validation.
+    /// </summary>
+    public bool RequireHttpsMetadata { get; init; } = true;
+
+    public string GetMobileAuthority() =>
+        string.IsNullOrWhiteSpace(MobileAuthority) ? Authority : MobileAuthority;
 }
