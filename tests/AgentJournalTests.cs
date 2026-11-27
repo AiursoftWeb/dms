@@ -122,6 +122,73 @@ public class AgentJournalTests
     }
 
     [TestMethod]
+    public async Task FullyAcknowledgedTaskReturnsToTheActiveSnapshotWhenAnotherReportArrives()
+    {
+        var directory = Directory.CreateTempSubdirectory("dms-active-journal-");
+        var offer = new AgentMessage { TaskId = Guid.NewGuid(), Definition = WorkflowNames.AgentStatus };
+        try
+        {
+            using (var journal = new TaskJournal(directory.FullName))
+            {
+                journal.Accept(offer);
+                journal.Start(offer.TaskId);
+                await journal.ReportAsync(offer.TaskId, new() { WorkflowId = offer.TaskId, State = RunState.Succeeded });
+                Assert.AreEqual((0, 1), journal.Counts());
+                Assert.AreEqual(offer.TaskId, journal.Snapshot(true).Single().Id);
+                journal.Acknowledge(offer.TaskId, 1);
+                Assert.IsEmpty(journal.Snapshot(true));
+            }
+
+            using var recovered = new TaskJournal(directory.FullName);
+            Assert.IsEmpty(recovered.Snapshot(true));
+            recovered.Accept(offer);
+            Assert.IsNull(recovered.Start(offer.TaskId));
+            await recovered.ReportAsync(offer.TaskId, new() { WorkflowId = offer.TaskId, IsTrace = true, Message = "late trace" });
+            recovered.Acknowledge(offer.TaskId, 1);
+            Assert.AreEqual(2L, recovered.Snapshot(true).Single().Pending.Single().Sequence);
+            Assert.AreEqual((0, 1), recovered.Counts());
+            recovered.Acknowledge(offer.TaskId, 2);
+            Assert.AreEqual((0, 0), recovered.Counts());
+            Assert.IsEmpty(recovered.Snapshot(true));
+            Assert.AreEqual(RunState.Succeeded, recovered.Find(offer.TaskId)?.State);
+        }
+        finally { directory.Delete(true); }
+    }
+
+    [TestMethod]
+    public async Task ScheduledHistoryKeepsTheLatestMinuteAndHonorsUncertainWorkAfterRestart()
+    {
+        var directory = Directory.CreateTempSubdirectory("dms-schedule-history-");
+        const string name = "test.schedule";
+        var first = new ScheduledInvocation(name, "*/5 * * * *", new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), WorkflowTrigger.Cron);
+        var second = first with { ScheduledAt = first.ScheduledAt.AddMinutes(5) };
+        var third = first with { ScheduledAt = first.ScheduledAt.AddMinutes(10) };
+        try
+        {
+            using (var journal = new TaskJournal(directory.FullName))
+            {
+                var done = journal.AcceptScheduled(name, "1", first)!;
+                journal.Start(done.Id);
+                await journal.ReportAsync(done.Id, new() { WorkflowId = done.Id, State = RunState.Succeeded });
+                var interrupted = journal.AcceptScheduled(name, "1", second)!;
+                journal.Start(interrupted.Id);
+                journal.Acknowledge(done.Id, 1);
+                Assert.IsNull(journal.AcceptScheduled(name, "1", third, reconcileAfterInterruption: true));
+            }
+
+            using var recovered = new TaskJournal(directory.FullName);
+            var active = recovered.Snapshot(true).Single();
+            recovered.Acknowledge(active.Id, active.Sequence);
+            Assert.AreEqual((1, 0), recovered.Counts());
+            Assert.IsNull(recovered.AcceptScheduled(name, "1", first, reconcileAfterInterruption: true));
+            Assert.IsNull(recovered.AcceptScheduled(name, "1", second with { Trigger = WorkflowTrigger.AgentStartup }, reconcileAfterInterruption: true));
+            Assert.IsNull(recovered.AcceptScheduled(name, "1", third));
+            Assert.IsNotNull(recovered.AcceptScheduled(name, "1", third, reconcileAfterInterruption: true));
+        }
+        finally { directory.Delete(true); }
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void UnsupportedOfferFailureSurvivesRestartAndIsNotReplayed(bool accepted)

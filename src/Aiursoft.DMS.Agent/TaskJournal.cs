@@ -55,7 +55,10 @@ public sealed partial class TaskJournal : IDisposable
     private readonly string _path;
     private readonly object _gate = new();
     private readonly FileStream _lock;
-    private readonly Dictionary<Guid, JournalTask> _tasks;
+    private readonly Dictionary<Guid, JournalTask> _tasks = [];
+    // Terminal tasks still participate in delivery until their final event is acknowledged.
+    private readonly HashSet<JournalTask> _active = [];
+    private readonly Dictionary<string, DateTime> _lastScheduledAt = new(StringComparer.Ordinal);
 
     public TaskJournal(string path)
     {
@@ -75,8 +78,8 @@ public sealed partial class TaskJournal : IDisposable
                 stream.Flush(flushToDisk: true);
                 SyncDirectory();
             }
-            _tasks = Directory.EnumerateFiles(_path, "*.json").Select(ReadTask).ToDictionary(t => t.Id);
-            foreach (var task in _tasks.Values.Where(t => t.State is RunState.Running or RunState.CancelRequested))
+            foreach (var file in Directory.EnumerateFiles(_path, "*.json")) TrackTask(ReadTask(file));
+            foreach (var task in _active.Where(t => t.State is RunState.Running or RunState.CancelRequested))
             {
                 if (task.State == RunState.Running && task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName && task.Schedule != null &&
                     task.ScheduledUpgradeRelease == null)
@@ -95,24 +98,43 @@ public sealed partial class TaskJournal : IDisposable
     internal IReadOnlyList<JournalTask> Snapshot(bool activeOnly, int pendingLimit)
     {
         lock (_gate)
-            return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(task =>
-            {
-                var copy = task.Copy();
-                if (copy.Pending.Count > pendingLimit) copy.Pending = new Queue<WorkflowEvent>(task.Pending.Take(pendingLimit));
-                return JsonSerializer.Deserialize<JournalTask>(JsonSerializer.SerializeToUtf8Bytes(copy))!;
-            }).ToList();
+        {
+            IEnumerable<JournalTask> tasks = activeOnly ? _active : _tasks.Values;
+            return tasks.Select(task => SnapshotTask(task, pendingLimit)).ToList();
+        }
+    }
+
+    internal JournalTask? Find(Guid id)
+    {
+        lock (_gate) return _tasks.TryGetValue(id, out var task) ? SnapshotTask(task, 0) : null;
+    }
+
+    private static JournalTask SnapshotTask(JournalTask task, int pendingLimit)
+    {
+        var copy = task.Copy();
+        if (copy.Pending.Count > pendingLimit) copy.Pending = new Queue<WorkflowEvent>(task.Pending.Take(pendingLimit));
+        return JsonSerializer.Deserialize<JournalTask>(JsonSerializer.SerializeToUtf8Bytes(copy))!;
+    }
+
+    private void TrackTask(JournalTask task)
+    {
+        _tasks.Add(task.Id, task);
+        if (!task.State.Terminal() || task.Pending.Count > 0) _active.Add(task);
+        if (task.Schedule is { ScheduleId: { } scheduleId } occurrence && (!_lastScheduledAt.TryGetValue(scheduleId, out var previous) ||
+                occurrence.ScheduledAt > previous))
+            _lastScheduledAt[scheduleId] = occurrence.ScheduledAt;
     }
 
     internal (int Active, int Pending) Counts()
     {
-        lock (_gate) return (_tasks.Values.Count(t => !t.State.Terminal()), _tasks.Values.Sum(t => t.Pending.Count));
+        lock (_gate) return (_active.Count(t => !t.State.Terminal()), _active.Sum(t => t.Pending.Count));
     }
 
     internal bool BlocksAgentUpgrade(Guid except)
     {
         // Historical verification survives the Agent restart. A lifecycle helper can
         // still act outside the Agent process, so its uncertain outcome blocks maintenance.
-        lock (_gate) return _tasks.Values.Any(task => task.Id != except &&
+        lock (_gate) return _active.Any(task => task.Id != except &&
             (task.State is RunState.Running or RunState.CancelRequested ||
              task.State == RunState.NeedsVerification &&
              (task.Definition is WorkflowNames.AgentUpgrade or ScheduledAgentUpgradeWorkflow.DefinitionName ||
@@ -138,12 +160,12 @@ public sealed partial class TaskJournal : IDisposable
     {
         lock (_gate)
         {
-            var previous = _tasks.Values.Where(t => t.Schedule?.ScheduleId == occurrence.ScheduleId).ToArray();
-            if (previous.Any(t => !t.State.Terminal() && !(reconcileAfterInterruption && t.State == RunState.NeedsVerification))) return null;
             // A startup run consumes its minute too. Repeated ticks/restarts never replay that occurrence.
-            if (previous.Any(t => t.Schedule!.ScheduledAt >= occurrence.ScheduledAt)) return null;
+            if (_lastScheduledAt.TryGetValue(occurrence.ScheduleId, out var last) && last >= occurrence.ScheduledAt) return null;
+            if (_active.Any(t => t.Schedule?.ScheduleId == occurrence.ScheduleId && !t.State.Terminal() &&
+                !(reconcileAfterInterruption && t.State == RunState.NeedsVerification))) return null;
             var task = new JournalTask { Id = Guid.NewGuid(), Definition = definition, Version = version, Schedule = occurrence };
-            Save(task); _tasks.Add(task.Id, task);
+            Save(task); TrackTask(task);
             return task;
         }
     }
@@ -154,7 +176,7 @@ public sealed partial class TaskJournal : IDisposable
         {
             if (FindExistingTask(message) != null) return;
             var task = new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
-            Save(task); _tasks.Add(task.Id, task);
+            Save(task); TrackTask(task);
         }
     }
 
@@ -218,10 +240,13 @@ public sealed partial class TaskJournal : IDisposable
             // A rejected first offer and its failure must appear in the same initial checkpoint.
             task.AddEvent(stored, bytes.Length);
             Save(task);
-            return;
         }
-        AppendRecord(task, bytes);
-        task.AddEvent(stored, bytes.Length);
+        else
+        {
+            AppendRecord(task, bytes);
+            task.AddEvent(stored, bytes.Length);
+        }
+        _active.Add(task);
     }
 
     public void Acknowledge(Guid id, long sequence)
@@ -239,6 +264,7 @@ public sealed partial class TaskJournal : IDisposable
                 Save(task, checkpoint);
                 task.Confirm(sequence);
                 task.ReclaimableBytes = 0;
+                if (task.State.Terminal()) _active.Remove(task);
                 return;
             }
             var ack = JsonSerializer.SerializeToUtf8Bytes(sequence);

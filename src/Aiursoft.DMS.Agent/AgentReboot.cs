@@ -49,7 +49,7 @@ public sealed class AgentReboot(string state, TaskJournal journal, OperationHost
         if (!File.Exists(Marker)) return;
         var handoff = Read();
         if (handoff.Phase is not ("scheduled" or "uncertain")) return;
-        var task = journal.Snapshot().SingleOrDefault(t => t.Id == handoff.TaskId);
+        var task = journal.Find(handoff.TaskId);
         if (task == null || task.State.Terminal()) return;
         var config = AgentConfiguration.Load(state);
         var boot = (await _host.ReadAsync("/proc/sys/kernel/random/boot_id", token)).Trim();

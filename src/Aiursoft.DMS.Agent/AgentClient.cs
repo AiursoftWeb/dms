@@ -352,7 +352,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         }
         catch (Exception exception)
         {
-            if (journal.Snapshot(activeOnly: false, pendingLimit: 0).Single(t => t.Id == task.Id).State == RunState.Running)
+            if (journal.Find(task.Id)?.State == RunState.Running)
                 await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition,
                     State = RunState.Failed, Result = JsonSerializer.Serialize(new { Error = exception.Message }) });
             Console.Error.WriteLine($"Workflow {task.Id}: {exception.GetType().Name}. Inspect the workflow trace and journal.");

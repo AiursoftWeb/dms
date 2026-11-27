@@ -183,7 +183,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             handoff = current;
         }
         if (handoff.Phase is "confirmed" or "failed" or "uncertain") return;
-        var task = journal.Snapshot().SingleOrDefault(t => t.Id == handoff.TaskId);
+        var task = journal.Find(handoff.TaskId);
         if (task == null || task.State.Terminal()) return;
         var config = AgentConfiguration.Load(state);
         var isRoot = handoff.WorkflowId == task.Id;
@@ -267,7 +267,7 @@ public sealed class AgentUpgrade(string state, TaskJournal journal)
             {
                 using (var journal = new TaskJournal(Path.Combine(state, "journal")))
                 {
-                    var task = journal.Snapshot().Single(item => item.Id == handoff.TaskId);
+                    var task = journal.Find(handoff.TaskId) ?? throw new InvalidDataException("Agent upgrade task is missing from the journal.");
                     await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
                         IsTrace = true, Source = "updater", Message = "Agent Tool update requires verification: " + failure });
                     await journal.ReportAsync(handoff.TaskId, new WorkflowEvent { WorkflowId = id, ParentId = handoff.ParentId,
