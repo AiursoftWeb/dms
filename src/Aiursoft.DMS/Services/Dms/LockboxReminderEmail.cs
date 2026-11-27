@@ -81,12 +81,12 @@ public sealed class SmtpLockboxReminderEmail(IOptions<LockboxEmailOptions> optio
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eef3f8">
               <tr><td align="center" style="padding:24px 12px">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#fff;border:1px solid #dce5ed;border-radius:12px">
-                  <tr><td style="padding:16px 24px;background:#19683a;color:#fff;border-radius:12px 12px 0 0;font-size:17px;font-weight:bold">DMS Lockbox · Approval reminder</td></tr>
+                  <tr><td style="padding:16px 24px;background:#f7c948;color:#382600;border-radius:12px 12px 0 0;font-size:17px;font-weight:bold">DMS Lockbox · Approval reminder</td></tr>
                   <tr><td style="padding:24px;text-align:left">
                     <span style="display:inline-block;padding:3px 10px;background:{badgeBackground};color:#203247;border-radius:6px;font-size:13px;font-weight:bold">Risk / 风险：{summary.Risk}</span>
                     <h1 style="margin:12px 0 6px;font-size:23px;overflow-wrap:anywhere">{WebUtility.HtmlEncode(operation)}</h1>
                     <p style="margin:0 0 16px;color:#526478">此 Lockbox 请求已等待审批至少 15 分钟。<br>This request has been pending for at least 15 minutes.</p>
-                    <p style="margin:0 0 20px"><a href="{WebUtility.HtmlEncode(detail.AbsoluteUri)}" style="display:inline-block;padding:9px 16px;background:#19683a;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold">Open in DMS / 查看审批单</a></p>
+                    <p style="margin:0 0 20px"><a href="{WebUtility.HtmlEncode(detail.AbsoluteUri)}" style="display:inline-block;padding:9px 16px;background:#ffda69;color:#382600;border-radius:6px;text-decoration:none;font-weight:bold">Open in DMS / 查看审批单</a></p>
                     <h2 style="margin:0 0 8px;font-size:16px">Request details / 审批摘要</h2>
                     <table width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #dce5ed;background:#f5f8fa;border-radius:8px;font-size:14px;overflow-wrap:anywhere">
                       {DetailRow("Request / 审批单", summary.Id.ToString())}
