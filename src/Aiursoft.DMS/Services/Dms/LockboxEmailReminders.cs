@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using System.Text.Json;
 using Aiursoft.DMS.Authorization;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
@@ -59,6 +60,7 @@ public sealed class LockboxEmailReminders(TemplateDbContext db, WorkflowService 
                 var recipients = await db.Users.Where(user => user.EmailConfirmed && user.Email != null &&
                         grants.Contains(user.Id) && !sent.Contains(user.Id))
                     .Select(user => user.Id).NotCacheable().ToListAsync(token);
+                LockboxReminderSummary? summary = null;
                 foreach (var recipient in recipients)
                 {
                     var box = await db.Lockboxes.AsNoTracking().NotCacheable().SingleOrDefaultAsync(item => item.Id == request.Id, token);
@@ -72,7 +74,8 @@ public sealed class LockboxEmailReminders(TemplateDbContext db, WorkflowService 
                     }
                     catch (DmsException error) when (error.StatusCode == 403) { continue; }
 
-                    try { await email.SendAsync(address, token); }
+                    summary ??= await GetSummaryAsync(box, token);
+                    try { await email.SendAsync(address, summary, token); }
                     catch (Exception error) when (!token.IsCancellationRequested)
                     {
                         logger.LogWarning("Lockbox {LockboxId} reminder delivery failed ({ErrorType}); it will retry while pending.", request.Id, error.GetType().Name);
@@ -83,5 +86,17 @@ public sealed class LockboxEmailReminders(TemplateDbContext db, WorkflowService 
                 }
             }
         }
+    }
+
+    private async Task<LockboxReminderSummary> GetSummaryAsync(LockboxRequest box, CancellationToken token)
+    {
+        var requester = await db.Users.AsNoTracking().Where(user => user.Id == box.RequesterId)
+            .Select(user => new { user.DisplayName, user.UserName }).NotCacheable().SingleOrDefaultAsync(token);
+        int? targetCount;
+        try { targetCount = LockboxSnapshot.ReadTargets(box).Length; }
+        catch (JsonException) { targetCount = null; }
+        return new LockboxReminderSummary(box.Id,
+            requester is null ? "Unknown user" : AccessService.PersonName(requester.DisplayName, requester.UserName),
+            box.Definition, box.Risk, box.CreatedAt, box.ExpiresAt, targetCount);
     }
 }

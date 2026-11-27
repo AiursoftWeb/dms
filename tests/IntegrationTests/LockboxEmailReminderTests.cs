@@ -58,6 +58,10 @@ public sealed class LockboxEmailReminderTests : TestBase
             Risk = definition.Risk, Version = version, CreatedAt = now.AddMinutes(-age), Decision = decision
         };
         var due = Request(DecisionState.Pending, definition.Version, 15);
+        var target = Guid.NewGuid();
+        due.TargetMachines = $"[\"{target:D}\"]";
+        due.Reason = "private-reason-fixture";
+        due.Parameters = "{\"Input\":\"private-parameter-fixture\"}";
         var notYetSwept = Request(DecisionState.Pending, definition.Version, LockboxExpiry.RequestLifetime.TotalMinutes + 1);
         notYetSwept.ExpiresAt = now.AddMinutes(-1);
         LockboxRequest[] requests = [due, Request(DecisionState.Pending, definition.Version, 14),
@@ -83,6 +87,21 @@ public sealed class LockboxEmailReminderTests : TestBase
             await ScanAsync();
             await ScanAsync();
             CollectionAssert.AreEquivalent(new[] { direct.Email!, viaRole.Email! }, mail.Delivered);
+            Assert.HasCount(2, mail.Summaries);
+            foreach (var summary in mail.Summaries)
+            {
+                Assert.AreEqual(new LockboxId(due.Id), summary.Id);
+                Assert.AreEqual(1, summary.TargetCount);
+                var (subject, body) = SmtpLockboxReminderEmail.Format(summary, new Uri("https://dms.example.test"));
+                StringAssert.Contains(subject, $"[{definition.Risk}] {definition.Name}");
+                StringAssert.Contains(body, $"申请人：Email reviewer (@{requester.UserName})");
+                StringAssert.Contains(body, $"提交时间：{due.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
+                StringAssert.Contains(body, $"过期时间：{due.ExpiresAt:yyyy-MM-dd HH:mm:ss} UTC");
+                StringAssert.Contains(body, $"https://dms.example.test/Dms/Lockbox/{due.Id:D}");
+                Assert.DoesNotContain(due.Reason, body);
+                Assert.DoesNotContain("private-parameter-fixture", body);
+                Assert.DoesNotContain(target.ToString(), body);
+            }
         }
         finally
         {
@@ -99,8 +118,9 @@ public sealed class LockboxEmailReminderTests : TestBase
     {
         private bool _failed;
         public List<string> Delivered { get; } = [];
+        public List<LockboxReminderSummary> Summaries { get; } = [];
 
-        public Task SendAsync(MailAddress recipient, CancellationToken token)
+        public Task SendAsync(MailAddress recipient, LockboxReminderSummary summary, CancellationToken token)
         {
             if (!_failed && recipient.Address == failOnce)
             {
@@ -108,6 +128,7 @@ public sealed class LockboxEmailReminderTests : TestBase
                 throw new SmtpException("Transient test failure");
             }
             Delivered.Add(recipient.Address);
+            Summaries.Add(summary);
             return Task.CompletedTask;
         }
     }

@@ -73,6 +73,8 @@ On **待我审批**, tap **值班提醒** and allow Android notifications. The v
 
 Email fallback validation (2026-11-26): the integration test covered the 15-minute threshold, reviewer eligibility, exclusion of closed and obsolete requests, and retry without resending successful deliveries. All 862 solution tests and `bash lint.sh` passed locally. After syncing with `master` (`7cf1cea`) on 2026-11-27, the [MR !164](https://gitlab.aiursoft.com/aiursoft/dms/-/merge_requests/164) branch also excludes requests that have expired even if the expiry sweep has not yet updated their stored status. The full suite passed with 904 passed, 1 skipped, and no failures; lint passed. No real SMTP messages were sent; relay delivery still needs deployment acceptance.
 
+Email summary update (2026-11-27): the reminder integration test passed with the richer summary and authenticated request link, and verified that request reasons, parameters, and machine IDs are excluded. `bash lint.sh` passed. The template change has not been deployed or tested with live SMTP.
+
 ## #2423 validation record
 
 - The Android debug APK built without warnings and its signature verified with `apksigner`. The manifest declares the non-exported on-call service, disables cleartext and requests Android notification permission.
