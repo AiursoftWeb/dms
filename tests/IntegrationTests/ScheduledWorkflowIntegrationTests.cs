@@ -105,7 +105,7 @@ public class ScheduledWorkflowIntegrationTests : TestBase
             while (await DatabaseAsync(db => db.Machines.Where(m => m.Id == setup.Id).Select(m => m.InstallationId).SingleAsync()) == null)
                 await Task.Delay(20, stop.Token);
             await DatabaseAsync(async db => { (await db.Machines.FindAsync(setup.Id))!.Disabled = true; await db.SaveChangesAsync(); return true; });
-            Server.Services.GetRequiredService<AgentSessions>().Get(setup.Id)!.Abort();
+            // The Controller closes the disabled machine's session on its next heartbeat.
             while (Server.Services.GetRequiredService<AgentSessions>().Get(setup.Id) != null) await Task.Delay(20, stop.Token);
             agent.TickSchedules(new DateTime(DateTime.UtcNow.Year - 1, 1, 1, 0, 0, 0, DateTimeKind.Utc));
             while (!journal.Snapshot().Any(t => t.Definition == "test.offline-probe" && t.State == RunState.Succeeded))
