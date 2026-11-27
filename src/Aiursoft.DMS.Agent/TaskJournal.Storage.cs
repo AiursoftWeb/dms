@@ -63,13 +63,16 @@ public sealed partial class TaskJournal
             task.HasRecords = true;
         }
         task.FileLength = offset;
+        task.CheckpointPath = path;
         return task;
     }
+
+    private string TaskFile(JournalTask task) => task.CheckpointPath ?? Path.Combine(_path, $"{task.Id:N}.json");
 
     private void AppendRecord(JournalTask task, byte[] bytes)
     {
         EnsureWritable();
-        using var stream = new FileStream(Path.Combine(_path, $"{task.Id:N}.json"), FileMode.Open, FileAccess.Write, FileShare.Read);
+        using var stream = new FileStream(TaskFile(task), FileMode.Open, FileAccess.Write, FileShare.Read);
         VerifyLength(task, stream.Length);
         stream.Position = task.FileLength;
         try
@@ -92,22 +95,26 @@ public sealed partial class TaskJournal
     private void Save(JournalTask task, JournalTask? checkpoint = null)
     {
         EnsureWritable();
-        var file = Path.Combine(_path, $"{task.Id:N}.json");
+        var file = TaskFile(task);
         if (task.FileLength > 0) VerifyLength(task, new FileInfo(file).Length);
-        var temporary = file + ".tmp";
+        task.FileLength = ReplaceFile(file, file + ".tmp", stream => JsonSerializer.Serialize(stream, checkpoint ?? task));
+        task.HasRecords = false;
+        task.ReclaimableBytes = 0;
+    }
+
+    private long ReplaceFile(string file, string temporary, Action<FileStream> write)
+    {
         long length;
         using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
         {
-            JsonSerializer.Serialize(stream, checkpoint ?? task);
+            write(stream);
             stream.Flush(flushToDisk: true);
             length = stream.Length;
         }
         File.Move(temporary, file, overwrite: true);
         try { SyncDirectory(); }
         catch { _faulted = true; throw; }
-        task.FileLength = length;
-        task.HasRecords = false;
-        task.ReclaimableBytes = 0;
+        return length;
     }
 
     private void VerifyLength(JournalTask task, long actual)

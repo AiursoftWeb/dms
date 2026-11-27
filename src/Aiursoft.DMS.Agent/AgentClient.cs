@@ -58,6 +58,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             if (!startup && _lastScheduleMinute == minute) return;
             var missedMinute = _lastScheduleMinute is { } previous && minute > previous.AddMinutes(1);
             _lastScheduleMinute = minute;
+            journal.CompactScheduledHistory();
             foreach (var schedule in _workflows.Schedules)
             {
                 var onStartup = startup && schedule.RunOnStartup;

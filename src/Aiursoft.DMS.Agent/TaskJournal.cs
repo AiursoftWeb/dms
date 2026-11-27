@@ -18,6 +18,7 @@ public sealed class JournalTask
 
     // Rebuilt from the checkpoint and records on open; never serialized into either.
     internal long FileLength;
+    internal string? CheckpointPath;
     internal bool HasRecords;
     internal long ReclaimableBytes;
     internal long PendingBytes;
@@ -78,7 +79,7 @@ public sealed partial class TaskJournal : IDisposable
                 stream.Flush(flushToDisk: true);
                 SyncDirectory();
             }
-            foreach (var file in Directory.EnumerateFiles(_path, "*.json")) TrackTask(ReadTask(file));
+            LoadTasks();
             foreach (var task in _active.Where(t => t.State is RunState.Running or RunState.CancelRequested))
             {
                 if (task.State == RunState.Running && task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName && task.Schedule != null &&
@@ -89,6 +90,7 @@ public sealed partial class TaskJournal : IDisposable
                 }
                 Append(task, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition, State = RunState.NeedsVerification });
             }
+            CompactScheduledHistory();
         }
         catch { _lock.Dispose(); throw; }
     }
@@ -99,14 +101,14 @@ public sealed partial class TaskJournal : IDisposable
     {
         lock (_gate)
         {
-            IEnumerable<JournalTask> tasks = activeOnly ? _active : _tasks.Values;
+            var tasks = activeOnly ? _active : _tasks.Values.Concat(ArchivedTasks());
             return tasks.Select(task => SnapshotTask(task, pendingLimit)).ToList();
         }
     }
 
     internal JournalTask? Find(Guid id)
     {
-        lock (_gate) return _tasks.TryGetValue(id, out var task) ? SnapshotTask(task, 0) : null;
+        lock (_gate) return Lookup(id) is { } task ? SnapshotTask(task, 0) : null;
     }
 
     private static JournalTask SnapshotTask(JournalTask task, int pendingLimit)
@@ -120,7 +122,13 @@ public sealed partial class TaskJournal : IDisposable
     {
         _tasks.Add(task.Id, task);
         if (!task.State.Terminal() || task.Pending.Count > 0) _active.Add(task);
-        if (task.Schedule is { ScheduleId: { } scheduleId } occurrence && (!_lastScheduledAt.TryGetValue(scheduleId, out var previous) ||
+        else if (CanArchive(task)) _readyToArchive.Add(task);
+        RememberOccurrence(task.Schedule);
+    }
+
+    private void RememberOccurrence(ScheduledInvocation? occurrence)
+    {
+        if (occurrence?.ScheduleId is { } scheduleId && (!_lastScheduledAt.TryGetValue(scheduleId, out var previous) ||
                 occurrence.ScheduledAt > previous))
             _lastScheduledAt[scheduleId] = occurrence.ScheduledAt;
     }
@@ -200,7 +208,8 @@ public sealed partial class TaskJournal : IDisposable
 
     private JournalTask? FindExistingTask(AgentMessage message)
     {
-        if (!_tasks.TryGetValue(message.TaskId, out var task)) return null;
+        var task = Lookup(message.TaskId);
+        if (task == null) return null;
         if (task.Definition != message.Definition || task.Input != message.Input || task.Version != message.Version)
             throw new InvalidDataException("Task ID changed parameters.");
         return task;
@@ -218,7 +227,12 @@ public sealed partial class TaskJournal : IDisposable
 
     public Task ReportAsync(Guid taskId, WorkflowEvent item)
     {
-        lock (_gate) Append(_tasks[taskId], item);
+        lock (_gate)
+        {
+            var task = Lookup(taskId) ?? throw new KeyNotFoundException($"Unknown journal task {taskId}.");
+            Append(task, item);
+            _tasks.TryAdd(taskId, task);
+        }
         return Task.CompletedTask;
     }
 
@@ -237,7 +251,7 @@ public sealed partial class TaskJournal : IDisposable
         var stored = JsonSerializer.Deserialize<WorkflowEvent>(bytes)!;
         if (task.FileLength == 0)
         {
-            // A rejected first offer and its failure must appear in the same initial checkpoint.
+            // The first event for a rejected offer or a previously archived task is persisted with its checkpoint.
             task.AddEvent(stored, bytes.Length);
             Save(task);
         }
@@ -246,6 +260,7 @@ public sealed partial class TaskJournal : IDisposable
             AppendRecord(task, bytes);
             task.AddEvent(stored, bytes.Length);
         }
+        _readyToArchive.Remove(task);
         _active.Add(task);
     }
 
@@ -264,7 +279,12 @@ public sealed partial class TaskJournal : IDisposable
                 Save(task, checkpoint);
                 task.Confirm(sequence);
                 task.ReclaimableBytes = 0;
-                if (task.State.Terminal()) _active.Remove(task);
+                if (task.State.Terminal())
+                {
+                    _active.Remove(task);
+                    if (CanArchive(task)) _readyToArchive.Add(task);
+                    CompactScheduledHistory();
+                }
                 return;
             }
             var ack = JsonSerializer.SerializeToUtf8Bytes(sequence);
