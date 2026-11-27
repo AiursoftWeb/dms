@@ -96,6 +96,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Статус виконання недоступний.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Протерміновано</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Діє до</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Замерзні вхідні файли</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Обрану пакет Agent було замінено. Оновлення ще не розпочато.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Цей запит автоматично прострочено через 4 години без рішення. Подати новий запит, якщо операція все ще потрібна.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Цей робочий процес не приймає параметрів.</value>

@@ -21,8 +21,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="SkiaSharp" Version="4.157.0" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.157.0" />
+    <PackageReference Include="SkiaSharp" Version="4.158.0" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.158.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Aiursoft.Canon.ScheduledTasks" Version="10.0.19" />
@@ -37,7 +37,7 @@
     <Compile Include="../Aiursoft.DMS.Client/MachineWorkflowCli.cs" Link="MachineWorkflowCli.cs" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Aiursoft.DMS.Tests" />
+    <InternalsVisibleTo Include="Aiursoft.DMS.Tests"></InternalsVisibleTo>
   </ItemGroup>
   <Target Name="PrepareFrontendResources" BeforeTargets="AssignTargetPaths" Condition="'$(DesignTimeBuild)' != 'true'">
     <!-- Docker supplies the slimmed assets from its Node build stage. -->

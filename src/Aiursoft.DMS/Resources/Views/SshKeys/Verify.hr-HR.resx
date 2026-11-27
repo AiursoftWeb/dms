@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Anyone can copy a public key. This step proves you hold its private key, which stays on your computer." xml:space="preserve">
+    <value>Svatko može kopirati javni ključ. Ovaj korak dokazuje da posjedujete njegov privatni ključ, koji ostaje na vašem računalu.</value>
+  </data>
+  <data name="Back to SSH public keys" xml:space="preserve">
+    <value>Natrag na SSH javne ključeve</value>
+  </data>
+  <data name="Cancel adding this key" xml:space="preserve">
+    <value>Odustani od dodavanja ovog ključa</value>
+  </data>
+  <data name="Command copied" xml:space="preserve">
+    <value>Naredba kopirana</value>
+  </data>
+  <data name="Copy command" xml:space="preserve">
+    <value>Kopiraj naredbu</value>
+  </data>
+  <data name="I have a YubiKey / Hardware key" xml:space="preserve">
+    <value>Imam YubiKey / hardverski ključ</value>
+  </data>
+  <data name="I use a private key file" xml:space="preserve">
+    <value>Koristim datoteku privatnog ključa</value>
+  </data>
+  <data name="If time runs out, add the key again." xml:space="preserve">
+    <value>Ako istekne vrijeme, ponovno dodajte ključ.</value>
+  </data>
+  <data name="If your private key is stored elsewhere, change the path after -f. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Ako je vaš privatni ključ spremljen na drugom mjestu, promijenite putanju nakon -f. Zatim zalijepite potpuni potpis koji je ispisan naredbom.</value>
+  </data>
+  <data name="Make sure your key is loaded in your SSH agent (for example by running ssh-add -K for resident keys), then run:" xml:space="preserve">
+    <value>Pobrinite se da je vaš ključ učitani u SSH agent (na primjer pokretanjem ssh-add -K za rezidentne ključeve), zatim pokrenite:</value>
+  </data>
+  <data name="SSH signature" xml:space="preserve">
+    <value>SSH potpis</value>
+  </data>
+  <data name="Start again" xml:space="preserve">
+    <value>Započni ponovno</value>
+  </data>
+  <data name="Step 2 of 2" xml:space="preserve">
+    <value>Korak 2 od 2</value>
+  </data>
+  <data name="Terminal command" xml:space="preserve">
+    <value>Terminalna naredba</value>
+  </data>
+  <data name="The signature did not match. Run the command above with the private key for this public key and paste the complete result." xml:space="preserve">
+    <value>Potpis nije odgovarao. Pokrenite gornju naredbu s privatnim ključem za ovaj javni ključ i zalijepite kompletan rezultat.</value>
+  </data>
+  <data name="Time remaining" xml:space="preserve">
+    <value>Preostalo vrijeme</value>
+  </data>
+  <data name="To finish adding this key, run the command below on the computer that holds its private key." xml:space="preserve">
+    <value>Za dovršetak dodavanja ovog ključa, pokrenite navedenu komandu na računalu koje drži njegov privatni ključ.</value>
+  </data>
+  <data name="Touch your YubiKey when it flashes to complete the signing. Then paste the complete signature printed by the command." xml:space="preserve">
+    <value>Dodirnite svoj YubiKey kada zasvjetli kako biste dovršili potpisivanje. Zatim zalijepite potpuni potpis koji je ispisala naredba.</value>
+  </data>
+  <data name="Verification expired. This key was not added." xml:space="preserve">
+    <value>Vjerodostojnost je istekla. Ovaj ključ nije dodan.</value>
+  </data>
+  <data name="Verification expires at" xml:space="preserve">
+    <value>Verifikacija istječe u</value>
+  </data>
+  <data name="Verify and add key" xml:space="preserve">
+    <value>Potvrdi i dodaj ključ</value>
+  </data>
+  <data name="Verify your SSH public key" xml:space="preserve">
+    <value>Potvrdite svoj SSH javni ključ</value>
+  </data>
+
+</root>

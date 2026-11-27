@@ -96,6 +96,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Çalıştırma durumu kullanılamıyor.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Süresi Doldu</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Son kullanma tarihi</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Dondurulmuş girdi dosyaları</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Seçilen Agent paketi değiştirildi. Yükseltme başlatılmadı.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Bu istek, karar verilmeden 4 saat sonra otomatik olarak sona erdi. İşlem hâlâ gerekiyorsa yeni bir istek gönderin.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Bu iş akışı hiçbir parametre almaz.</value>

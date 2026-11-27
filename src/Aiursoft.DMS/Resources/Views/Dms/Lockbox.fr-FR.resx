@@ -99,6 +99,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>L&apos;état d&apos;exécution est indisponible.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expiré</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Expire le</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Fichiers d&apos;entrée figés</value>
   </data>
@@ -203,6 +209,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Le package d’agent sélectionné a été remplacé. La mise à niveau n’a pas démarré.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Cette demande a expiré automatiquement après 4 heures sans décision. Soumettez une nouvelle demande si l&apos;opération est toujours nécessaire.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Ce flux de travail ne prend aucun paramètre.</value>

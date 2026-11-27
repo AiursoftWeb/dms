@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All {0} requests" xml:space="preserve">
+    <value>Sve {0} zahtjeve</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Primijeni filtere</value>
+  </data>
+  <data name="Approved" xml:space="preserve">
+    <value>Odobreno</value>
+  </data>
+  <data name="Awaiting approval" xml:space="preserve">
+    <value>Čeka odobrenje</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Očisti</value>
+  </data>
+  <data name="Denied" xml:space="preserve">
+    <value>Odbijeno</value>
+  </data>
+  <data name="Execution status" xml:space="preserve">
+    <value>Status izvršavanja</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Isteklo</value>
+  </data>
+  <data name="High risk" xml:space="preserve">
+    <value>Visok rizik</value>
+  </data>
+  <data name="Low risk" xml:space="preserve">
+    <value>Nizak rizik</value>
+  </data>
+  <data name="Medium risk" xml:space="preserve">
+    <value>Umjerena rizika</value>
+  </data>
+  <data name="Needs a new request" xml:space="preserve">
+    <value>Potrebna je nova zahtjev</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Sljedeća</value>
+  </data>
+  <data name="No {0} requests are waiting for your review." xml:space="preserve">
+    <value>Nema {0} zahtjeva koji čekaju vašu provjeru.</value>
+  </data>
+  <data name="No {0} requests match these filters." xml:space="preserve">
+    <value>Nijedna {0} zahtjev ne odgovara ovim filterima.</value>
+  </data>
+  <data name="Open workflow" xml:space="preserve">
+    <value>Otvoreni radni tok</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Prethodna</value>
+  </data>
+  <data name="Ready for my review" xml:space="preserve">
+    <value>Spremno za moju reviziju</value>
+  </data>
+  <data name="Review" xml:space="preserve">
+    <value>Pregled</value>
+  </data>
+  <data name="Safe workflow" xml:space="preserve">
+    <value>Sigurni tijek rada</value>
+  </data>
+  <data name="Search {0} requests" xml:space="preserve">
+    <value>Pretraži {0} zahtjeve</value>
+  </data>
+  <data name="See all pending {0} requests" xml:space="preserve">
+    <value>Pogledajte sva zakašnjela {0} zahtjeva</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Prikaži</value>
+  </data>
+  <data name="Very high risk" xml:space="preserve">
+    <value>Vrlo visok rizik</value>
+  </data>
+  <data name="View {0} request" xml:space="preserve">
+    <value>Pregledaj zahtjev {0}</value>
+  </data>
+  <data name="Withdrawn" xml:space="preserve">
+    <value>Povučeno</value>
+  </data>
+  <data name="Workflow, requester, reason, or {0} ID" xml:space="preserve">
+    <value>Radni tijek, zahtjevatelj, razlog ili {0} ID</value>
+  </data>
+  <data name="{0} request pages" xml:space="preserve">
+    <value>{0} stranica zahtjeva</value>
+  </data>
+
+</root>

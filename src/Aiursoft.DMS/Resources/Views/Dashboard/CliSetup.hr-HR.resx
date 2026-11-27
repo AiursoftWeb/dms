@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="1. Install the CLI" xml:space="preserve">
+    <value>1. Instalirajte CLI</value>
+  </data>
+  <data name="2. Create a personal API key" xml:space="preserve">
+    <value>2. Stvorite osobni API ključ</value>
+  </data>
+  <data name="3. Sign in to this Controller" xml:space="preserve">
+    <value>3. Prijavite se na ovaj Kontroler</value>
+  </data>
+  <data name="4. Verify the connection" xml:space="preserve">
+    <value>4. Provjerite vezu</value>
+  </data>
+  <data name="Back to DMS" xml:space="preserve">
+    <value>Natrag na DMS</value>
+  </data>
+  <data name="Check which account and permissions the CLI is using." xml:space="preserve">
+    <value>Provjerite koji račun i dopuštenja koristi CLI.</value>
+  </data>
+  <data name="Existing DMS_SERVER and DMS_API_KEY environment variables override your saved login. Clear them to use the saved settings." xml:space="preserve">
+    <value>Postojeće varijable okruženja DMS_SERVER i DMS_API_KEY nadjačavaju vaše spremljene prijavne podatke. Izbrišite ih kako biste koristili spremljena postavka.</value>
+  </data>
+  <data name="Give the key a name and copy it as soon as it appears. DMS displays it only once." xml:space="preserve">
+    <value>Dajte ključu naziv i kopirajte ga čim se pojavi. DMS prikazuje ga samo jednom.</value>
+  </data>
+  <data name="If the CLI is already installed, update it with the command below." xml:space="preserve">
+    <value>Ako je CLI već instaliran, ažurirajte ga pomoću naredbe ispod.</value>
+  </data>
+  <data name="If you have permission to run Open workflows, try listing the machines with the CLI." xml:space="preserve">
+    <value>Ako imate dopuštenje za pokretanje otvorenih radnih tokova, pokušajte izlistati strojeve pomoću CLI-a.</value>
+  </data>
+  <data name="Install the .NET 10 SDK first, then run this in your terminal." xml:space="preserve">
+    <value>Prvo instalirajte .NET 10 SDK, a zatim pokrenite ovo u svom terminalu.</value>
+  </data>
+  <data name="Open API Keys" xml:space="preserve">
+    <value>Otvori API ključeve</value>
+  </data>
+  <data name="Run the login command, paste the personal API key at the hidden prompt, and press Enter." xml:space="preserve">
+    <value>Pokrenite naredbu za prijavu, zalijepite osobni API ključ na skrivenom upitu i pritisnite Enter.</value>
+  </data>
+  <data name="Run these commands on your computer to connect to this DMS Controller." xml:space="preserve">
+    <value>Izvedite ove naredbe na svom računalu kako biste se spojili s ovim DMS kontrolerom.</value>
+  </data>
+  <data name="Set up DMS CLI" xml:space="preserve">
+    <value>Postavite DMS CLI</value>
+  </data>
+  <data name="The CLI saves this address and your personal API key on your computer." xml:space="preserve">
+    <value>CLI sprema ovu adresu i vaš osobni API ključ na vašem računalu.</value>
+  </data>
+  <data name="This Controller" xml:space="preserve">
+    <value>Ovaj kontroler</value>
+  </data>
+
+</root>

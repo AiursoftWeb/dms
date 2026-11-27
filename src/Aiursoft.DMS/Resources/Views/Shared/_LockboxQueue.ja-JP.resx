@@ -39,6 +39,9 @@
   <data name="Execution status" xml:space="preserve">
     <value>実行状態</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>期限切れ</value>
+  </data>
   <data name="High risk" xml:space="preserve">
     <value>高リスク</value>
   </data>

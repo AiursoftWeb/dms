@@ -27,6 +27,9 @@
   <data name="Denied" xml:space="preserve">
     <value>مرفوض</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>منتهية</value>
+  </data>
   <data name="Withdrawn" xml:space="preserve">
     <value>مُسحَب</value>
   </data>

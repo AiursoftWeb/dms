@@ -27,6 +27,9 @@
   <data name="Denied" xml:space="preserve">
     <value>Απορρίφθηκε</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Ληγμένο</value>
+  </data>
   <data name="Withdrawn" xml:space="preserve">
     <value>Ανεκλήθηκε</value>
   </data>

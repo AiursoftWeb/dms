@@ -96,6 +96,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Suoritustila ei ole käytettävissä.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Vanhentunut</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Vapahtuu</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Jäädytetyt syöte tiedostot</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Valittu Agent-paketti on korvattu. Päivitys ei ole aloitettu.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Tämä pyyntö vanhentui automaattisesti 4 tunnin kuluttua ilman päätöstä. Lähetä uusi pyyntö, jos toiminto on edelleen tarpeen.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Tässä työvirrassa ei ole parametreja.</value>

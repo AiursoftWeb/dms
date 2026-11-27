@@ -99,6 +99,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>실행 상태를 사용할 수 없습니다.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>만료됨</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>만료 시각</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>동결된 입력 파일</value>
   </data>
@@ -206,6 +212,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>선택된 Agent 패키지가 교체되었습니다. 업그레이드가 시작되지 않았습니다.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>4시간 동안 결정이 내려지지 않아 이 요청이 자동으로 만료되었습니다. 작업이 여전히 필요한 경우 새 요청을 제출하세요.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>이 워크플로에는 매개 변수가 없습니다.</value>

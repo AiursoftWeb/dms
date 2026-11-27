@@ -96,6 +96,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Uitvoeringsstatus is niet beschikbaar.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Verlopen</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Verloopt om</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Bevroren invoerbestanden</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Het geselecteerde Agent-pakket is vervangen. De upgrade is niet gestart.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Dit verzoek is automatisch verlopen na 4 uur zonder beslissing. Dien een nieuw verzoek in als de bewerking nog steeds nodig is.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Deze workflow vereist geen parameters.</value>

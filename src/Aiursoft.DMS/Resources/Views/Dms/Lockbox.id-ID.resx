@@ -96,6 +96,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Status eksekusi tidak tersedia.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Kedaluwarsa</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Berlaku hingga</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Berkas input beku</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Paket Agent yang dipilih telah diganti. Pembaruan belum dimulai.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Permintaan ini kedaluwarsa secara otomatis setelah 4 jam tanpa keputusan. Ajukan permintaan baru jika operasi masih diperlukan.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Workflow ini tidak memerlukan parameter.</value>

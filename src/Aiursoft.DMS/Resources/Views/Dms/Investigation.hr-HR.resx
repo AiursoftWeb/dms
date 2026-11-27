@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="All kinds" xml:space="preserve">
+    <value>Sve vrste</value>
+  </data>
+  <data name="All origins" xml:space="preserve">
+    <value>Svi izvori</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Sva stanja</value>
+  </data>
+  <data name="Any approval mode" xml:space="preserve">
+    <value>Bilo koji način odobrenja</value>
+  </data>
+  <data name="Approver" xml:space="preserve">
+    <value>Odobravitelj</value>
+  </data>
+  <data name="Approver ID" xml:space="preserve">
+    <value>ID odobritelja</value>
+  </data>
+  <data name="Automatic approval" xml:space="preserve">
+    <value>Automatsko odobravanje</value>
+  </data>
+  <data name="Choose valid investigation filters and a time range of at most 31 days. Use ISO 8601 times with a UTC offset." xml:space="preserve">
+    <value>Odaberite valjite filtre za istragu i vremenski raspon od najviše 31 dan. Koristite ISO 8601 vremena s UTC pomakom.</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Događaj</value>
+  </data>
+  <data name="Event kind" xml:space="preserve">
+    <value>Vrsta događaja</value>
+  </data>
+  <data name="Event state" xml:space="preserve">
+    <value>Stanje događaja</value>
+  </data>
+  <data name="Instance workflow type" xml:space="preserve">
+    <value>Vrsta radnog toka instancije</value>
+  </data>
+  <data name="Investigation" xml:space="preserve">
+    <value>Ispitivanje</value>
+  </data>
+  <data name="Machine" xml:space="preserve">
+    <value>Stroj</value>
+  </data>
+  <data name="Machine ID" xml:space="preserve">
+    <value>ID stroja</value>
+  </data>
+  <data name="More filters" xml:space="preserve">
+    <value>Više filtera</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Dalje</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Ne</value>
+  </data>
+  <data name="No archived events match these filters." xml:space="preserve">
+    <value>Nijedan arhivirani događak ne odgovara ovim filtrima.</value>
+  </data>
+  <data name="Only archived events are shown. Recent changes may still be pending delivery. Event state is historical, not the current workflow state." xml:space="preserve">
+    <value>Prikazani su samo arhivirani događaji. Nedavne promjene mogu još uvijek čекати isporuku. Stanje događaja je povijesno, a ne trenutno stanje tijeka rada.</value>
+  </data>
+  <data name="Origin" xml:space="preserve">
+    <value>Podrijetlo</value>
+  </data>
+  <data name="People and approval" xml:space="preserve">
+    <value>Osobe i odobrenje</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Prethodna</value>
+  </data>
+  <data name="Recorded (UTC)" xml:space="preserve">
+    <value>Zabilježeno (UTC)</value>
+  </data>
+  <data name="Recorded from (inclusive, UTC)" xml:space="preserve">
+    <value>Zabilježeno od (uključivo, UTC)</value>
+  </data>
+  <data name="Recorded until (exclusive, UTC)" xml:space="preserve">
+    <value>Zabilježeno do (isključivo, UTC)</value>
+  </data>
+  <data name="Root workflow ID" xml:space="preserve">
+    <value>ID korijenskog tijeka rada</value>
+  </data>
+  <data name="Search archive" xml:space="preserve">
+    <value>Pretraži arhivu</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Stanje</value>
+  </data>
+  <data name="System schedule" xml:space="preserve">
+    <value>Sustavski raspored</value>
+  </data>
+  <data name="The default window is the last 24 hours. Each query supports at most 31 days." xml:space="preserve">
+    <value>Zadano razdoblje je posljednja 24 sata. Svaka upitna poduprima najviše 31 dan.</value>
+  </data>
+  <data name="The investigation archive is unavailable or not configured. Retry later; pending events remain durable." xml:space="preserve">
+    <value>Arhiva istraživanja nije dostupna ili nije konfigurirana. Pokušajte ponovno kasnije; odgođeni događaji ostaju trajni.</value>
+  </data>
+  <data name="Workflow" xml:space="preserve">
+    <value>Toks</value>
+  </data>
+  <data name="Workflow ID" xml:space="preserve">
+    <value>ID tijeka rada</value>
+  </data>
+  <data name="Workflow in the {0} request" xml:space="preserve">
+    <value>Tok u zahtjevu {0}</value>
+  </data>
+  <data name="Workflow type in the {0} request" xml:space="preserve">
+    <value>Vrsta tijeka u zahtjevu {0}</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Da</value>
+  </data>
+  <data name="{0} ID" xml:space="preserve">
+    <value>{0} ID</value>
+  </data>
+  <data name="{0} request" xml:space="preserve">
+    <value>{0} zahtjev</value>
+  </data>
+  <data name="{0} requester" xml:space="preserve">
+    <value>{0} zahtjevatelj</value>
+  </data>
+  <data name="{0} requester ID" xml:space="preserve">
+    <value>ID zahtjevnika {0}</value>
+  </data>
+
+</root>

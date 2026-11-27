@@ -99,6 +99,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>実行ステータスは利用できません。</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>期限切れ</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>有効期限</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>固定された入力ファイル</value>
   </data>
@@ -206,6 +212,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>選択された Agent パッケージは置き換えられました。アップグレードはまだ開始されていません。</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>このリクエストは4時間以内に決定されなかったため、自動的に期限切れになりました。操作が引き続き必要な場合は、新しいリクエストを送信してください。</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>このワークフローにはパラメータがありません。</value>
