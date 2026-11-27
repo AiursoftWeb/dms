@@ -13,21 +13,21 @@ internal sealed class DatabaseUpsertCommand : DmsCommandHandler
     private readonly Option<string> _reason = new("--reason")
         { Required = true, Description = "Reason recorded in the Lockbox." };
     private readonly Option<string?> _connection = new("--connection")
-        { Description = "Registered connection profile name from dms machine database discover." };
+        { Description = "Registered connection profile name from dms machine database discover (mutually exclusive with --container)." };
     private readonly Option<string?> _container = new("--container")
-        { Description = "Local database container full 64-hex ID from dms machine database discover." };
+        { Description = "Local database container full 64-hex ID from dms machine database discover (mutually exclusive with --connection)." };
     private readonly Option<string> _database = new("--database")
         { Required = true, Description = "Target database name." };
     private readonly Option<string> _table = new("--table")
         { Required = true, Description = "Target table name." };
     private readonly Option<string[]> _match = new("--match")
-        { Required = true, AllowMultipleArgumentsPerToken = true, Description = "Primary/unique key column(s) used to match the existing row." };
+        { Required = true, AllowMultipleArgumentsPerToken = true, Description = "Primary/unique key column name(s) used to match the existing row (repeatable)." };
     private readonly Option<string[]?> _set = new("--set")
-        { AllowMultipleArgumentsPerToken = true, Description = "Non-secret string column assignment(s) in Column=Value form." };
+        { AllowMultipleArgumentsPerToken = true, Description = "Non-secret string column assignment(s) in Column=Value form (repeatable)." };
     private readonly Option<string?> _valuesJson = new("--values-json")
         { Description = "Optional JSON object of typed non-secret column values (numbers, booleans, null, strings)." };
     private readonly Option<string[]?> _secretColumn = new("--secret-column")
-        { AllowMultipleArgumentsPerToken = true, Description = "Sensitive column name(s) whose values are read privately and never stored in Lockbox/audit." };
+        { AllowMultipleArgumentsPerToken = true, Description = "Sensitive column name(s) read privately and never stored in Lockbox/audit (repeatable)." };
     private readonly Option<bool> _secretStdin = new("--secret-stdin")
         { Description = "Read confidential secret value(s) from stdin (single line for one secret column, or JSON object for multiple)." };
     private readonly Option<int> _timeout = new("--timeout-seconds")

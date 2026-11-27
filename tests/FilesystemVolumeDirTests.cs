@@ -131,13 +131,19 @@ public class FilesystemVolumeDirTests
         Assert.AreEqual(0, mkdirHelp.ProgramReturn, mkdirHelp.StdErr);
         StringAssert.Contains(mkdirHelp.StdOut, "--uid");
         StringAssert.Contains(mkdirHelp.StdOut, "--gid");
-        StringAssert.Contains(mkdirHelp.StdOut, "0755");
+        StringAssert.Contains(mkdirHelp.StdOut, "[default: 0700]");
 
         var prepHelp = await cli.TestRunAsync(["machine", "filesystem", "prepare-volume-dir", "--help"]);
         Assert.AreEqual(0, prepHelp.ProgramReturn, prepHelp.StdErr);
         StringAssert.Contains(prepHelp.StdOut, "/swarm-vol/");
         StringAssert.Contains(prepHelp.StdOut, "--uid");
         StringAssert.Contains(prepHelp.StdOut, "--gid");
+        StringAssert.Contains(prepHelp.StdOut, "[default: 0755]");
+
+        Assert.AreEqual(448, DmsCommandApp.ParseUnixModeValue("0700"));
+        Assert.AreEqual(493, DmsCommandApp.ParseUnixModeValue("0755"));
+        Assert.AreEqual(488, DmsCommandApp.ParseUnixModeValue("0o750"));
+        Assert.AreEqual(493, DmsCommandApp.ParseUnixModeValue("493"));
 
         // Invalid octal digit (0888) rejected by CLI parser
         var badMode = await cli.TestRunAsync(["machine", "filesystem", "prepare-volume-dir", "--path", "/swarm-vol/app", "--mode", "0888", "--reason", "test"]);

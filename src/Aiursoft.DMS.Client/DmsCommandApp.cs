@@ -233,7 +233,7 @@ public static partial class DmsCommandApp
                 NewAptMaintenanceCommand(AptMaintenance.UpgradeAll),
                 NewAptMaintenanceCommand(AptMaintenance.Autoremove)
             ]),
-            new Group("database", "Inspect and query configured database containers on a machine.",
+            new Group("database", "Inspect, query, and update databases on a machine.",
             [
                 NewDatabaseDiscoverCommand(),
                 NewDatabaseListDatabasesCommand(),
@@ -380,17 +380,17 @@ public static partial class DmsCommandApp
             Required = true,
             Description = "Exact stage-4 stack name to render in memory and deploy via docker stack deploy."
         };
-        var pull = new Option<bool>("--pull")
+        var noPull = new Option<bool>("--no-pull")
         {
-            DefaultValueFactory = _ => true,
-            Description = "Fast-forward the local Box repository before deploying (default true)."
+            DefaultValueFactory = _ => false,
+            Description = "Skip fast-forwarding the local Box repository before deploying."
         };
         return StandardCommand("deploy-stack",
             "Deploy one stage-4 Box stack directly without rebuilding unrelated stage images.",
             MachineWorkflows.BoxDeployStack,
-            context => new BoxDeployStackInput(context.GetValue(stack)!, context.GetValue(pull)),
+            context => new BoxDeployStackInput(context.GetValue(stack)!, !context.GetValue(noPull)),
             stack,
-            pull);
+            noPull);
     }
 
     private static ActionCommand DirectoryUsageCommand()
