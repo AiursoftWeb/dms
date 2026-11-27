@@ -1,5 +1,7 @@
 using Aiursoft.CommandFramework.Framework;
 using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Globalization;
 using System.Text.Json;
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.SDK;
@@ -107,6 +109,33 @@ public static partial class DmsCommandApp
             depth);
     }
 
+    private static int ParseUnixMode(ArgumentResult result, int fallback)
+    {
+        if (result.Tokens.Count == 0) return fallback;
+        var raw = result.Tokens[0].Value.Trim();
+        int parsed;
+        try
+        {
+            if (raw.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+                parsed = Convert.ToInt32(raw[2..], 8);
+            else if (raw.Length > 1 && raw[0] == '0')
+                parsed = Convert.ToInt32(raw, 8);
+            else
+                parsed = int.Parse(raw, CultureInfo.InvariantCulture);
+        }
+        catch (Exception)
+        {
+            result.AddError("Mode must be octal (for example 0700 or 0755) or decimal (0 to 511).");
+            return fallback;
+        }
+        if (parsed is < 0 or > 511)
+        {
+            result.AddError("Mode must contain only the nine rwx permission bits (0000 to 0777 / 0 to 511).");
+            return fallback;
+        }
+        return parsed;
+    }
+
     private static ActionCommand NewFilesystemMkdirCommand()
     {
         var path = new Option<string>("--path")
@@ -114,14 +143,48 @@ public static partial class DmsCommandApp
         var parents = new Option<bool>("--parents")
             { DefaultValueFactory = _ => false, Description = "Create missing parent directories." };
         var mode = new Option<int>("--mode")
-            { DefaultValueFactory = _ => 448, Description = "Directory mode in decimal (448 is octal 0700)." };
+        {
+            DefaultValueFactory = _ => 448,
+            CustomParser = r => ParseUnixMode(r, 448),
+            Description = "Directory mode in octal (0700, 0755) or decimal (448 = 0700)."
+        };
+        var uid = new Option<int?>("--uid")
+            { Description = "Optional numeric UID to apply to newly created directories only." };
+        var gid = new Option<int?>("--gid")
+            { Description = "Optional numeric GID to apply to newly created directories only." };
         return StandardCommand("mkdir",
             "Create a directory on a machine.",
             OperationsWorkflows.FilesystemMkdir,
-            p => new MakeDirectoryInput(p.GetValue(path)!, p.GetValue(parents), p.GetValue(mode)),
+            p => new MakeDirectoryInput(p.GetValue(path)!, p.GetValue(parents), p.GetValue(mode), p.GetValue(uid), p.GetValue(gid)),
             path,
             parents,
-            mode);
+            mode,
+            uid,
+            gid);
+    }
+
+    private static ActionCommand NewFilesystemPrepareVolumeDirCommand()
+    {
+        var path = new Option<string>("--path")
+            { Required = true, Description = "Subdirectory path under /swarm-vol/ (excluding boxfor* repos)." };
+        var mode = new Option<int>("--mode")
+        {
+            DefaultValueFactory = _ => 493,
+            CustomParser = r => ParseUnixMode(r, 493),
+            Description = "Directory mode in octal (default 0755) or decimal (493 = 0755)."
+        };
+        var uid = new Option<int?>("--uid")
+            { Description = "Optional numeric UID to apply to the prepared volume directory." };
+        var gid = new Option<int?>("--gid")
+            { Description = "Optional numeric GID to apply to the prepared volume directory." };
+        return StandardCommand("prepare-volume-dir",
+            "Idempotently create and set permissions/ownership on a service data directory under /swarm-vol/.",
+            OperationsWorkflows.FilesystemPrepareVolumeDir,
+            p => new PrepareVolumeDirectoryInput(p.GetValue(path)!, p.GetValue(mode), p.GetValue(uid), p.GetValue(gid)),
+            path,
+            mode,
+            uid,
+            gid);
     }
 
     private static ActionCommand NewFilesystemCpCommand()
@@ -691,6 +754,16 @@ public static partial class DmsCommandApp
             since);
     }
 
+    private static ActionCommand NewSwarmServiceEnvSummaryCommand()
+    {
+        var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
+        return StandardCommand("env-summary",
+            "Show a Swarm service's spec and running task environment variables with sensitive values redacted.",
+            OperationsWorkflows.SwarmServiceEnvSummary,
+            p => new SwarmServiceInput(p.GetValue(service)!),
+            service);
+    }
+
     private static ActionCommand NewSwarmServiceRolloutStatusCommand()
     {
         var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
@@ -701,6 +774,28 @@ public static partial class DmsCommandApp
             service);
         command.CommandAliases = ["update-status"];
         return command;
+    }
+
+    private static ActionCommand NewSwarmServiceRollingRestartCommand()
+    {
+        var service = new Option<string>("--service") { Required = true, Description = "Swarm service name or ID." };
+        var allowDowntime = new Option<bool>("--allow-downtime")
+        {
+            DefaultValueFactory = _ => false,
+            Description = "Allow rolling restart when UpdateConfig.Order is stop-first (causes brief downtime)."
+        };
+        var timeoutSeconds = new Option<int>("--timeout-seconds")
+        {
+            DefaultValueFactory = _ => 180,
+            Description = "Seconds to wait for replacement tasks to converge (10 to 600)."
+        };
+        return StandardCommand("rolling-restart",
+            "Force a same-image rolling restart of a replicated Swarm service and wait for convergence.",
+            OperationsWorkflows.SwarmServiceRollingRestart,
+            p => new SwarmRollingRestartInput(p.GetValue(service)!, p.GetValue(allowDowntime), p.GetValue(timeoutSeconds)),
+            service,
+            allowDowntime,
+            timeoutSeconds);
     }
 
     private static ActionCommand NewSwarmServiceStopCommand()
@@ -1070,51 +1165,60 @@ public static partial class DmsCommandApp
             _ => new EmptyInput());
     }
 
+    private static Option<string?> DatabaseConnectionOption() => new("--connection")
+        { Description = "Registered connection profile name from dms machine database discover (mutually exclusive with --container)." };
+
+    private static Option<string?> DatabaseContainerOption() => new("--container")
+        { Description = "Local database container full 64-hex ID from dms machine database discover (mutually exclusive with --connection)." };
+
     private static ActionCommand NewDatabaseListDatabasesCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         return StandardCommand("list-databases",
-            "List databases available through a configured connection.",
+            "List databases available through a configured connection or local database container.",
             OperationsWorkflows.DatabaseListDatabases,
-            p => new DatabaseInput(p.GetValue(connection)!),
-            connection);
+            p => new DatabaseInput(p.GetValue(connection), p.GetValue(container)),
+            connection,
+            container);
     }
 
     private static ActionCommand NewDatabaseListTablesCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         var database = new Option<string>("--database")
             { Required = true, Description = "Database name from list-databases." };
         return StandardCommand("list-tables",
             "List tables in the specified database.",
             OperationsWorkflows.DatabaseListTables,
-            p => new DatabaseNameInput(p.GetValue(connection)!, p.GetValue(database)!),
+            p => new DatabaseNameInput(p.GetValue(connection), p.GetValue(database)!, p.GetValue(container)),
             connection,
+            container,
             database);
     }
 
     private static ActionCommand NewDatabaseDescribeTableCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         var database = new Option<string>("--database")
             { Required = true, Description = "Database name from list-databases." };
         var table = new Option<string>("--table") { Required = true, Description = "Table name from list-tables." };
         return StandardCommand("describe-table",
             "Show a database table's columns and types.",
             OperationsWorkflows.DatabaseDescribeTable,
-            p => new DatabaseTableInput(p.GetValue(connection)!, p.GetValue(database)!, p.GetValue(table)!),
+            p => new DatabaseTableInput(p.GetValue(connection), p.GetValue(database)!, p.GetValue(table)!, p.GetValue(container)),
             connection,
+            container,
             database,
             table);
     }
 
     private static ActionCommand NewDatabaseQueryTableCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         var database = new Option<string>("--database")
             { Required = true, Description = "Database name from list-databases." };
         var table = new Option<string>("--table") { Required = true, Description = "Table name from list-tables." };
@@ -1139,7 +1243,7 @@ public static partial class DmsCommandApp
         return StandardCommand("query-table",
             "Read selected table columns with optional filters and sorting.",
             OperationsWorkflows.DatabaseQueryTable,
-            p => new DatabaseQueryInput(p.GetValue(connection)!,
+            p => new DatabaseQueryInput(p.GetValue(connection),
                 p.GetValue(database)!,
                 p.GetValue(table)!,
                 p.GetValue(column)!,
@@ -1147,8 +1251,10 @@ public static partial class DmsCommandApp
                 p.GetValue(sortBy),
                 p.GetValue(descending),
                 p.GetValue(limit),
-                p.GetValue(offset)),
+                p.GetValue(offset),
+                p.GetValue(container)),
             connection,
+            container,
             database,
             table,
             column,
@@ -1161,8 +1267,10 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewDatabaseQuerySqlCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
+        var database = new Option<string?>("--database")
+            { Description = "Optional default database name when targeting a container with --container." };
         var sqlFile = new Option<string>("--sql-file")
             { Required = true, Description = "Path to a local SQL file. Its contents are uploaded for review." };
         var timeoutSeconds = new Option<int>("--timeout-seconds")
@@ -1172,11 +1280,15 @@ public static partial class DmsCommandApp
         return PreparedOperation("query-sql",
             "Run a read-only SQL query from a local file.",
             OperationsWorkflows.DatabaseQuerySql,
-            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection)!,
+            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection),
                 await PrepareOperationTextAsync(client, p.GetValue(sqlFile)!, 131072, requestId),
                 p.GetValue(timeoutSeconds),
-                p.GetValue(maxRows)),
+                p.GetValue(maxRows),
+                p.GetValue(container),
+                p.GetValue(database)),
             connection,
+            container,
+            database,
             sqlFile,
             timeoutSeconds,
             maxRows);
@@ -1184,8 +1296,10 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewDatabaseExecuteSqlCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
+        var database = new Option<string?>("--database")
+            { Description = "Optional default database name when targeting a container with --container." };
         var sqlFile = new Option<string>("--sql-file")
             { Required = true, Description = "Path to a local SQL file. Its contents are uploaded for review." };
         var timeoutSeconds = new Option<int>("--timeout-seconds")
@@ -1195,11 +1309,15 @@ public static partial class DmsCommandApp
         return PreparedOperation("execute-sql",
             "Execute SQL from a file, including writes or schema changes.",
             OperationsWorkflows.DatabaseExecuteSql,
-            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection)!,
+            async (client, p, requestId) => new DatabaseSqlInput(p.GetValue(connection),
                 await PrepareOperationTextAsync(client, p.GetValue(sqlFile)!, 131072, requestId),
                 p.GetValue(timeoutSeconds),
-                p.GetValue(maxRows)),
+                p.GetValue(maxRows),
+                p.GetValue(container),
+                p.GetValue(database)),
             connection,
+            container,
+            database,
             sqlFile,
             timeoutSeconds,
             maxRows);
@@ -1207,13 +1325,14 @@ public static partial class DmsCommandApp
 
     private static ActionCommand NewDatabaseDiagnosticsCommand()
     {
-        var connection = new Option<string>("--connection")
-            { Required = true, Description = "Connection name from dms machine database discover." };
+        var connection = DatabaseConnectionOption();
+        var container = DatabaseContainerOption();
         return StandardCommand("diagnostics",
             "Inspect a database's active queries, connections, and resource usage.",
             OperationsWorkflows.DatabaseDiagnostics,
-            p => new DatabaseInput(p.GetValue(connection)!),
-            connection);
+            p => new DatabaseInput(p.GetValue(connection), p.GetValue(container)),
+            connection,
+            container);
     }
 
     private static ActionCommand NewNetworkingInterfacesCommand()

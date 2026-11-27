@@ -58,9 +58,9 @@ The Controller applies the [workflow risk classification policy](workflow-risk.m
 
 Paths in this table follow `dms machine`. All listed options are operation-specific; common submission, authentication and formatting options are described above. `required` marks mandatory options; `=value` shows a default. Run the command with `--help` for the complete syntax. Repeated package/node/column options accept multiple arguments.
 
-### Filesystem (14)
+### Filesystem (15)
 
-Literal paths, bounded text reads and explicit directory recursion. File transfers reject links and special entries. `mkdir --mode` is a decimal permission bitmask: the default 448 means octal 0700.
+Literal paths, bounded text reads and explicit directory recursion. File transfers reject links and special entries. `mkdir` (v2) and `prepare-volume-dir` accept octal (`0755`, `0o755`) or decimal (`493`) `--mode` values plus optional numeric `--uid` and `--gid` (with `--no-dereference`, applied only to newly created directories in `mkdir`, and idempotently within `/swarm-vol/<app>/...` in `prepare-volume-dir` while blocking `boxfor*` and hidden top-level paths).
 
 | Command | Risk | Options |
 | --- | --- | --- |
@@ -73,7 +73,8 @@ Literal paths, bounded text reads and explicit directory recursion. File transfe
 | `filesystem download` | Low | `--path` required; `--recursive`; `--output-file`; `--max-bytes=268435456`; requires read permission for other users |
 | `filesystem download-as-root` | VeryHigh | `--path` required; `--recursive`; `--output-file`; `--max-bytes=268435456`; reads with Agent privileges |
 | `filesystem find` | Low | `--path` required; `--name`; `--min-bytes`; `--modified-after`; `--limit=200`; `--depth=5` |
-| `filesystem mkdir` | Medium | `--path` required; `--parents`; `--mode=448` |
+| `filesystem mkdir` | Medium | `--path` required; `--parents`; `--mode=0700` (octal or decimal); `--uid`; `--gid` |
+| `filesystem prepare-volume-dir` | Medium | `--path` required (under `/swarm-vol/`); `--mode=0755` (octal or decimal); `--uid`; `--gid` |
 | `filesystem cp` | VeryHigh | `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 | `filesystem mv` | VeryHigh | `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 | `filesystem export` | Low | `--path` required; `--recursive`; `--max-bytes=268435456`; requires read permission for other users |
@@ -194,17 +195,19 @@ Runtime/health/image evidence excludes raw container environment and secret cont
 | `docker filesystem cp-to` | VeryHigh | `--container` required; `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 | `docker filesystem cp-from` | VeryHigh | `--container` required; `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 
-### Swarm services (9)
+### Swarm services (11)
 
-Manager-local operations. Changes require an expected service version and the explicit Swarm node IDs displayed by service inspect. Replicated services are supported; global/job services are rejected before changing them. See rollout semantics below.
+Manager-local operations. `swarm service rolling-restart` increments `ForceUpdate` in place (preserving image and config), refuses `stop-first` services unless `--allow-downtime` is explicitly set, and waits for rollout convergence. `swarm service env-summary` reports spec and running task environment variables while redacting sensitive values as `[redacted len=N]`. Other Swarm mutations require an expected service version and the explicit Swarm node IDs displayed by service inspect. Replicated services are supported; global/job services are rejected before changing them.
 
 | Command | Risk | Options |
 | --- | --- | --- |
 | `swarm service list` | Low | — |
 | `swarm service inspect` | Low | `--service` required |
+| `swarm service env-summary` | Low | `--service` required |
 | `swarm service ps` | Low | `--service` required |
 | `swarm service logs` | Low | `--service` required; `--lines=100`; `--since` |
 | `swarm service rollout-status` | Low | `--service` required. The previous `update-status` spelling is an alias. |
+| `swarm service rolling-restart` | Medium | `--service` required; `--allow-downtime=false`; `--timeout-seconds=180` |
 | `swarm service stop` | Medium | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
 | `swarm service start` | Medium | `--service` required; `--expected-version` required; `--node-id` required; `--replicas=1`; `--timeout-seconds=120` |
 | `swarm service update` | High | `--service` required; `--expected-version` required; `--node-id` required; `--image` required; `--timeout-seconds=120` |
@@ -233,20 +236,21 @@ System/clock/boot observations, systemd state/journal/timers, package inspection
 | `system poweroff` | Medium | `--delay-seconds=15` (alias `--countdown-seconds`) |
 | `system execute-script` | High | `--language` required; `--script-file` required; `--timeout-seconds=60` |
 
-### Database containers (8)
+### Database containers (9)
 
-The `machine database` commands use registered MySQL and PostgreSQL containers on the target machine. Database discovery lists local containers and the configured connection names.
+The `machine database` commands accept either a registered connection profile (`--connection`) or a local MySQL, MariaDB, or PostgreSQL container full 64-hex ID (`--container`) returned by `database discover`. When targeting `--container`, the Agent reads database credentials strictly inside the container process (never emitting passwords to host environment variables, traces, or Lockbox records) and wraps read-only queries in an explicit read-only transaction with engine-specific statement timeouts. `database upsert` inserts or updates one structured row and transfers optional `--secret-column` values out-of-band over HTTPS so secrets never enter Lockbox, audit, or trace logs.
 
 | Command | Risk | Options |
 | --- | --- | --- |
 | `database discover` | Low | — |
-| `database list-databases` | Low | `--connection` required |
-| `database list-tables` | Low | `--connection` required; `--database` required |
-| `database describe-table` | Low | `--connection` required; `--database` required; `--table` required |
-| `database query-table` | Low | `--connection` required; `--database` required; `--table` required; `--column` required; `--filters`; `--sort-by`; `--descending`; `--limit=100`; `--offset=0` |
-| `database query-sql` | Low | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
-| `database execute-sql` | High | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
-| `database diagnostics` | Low | `--connection` required |
+| `database list-databases` | Low | `--connection` or `--container` required |
+| `database list-tables` | Low | `--connection` or `--container` required; `--database` required |
+| `database describe-table` | Low | `--connection` or `--container` required; `--database` required; `--table` required |
+| `database query-table` | Low | `--connection` or `--container` required; `--database` required; `--table` required; `--column` required; `--filters`; `--sort-by`; `--descending`; `--limit=100`; `--offset=0` |
+| `database query-sql` | Low | `--connection` or `--container` required; `--database` optional; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
+| `database execute-sql` | High | `--connection` or `--container` required; `--database` optional; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
+| `database upsert` | High | `--connection` or `--container` required; `--database` required; `--table` required; `--match` required; `--set` / `--values-json`; `--secret-column`; `--secret-stdin`; `--timeout-seconds=30` |
+| `database diagnostics` | Low | `--connection` or `--container` required |
 
 ### ClickHouse (6)
 

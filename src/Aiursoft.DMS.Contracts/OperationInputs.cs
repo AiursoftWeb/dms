@@ -42,6 +42,16 @@ public static partial class OperationValidation
             throw new ArgumentException("Use a simple database identifier.");
     }
 
+    public static void DatabaseTarget(string? connection, string? container)
+    {
+        var hasConnection = !string.IsNullOrWhiteSpace(connection);
+        var hasContainer = !string.IsNullOrWhiteSpace(container);
+        if (hasConnection == hasContainer)
+            throw new ArgumentException("Specify exactly one of --connection or --container.");
+        if (hasConnection) Name(connection);
+        else new DockerContainerInput(container!).Validate();
+    }
+
     public static void Limit(int count, int maximum = 1000)
     {
         if (count < 1 || count > maximum) throw new ArgumentException($"Limit must be between 1 and {maximum}.");
@@ -102,13 +112,38 @@ public sealed record FindFilesInput(
     }
 }
 
-public sealed record MakeDirectoryInput(string Path, bool Parents = false, int Mode = 448) : IOperationInput
+public sealed record MakeDirectoryInput(string Path, bool Parents = false, int Mode = 448, int? Uid = null, int? Gid = null) : IOperationInput
 {
     public void Validate()
     {
         OperationValidation.Path(Path, false);
         if (Mode is < 0 or > 511)
             throw new ArgumentException("Mode must contain only the nine rwx permission bits (default 448 = 0700).");
+        if (Uid is < 0 || Gid is < 0)
+            throw new ArgumentException("UID and GID must be non-negative integers.");
+    }
+}
+
+public sealed record PrepareVolumeDirectoryInput(string Path, int Mode = 493, int? Uid = null, int? Gid = null) : IOperationInput
+{
+    public const string AllowedRoot = "/swarm-vol";
+
+    public void Validate()
+    {
+        OperationValidation.Path(Path, false);
+        if (Mode is < 0 or > 511)
+            throw new ArgumentException("Mode must contain only the nine rwx permission bits (default 493 = 0755).");
+        if (Uid is < 0 || Gid is < 0)
+            throw new ArgumentException("UID and GID must be non-negative integers.");
+        if (!Path.StartsWith(AllowedRoot + "/", StringComparison.Ordinal))
+            throw new ArgumentException($"Path must be a subdirectory under {AllowedRoot}/.");
+        var relative = Path[(AllowedRoot.Length + 1)..];
+        var segments = relative.Split('/');
+        if (segments.Length == 0 || segments.Any(s => string.IsNullOrEmpty(s) || s is "." or ".."))
+            throw new ArgumentException($"Path must be a normalized subdirectory under {AllowedRoot}/.");
+        var topSegment = segments[0];
+        if (topSegment.StartsWith("boxfor", StringComparison.OrdinalIgnoreCase) || topSegment.StartsWith('.'))
+            throw new ArgumentException("Box repository directories and hidden top-level entries under /swarm-vol cannot be modified by prepare-volume-dir.");
     }
 }
 
@@ -282,6 +317,16 @@ public sealed record SwarmLogsInput(string Service, int Lines = 100, DateTimeOff
     }
 }
 
+public sealed record SwarmRollingRestartInput(string Service, bool AllowDowntime = false, int TimeoutSeconds = 180) : IOperationInput
+{
+    public void Validate()
+    {
+        OperationValidation.Name(Service);
+        if (TimeoutSeconds is < 10 or > 600)
+            throw new ArgumentException("Convergence timeout must be 10 to 600 seconds.");
+    }
+}
+
 public sealed record SwarmChangeInput(
     string Service,
     long ExpectedVersion,
@@ -426,25 +471,25 @@ public sealed record ScriptInput(string Language, ArtifactReference Artifact, in
     }
 }
 
-public sealed record DatabaseInput(string Connection) : IOperationInput
+public sealed record DatabaseInput(string? Connection, string? Container = null) : IOperationInput
 {
-    public void Validate() => OperationValidation.Name(Connection);
+    public void Validate() => OperationValidation.DatabaseTarget(Connection, Container);
 }
 
-public sealed record DatabaseNameInput(string Connection, string Database) : IOperationInput
+public sealed record DatabaseNameInput(string? Connection, string Database, string? Container = null) : IOperationInput
 {
     public void Validate()
     {
-        OperationValidation.Name(Connection);
+        OperationValidation.DatabaseTarget(Connection, Container);
         OperationValidation.Identifier(Database);
     }
 }
 
-public sealed record DatabaseTableInput(string Connection, string Database, string Table) : IOperationInput
+public sealed record DatabaseTableInput(string? Connection, string Database, string Table, string? Container = null) : IOperationInput
 {
     public void Validate()
     {
-        new DatabaseNameInput(Connection, Database).Validate();
+        new DatabaseNameInput(Connection, Database, Container).Validate();
         OperationValidation.Identifier(Table);
     }
 }
@@ -464,7 +509,7 @@ public sealed record DatabaseFilter(string Column, string Operator, JsonElement 
 }
 
 public sealed record DatabaseQueryInput(
-    string Connection,
+    string? Connection,
     string Database,
     string Table,
     string[] Columns,
@@ -472,11 +517,12 @@ public sealed record DatabaseQueryInput(
     string? SortBy = null,
     bool Descending = false,
     int Limit = 100,
-    int Offset = 0) : IOperationInput
+    int Offset = 0,
+    string? Container = null) : IOperationInput
 {
     public void Validate()
     {
-        new DatabaseTableInput(Connection, Database, Table).Validate();
+        new DatabaseTableInput(Connection, Database, Table, Container).Validate();
         ArgumentNullException.ThrowIfNull(Columns);
         if (Columns.Length is < 1 or > 100 || Filters is { Length: > 20 })
             throw new ArgumentException("Select 1 to 100 explicit columns and at most 20 filters.");
@@ -494,14 +540,17 @@ public sealed record DatabaseQueryInput(
 }
 
 public sealed record DatabaseSqlInput(
-    string Connection,
+    string? Connection,
     ArtifactReference Artifact,
     int TimeoutSeconds = 30,
-    int MaxRows = 1000) : IOperationInput, IAuditTextInput
+    int MaxRows = 1000,
+    string? Container = null,
+    string? Database = null) : IOperationInput, IAuditTextInput
 {
     public void Validate()
     {
-        OperationValidation.Name(Connection);
+        OperationValidation.DatabaseTarget(Connection, Container);
+        if (Database != null) OperationValidation.Identifier(Database);
         OperationValidation.Limit(MaxRows, 10000);
         ArgumentNullException.ThrowIfNull(Artifact);
         Artifact.Validate();

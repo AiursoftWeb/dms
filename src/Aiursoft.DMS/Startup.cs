@@ -74,6 +74,7 @@ public class Startup : IWebStartup
         services.AddScoped<Services.Dms.WorkflowService>();
         services.AddSingleton<Services.Dms.AgentReleaseStore>();
         services.AddSingleton<Services.Dms.BoxSecretTransfers>();
+        services.AddSingleton<Services.Dms.DatabaseSecretTransfers>();
         services.AddSingleton<Services.Dms.WorkflowCatalog>();
         services.AddScoped<Services.Dms.AgentEvents>();
         services.AddScoped<Services.Dms.TraceDatabase>();
@@ -115,7 +116,7 @@ public class Startup : IWebStartup
             startDelay: TimeSpan.FromMinutes(5));
         services.RegisterScheduledTask(
             registration: sshKeyVerificationCleanupJob,
-            period: TimeSpan.FromMinutes(1),
+            period:     TimeSpan.FromMinutes(1),
             startDelay: TimeSpan.FromMinutes(1));
 
         // Controllers and localization

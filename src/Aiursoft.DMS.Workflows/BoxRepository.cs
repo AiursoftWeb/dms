@@ -47,10 +47,14 @@ internal static partial class BoxRepository
         box_git merge --ff-only --no-autostash "$target"
         """;
 
+    internal static Task<string> PreflightRevisionAsync(
+        MachineWorkflowContext context, string repository, string git, CancellationToken token) =>
+        RevisionAsync(context, ["/bin/bash", "-c", Preflight, "dms-box-preflight", repository, git, OfficialOriginPattern], token);
+
     internal static async Task<BoxUpdateResult> UpdateAsync(
         MachineWorkflowContext context, string repository, string git, string gitConfigurationPath, CancellationToken token)
     {
-        var previous = await RevisionAsync(context, ["/bin/bash", "-c", Preflight, "dms-box-preflight", repository, git, OfficialOriginPattern], token);
+        var previous = await PreflightRevisionAsync(context, repository, git, token);
         await context.TraceAsync($"Updating Box master with fast-forward only; previous commit {previous}. Private .env.prod is retained.");
         var identity = BoxGitConfiguration.Read(gitConfigurationPath);
         List<string> arguments = ["GIT_TERMINAL_PROMPT=0"];

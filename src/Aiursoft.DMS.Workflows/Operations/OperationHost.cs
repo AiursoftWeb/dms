@@ -12,15 +12,18 @@ public interface IAgentArtifactTransport
 }
 
 public sealed record NativeCommand(string Executable, IReadOnlyList<string> Arguments, int TimeoutSeconds = 60,
-    string? StandardInput = null, IReadOnlyDictionary<string, string>? Environment = null, int MaxCharacters = 4194304);
+    string? StandardInput = null, IReadOnlyDictionary<string, string>? Environment = null, int MaxCharacters = 4194304,
+    string? WorkingDirectory = null);
 public sealed record NativeResult(int ExitCode, string Output, string Error);
 
 // Injectable only by compiled hosts/tests, never by a submitted workflow parameter.
-public sealed class OperationHost(string root = "/", Func<NativeCommand, CancellationToken, Task<NativeResult>>? native = null)
+public sealed class OperationHost(string root = "/", Func<NativeCommand, CancellationToken, Task<NativeResult>>? native = null,
+    Func<HttpClient>? dockerHttp = null)
 {
     public static OperationHost Default { get; } = new();
     public string FilePath(string path) => root == "/" ? path : Path.Combine(root, path.TrimStart('/'));
     public string ProfilesPath => FilePath("/etc/aiursoft-dms-agent/database-connections.json");
+    public HttpClient CreateDockerClient() => dockerHttp != null ? dockerHttp() : DockerOperations.ArchiveClient();
     public async Task<string> ReadAsync(string path, CancellationToken token, int maximum = 1048576)
     {
         await using var file = new FileStream(FilePath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
@@ -51,7 +54,8 @@ public sealed class OperationHost(string root = "/", Func<NativeCommand, Cancell
         process.StartInfo = new ProcessStartInfo(executable)
         {
             UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true,
-            RedirectStandardInput = command.StandardInput != null
+            RedirectStandardInput = command.StandardInput != null,
+            WorkingDirectory = command.WorkingDirectory ?? string.Empty
         };
         foreach (var argument in command.Arguments) process.StartInfo.ArgumentList.Add(argument);
         process.StartInfo.Environment["LC_ALL"] = "C.UTF-8";
@@ -115,7 +119,10 @@ public sealed class OperationWorkflow<TInput>(MachineWorkflowDefinition<TInput, 
         {
             SampleInput sample => sample.Seconds + 10, SmartTestInput smart => smart.WaitSeconds + 90,
             ScriptInput script => script.TimeoutSeconds + 10, DatabaseSqlInput sql => sql.TimeoutSeconds + 30,
-            SwarmChangeInput service => service.TimeoutSeconds + 90, RebootInput => 960, PoweroffInput poweroff => Math.Max(180, poweroff.DelaySeconds + 60),
+            DatabaseUpsertInput upsert => upsert.TimeoutSeconds + 30,
+            SwarmChangeInput service => service.TimeoutSeconds + 90,
+            SwarmRollingRestartInput restart => restart.TimeoutSeconds + 90,
+            RebootInput => 960, PoweroffInput poweroff => Math.Max(180, poweroff.DelaySeconds + 60),
             PackageInput or PackageUpgradeInput or AptApplyInput => 1980, CopyPathInput or ImportPathInput or ContainerCopyInput => 660,
             ExportPathInput or ContainerExportInput => 900,
             _ when Name == OperationsWorkflows.AptUpdate.Name => 630, _ => 180
@@ -145,7 +152,7 @@ public static class OperationOutput
     public static async Task<NativeResult> CommandAsync(MachineWorkflowContext context, AgentEnvironment environment,
         string tool, IReadOnlyList<string> arguments, CancellationToken token, bool change = false,
         int seconds = 60, string? stdin = null, IReadOnlyDictionary<string, string>? variables = null,
-        bool traceOutput = true, int[]? allowedExitCodes = null)
+        bool traceOutput = true, int[]? allowedExitCodes = null, string? workingDirectory = null)
     {
         token.ThrowIfCancellationRequested();
         await context.TraceAsync($"Executing fixed operation with {tool}; timeout {seconds}s.");
@@ -156,7 +163,7 @@ public static class OperationOutput
         try
         {
             started = true;
-            var result = await host.RunAsync(new NativeCommand(tool, arguments, seconds, stdin, variables), token);
+            var result = await host.RunAsync(new NativeCommand(tool, arguments, seconds, stdin, variables, WorkingDirectory: workingDirectory), token);
             if (traceOutput)
             {
                 await TraceTextAsync(context, result.Output);

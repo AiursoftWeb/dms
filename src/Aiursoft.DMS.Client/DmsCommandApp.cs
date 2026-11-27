@@ -83,6 +83,7 @@ public static partial class DmsCommandApp
                 NewFilesystemDownloadCommand(asRoot: true),
                 NewFilesystemFindCommand(),
                 NewFilesystemMkdirCommand(),
+                NewFilesystemPrepareVolumeDirCommand(),
                 NewFilesystemCpCommand(),
                 NewFilesystemMvCommand(),
                 NewFilesystemExportCommand(),
@@ -104,6 +105,7 @@ public static partial class DmsCommandApp
                     MachineWorkflows.BoxUpdateOnly, _ => new EmptyInput()),
                 BoxSetGitSshIdentityCommand(),
                 BoxDeployCommand(),
+                BoxDeployStackCommand(),
                 new BoxSecretCommand(BoxSecretCommandKind.List),
                 new BoxSecretCommand(BoxSecretCommandKind.Summary),
                 new BoxSecretCommand(BoxSecretCommandKind.Set),
@@ -199,9 +201,11 @@ public static partial class DmsCommandApp
                 [
                     NewSwarmServiceListCommand(),
                     NewSwarmServiceInspectCommand(),
+                    NewSwarmServiceEnvSummaryCommand(),
                     NewSwarmServicePsCommand(),
                     NewSwarmServiceLogsCommand(),
                     NewSwarmServiceRolloutStatusCommand(),
+                    NewSwarmServiceRollingRestartCommand(),
                     NewSwarmServiceStopCommand(),
                     NewSwarmServiceStartCommand(),
                     NewSwarmServiceUpdateCommand(),
@@ -238,6 +242,7 @@ public static partial class DmsCommandApp
                 NewDatabaseQueryTableCommand(),
                 NewDatabaseQuerySqlCommand(),
                 NewDatabaseExecuteSqlCommand(),
+                new DatabaseUpsertCommand(),
                 NewDatabaseDiagnosticsCommand()
             ]),
             ClickHouseCommands(),
@@ -366,6 +371,26 @@ public static partial class DmsCommandApp
             context => new BoxDeployInput(context.GetValue(stage), context.GetValue(filter)),
             stage,
             filter);
+    }
+
+    private static ActionCommand BoxDeployStackCommand()
+    {
+        var stack = new Option<string>("--stack")
+        {
+            Required = true,
+            Description = "Exact stage-4 stack name to render in memory and deploy via docker stack deploy."
+        };
+        var pull = new Option<bool>("--pull")
+        {
+            DefaultValueFactory = _ => true,
+            Description = "Fast-forward the local Box repository before deploying (default true)."
+        };
+        return StandardCommand("deploy-stack",
+            "Deploy one stage-4 Box stack directly without rebuilding unrelated stage images.",
+            MachineWorkflows.BoxDeployStack,
+            context => new BoxDeployStackInput(context.GetValue(stack)!, context.GetValue(pull)),
+            stack,
+            pull);
     }
 
     private static ActionCommand DirectoryUsageCommand()

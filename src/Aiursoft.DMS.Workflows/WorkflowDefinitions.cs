@@ -3,6 +3,11 @@ using Aiursoft.DMS.Contracts;
 
 namespace Aiursoft.DMS.Workflows;
 
+public interface IDatabaseSecretTransport
+{
+    Task<Dictionary<string, string>> TakeUpsertSecretsAsync(Guid workflowId, CancellationToken token);
+}
+
 // ReSharper disable NotAccessedPositionalProperty.Global
 public sealed record AgentEnvironment(Guid InstallationId, string Version, int ActiveTasks, int PendingEvents,
     Func<MachineWorkflowContext, AgentUpgradeInput, CancellationToken, Task<AgentUpgradeResult>>? Upgrade = null,
@@ -15,7 +20,8 @@ public sealed record AgentEnvironment(Guid InstallationId, string Version, int A
     Func<MachineWorkflowContext, CancellationToken, Task<string>>? ScheduledUpgrade = null,
     AptTransactionHook? AptTransactionHook = null,
     Func<Guid, CancellationToken, Task<string>>? GetFrpsDeployToken = null,
-    IBoxSecretTransport? BoxSecrets = null);
+    IBoxSecretTransport? BoxSecrets = null,
+    IDatabaseSecretTransport? DatabaseSecrets = null);
 
 public sealed partial class MachineWorkflowRegistry
 {
@@ -52,6 +58,7 @@ public sealed partial class MachineWorkflowRegistry
         Register(MachineWorkflows.BoxGetSecretRaw, (input, agent) => new BoxSecretWorkflow<BoxSecretInput, BoxSecretResult>(
             MachineWorkflows.BoxGetSecretRaw, input, agent.BoxSecrets, (file, id, token) => file.PublishAsync(input.Name, id, token)));
         Register(MachineWorkflows.BoxDeploy, (input, _) => new BoxDeployWorkflow(input));
+        Register(MachineWorkflows.BoxDeployStack, (input, agent) => new BoxDeployStackWorkflow(input, agent));
         Register(MachineWorkflows.Performance, (_, _) => new PerformanceInfoWorkflow());
         Register(MachineWorkflows.Restart, (input, _) => new RestartServiceWorkflow(input.Service));
         Register(MachineWorkflows.ServiceStatus, (input, _) => new ServiceStatusWorkflow(input.Service));

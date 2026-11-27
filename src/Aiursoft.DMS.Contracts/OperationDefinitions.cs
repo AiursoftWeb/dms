@@ -131,6 +131,13 @@ public static class OperationsWorkflows
     public static readonly MachineWorkflowDefinition<MakeDirectoryInput, OperationResult> FilesystemMkdir =
         new("machine.filesystem.mkdir",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemMkdir)),
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<PrepareVolumeDirectoryInput, OperationResult> FilesystemPrepareVolumeDir =
+        new("machine.filesystem.prepare-volume-dir",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(FilesystemPrepareVolumeDir)),
             "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
@@ -373,9 +380,25 @@ public static class OperationsWorkflows
             PublicEntry: true);
 
     [WorkflowRisk(RiskLevel.Low)]
+    public static readonly MachineWorkflowDefinition<SwarmServiceInput, OperationResult> SwarmServiceEnvSummary =
+        new("machine.swarm.service.env-summary",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceEnvSummary)),
+            "1",
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<SwarmServiceInput, OperationResult> SwarmServiceUpdateStatus =
         new("machine.swarm.service.update-status",
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceUpdateStatus)),
+            "1",
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.Medium)]
+    public static readonly MachineWorkflowDefinition<SwarmRollingRestartInput, OperationResult> SwarmServiceRollingRestart =
+        new("machine.swarm.service.rolling-restart",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(SwarmServiceRollingRestart)),
             "1",
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
@@ -540,6 +563,15 @@ public static class OperationsWorkflows
             WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseExecuteSql)),
             ValidateInput: input => input.Validate(),
             PublicEntry: true);
+
+    [WorkflowRisk(RiskLevel.High)]
+    public static readonly MachineWorkflowDefinition<DatabaseUpsertInput, OperationResult> DatabaseUpsert =
+        new("machine.database.upsert",
+            WorkflowMetadata.Risk(typeof(OperationsWorkflows), nameof(DatabaseUpsert)),
+            "1",
+            ValidateInput: input => input.Validate(),
+            PublicEntry: true)
+        { SingleMachineOnly = true };
 
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DatabaseInput, OperationResult> DatabaseDiagnostics =

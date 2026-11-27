@@ -107,6 +107,11 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 FilesystemOperations.MkdirAsync,
                 agent));
+        Register(OperationsWorkflows.FilesystemPrepareVolumeDir,
+            (input, agent) => new OperationWorkflow<PrepareVolumeDirectoryInput>(OperationsWorkflows.FilesystemPrepareVolumeDir,
+                input,
+                FilesystemOperations.PrepareVolumeDirAsync,
+                agent));
         Register(OperationsWorkflows.FilesystemCp,
             (input, agent) => new OperationWorkflow<CopyPathInput>(OperationsWorkflows.FilesystemCp,
                 input,
@@ -308,10 +313,20 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 SwarmOperations.ServiceLogsAsync,
                 agent));
+        Register(OperationsWorkflows.SwarmServiceEnvSummary,
+            (input, agent) => new OperationWorkflow<SwarmServiceInput>(OperationsWorkflows.SwarmServiceEnvSummary,
+                input,
+                SwarmOperations.ServiceEnvSummaryAsync,
+                agent));
         Register(OperationsWorkflows.SwarmServiceUpdateStatus,
             (input, agent) => new OperationWorkflow<SwarmServiceInput>(OperationsWorkflows.SwarmServiceUpdateStatus,
                 input,
                 SwarmOperations.ServiceUpdateStatusAsync,
+                agent));
+        Register(OperationsWorkflows.SwarmServiceRollingRestart,
+            (input, agent) => new OperationWorkflow<SwarmRollingRestartInput>(OperationsWorkflows.SwarmServiceRollingRestart,
+                input,
+                SwarmOperations.ServiceRollingRestartAsync,
                 agent));
         Register(OperationsWorkflows.SwarmServiceStop,
             (input, agent) => new OperationWorkflow<SwarmChangeInput>(OperationsWorkflows.SwarmServiceStop,
@@ -457,6 +472,11 @@ public sealed partial class MachineWorkflowRegistry
             (input, agent) => new OperationWorkflow<DatabaseSqlInput>(OperationsWorkflows.DatabaseExecuteSql,
                 input,
                 DatabaseOperations.ExecuteSqlAsync,
+                agent));
+        Register(OperationsWorkflows.DatabaseUpsert,
+            (input, agent) => new OperationWorkflow<DatabaseUpsertInput>(OperationsWorkflows.DatabaseUpsert,
+                input,
+                DatabaseOperations.UpsertAsync,
                 agent));
         Register(OperationsWorkflows.DatabaseDiagnostics,
             (input, agent) => new OperationWorkflow<DatabaseInput>(OperationsWorkflows.DatabaseDiagnostics,
