@@ -109,19 +109,24 @@ public static partial class DmsCommandApp
             depth);
     }
 
-    private static int ParseUnixMode(ArgumentResult result, int fallback)
+    public static int ParseUnixModeValue(string raw)
+    {
+        var trimmed = raw.Trim();
+        if (trimmed.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
+            return Convert.ToInt32(trimmed[2..], 8);
+        if (trimmed.Length > 1 && trimmed[0] == '0')
+            return Convert.ToInt32(trimmed, 8);
+        return int.Parse(trimmed, CultureInfo.InvariantCulture);
+    }
+
+    private static string ParseUnixModeOption(ArgumentResult result, string fallback)
     {
         if (result.Tokens.Count == 0) return fallback;
         var raw = result.Tokens[0].Value.Trim();
         int parsed;
         try
         {
-            if (raw.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
-                parsed = Convert.ToInt32(raw[2..], 8);
-            else if (raw.Length > 1 && raw[0] == '0')
-                parsed = Convert.ToInt32(raw, 8);
-            else
-                parsed = int.Parse(raw, CultureInfo.InvariantCulture);
+            parsed = ParseUnixModeValue(raw);
         }
         catch (Exception)
         {
@@ -133,7 +138,7 @@ public static partial class DmsCommandApp
             result.AddError("Mode must contain only the nine rwx permission bits (0000 to 0777 / 0 to 511).");
             return fallback;
         }
-        return parsed;
+        return raw;
     }
 
     private static ActionCommand NewFilesystemMkdirCommand()
@@ -142,11 +147,11 @@ public static partial class DmsCommandApp
             { Required = true, Description = "Absolute path for the new directory." };
         var parents = new Option<bool>("--parents")
             { DefaultValueFactory = _ => false, Description = "Create missing parent directories." };
-        var mode = new Option<int>("--mode")
+        var mode = new Option<string>("--mode")
         {
-            DefaultValueFactory = _ => 448,
-            CustomParser = r => ParseUnixMode(r, 448),
-            Description = "Directory mode in octal (0700, 0755) or decimal (448 = 0700)."
+            DefaultValueFactory = _ => "0700",
+            CustomParser = r => ParseUnixModeOption(r, "0700"),
+            Description = "Directory mode in octal (0700, 0755) or decimal (0 to 511)."
         };
         var uid = new Option<int?>("--uid")
             { Description = "Optional numeric UID to apply to newly created directories only." };
@@ -155,7 +160,7 @@ public static partial class DmsCommandApp
         return StandardCommand("mkdir",
             "Create a directory on a machine.",
             OperationsWorkflows.FilesystemMkdir,
-            p => new MakeDirectoryInput(p.GetValue(path)!, p.GetValue(parents), p.GetValue(mode), p.GetValue(uid), p.GetValue(gid)),
+            p => new MakeDirectoryInput(p.GetValue(path)!, p.GetValue(parents), ParseUnixModeValue(p.GetValue(mode)!), p.GetValue(uid), p.GetValue(gid)),
             path,
             parents,
             mode,
@@ -167,11 +172,11 @@ public static partial class DmsCommandApp
     {
         var path = new Option<string>("--path")
             { Required = true, Description = "Subdirectory path under /swarm-vol/ (excluding boxfor* repos)." };
-        var mode = new Option<int>("--mode")
+        var mode = new Option<string>("--mode")
         {
-            DefaultValueFactory = _ => 493,
-            CustomParser = r => ParseUnixMode(r, 493),
-            Description = "Directory mode in octal (default 0755) or decimal (493 = 0755)."
+            DefaultValueFactory = _ => "0755",
+            CustomParser = r => ParseUnixModeOption(r, "0755"),
+            Description = "Directory mode in octal (0755, 0750) or decimal (0 to 511)."
         };
         var uid = new Option<int?>("--uid")
             { Description = "Optional numeric UID to apply to the prepared volume directory." };
@@ -180,7 +185,7 @@ public static partial class DmsCommandApp
         return StandardCommand("prepare-volume-dir",
             "Idempotently create and set permissions/ownership on a service data directory under /swarm-vol/.",
             OperationsWorkflows.FilesystemPrepareVolumeDir,
-            p => new PrepareVolumeDirectoryInput(p.GetValue(path)!, p.GetValue(mode), p.GetValue(uid), p.GetValue(gid)),
+            p => new PrepareVolumeDirectoryInput(p.GetValue(path)!, ParseUnixModeValue(p.GetValue(mode)!), p.GetValue(uid), p.GetValue(gid)),
             path,
             mode,
             uid,

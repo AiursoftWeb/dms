@@ -56,6 +56,21 @@ public class DmsCliHelpTests
     }
 
     [TestMethod]
+    public async Task DatabaseGroupAndUpsertHelpExposeContainerAndRepeatableGuidance()
+    {
+        var cli = DmsCommandApp.Create();
+        var groupHelp = await cli.TestRunAsync(["machine", "database", "--help"]);
+        Assert.AreEqual(0, groupHelp.ProgramReturn, groupHelp.StdErr);
+        StringAssert.Contains(groupHelp.StdOut, "Inspect, query, and update databases on a machine.");
+
+        var upsertHelp = await cli.TestRunAsync(["machine", "database", "upsert", "--help"]);
+        Assert.AreEqual(0, upsertHelp.ProgramReturn, upsertHelp.StdErr);
+        StringAssert.Contains(upsertHelp.StdOut, "mutually exclusive with --container");
+        StringAssert.Contains(upsertHelp.StdOut, "mutually exclusive with --connection");
+        StringAssert.Contains(upsertHelp.StdOut, "(repeatable)");
+    }
+
+    [TestMethod]
     public async Task TraceHelpShowsLogAsTheDefault()
     {
         var result = await DmsCommandApp.Create().TestRunAsync(["workflow", "trace", "--help"]);

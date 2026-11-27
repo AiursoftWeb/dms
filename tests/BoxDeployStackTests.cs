@@ -184,11 +184,12 @@ public class BoxDeployStackTests
     }
 
     [TestMethod]
-    public async Task BoxDeployStackCliHelpExposesStackAndPullOptions()
+    public async Task BoxDeployStackCliHelpExposesStackAndNoPullOptions()
     {
         var help = await DmsCommandApp.Create().TestRunAsync(["machine", "box", "deploy-stack", "--help"]);
         Assert.AreEqual(0, help.ProgramReturn, help.StdErr);
         StringAssert.Contains(help.StdOut, "--stack");
-        StringAssert.Contains(help.StdOut, "--pull");
+        StringAssert.Contains(help.StdOut, "--no-pull");
+        Assert.DoesNotContain("[default: true]", help.StdOut);
     }
 }
