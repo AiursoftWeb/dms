@@ -27,6 +27,9 @@
   <data name="Denied" xml:space="preserve">
     <value>Negado</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expirado</value>
+  </data>
   <data name="Withdrawn" xml:space="preserve">
     <value>Retirado</value>
   </data>

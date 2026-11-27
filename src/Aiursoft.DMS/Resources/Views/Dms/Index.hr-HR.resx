@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Add a machine" xml:space="preserve">
+    <value>Dodaj uređaj</value>
+  </data>
+  <data name="Agent version" xml:space="preserve">
+    <value>Verzija agenta</value>
+  </data>
+  <data name="All states" xml:space="preserve">
+    <value>Sve stanja</value>
+  </data>
+  <data name="Apply filters" xml:space="preserve">
+    <value>Primijeni filtere</value>
+  </data>
+  <data name="Clear filters" xml:space="preserve">
+    <value>Očisti filtre</value>
+  </data>
+  <data name="Connection status" xml:space="preserve">
+    <value>Status veze</value>
+  </data>
+  <data name="Disabled" xml:space="preserve">
+    <value>Onemogućeno</value>
+  </data>
+  <data name="Last seen" xml:space="preserve">
+    <value>Zadnje viđeno</value>
+  </data>
+  <data name="Machine name" xml:space="preserve">
+    <value>Naziv stroja</value>
+  </data>
+  <data name="Machine pages" xml:space="preserve">
+    <value>Stranice strojeva</value>
+  </data>
+  <data name="Machines" xml:space="preserve">
+    <value>Uređaji</value>
+  </data>
+  <data name="Never connected" xml:space="preserve">
+    <value>Nikad nije povezan</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Sljedeće</value>
+  </data>
+  <data name="No machines have joined yet." xml:space="preserve">
+    <value>Još se nijedan stroj nije pridružio.</value>
+  </data>
+  <data name="No machines match these filters." xml:space="preserve">
+    <value>Nijedno računalo ne odgovara ovim filtrima.</value>
+  </data>
+  <data name="Offline" xml:space="preserve">
+    <value>Izvan mreže</value>
+  </data>
+  <data name="Online" xml:space="preserve">
+    <value>Povezano</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Prethodna</value>
+  </data>
+
+</root>

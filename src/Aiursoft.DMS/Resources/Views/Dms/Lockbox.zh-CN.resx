@@ -93,6 +93,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>执行状态不可用。</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>已过期</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>过期时间</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>已冻结的输入文件</value>
   </data>
@@ -203,6 +209,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>申请时选定的 Agent 安装包已被替换，升级尚未开始。</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>此请求在 4 小时内未作出决定，已自动过期。如果仍需要执行该操作，请提交新请求。</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>此工作流无需参数。</value>

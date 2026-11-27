@@ -99,6 +99,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Trạng thái thực thi không khả dụng.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Đã hết hạn</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Hết hạn lúc</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Tệp đầu vào đã đóng băng</value>
   </data>
@@ -206,6 +212,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Gói Agent đã chọn đã được thay thế. Việc nâng cấp chưa bắt đầu.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Yêu cầu này đã hết hạn tự động sau 4 giờ do không có quyết định. Hãy gửi một yêu cầu mới nếu thao tác vẫn cần thiết.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Quy trình này không nhận tham số nào.</value>

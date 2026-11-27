@@ -39,6 +39,9 @@
   <data name="Execution status" xml:space="preserve">
     <value>Trạng thái thực thi</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Đã hết hạn</value>
+  </data>
   <data name="High risk" xml:space="preserve">
     <value>Nguy cơ cao</value>
   </data>

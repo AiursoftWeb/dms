@@ -27,6 +27,9 @@
   <data name="Denied" xml:space="preserve">
     <value>Rifiutato</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Scaduto</value>
+  </data>
   <data name="Withdrawn" xml:space="preserve">
     <value>Ritirato</value>
   </data>

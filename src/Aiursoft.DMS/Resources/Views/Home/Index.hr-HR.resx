@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+      <data name="Approved operations. Accountable execution." xml:space="preserve">
+    <value>Odobrene operacije. Odgovorno izvršenje.</value>
+  </data>
+  <data name="Follow every workflow" xml:space="preserve">
+    <value>Pratite svaki radni postupak</value>
+  </data>
+  <data name="Know your machines" xml:space="preserve">
+    <value>Poznajte svoje strojeve</value>
+  </data>
+  <data name="Manage servers with workflows for people and AI. Review the {0} request, approve its scope, and follow every operation." xml:space="preserve">
+    <value>Upravljajte poslužiteljima pomoću radnih tokova za ljude i AI. Pregledajte {0} zahtjev, odobrite njegov opseg i pratite svaku operaciju.</value>
+  </data>
+  <data name="Open DMS" xml:space="preserve">
+    <value>Otvori DMS</value>
+  </data>
+  <data name="Review before execution" xml:space="preserve">
+    <value>Pregledajte prije izvršavanja</value>
+  </data>
+  <data name="Share a workflow ID to inspect its state, child workflows, results, and trace." xml:space="preserve">
+    <value>Podijelite ID tijeka rada kako biste ispitivali njegovo stanje, dječje tijekove rada, rezultate i trag.</value>
+  </data>
+  <data name="The central web application and API. It tracks machines, manages {0} approvals, and coordinates workflows." xml:space="preserve">
+    <value>Središnja web aplikacija i API. Praćenje strojeva, upravljanje odobrenjima {0} i koordinacija radnih tokova.</value>
+  </data>
+  <data name="The command-line tool you run on your own computer. It connects to the Controller so you can request operations and inspect their results." xml:space="preserve">
+    <value>Alat za naredbeni red koji pokrećete na vlastitom računalu. Povezuje se s Kontrolerom kako biste mogli zatražiti operacije i ispitati njihove rezultate.</value>
+  </data>
+  <data name="The service you install on each managed machine. It connects to the Controller, reports its status, and executes approved workflows locally." xml:space="preserve">
+    <value>Usluga koju instalirate na svaki upravljani stroj. Povezuje se s Kontrolerom, izvještava o svom statusu i lokalno izvršava odobrene radne tokove.</value>
+  </data>
+  <data name="The three parts of DMS" xml:space="preserve">
+    <value>Tri dijela DMS-a</value>
+  </data>
+  <data name="View your machine inventory, Agent connectivity, versions, and operation history." xml:space="preserve">
+    <value>Pregledajte inventar svojih strojeva, povezanost Agenta, verzije i povijest operacija.</value>
+  </data>
+  <data name="{0} records who requested an operation, its targets, and the approval decision." xml:space="preserve">
+    <value>{0} bilježi tko je zatražio operaciju, njezine ciljeve i odluku o odobrenju.</value>
+  </data>
+
+</root>

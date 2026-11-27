@@ -39,6 +39,9 @@
   <data name="Execution status" xml:space="preserve">
     <value>Udførelsesstatus</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Udløbet</value>
+  </data>
   <data name="High risk" xml:space="preserve">
     <value>Høj risiko</value>
   </data>

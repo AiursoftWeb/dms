@@ -39,6 +39,9 @@
   <data name="Execution status" xml:space="preserve">
     <value>حالة التنفيذ</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>منتهي الصلاحية</value>
+  </data>
   <data name="High risk" xml:space="preserve">
     <value>خطر مرتفع</value>
   </data>

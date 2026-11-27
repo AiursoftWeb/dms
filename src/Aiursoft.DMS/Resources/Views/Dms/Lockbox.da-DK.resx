@@ -96,6 +96,12 @@
   <data name="Execution status is unavailable." xml:space="preserve">
     <value>Udførelsesstatus er utilgængelig.</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Udløbet</value>
+  </data>
+  <data name="Expires at" xml:space="preserve">
+    <value>Udløber kl.</value>
+  </data>
   <data name="Frozen input files" xml:space="preserve">
     <value>Frosne inputfiler</value>
   </data>
@@ -200,6 +206,9 @@
   </data>
   <data name="The selected Agent package has been replaced. The upgrade has not started." xml:space="preserve">
     <value>Den valgte Agent-pakke er blevet erstattet. Opgraderingen er ikke startet.</value>
+  </data>
+  <data name="This request expired automatically after 4 hours without a decision. Submit a new request if the operation is still needed." xml:space="preserve">
+    <value>Denne anmodning udløb automatisk efter 4 timer uden en beslutning. Indsend en ny anmodning, hvis operationen stadig er nødvendig.</value>
   </data>
   <data name="This workflow takes no parameters." xml:space="preserve">
     <value>Denne workflow tager ingen parametre.</value>

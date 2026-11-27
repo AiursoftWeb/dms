@@ -27,6 +27,9 @@
   <data name="Denied" xml:space="preserve">
     <value>Từ chối</value>
   </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Đã hết hạn</value>
+  </data>
   <data name="Withdrawn" xml:space="preserve">
     <value>Đã rút lại</value>
   </data>
