@@ -215,16 +215,25 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         var input = await AgentUpgradeManifest.GetAsync(controller, key, context, token);
         var release = input.Releases.Single(item => item.Architecture == AgentUpgrade.Architecture);
         if (Version.Parse(release.Version) <= Version.Parse(AgentUpgrade.Version))
+        {
+            await context.TraceAsync($"No newer Agent release is available. Installed version={AgentUpgrade.Version}, Controller version={release.Version}.");
             return JsonSerializer.Serialize(new OperationResult("No newer Agent release is available."));
+        }
 
         await context.TraceAsync("Waiting for all other workflows to exit and for 10 seconds of continuous idle time.");
         if (!await TryReserveUpgradeWindowAsync(taskId, token))
+        {
+            await context.TraceAsync("Scheduled Agent upgrade was skipped because another Agent maintenance operation took precedence.");
             return JsonSerializer.Serialize(new OperationResult("Another Agent maintenance operation took precedence."));
+        }
 
         var current = await AgentUpgradeManifest.GetAsync(controller, key, context, token);
         var selected = current.Releases.Single(item => item.Architecture == AgentUpgrade.Architecture);
         if (Version.Parse(selected.Version) <= Version.Parse(AgentUpgrade.Version))
+        {
+            await context.TraceAsync($"No newer Agent release is available after waiting. Installed version={AgentUpgrade.Version}, Controller version={selected.Version}.");
             return JsonSerializer.Serialize(new OperationResult("No newer Agent release is available."));
+        }
         if (selected != release)
             await context.TraceAsync($"The Controller published Agent {selected.Version} while waiting. Using the current release.");
 

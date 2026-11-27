@@ -1,5 +1,6 @@
 using Aiursoft.DMS.Contracts;
 using Aiursoft.DMS.Entities;
+using Aiursoft.DMS.Services.Dms;
 using Aiursoft.DMS.Sqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,48 @@ namespace Aiursoft.DMS.Tests;
 [TestClass]
 public class WorkflowAuditTests
 {
+    [TestMethod]
+    public async Task LockboxHistoryPreservesAllFrozenTargetsAndMatchesLegacySnapshots()
+    {
+        await using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = Open(connection);
+        await db.Database.EnsureCreatedAsync();
+        var targets = new[] { Guid.NewGuid(), Guid.NewGuid() };
+        var box = new LockboxRequest
+        {
+            RequesterId = "requester", Definition = "machine.frps.status",
+            TargetMachines = System.Text.Json.JsonSerializer.Serialize(targets)
+        };
+        db.Lockboxes.Add(box);
+        await db.SaveChangesAsync();
+        box.Decision = DecisionState.Denied;
+        await db.SaveChangesAsync();
+        var facts = (await db.WorkflowAuditOutbox.ToListAsync()).Select(item => item.Read()).ToArray();
+        Assert.AreEqual(2, facts.Length);
+        foreach (var fact in facts)
+            CollectionAssert.AreEqual(targets, fact.TargetMachineIds!.ToArray());
+
+        foreach (var machineId in targets)
+        {
+            var matchingSnapshots = await db.Lockboxes.Where(item => item.TargetMachines.Contains(machineId.ToString()))
+                .Select(item => item.Id).ToListAsync();
+            CollectionAssert.AreEqual(new[] { box.Id }, matchingSnapshots);
+            var (predicates, values) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery
+            {
+                MachineId = machineId, Kinds = [WorkflowAuditKind.LockboxSubmitted, WorkflowAuditKind.LockboxDenied]
+            }, matchingSnapshots);
+            StringAssert.Contains(string.Join(' ', predicates), "has(TargetMachineIds, {machine:String})");
+            StringAssert.Contains(string.Join(' ', predicates), "LockboxId IN {targetLockboxes:Array(String)}");
+            Assert.AreEqual(machineId.ToString(), values["machine"]);
+            CollectionAssert.AreEqual(new[] { box.Id.ToString() }, (string[])values["targetLockboxes"]!);
+        }
+        var (archived, _) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery { MachineId = targets[0] }, []);
+        StringAssert.Contains(string.Join(' ', archived), "has(TargetMachineIds, {machine:String})");
+        var (workflow, _) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery { MachineId = targets[0] });
+        StringAssert.Contains(string.Join(' ', workflow), "MachineId = {machine:String}");
+    }
+
     private static SqliteContext Open(SqliteConnection connection) => new(new DbContextOptionsBuilder<SqliteContext>().UseSqlite(connection).Options);
     private static (LockboxRequest Box, WorkflowRun Root) Request(SqliteContext db, DecisionState decision = DecisionState.Pending)
     {
@@ -206,5 +249,31 @@ public class WorkflowAuditTests
         Assert.AreEqual(2, await db.WorkflowAuditOutbox.CountAsync());
         root.State = RunState.Running; db.SaveChanges(false); db.ChangeTracker.AcceptAllChanges();
         await db.SaveChangesAsync(); Assert.AreEqual(3, await db.WorkflowAuditOutbox.CountAsync());
+    }
+
+    [TestMethod]
+    public void AuditQueryPredicatesBindKindsRiskTriggerAndDecisionAsParameters()
+    {
+        var window = new { From = DateTimeOffset.UnixEpoch, Until = DateTimeOffset.UnixEpoch.AddDays(1) };
+        var (predicates, values) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery
+        {
+            From = window.From, Until = window.Until,
+            Kinds = [WorkflowAuditKind.LockboxSubmitted, WorkflowAuditKind.WorkflowStateChanged],
+            Risk = RiskLevel.Medium, Trigger = WorkflowTrigger.Cron, Decision = DecisionState.Denied
+        });
+        StringAssert.Contains(string.Join(' ', predicates), "Kind IN ({kind0:String}, {kind1:String})");
+        Assert.AreEqual("LockboxSubmitted", values["kind0"]);
+        Assert.AreEqual("WorkflowStateChanged", values["kind1"]);
+        Assert.AreEqual("Medium", values["risk"]);
+        Assert.AreEqual("Cron", values["trigger"]);
+        Assert.AreEqual("Denied", values["decision"]);
+        var (single, singleValues) = TraceDatabase.BuildPredicates(new WorkflowAuditQuery
+        {
+            From = window.From, Until = window.Until, Kind = WorkflowAuditKind.LockboxDenied
+        });
+        StringAssert.Contains(string.Join(' ', single), "Kind = {kind:String}");
+        Assert.AreEqual("LockboxDenied", singleValues["kind"]);
+        Assert.IsFalse(singleValues.ContainsKey("risk"));
+        Assert.IsFalse(singleValues.ContainsKey("decision"));
     }
 }

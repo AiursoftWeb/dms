@@ -39,7 +39,8 @@ public sealed class LockboxEmailReminders(TemplateDbContext db, WorkflowService 
     public async Task SendDueAsync(DateTime now, CancellationToken token)
     {
         var deadline = now.AddMinutes(-15);
-        var due = await db.Lockboxes.AsNoTracking().Where(box => box.Decision == DecisionState.Pending && box.CreatedAt <= deadline)
+        var due = await db.Lockboxes.AsNoTracking().Where(box => box.Decision == DecisionState.Pending &&
+                box.CreatedAt <= deadline && box.ExpiresAt >= now)
             .OrderBy(box => box.CreatedAt).ThenBy(box => box.Id).Select(box => new { box.Id, box.Risk })
             .NotCacheable().ToListAsync(token);
         foreach (var risk in due.GroupBy(box => box.Risk))
@@ -61,7 +62,7 @@ public sealed class LockboxEmailReminders(TemplateDbContext db, WorkflowService 
                 foreach (var recipient in recipients)
                 {
                     var box = await db.Lockboxes.AsNoTracking().NotCacheable().SingleOrDefaultAsync(item => item.Id == request.Id, token);
-                    if (box is null || box.Decision != DecisionState.Pending || !workflows.IsCurrentForReview(box)) break;
+                    if (box is null || LockboxExpiry.EffectiveDecision(box) != DecisionState.Pending || !workflows.IsCurrentForReview(box)) break;
                     var user = await db.Users.AsNoTracking().NotCacheable().SingleOrDefaultAsync(person => person.Id == recipient, token);
                     if (user is not { EmailConfirmed: true } || !MailAddress.TryCreate(user.Email, out var address)) continue;
                     try

@@ -6,7 +6,7 @@ Client 1.3.0 and Agent 1.4.0 add 86 public Machine workflows in ten categories. 
 
 ## Submit and investigate
 
-Every request in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root.
+Every request in the catalog below requires `--reason`. Select one or more explicit `--machine-id` values or `--all-machines`; selection is frozen when submitted. The target may be omitted when the Controller has exactly one active machine. Submissions return only `LockboxId` and nullable `WorkflowId`. The prefixed `lb/<UUID>` Lockbox ID is always present. Pending or denied requests create no Workflow; approval creates the actual execution root. Pending requests expire automatically 4 hours after submission and leave the default lists; expired requests are deleted 7 days after expiry.
 
 ```sh
 dms machine performance processes --machine-id "$MACHINE_ID" --sort memory --reason "Find the largest processes"
@@ -16,7 +16,7 @@ dms workflow trace "$WORKFLOW_ID"
 dms workflow trace "$CHILD_WORKFLOW_ID" --recursive false
 ```
 
-Use `dms lockbox get --id "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID, then inspect the execution root and business children with these commands. Each child has its own ID. A pending request performs no machine operation. Read `workflow trace` for observations and command output, and `workflow status` for the typed result. Investigation commands support `--output-format Table`, `Json`, and `Csv`. Output formatting on a submission changes the receipt only.
+Use `dms lockbox status "lb/<UUID>"` to inspect the decision and obtain its optional Workflow ID. A pending request performs no machine operation. Run `workflow status` with the root ID to see the execution status, followed by child workflows and their results grouped by workflow and labeled with the machine name when available. The default submission receipt prints the command for checking approval or reading the result. `workflow status --output-format Json` and `Csv` describe the selected workflow. Use `workflow callstack --output-format Json` to get the subtree in one response.
 
 After approval and execution of a `machine filesystem ls` request, run `dms workflow result "$WORKFLOW_ID"` with the root ID to see each target's directory listing together. This requires the existing Read DMS operations permission. Empty directories, incomplete listings and failed machines have distinct statuses. JSON includes the machine statuses and entries; CSV writes one row per directory entry and reports statuses needing attention on standard error. Large historical listings depend on the retained trace data. The Controller reads the pending spool as well as the archive, so results can be available before trace archival finishes.
 
@@ -24,11 +24,15 @@ With Client 1.23.0 and an updated Controller, follow the command printed in the 
 
 Trace entries include their UTC time, Workflow ID, definition, source and text. Workflow authors use `TraceAsync` for execution context and `WarningAsync` for incomplete observations; native process output is written as `stdout` and `stderr`. Fixed operations report their tool, time limit, elapsed time, exit code and output character counts. Completed `OperationWorkflow` functions also write their result summary. These diagnostics do not dump arguments, standard input or environment variables; operations that suppress raw output retain that choice.
 
+Agent 1.40.0 records the SSH lease inspection outcome even when no lease needs recovery, and records the installed and Controller versions when a scheduled Agent upgrade finds no newer release. A baseline run that receives no policy records a warning, finishes with `Warning`, and returns `Complete=false` with the reason it skipped applying the baseline. FRPS inspections record a completion message pointing to their report. These logs are emitted by new runs after the Agent update.
+
 Machine events are persisted in the Agent journal before delivery through its outbound WebSocket. The Controller durably spools trace events before acknowledging them and flushes them to ClickHouse `DmsWorkflowTrace`. Unacknowledged events can be retransmitted; event IDs deduplicate archive reads. Workflow metadata and Lockbox decisions remain in the relational database, with structured investigation facts archived separately to `DmsWorkflowAudit`. ClickHouse downtime retains a bounded backlog rather than silently discarding trace. Trace queries can briefly lag execution; `PendingArchiveEvents` reports the Controller-wide backlog, not just the selected workflow.
+
+The Controller archives up to 100 trace entries per insert and frees the corresponding spool files after ClickHouse acknowledges the batch. A full batch with more entries waiting is followed immediately by another delivery pass. The 256 MiB spool budget counts each file in 4 KiB increments, allowing at most 65,536 pending files. When the next event would exceed the budget, the Agent keeps it for retry. Detailed logs and report chunks have a default retention of 120 days. [Controller retention settings](configuration.md#persistent-storage)
 
 `workflow trace` combines the selected workflow and all its descendants by time. Pass a child ID to read that subtree, or use `--recursive false` to read a single workflow. Each page contains up to 200 archived events. Continue with `--skip 200`, `--skip 400` and so on, keeping the selected ID and recursive option the same. Direct API calls can request the same behavior with `?recursive=true`. The web operation page displays the selected node's first 200 archived entries with links to its children.
 
-Both trace commands default to plain log output. Use `--output-format Table` to display trace metadata and entries as a table.
+`workflow trace` defaults to plain log output. Use `--output-format Table` to display trace metadata and entries as a table. If the requested page contains no archived entries, the CLI prints a `workflow status` command to standard error so you can find any available results with the same ID. A successful workflow can return a result without emitting trace entries.
 
 ```sh
 dms workflow trace "$WORKFLOW_ID" | code -
@@ -44,7 +48,7 @@ For disk investigations, `filesystem du` records the actual path, depth, one-fil
 
 Use `--request-id` when retrying exactly the same request. Script/SQL uploads also reuse their frozen artifact identity for the same request ID and file bytes. Changed input is rejected for that ID. A started mutation with an unknown outcome is `NeedsVerification`; it is never automatically replayed. Cancellation does not roll back completed effects.
 
-Risk permissions remain the existing five independent request/automatic/approval checkboxes. Requesting a High operation needs `CanRequestHighRiskWorkflow`; manual approval needs `CanApproveHighRiskWorkflow`. VeryHigh scripts, arbitrary SQL and unrestricted destination writes need the corresponding VeryHigh permissions. Leadership can review them when assigned the intended approval permissions; root can approve its own request only with the additional `CanApproveOwnWorkflow`. This release grants no permissions automatically.
+The Controller applies the [workflow risk classification policy](workflow-risk.md). Requesting a High operation needs `CanRequestHighRiskWorkflow`. Manual approval needs `CanApproveHighRiskWorkflow`, and manual self-approval also needs `CanApproveOwnWorkflow`. Arbitrary scripts and writable SQL use High permissions. See [Role permissions](permissions.md) for the complete matrix.
 
 ## Command catalog
 
@@ -65,10 +69,10 @@ Literal paths, bounded text reads and explicit directory recursion. File transfe
 | `filesystem download` | Low | `--path` required; `--recursive`; `--output-file`; `--max-bytes=268435456`; requires read permission for other users |
 | `filesystem download-as-root` | VeryHigh | `--path` required; `--recursive`; `--output-file`; `--max-bytes=268435456`; reads with Agent privileges |
 | `filesystem find` | Low | `--path` required; `--name`; `--min-bytes`; `--modified-after`; `--limit=200`; `--depth=5` |
-| `filesystem mkdir` | High | `--path` required; `--parents`; `--mode=448` |
+| `filesystem mkdir` | Medium | `--path` required; `--parents`; `--mode=448` |
 | `filesystem cp` | VeryHigh | `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 | `filesystem mv` | VeryHigh | `--source` required; `--destination` required; `--recursive`; `--overwrite` |
-| `filesystem export` | High | `--path` required; `--recursive`; `--max-bytes=268435456`; requires read permission for other users |
+| `filesystem export` | Low | `--path` required; `--recursive`; `--max-bytes=268435456`; requires read permission for other users |
 | `filesystem import` | VeryHigh | `--artifact-id` required; `--path` required; `--overwrite` |
 
 A root Agent drops privileges for `filesystem cat`, `filesystem tail`, `filesystem export`, and `filesystem download`. Files such as `0600` and `0700` require `filesystem cat-as-root`, `filesystem tail-as-root`, or `filesystem download-as-root`. All `*-as-root` requests require independent approval by another user. These commands direct Box `.env.prod` reads to the dedicated `box get-secret-raw` workflow.
@@ -100,7 +104,7 @@ Process ownership/cgroup observations, CPU and I/O deltas, memory components, fi
 | `performance io-sample` | Low | `--seconds=10`; `--interval=1`; `--limit=50` |
 | `performance dstat-sample` | Low | `--seconds=10`; `--interval=1` |
 | `performance pressure` | Safe | — |
-| `performance oom-history` | Medium | `--since`; `--until`; `--limit=200` |
+| `performance oom-history` | Low | `--since`; `--until`; `--limit=200` |
 
 ### Incident history and blocked I/O (9)
 
@@ -114,9 +118,9 @@ Client 1.5.0, Agent 1.6.0 and Contracts/SDK 10.5.0 add the following standard wo
 | `performance history memory` | Low | same time/interval/limit/after options |
 | `performance history disk` | Low | same time/interval/limit/after options; `--device` |
 | `performance history network` | Low | same time/interval/limit/after options; `--interface` |
-| `performance pcp-history` | Medium | `--archive-id` required; repeated `--metric` required; `--instance`; time/interval/limit/after options |
-| `performance blocked-processes` | Medium | `--pid`; `--container`; `--limit=50` |
-| `system kernel-events` | Medium | `--since`; `--until`; `--category`; `--boot`; `--before-cursor`; `--limit=200` |
+| `performance pcp-history` | Low | `--archive-id` required; repeated `--metric` required; `--instance`; time/interval/limit/after options |
+| `performance blocked-processes` | Low | `--pid`; `--container`; `--limit=50` |
+| `system kernel-events` | Low | `--since`; `--until`; `--category`; `--boot`; `--before-cursor`; `--limit=200` |
 
 History defaults to the hour ending at execution time. Use explicit UTC offsets and a fixed `--until` for reproducible incident queries; windows cannot exceed seven days. Queries have a 60-second reader budget, archive/output limits and at most 1,000 returned rows. `history-sources` reports existing sysstat archives and PCP archive IDs, tool versions and archive metadata. PCP metric discovery lists at most 100 names per archive. A missing optional tool or an unreadable archive produces partial evidence with a warning. Installing tools or enabling retention requires a separate approved operation.
 
@@ -178,10 +182,10 @@ Runtime/health/image evidence excludes raw container environment and secret cont
 | `docker inspect` | Low | `--container` required |
 | `docker stats-sample` | Low | `--seconds=10`; `--interval=1`; `--limit=50` |
 | `docker events` | Low | `--container` required; `--since`; `--until`; `--limit=200` |
-| `docker diagnose-startup` | Medium | `--container` required |
-| `docker stop` | High | `--container` required; `--timeout-seconds=30` |
-| `docker start` | High | `--container` required |
-| `docker restart` | High | `--container` required; `--timeout-seconds=30` |
+| `docker diagnose-startup` | Low | `--container` required |
+| `docker stop` | Medium | `--container` required; `--timeout-seconds=30` |
+| `docker start` | Medium | `--container` required |
+| `docker restart` | Medium | `--container` required; `--timeout-seconds=30` |
 | `docker filesystem export` | High | `--container` required; `--path` required; `--recursive`; `--max-bytes=268435456` |
 | `docker filesystem cp-to` | VeryHigh | `--container` required; `--source` required; `--destination` required; `--recursive`; `--overwrite` |
 | `docker filesystem cp-from` | VeryHigh | `--container` required; `--source` required; `--destination` required; `--recursive`; `--overwrite` |
@@ -195,12 +199,12 @@ Manager-local operations. Changes require an expected service version and the ex
 | `swarm service list` | Low | — |
 | `swarm service inspect` | Low | `--service` required |
 | `swarm service ps` | Low | `--service` required |
-| `swarm service logs` | Medium | `--service` required; `--lines=100`; `--since` |
+| `swarm service logs` | Low | `--service` required; `--lines=100`; `--since` |
 | `swarm service rollout-status` | Low | `--service` required. The previous `update-status` spelling is an alias. |
-| `swarm service stop` | High | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
-| `swarm service start` | High | `--service` required; `--expected-version` required; `--node-id` required; `--replicas=1`; `--timeout-seconds=120` |
+| `swarm service stop` | Medium | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
+| `swarm service start` | Medium | `--service` required; `--expected-version` required; `--node-id` required; `--replicas=1`; `--timeout-seconds=120` |
 | `swarm service update` | High | `--service` required; `--expected-version` required; `--node-id` required; `--image` required; `--timeout-seconds=120` |
-| `swarm service rollback` | High | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
+| `swarm service rollback` | Medium | `--service` required; `--expected-version` required; `--node-id` required; `--timeout-seconds=120` |
 
 ### System, systemd and APT (15)
 
@@ -212,18 +216,18 @@ System/clock/boot observations, systemd state/journal/timers, package inspection
 | `system uptime` | Safe | — |
 | `systemctl list` | Low | `--failed-only`; `--limit=200` |
 | `systemctl start` | Medium | `--service` required |
-| `systemctl stop` | High | `--service` required |
-| `system journal` | Medium | `--service`; `--boot`; `--level`; `--since`; `--until`; `--limit=200`; `--kernel`; `--before-cursor` |
+| `systemctl stop` | Medium | `--service` required |
+| `system journal` | Low | `--service`; `--boot`; `--level`; `--since`; `--until`; `--limit=200`; `--kernel`; `--before-cursor` |
 | `system timers` | Medium | — |
 | `apt inspect` | Low | — |
-| `apt install` | High | `--package` required |
-| `apt upgrade` | High | `--package name=version` required |
+| `apt install` | Medium | `--package` required |
+| `apt upgrade` | Medium | `--package name=version` required |
 | `apt update` | Medium | — |
-| `apt upgrade-all` | Low (preview), High (apply) | `--dry-run` or `--plan <preview-workflow-id>` |
-| `apt autoremove` | Low (preview), High (apply) | `--dry-run` or `--plan <preview-workflow-id>`; `--purge` |
-| `system reboot` | High | `--delay-seconds=15` |
-| `system poweroff` | VeryHigh | `--delay-seconds=15` (alias `--countdown-seconds`) |
-| `system execute-script` | VeryHigh | `--language` required; `--script-file` required; `--timeout-seconds=60` |
+| `apt upgrade-all` | Low (preview), Medium (apply) | `--dry-run` or `--plan <preview-workflow-id>` |
+| `apt autoremove` | Low (preview), Medium (apply) | `--dry-run` or `--plan <preview-workflow-id>`; `--purge` |
+| `system reboot` | Medium | `--delay-seconds=15` |
+| `system poweroff` | Medium | `--delay-seconds=15` (alias `--countdown-seconds`) |
+| `system execute-script` | High | `--language` required; `--script-file` required; `--timeout-seconds=60` |
 
 ### Database containers (8)
 
@@ -235,10 +239,10 @@ The `machine database` commands use registered MySQL and PostgreSQL containers o
 | `database list-databases` | Low | `--connection` required |
 | `database list-tables` | Low | `--connection` required; `--database` required |
 | `database describe-table` | Low | `--connection` required; `--database` required; `--table` required |
-| `database query-table` | Medium | `--connection` required; `--database` required; `--table` required; `--column` required; `--filters`; `--sort-by`; `--descending`; `--limit=100`; `--offset=0` |
-| `database query-sql` | High | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
-| `database execute-sql` | VeryHigh | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
-| `database diagnostics` | Medium | `--connection` required |
+| `database query-table` | Low | `--connection` required; `--database` required; `--table` required; `--column` required; `--filters`; `--sort-by`; `--descending`; `--limit=100`; `--offset=0` |
+| `database query-sql` | Low | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
+| `database execute-sql` | High | `--connection` required; `--sql-file` required; `--timeout-seconds=30`; `--max-rows=1000` |
+| `database diagnostics` | Low | `--connection` required |
 
 ### ClickHouse (6)
 
@@ -264,7 +268,7 @@ Machine-local routes, interface/socket ownership, resolver answers, bounded endp
 | `networking sockets` | Low | — |
 | `networking dns-query` | Low | `--host` required |
 | `networking probe` | Low | `--host` required; `--port=443`; `--url`; `--timeout-seconds=10` |
-| `networking traffic-sample` | Medium | `--seconds=10`; `--interval=1`; `--limit=50` |
+| `networking traffic-sample` | Low | `--seconds=10`; `--interval=1`; `--limit=50` |
 | `networking firewall-info` | Low | — |
 | `networking tls-check` | Low | `--host` required; `--port=443`; `--timeout-seconds=10` |
 
@@ -279,9 +283,9 @@ Observed Secure Boot and encryption state, effective SSH settings for an explici
 | `security ssh-audit` | Low | `--user=root`; `--address=127.0.0.1`; `--host=localhost` |
 | `security fail2ban-status` | Low | — |
 | `security clean-traffic-status` | Low | — |
-| `security auth-events` | Medium | `--since`; `--until`; `--limit=200` |
-| `security accounts-audit` | Medium | — |
-| `security baseline-audit` | Medium | `--baseline-path` |
+| `security auth-events` | Low | `--since`; `--until`; `--limit=200` |
+| `security accounts-audit` | Low | — |
+| `security baseline-audit` | Low | `--baseline-path` |
 
 ## Files and directories
 
@@ -415,9 +419,9 @@ dms machine database query-sql --connection reporting-read --sql-file ./investig
 dms machine database execute-sql --connection reporting-write --sql-file ./change.sql --machine-id "$MACHINE_ID" --reason "Apply the reviewed SQL"
 ```
 
-Typed filters accept `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `contains` and `is-null`, joined with AND. Identifiers are validated and values are encoded as data. Arbitrary WHERE text belongs in the High-risk `query-sql` command. SQL files are bounded UTF-8 input (128 KiB); they are uploaded before submission and remain visible from the Web Lockbox's frozen-input link. Query text is not repeated into general trace. Results still may contain sensitive business values, so grant investigation access accordingly.
+Typed filters accept `eq`, `ne`, `lt`, `le`, `gt`, `ge`, `contains` and `is-null`, joined with AND. Identifiers are validated and values are encoded as data. Arbitrary WHERE text belongs in the Low-risk `query-sql` command. SQL files are bounded UTF-8 input (128 KiB); they are uploaded before submission and remain visible from the Web Lockbox's frozen-input link. Query text is not repeated into general trace. Results still may contain sensitive business values, so grant investigation access accordingly.
 
-`execute-sql` is VeryHigh and may use a separately registered write profile. It can perform DML/DDL and multiple statements. Engine transaction rules apply. Failed or interrupted writes become `NeedsVerification`. Credentials and SQL text are excluded from process arguments.
+`execute-sql` is High and may use a separately registered write profile. It can perform DML/DDL and multiple statements. Engine transaction rules apply. Failed or interrupted writes become `NeedsVerification`. Credentials and SQL text are excluded from process arguments.
 
 ## ClickHouse setup and usage
 
@@ -466,7 +470,7 @@ dms machine apt autoremove --purge --plan "$CLEANUP_PREVIEW_ID" --reason "Purge 
 
 Use the root workflow ID from the approved preview. Omit the target flags when applying to reuse the preview's targets, or use `--machine-id` to select a successfully previewed subset. Pass `--purge` to both commands when you want to remove package configuration. Upgrading allows new dependencies and excludes any transaction that removes packages. Upgrades found only in a plan that would remove packages are listed separately for review. APT holds and phased updates continue to apply. The Lockbox shows the plans for each target. If a target's proposed package actions change, its workflow stops and reports the difference. Other targets use their own plans. The preview reports a workflow size error if a target’s plan exceeds the transport limits.
 
-APT install/upgrade uses the already configured trusted APT sources and simulates the plan before applying it. It refuses removals or additional unapproved package names. Include required dependencies explicitly. Upgrade requires every package as `name=version`; an altered plan is rejected. No package-index refresh or unapproved service deployment is implicit. Package operations can run maintainer scripts and restart services; review their High risk accordingly.
+APT install/upgrade uses the already configured trusted APT sources and simulates the plan before applying it. It refuses removals or additional unapproved package names. Include required dependencies explicitly. Upgrade requires every package as `name=version`; an altered plan is rejected. No package-index refresh or unapproved service deployment is implicit. Package operations can run maintainer scripts and restart services; review their Medium risk accordingly.
 
 ```sh
 dms machine apt install --package smartmontools --machine-id "$MACHINE_ID" --reason "Install the approved diagnostics tool"
@@ -476,9 +480,9 @@ dms machine system reboot --delay-seconds 5 --machine-id "$MACHINE_ID" --reason 
 
 Reboot requires an installed Agent identity and durable journal. It records the old kernel boot ID before handing the reboot to systemd. The same installation must reconnect with a new boot ID within 15 minutes to confirm success. A successful scheduling command alone is insufficient. No new boot ID, expired confirmation, changed identity or uncertain outcome remains `NeedsVerification`; a reboot is never replayed. A reboot subworkflow gets its own ID; a lost parent C# stack cannot be resumed after the machine restarts.
 
-Poweroff (`dms machine system poweroff` or alias `shutdown`) is a VeryHigh risk operation. It schedules a system poweroff with a configurable countdown (`--delay-seconds` or `--countdown-seconds`, 5 to 3600 seconds, default 15s) using systemd. Unlike reboot, the machine powers off permanently and the Agent will stop and cannot be restarted remotely through DMS.
+Poweroff (`dms machine system poweroff` or alias `shutdown`) is a Medium risk operation. It schedules a system poweroff with a configurable countdown (`--delay-seconds` or `--countdown-seconds`, 5 to 3600 seconds, default 15s) using systemd. Unlike reboot, the machine powers off permanently and the Agent will stop and cannot be restarted remotely through DMS.
 
-`system execute-script --language bash|python --script-file ./task --timeout-seconds 60` is the explicit VeryHigh escape hatch. The actual frozen source is available to the authorized approver on the Web. Its output uses normal workflow trace. It does not grant lower-risk operations an arbitrary shell option.
+`system execute-script --language bash|python --script-file ./task --timeout-seconds 60` is the High-risk workflow for running a supplied program. The actual frozen source is available to the authorized approver on the Web. Its output uses normal workflow trace. It does not grant lower-risk operations an arbitrary shell option.
 
 ## Health and compliance conclusions
 

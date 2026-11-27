@@ -24,17 +24,21 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
 
         var requests = db.Lockboxes.AsNoTracking();
         if (ownRequests) requests = requests.Where(box => box.RequesterId == actor);
+        var now = DateTime.UtcNow;
         requests = scope switch
         {
-            "all" => requests,
+            "all" => requests.Where(box => box.Decision != DecisionState.Expired &&
+                (box.Decision != DecisionState.Pending || box.ExpiresAt >= now)),
             "review" when !ownRequests => canReview
-                ? requests.Where(box => box.Decision == DecisionState.Pending &&
+                ? requests.Where(box => box.Decision == DecisionState.Pending && box.ExpiresAt >= now &&
                     risks.Contains(box.Risk) && (selfApproval || box.RequesterId != actor))
                 : requests.Where(_ => false),
-            "pending" => requests.Where(box => box.Decision == DecisionState.Pending),
+            "pending" => requests.Where(box => box.Decision == DecisionState.Pending && box.ExpiresAt >= now),
             "approved" => requests.Where(box => box.Decision == DecisionState.Approved),
             "denied" => requests.Where(box => box.Decision == DecisionState.Denied),
             "withdrawn" => requests.Where(box => box.Decision == DecisionState.Withdrawn),
+            "expired" => requests.Where(box => box.ExpiresAt < now && box.ExpiresAt >= now - LockboxExpiry.Retention &&
+                (box.Decision == DecisionState.Expired || box.Decision == DecisionState.Pending)),
             _ => throw new DmsException(400, "Invalid Lockbox filter.")
         };
         if (search.Length != 0)
@@ -60,6 +64,8 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         }
         var rows = await requests.OrderByDescending(box => box.CreatedAt).ThenBy(box => box.Id)
             .Skip(page * pageSize).Take(pageSize + 1).NotCacheable().ToListAsync();
+        // Show the effective decision so a pending request past its expiry renders as Expired before the sweep persists it.
+        foreach (var box in rows) box.Decision = LockboxExpiry.EffectiveDecision(box);
         var visible = rows.Take(pageSize).Select(box => (Item: box, Targets: LockboxSnapshot.ReadTargets(box),
             RequiresResubmission: RequiresResubmission(box, current))).ToList();
         var people = visible.Select(row => row.Item.RequesterId).Distinct().ToList();
@@ -99,6 +105,8 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
         var item = ownRequestView
             ? await workflows.GetOwnedLockboxAsync(actor, id.Value)
             : await workflows.GetLockboxAsync(actor, id.Value);
+        // Show the effective decision so a pending request past its expiry renders as Expired before the sweep persists it.
+        item.Decision = LockboxExpiry.EffectiveDecision(item);
         var principal = await access.PrincipalAsync(actor);
         var canViewOperations = principal.HasClaim(AppPermissions.Type, AppPermissionNames.CanReadDmsOperations);
         var ownRequest = item.RequesterId == actor;

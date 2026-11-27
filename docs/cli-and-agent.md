@@ -121,7 +121,7 @@ dotnet ./bin/client/dms.dll machine docker exec --container <full-container-id> 
 dotnet ./bin/client/dms.dll machine docker kill --container <full-container-id> --reason "Stop this container"
 ```
 
-Use `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires VeryHigh, and kill requires High. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
+Use `--machine-id` when the target is not unique. Listing and logs require Low risk permission, execution requires High, and kill requires Medium. Existing approval and self-approval settings apply; adding these commands grants no permissions. `exec` can run arbitrary commands with the container's configured user and can affect the host through mounted volumes. Review its arguments accordingly. `kill` sends SIGKILL to the container; Docker or Swarm may restart or replace it under its existing policy.
 
 Logs default to the last 100 lines, accept `--tail` from 1 to 1000 and an optional `--since` timestamp with UTC offset. They do not follow indefinitely. Logs and command output are available through `workflow trace`; they may contain application secrets, so grant access accordingly. Arguments after `--` are passed literally, without an implicit host shell. Do not put secrets in command arguments: approved inputs and output are recorded in the audit trail.
 
@@ -158,9 +158,9 @@ dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-file -
 dms machine filesystem rm --machine-id "$MACHINE_ID" --path /tmp/obsolete-directory --recursive --reason "Remove the reviewed directory tree"
 ```
 
-`filesystem rm` is a standard **High** risk workflow. Request permission is
-`CanRequestHighRiskWorkflow`, automatic approval additionally requires
-`CanAutoApproveHighRiskWorkflow`, and reviewers need `CanApproveHighRiskWorkflow`.
+`filesystem rm` is a standard **Medium** risk workflow. Request permission is
+`CanRequestMediumRiskWorkflow`, automatic approval additionally requires
+`CanAutoApproveMediumRiskWorkflow`, and reviewers need `CanApproveMediumRiskWorkflow`.
 Self-review additionally needs `CanApproveOwnWorkflow`. The request records the
 machine, exact path and recursive flag. Submission returns `LockboxId` and nullable `WorkflowId`;
 inspect callstack and trace for execution and removed entries.
@@ -251,13 +251,17 @@ including recursive transfers containing it.
 dms machine box inspect --machine-id "$MACHINE_ID" --reason "Check Box before deployment"
 ```
 
-This is the standard **Safe** `machine.box.inspect` workflow. It creates a
-Lockbox, uses the existing Safe request/automatic-approval/reviewer permissions,
+This is the standard **Low** `machine.box.inspect` workflow. It creates a
+Lockbox, uses the existing Low request/automatic-approval/reviewer permissions,
 and executes only after approval. All workflow-submitting CLI commands return
 only `LockboxId` and nullable `WorkflowId` (also with JSON or CSV output). The
 Lockbox ID always has the form `lb/<UUID>`. Pending requests have no Workflow;
-automatic approval returns the newly created execution root ID. For manual
-approval, inspect the Lockbox again after the decision to obtain its Workflow ID:
+automatic approval returns the newly created execution root ID. A pending
+request expires automatically 4 hours after submission: it leaves the default
+list, further decisions are rejected and its status becomes `Expired`. Expired
+requests stay queryable with `dms lockbox list --decision Expired` for 7 days
+after expiry and are then deleted. For manual approval, inspect the Lockbox
+again after the decision to obtain its Workflow ID:
 
 ```sh
 dms lockbox list --decision Pending
@@ -265,6 +269,16 @@ dms lockbox get --id "lb/<UUID>"
 dms lockbox approve --id "lb/<UUID>" --reason "Reviewed scope"
 # Alternatively: dms lockbox deny --id "lb/<UUID>" --reason "Rejected scope"
 ```
+
+Any authenticated user can review past activity without special permission:
+`dms lockbox history` lists Lockbox lifecycle events and `dms workflow history`
+lists workflow executions, each filtered by `--requester`/`--approver` (name or
+ID), `--machine` (name or ID), `--definition`, `--state`/`--decision`, `--risk`,
+`--origin`/`--trigger`, `--lockbox-id`, `--workflow-id` and a `--from`/`--until`
+window that defaults to the last 7 days. See [workflow audit](workflow-audit.md)
+for the full filter reference and the permission-gated raw query.
+
+Lockbox machine filters match the frozen target machine list, including requests for multiple machines and requests that were never approved. New audit facts preserve TargetMachineIds. Older audit rows use the retained Lockbox snapshot to recover their targets. Historical rows whose target metadata and request snapshot have both been removed cannot be associated with a machine. History tables sanitize terminal control characters in names, and invalid end dates are rejected before calculating the default start date.
 
 Then inspect the actual execution tree:
 
@@ -776,7 +790,7 @@ An Open workflow that finishes successfully with only logs prints its `WorkflowI
 { "LockboxId": "lb/726c5996-8309-4df9-9b1b-d4eae4a82f2e", "WorkflowId": null }
 ```
 
-`GET /api/v1/dms/lockboxes?page=0&decision=Pending` lists 50 requests per page, with `Entries`, `Page` and `HasNextPage`. `GET /api/v1/dms/lockboxes/lb/<UUID>` returns the request, frozen input/targets, decision context and optional execution ID. `POST /api/v1/dms/lockboxes/lb/<UUID>/decision` accepts `{ "Approve": true, "Reason": "Reviewed scope" }`. These management endpoints need a personal API Key; reads require Read DMS operations, decisions require the corresponding risk approval permission and self-approval permission when applicable. They create no approval workflow and can be used directly by an independent approval app.
+`GET /api/v1/dms/lockboxes?page=0&decision=Pending` lists 50 requests per page, with `Entries`, `Page` and `HasNextPage`. The default list excludes expired requests; `decision=Expired` shows the ones that expired within the last 7 days. `GET /api/v1/dms/lockboxes/lb/<UUID>` returns the request, frozen input/targets, decision context and optional execution ID. `POST /api/v1/dms/lockboxes/lb/<UUID>/decision` accepts `{ "Approve": true, "Reason": "Reviewed scope" }`. These management endpoints need a personal API Key; reads require Read DMS operations, decisions require the corresponding risk approval permission and self-approval permission when applicable. They create no approval workflow and can be used directly by an independent approval app.
 
 Use the ID printed by the submission to review the frozen workflow definition, version, risk, target machine IDs and input parameters, together with the requester, decision and currently eligible approvers.
 
@@ -790,9 +804,11 @@ dms workflow trace "$WORKFLOW_ID"
 
 With Client 1.35.0 and an updated Controller, `status` includes the complete review by default: current machine names beside the frozen IDs, typed JSON input values, raw input and stored request JSON, request identifiers and the decision reason. The requester reason is labelled as an unverified statement; compare it against the frozen execution contract before approving. JSON and CSV retain their existing fields and add `Details` (the full Lockbox record) and `MachineNames`. Removed machines remain visible by their frozen IDs. The CLI does not resolve the original machine selector again. Older Controllers still return the available summary.
 
-The requester can check their own Lockbox. Viewing another person's Lockbox or inspecting a Workflow requires operations read permission. The approver list reflects current effective permissions, including self-approval and account lockout. Automatic approvals show the system as the decision maker. The Workflow ID appears when a linked execution exists. `dms lockbox get --id "$LOCKBOX_ID"` continues to return the full request record.
+The requester can check their own Lockbox. Viewing another person's Lockbox or inspecting a Workflow requires operations read permission. The approver list reflects current effective permissions, including self-approval and account lockout. Automatic approvals show the system as the decision maker. The Workflow ID appears when a linked execution exists. Pending requests show the 4-hour expiry deadline; expired requests report the `Expired` status. `dms lockbox get --id "$LOCKBOX_ID"` continues to return the full request record.
 
-While a request is pending, its requester can run `dms lockbox withdraw --id lb/<UUID>`, use **DMS → My Lockboxes → Withdraw request**, or POST to `/api/v1/dms/lockboxes/lb/<UUID>/withdraw` with their personal API key. Withdrawal takes effect immediately, including after the requester loses the original risk permission. An identical retry returns the withdrawn request. Use `dms lockbox list --decision Withdrawn` with operations read permission to find withdrawn requests.
+While a request is pending, its requester can run `dms lockbox withdraw --id lb/<UUID>`, use **DMS → My Lockboxes → Withdraw request**, or POST to `/api/v1/dms/lockboxes/lb/<UUID>/withdraw` with their personal API key. Withdrawal takes effect immediately, including after the requester loses the original risk permission. An identical retry returns the withdrawn request. Use `dms lockbox list --decision Withdrawn` with operations read permission to find withdrawn requests. A pending request that passes its 4-hour expiry can no longer be approved or withdrawn; it is reported as `Expired` and must be submitted again with a new request ID.
+
+Agent 1.41.0 handles Expired as a terminal enrollment state. Running join again creates a new attempt while preserving the installation journal identity, including after an expired receipt has been purged. Existing joined machines retain their current enrollment.
 
 Approval, denial and withdrawal compete for the same pending request. The first committed decision wins. If approval wins, withdrawal returns HTTP 409 with the workflow ID. To stop that execution, submit `dms operation kill-workflow --id <workflow-id> --reason "Stop requested"`, which follows its own approval policy. Automatically approved submissions already have an execution ID when they return.
 

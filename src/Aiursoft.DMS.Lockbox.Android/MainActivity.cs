@@ -361,7 +361,7 @@ public sealed partial class MainActivity : AppCompatActivity
     private static string DecisionText(DecisionState state) => state switch
     {
         DecisionState.Pending => "待审批", DecisionState.Approved => "已同意", DecisionState.Denied => "已拒绝",
-        DecisionState.Withdrawn => "已撤回", _ => state.ToString()
+        DecisionState.Withdrawn => "已撤回", DecisionState.Expired => "已过期", _ => state.ToString()
     };
     private static string ErrorMessage(Exception ex) => ex switch
     {

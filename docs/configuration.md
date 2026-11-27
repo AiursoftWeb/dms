@@ -18,6 +18,7 @@ ASP.NET Core environment overrides use double underscores, such as `Dms__StatePa
 | `Dms:Artifacts:MaximumTotalBytes` | `10737418240` | Total reserved artifact capacity in bytes, including temporary uploads and retained script/SQL approval sources. One GiB to one TiB. |
 | `Dms:Clickhouse:Enabled` | `false` | Enable archival and querying of detailed workflow traces. |
 | `Dms:Clickhouse:ConnectionString` | Local ClickHouse HTTP endpoint | Connection to the trace archive; configure the actual host, database and credentials before enabling it. |
+| `Dms:Clickhouse:RetentionDays` | `120` | Days of detailed workflow logs and report chunks to keep in `DmsWorkflowTrace`, measured from the UTC event time. Set to `0` to leave TTL management to the database operator, including any existing TTL. |
 
 For example, after preparing a reachable ClickHouse database:
 
@@ -43,7 +44,7 @@ Dms__LockboxEmail__ControllerOrigin=https://dms.example.com
 
 If the relay requires authentication, inject `Dms__LockboxEmail__SmtpUsername` and `Dms__LockboxEmail__SmtpPassword` through the deployment's secret configuration; do not commit them. Implicit TLS on port 465 is not supported.
 
-The Controller checks once a minute for requests that have been pending for at least 15 minutes, including existing pending requests when first enabled. It emails only current, unlocked reviewers with the matching approval permissions, operations read access and a **verified** email address. An OIDC provider can supply a verified address; merely entering an address in a local account is not enough. Approvals, denials, withdrawals and obsolete requests do not qualify. Emails contain only a generic reminder and a link to the authenticated queue, not request details or approval actions.
+The Controller checks once a minute for requests that have been pending for at least 15 minutes, including existing pending requests when first enabled. It emails only current, unlocked reviewers with the matching approval permissions, operations read access and a **verified** email address. An OIDC provider can supply a verified address; merely entering an address in a local account is not enough. Approvals, denials, withdrawals, obsolete requests and requests past their Lockbox expiry do not qualify, even before the expiry sweep updates their status. Emails contain only a generic reminder and a link to the authenticated queue, not request details or approval actions.
 
 A successful send is recorded per request and reviewer in the Controller database, so normal restarts do not resend it. Delivery failures are retried while the request remains eligible; a crash between SMTP acceptance and persisting that receipt can cause a duplicate. A decision made while an SMTP send is already in flight cannot retract that email. Verify delivery with a test relay and test reviewer before enabling it in production.
 
@@ -56,6 +57,8 @@ The Docker image stores its first-start configuration in `/data/appsettings.json
 Detailed workflow traces are first written to the Controller's disk queue, then archived to the ClickHouse table `DmsWorkflowTrace`. They are not stored in the relational business database. Prepare ClickHouse before using DMS for ongoing operations. With archival disabled or unavailable, traces remain in the disk backlog; unavailable storage applies backpressure rather than silently dropping entries.
 
 Preserve each Agent's private `DMS_STATE_PATH` directory independently of the Controller volume. It contains its installation identity and task journal. See [Agent setup](./cli-and-agent.md#run-an-agent).
+
+On startup, a positive retention setting replaces the trace table TTL and applies to existing and new rows. Before deploying or shortening retention, count the rows older than the proposed UTC cutoff in the trace database, for example with `SELECT count() FROM DmsWorkflowTrace WHERE Time < {cutoff:DateTime64(3)}`. ClickHouse reclaims expired rows during background merges. After expiry, the detailed text and any report reconstructed from those chunks may no longer be available. The Lockbox decision, workflow state and structured audit history have separate storage. [ClickHouse TTL](https://clickhouse.com/docs/concepts/features/operations/delete/ttl)
 
 File artifacts use the private `artifacts` subdirectory of `Dms:StatePath`. Temporary transfers expire after 24 hours; submitted script/SQL input is retained for audit. Binary bytes are not stored in the relational database or ClickHouse. See [file transfer and database setup](operations.md).
 

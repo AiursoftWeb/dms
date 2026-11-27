@@ -1,11 +1,30 @@
 using Aiursoft.DMS.Client;
 using Aiursoft.DMS.Contracts;
+using Aiursoft.DMS.Workflows;
+using System.Reflection;
 
 namespace Aiursoft.DMS.Tests;
 
 [TestClass]
 public class DmsCliHelpTests
 {
+    [TestMethod]
+    public async Task DeclaredCommandsResolveToTheirPublicWorkflowAndCliHelp()
+    {
+        var registry = new MachineWorkflowRegistry();
+        var cli = DmsCommandApp.Create();
+        foreach (var field in typeof(OperationsWorkflows).GetFields(BindingFlags.Public | BindingFlags.Static))
+        {
+            if (field.GetCustomAttribute<WorkflowCommandAttribute>() is not { } command) continue;
+            var definition = (WorkflowDefinition)field.GetValue(null)!;
+            Assert.IsTrue(definition.PublicEntry, definition.Name);
+            Assert.AreSame(definition, registry.FindDefinition(definition.Name), definition.Name);
+            var help = await cli.TestRunAsync([.. definition.Name.Split('.'), "--help"]);
+            Assert.AreEqual(0, help.ProgramReturn, help.StdErr);
+            StringAssert.Contains(help.StdOut, command.Description);
+        }
+    }
+
     [TestMethod]
     [DataRow("", "check approvals")]
     [DataRow("access", "its roles, and its effective permissions")]
@@ -42,6 +61,19 @@ public class DmsCliHelpTests
         var result = await DmsCommandApp.Create().TestRunAsync(["workflow", "trace", "--help"]);
         Assert.AreEqual(0, result.ProgramReturn);
         StringAssert.Contains(result.StdOut, "[default: Log]");
+    }
+
+    [TestMethod]
+    [DataRow("lockbox", "history", "lifecycle events")]
+    [DataRow("workflow", "history", "creations and state changes")]
+    public async Task HistoryHelpDescribesScopeAndNameFilters(string group, string command, string description)
+    {
+        var result = await DmsCommandApp.Create().TestRunAsync([group, command, "--help"]);
+        Assert.AreEqual(0, result.ProgramReturn, result.StdErr);
+        StringAssert.Contains(result.StdOut, description);
+        StringAssert.Contains(result.StdOut, "--requester");
+        StringAssert.Contains(result.StdOut, "--machine");
+        StringAssert.Contains(result.StdOut, "7 days before --until");
     }
 
     [TestMethod]

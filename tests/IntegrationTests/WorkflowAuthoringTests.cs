@@ -60,6 +60,49 @@ public class WorkflowAuthoringTests : TestBase
     }
 
     [TestMethod]
+    public async Task DeclaredNetworkingCommandsAndTypedSdkReuseTheSameFrozenRequest()
+    {
+        var setup = await ArrangeAsync();
+        using var provider = new ServiceCollection().AddLogging().AddAiurProtocolClient().BuildServiceProvider();
+        var endpoint = Http.BaseAddress!.ToString();
+        var client = new DmsApiClient(provider.GetRequiredService<AiurProtocolClient>(), endpoint, setup.Key);
+        var machine = setup.Machines[0];
+        const string reason = "Inspect networking";
+        string[] common = ["--dms-server-endpoint", endpoint, "--api-key", setup.Key, "--machine-id", machine.ToString(), "--reason", reason];
+        var cli = Client.DmsCommandApp.Create();
+
+        foreach (var args in new string[][] { [], ["--host", "invalid host"] })
+        {
+            var rejected = await cli.TestRunAsync(["machine", "networking", "dns-query", .. common, .. args]);
+            Assert.AreNotEqual(0, rejected.ProgramReturn);
+        }
+        Assert.AreEqual(0, await DatabaseAsync(db => db.Lockboxes.CountAsync(box => box.RequesterId == setup.User)));
+
+        await CheckAsync("routes", OperationsWorkflows.NetworkingRoutes, new EmptyInput());
+        await CheckAsync("dns-query", OperationsWorkflows.NetworkingDnsQuery, new DnsQueryInput("localhost"), "--host", "localhost");
+
+        async Task CheckAsync<TInput>(string command, MachineWorkflowDefinition<TInput, OperationResult> definition,
+            TInput input, params string[] options)
+        {
+            var requestId = Guid.NewGuid();
+            var receipt = await cli.TestRunAsync(["machine", "networking", command, .. common, .. options, "--request-id", requestId.ToString()]);
+            Assert.AreEqual(0, receipt.ProgramReturn, receipt.StdErr);
+            var retry = await client.SubmitAsync(definition, input, reason, [machine], requestId: requestId);
+            Assert.AreEqual(0, (int)retry.Code, retry.Message);
+
+            var box = await DatabaseAsync(db => db.Lockboxes.AsNoTracking().SingleAsync(item => item.ClientRequestId == requestId));
+            StringAssert.Contains(receipt.StdOut, new LockboxId(box.Id).ToString());
+            Assert.AreEqual("machine.networking." + command, box.Definition);
+            Assert.AreEqual("1", box.Version);
+            Assert.AreEqual(RiskLevel.Low, box.Risk);
+            Assert.AreEqual(DecisionState.Pending, box.Decision);
+            Assert.IsNull(box.WorkflowId);
+            CollectionAssert.AreEqual(new[] { machine }, JsonSerializer.Deserialize<Guid[]>(box.TargetMachines));
+            Assert.AreEqual(definition.Serialize(input), JsonSerializer.Deserialize<OperationRequest>(box.Parameters)!.Input);
+        }
+    }
+
+    [TestMethod]
     public async Task NewWorkflowUsesTypedSdkApprovalFrozenInputAndTwoAgentsWithoutEngineChanges()
     {
         var setup = await ArrangeAsync();

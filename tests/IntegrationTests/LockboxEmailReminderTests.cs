@@ -58,9 +58,12 @@ public sealed class LockboxEmailReminderTests : TestBase
             Risk = definition.Risk, Version = version, CreatedAt = now.AddMinutes(-age), Decision = decision
         };
         var due = Request(DecisionState.Pending, definition.Version, 15);
+        var notYetSwept = Request(DecisionState.Pending, definition.Version, LockboxExpiry.RequestLifetime.TotalMinutes + 1);
+        notYetSwept.ExpiresAt = now.AddMinutes(-1);
         LockboxRequest[] requests = [due, Request(DecisionState.Pending, definition.Version, 14),
             Request(DecisionState.Approved, definition.Version, 16), Request(DecisionState.Denied, definition.Version, 16),
-            Request(DecisionState.Withdrawn, definition.Version, 16), Request(DecisionState.Pending, "retired-version", 16)];
+            Request(DecisionState.Withdrawn, definition.Version, 16), Request(DecisionState.Pending, "retired-version", 16),
+            Request(DecisionState.Expired, definition.Version, 241), notYetSwept];
         db.Lockboxes.AddRange(requests);
         await db.SaveChangesAsync();
         var mail = new RecordingMailer(viaRole.Email!);

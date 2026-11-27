@@ -12,7 +12,8 @@ public sealed partial class TraceDatabase
          RequesterId Nullable(String), ApproverId Nullable(String), AutomaticApproval Nullable(Bool), RequestedRisk Nullable(String),
          RequestedDefinition Nullable(String), RequestedVersion Nullable(String),
          Decision Nullable(String), DecidedAt Nullable(DateTime64(7, 'UTC')), PreviousState Nullable(String), State Nullable(String),
-         Origin String DEFAULT 'Manual', Trigger String DEFAULT 'ManualRequest', ScheduleId Nullable(String), ScheduleExpression Nullable(String), ScheduledAt Nullable(DateTime64(7, 'UTC')))
+         Origin String DEFAULT 'Manual', Trigger String DEFAULT 'ManualRequest', ScheduleId Nullable(String), ScheduleExpression Nullable(String), ScheduledAt Nullable(DateTime64(7, 'UTC')),
+         TargetMachineIds Array(String) DEFAULT [])
         ENGINE = ReplacingMergeTree ORDER BY (ifNull(LockboxId, ''), EventId)
         """;
 
@@ -24,6 +25,7 @@ public sealed partial class TraceDatabase
         try
         {
             var connection = await GetConnection();
+            const string targetColumn = "ALTER TABLE DmsWorkflowAudit ADD COLUMN IF NOT EXISTS TargetMachineIds Array(String) DEFAULT []";
             await ExecuteAsync("CREATE TABLE IF NOT EXISTS DmsWorkflowAudit " + AuditSchema);
             var oldSchema = await NeedsMigrationAsync("DmsWorkflowAudit");
             var stagingExists = Convert.ToUInt64(await ScalarAsync("EXISTS TABLE DmsWorkflowAuditMigration")) != 0;
@@ -35,6 +37,7 @@ public sealed partial class TraceDatabase
                         throw new InvalidDataException("Unexpected audit migration table. Preserve it for investigation.");
                     await ExecuteAsync("DROP TABLE DmsWorkflowAuditMigration SYNC");
                 }
+                await ExecuteAsync(targetColumn);
                 return;
             }
             var engine = Convert.ToString(await ScalarAsync("SELECT engine FROM system.databases WHERE name = currentDatabase()"));
@@ -51,6 +54,7 @@ public sealed partial class TraceDatabase
                 throw new InvalidDataException("Audit migration verification failed. The original table remains authoritative.");
             await ExecuteAsync("EXCHANGE TABLES DmsWorkflowAudit AND DmsWorkflowAuditMigration");
             await ExecuteAsync("DROP TABLE DmsWorkflowAuditMigration SYNC");
+            await ExecuteAsync(targetColumn);
 
             async Task ExecuteAsync(string sql)
             {

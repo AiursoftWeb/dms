@@ -65,6 +65,19 @@ Time filtering uses Controller `RecordedAt`, with an inclusive `--from` and excl
 
 The Web **Investigation** page uses the same authorization, filters and pagination, with links to workflow details, machine history and approval context. Time labels and values use UTC. No arbitrary SQL or output-body search or live workflow control is exposed by this query feature.
 
+## Open history queries
+
+`GET /api/v1/dms/lockbox-history` and `GET /api/v1/dms/workflow-history` expose the same archived facts to **every authenticated human key** without the Read DMS operations permission; Agent keys cannot use them. These endpoints return the same deliberately limited facts as the archive — never parameters, results, free-text reasons or credentials — so no approval flow or extra permission is needed to answer questions such as what a person requested recently, what happened on a machine, or how often an operation failed. Query attempts are recorded in the existing access audit. The permission-gated `audit-events` endpoint and Web Investigation page remain unchanged for full investigation use.
+
+```sh
+dms lockbox history --requester alice
+dms lockbox history --machine web-01 --decision Approved
+dms workflow history --definition machine.frps.deploy --state Failed
+dms workflow history --root-workflow-id <UUID> --output-format csv
+```
+
+`lockbox history` returns only Lockbox lifecycle events (submitted, approved, denied, withdrawn, expired); `workflow history` returns only workflow creation and state-change events. Filters are exact matches: `--requester` and `--approver` accept a username, display name or user ID; `--machine` accepts a machine name or machine ID; the Controller resolves readable names before querying the archive and rejects ambiguous or unknown names. Lockbox machine filters match the frozen targets, including requests targeting multiple machines. New archive facts retain target IDs after request cleanup, and legacy facts use the retained request snapshot when available. The remaining filters mirror the authorized query: `--definition`, `--risk`, `--decision`, `--automatic-approval`, `--state`, `--origin`, `--trigger`, `--lockbox-id`, `--workflow-id` and `--root-workflow-id`. Time filtering uses the inclusive `--from` and exclusive `--until`, defaults to the last 7 days and can span at most 31 days. Pagination, ordering, eventual consistency and the explicit 503 on an unavailable archive behave exactly like the authorized query. Each entry additionally carries the resolved requester, approver and machine names; the default table shows them as readable columns, JSON and CSV include both names and stored IDs.
+
 ## Independent Lockbox upgrade
 
 The Controller owns approvals as relational Lockbox entities. New requests never create a `lockbox` Workflow. `LockboxId` is exposed as `lb/<UUID>` by CLI, SDK and Web; the ClickHouse column continues storing the underlying UUID for historical query consistency. `WorkflowId`, `RootWorkflowId` and `Location` are nullable for approval facts. A failed execution does not change an Approved decision.
@@ -79,4 +92,4 @@ Use `dms operation query-audit --origin Automatic --output-format table` to find
 
 The upgrade migrates the investigation table's Lockbox reference to nullable and preserves existing approval and execution facts. Stop the old Controller before migrating, retain the normal database/ClickHouse backup and start the new Controller before upgrading Agents. New origin fields default historical facts to Manual; child investigation facts are identified as Subworkflow. Automatic workflow rows cannot be represented by the old required-Lockbox schema, so rolling back after accepting them requires restoring the coordinated pre-upgrade backup.
 
-A requester withdrawal produces one `LockboxWithdrawn` event with the requester ID, decision time and Lockbox ID. Its workflow ID, approver and automatic-approval fields are empty. Approved workflow events obtain their approval context from the root's launch snapshot. Use `dms operation query-audit --kind LockboxWithdrawn` to investigate withdrawals.
+A requester withdrawal produces one `LockboxWithdrawn` event with the requester ID, decision time and Lockbox ID. Its workflow ID, approver and automatic-approval fields are empty. A pending request that passes its 4-hour expiry produces one `LockboxExpired` event the same way, with empty approver and automatic-approval fields. Approved workflow events obtain their approval context from the root's launch snapshot. Use `dms operation query-audit --kind LockboxWithdrawn` to investigate withdrawals. Expired Lockbox rows are deleted from the relational database 7 days after expiry; their audit events remain in the archive.

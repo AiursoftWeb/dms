@@ -90,7 +90,7 @@ public static partial class DmsCommandApp
             ]),
             new Group("frps", "Inspect or deploy the FRP server on a machine.",
             [
-                StandardCommand("status", "Report FRPS versions, systemd state, listeners, and recent journal counts.",
+                StandardCommand("status", "Request FRPS versions, systemd state, listeners, and recent journal counts. View the report with dms workflow status <WorkflowId>.",
                     MachineWorkflows.FrpsStatus, _ => new EmptyInput()),
                 FrpsDeployCommand()
             ]),
@@ -244,9 +244,8 @@ public static partial class DmsCommandApp
             new Group("networking", "Inspect interfaces, routes, firewall rules, and connectivity.",
             [
                 NewNetworkingInterfacesCommand(),
-                NewNetworkingRoutesCommand(),
+                .. DeclaredMachineCommands("machine.networking"),
                 NewNetworkingSocketsCommand(),
-                NewNetworkingDnsQueryCommand(),
                 NewNetworkingProbeCommand(),
                 NewNetworkingTrafficSampleCommand(),
                 NewNetworkingFirewallInfoCommand(),
@@ -273,6 +272,7 @@ public static partial class DmsCommandApp
         ]))
         .WithFeature(new Group("lockbox", "View, approve, reject, or withdraw Lockbox requests.",
         [
+            new ActionCommand("history", "List Lockbox lifecycle events: submissions, approvals, denials, withdrawals, and expirations.", "lockbox-history"),
             new ActionCommand("list", "List Lockbox requests, optionally filtered by decision.", "lockboxes"),
             new ActionCommand("status",
                 "Show the frozen workflow, target machines, inputs, requester, decision, and eligible approvers.",
@@ -284,15 +284,16 @@ public static partial class DmsCommandApp
         ]))
         .WithFeature(new Group("workflow", "Check execution status, results, child workflows, and trace.",
         [
+            new ActionCommand("history", "List workflow execution events: creations and state changes, on any machine.", "workflow-history"),
             new ActionCommand("status",
-                "Show a workflow's execution status and result.",
+                "Show a workflow's execution status and result. The default table includes descendant workflows and their results.",
                 "workflow", positionalOnly: true),
             new ActionCommand("callstack",
                 "Show a workflow and its descendants as a tree.",
                 "callstack", positionalOnly: true),
             new ActionCommand("result", "View a directory listing from a machine filesystem ls request.",
                 "filesystem-result", positionalOnly: true),
-            new ActionCommand("trace", "Read archived trace entries for a workflow and its descendants.", "trace", positionalOnly: true)
+            new ActionCommand("trace", "Read archived logs for a workflow and its descendants. Use dms workflow status <WorkflowId> to see results.", "trace", positionalOnly: true)
         ]))
         .WithFeature(new Group("operation", "Browse the workflow catalog, search audit history, or request cancellation.",
         [
@@ -553,6 +554,8 @@ public static partial class DmsCommandApp
         Func<ParseResult, (string Workflow, string Input)>? selectOperation = null,
         string? targetDescription = null) : DmsCommandHandler(supportsLog: action == "trace")
     {
+        private sealed record WorkflowStatusView(JObject Selected, JArray Descendants);
+
         public string[] CommandAliases { private get; set; } = [];
         protected override string[] Alias => CommandAliases;
 
@@ -620,6 +623,33 @@ public static partial class DmsCommandApp
                 "Exclusive archive recording time, ISO 8601 with UTC offset; defaults to now. Maximum range: 31 days."
         };
 
+        private readonly Option<DateTimeOffset?> _historyFrom = new("--from")
+        {
+            Description =
+                "Inclusive archive recording time, ISO 8601 with UTC offset; defaults to 7 days before --until."
+        };
+
+        private readonly Option<DateTimeOffset?> _historyUntil = new("--until")
+        {
+            Description =
+                "Exclusive archive recording time, ISO 8601 with UTC offset; defaults to now. Maximum range: 31 days."
+        };
+
+        private readonly Option<string?> _requesterName = new("--requester")
+            { Description = "Filter by requester: username, display name, or user ID." };
+
+        private readonly Option<string?> _approverName = new("--approver")
+            { Description = "Filter by approver: username, display name, or user ID." };
+
+        private readonly Option<string?> _machineName = new("--machine")
+            { Description = "Filter by machine: machine name or machine ID." };
+
+        private readonly Option<RiskLevel?> _risk = new("--risk")
+            { Description = "Filter by requested risk: Safe, Low, Medium, High, VeryHigh, or Open." };
+
+        private readonly Option<WorkflowTrigger?> _trigger = new("--trigger")
+            { Description = "Filter by trigger: ManualRequest, Subworkflow, Cron, or AgentStartup." };
+
         private readonly Option<Guid?> _machineFilter = new("--machine-id")
             { Description = "Filter events to the specified machine ID." };
         private readonly Option<Guid?> _workflowFilter = new("--workflow-id")
@@ -635,7 +665,7 @@ public static partial class DmsCommandApp
             { Description = "Include full execution parameters and target machines in the output." };
 
         private readonly Option<DecisionState?> _decision = new("--decision")
-            { Description = "Filter by Pending, Approved, Denied, or Withdrawn." };
+            { Description = "Filter by Pending, Approved, Denied, Withdrawn, or Expired." };
         private readonly Option<string?> _requester = new("--requester-id")
             { Description = "Filter events to the specified requester user ID." };
         private readonly Option<string?> _approver = new("--approver-id")
@@ -654,7 +684,12 @@ public static partial class DmsCommandApp
 
         private readonly Option<int> _page = new("--page")
         {
-            Description = action == "lockboxes" ? "Zero-based page of 50 Lockbox requests." : "Zero-based page of 50 audit events."
+            Description = action switch
+            {
+                "lockboxes" => "Zero-based page of 50 Lockbox requests.",
+                "lockbox-history" or "workflow-history" => "Zero-based page of 50 history events.",
+                _ => "Zero-based page of 50 audit events."
+            }
         };
 
         private static LockboxId? ParseLockboxId(ArgumentResult result)
@@ -715,6 +750,18 @@ public static partial class DmsCommandApp
                              _page
                          }) yield return option;
             }
+            else if (action is "lockbox-history" or "workflow-history")
+            {
+                foreach (var option in new Option[]
+                         {
+                             _historyFrom, _historyUntil, _requesterName, _approverName, _machineName,
+                             _definitionFilter, _lockboxFilter, _workflowFilter, _page
+                         }) yield return option;
+                if (action == "lockbox-history")
+                    foreach (var option in new Option[] { _decision, _risk, _automatic }) yield return option;
+                else
+                    foreach (var option in new Option[] { _state, _origin, _trigger, _rootFilter }) yield return option;
+            }
             else if (action == "lockboxes")
             {
                 yield return _page;
@@ -744,9 +791,27 @@ public static partial class DmsCommandApp
             }
         }
 
+        private Task<DmsResponse> HistoryAsync(DmsApiClient client, ParseResult context)
+        {
+            var query = new HistoryQuery
+            {
+                From = context.GetValue(_historyFrom), Until = context.GetValue(_historyUntil),
+                Requester = context.GetValue(_requesterName), Approver = context.GetValue(_approverName),
+                Machine = context.GetValue(_machineName), Definition = context.GetValue(_definitionFilter),
+                Risk = context.GetValue(_risk), Decision = context.GetValue(_decision),
+                AutomaticApproval = context.GetValue(_automatic), State = context.GetValue(_state),
+                Origin = context.GetValue(_origin), Trigger = context.GetValue(_trigger),
+                LockboxId = context.GetValue(_lockboxFilter), WorkflowId = context.GetValue(_workflowFilter),
+                RootWorkflowId = context.GetValue(_rootFilter), Page = context.GetValue(_page)
+            };
+            return action == "lockbox-history" ? client.LockboxHistoryAsync(query) : client.WorkflowHistoryAsync(query);
+        }
+
         protected override bool Callstack => action == "callstack";
         protected override bool Catalog => action == "definitions";
         protected override bool Audit => action == "audit";
+        protected override bool History => action is "lockbox-history" or "workflow-history";
+        protected override bool LockboxHistory => action == "lockbox-history";
         protected override bool LockboxStatus => action == "lockbox-status";
 
         protected override async Task<DmsResponse> RequestAsync(DmsApiClient client, ParseResult context)
@@ -797,6 +862,7 @@ public static partial class DmsCommandApp
                         Kind = context.GetValue(_kind), State = context.GetValue(_state),
                         Origin = context.GetValue(_origin), AutomaticApproval = context.GetValue(_automatic), Page = context.GetValue(_page)
                     }),
+                    "lockbox-history" or "workflow-history" => await HistoryAsync(client, context),
                     "definitions" => await client.ListDefinitionsAsync(),
                     "lockboxes" => await client.ListLockboxesAsync(context.GetValue(_page),
                         context.GetValue(_decision)),
@@ -806,7 +872,7 @@ public static partial class DmsCommandApp
                     "approve" or "deny" => await client.DecideAsync(lockboxId,
                         action == "approve",
                         context.GetValue(_reason) ?? string.Empty),
-                    "workflow" => await client.GetWorkflowAsync(id),
+                    "workflow" => await ReadWorkflowStatusAsync(client, id, SelectedFormat(context)),
                     "callstack" => await client.CallstackAsync(id),
                     "apt-plan" => await ReadAptPlanAsync(client, id),
                     "filesystem-result" => await client.FilesystemResultAsync(id),
@@ -817,16 +883,35 @@ public static partial class DmsCommandApp
             return response;
         }
 
+        private static async Task<DmsResponse> ReadWorkflowStatusAsync(DmsApiClient client, Guid id, OutputFormat format)
+        {
+            var response = await client.GetWorkflowAsync(id);
+            if (format != OutputFormat.Table) return response;
+
+            var tree = await client.CallstackAsync(id);
+            if (response.Data is not JObject selected || tree.Data is not JArray nodes)
+                throw new ArgumentException("The Controller returned an invalid workflow status or callstack.");
+
+            var descendants = new JArray(nodes.OfType<JObject>()
+                .Where(node => node["Id"]?.ToObject<Guid>() != id));
+            response.Data = new WorkflowStatusView(selected, descendants);
+            return response;
+        }
+
         private bool ShouldWaitForOpenResult(ParseResult context) =>
             readResult != null && !context.GetValue(_showLockboxId);
 
         protected override void WriteResponse(ParseResult context, DmsResponse response, OutputFormat format, bool color, int width)
         {
+            var output = context.InvocationConfiguration.Output;
+            var error = context.InvocationConfiguration.Error;
             if (ShouldWaitForOpenResult(context) || action is "apt-plan" or "clickhouse-result")
-                DmsOutputWriter.WriteResult(context.InvocationConfiguration.Output, response.Data!, format, color, width);
+                DmsOutputWriter.WriteResult(output, response.Data!, format, color, width);
             else if (action == "filesystem-result")
-                DmsOutputWriter.WriteFilesystemResult(context.InvocationConfiguration.Output, context.InvocationConfiguration.Error,
+                DmsOutputWriter.WriteFilesystemResult(output, error,
                     ((JObject)response.Data!).ToObject<FilesystemListResult>()!, format, color, width);
+            else if (response.Data is WorkflowStatusView status)
+                DmsOutputWriter.WriteWorkflowStatus(output, status.Selected, status.Descendants, color, width);
             else
             {
                 var verbose = action switch
@@ -834,18 +919,26 @@ public static partial class DmsCommandApp
                     "approve" or "deny" or "withdraw" => context.GetValue(_verbose),
                     _ => true
                 };
-                DmsOutputWriter.Write(context.InvocationConfiguration.Output, response, format, Callstack, color, width,
+                DmsOutputWriter.Write(output, response, format, Callstack, color, width,
                     catalog: Catalog, audit: Audit, lockboxStatus: LockboxStatus, verbose: verbose,
+                    history: History, lockboxHistory: LockboxHistory,
                     lockboxDetails: action is "lockboxes" or "get" or "approve" or "deny" or "withdraw");
                 if (format == OutputFormat.Table && response.Data is JObject data)
-                    WriteDirectoryNextStep(context.InvocationConfiguration.Output, data);
+                    WriteResultNextStep(output, data);
+                if (action == "trace" && format is OutputFormat.Log or OutputFormat.Table &&
+                    response.Data is JObject page)
+                    DmsOutputWriter.WriteEmptyTraceHint(error, page, Guid.Parse(context.GetValue(_positionalId)!));
             }
         }
 
-        private void WriteDirectoryNextStep(TextWriter output, JObject data)
+        private void WriteResultNextStep(TextWriter output, JObject data)
         {
+            var workflow = action is "lockbox-status" or "approve" ? data["Definition"]?.Value<string>() : action;
+            var directoryListing = workflow == OperationsWorkflows.FilesystemLs.Name;
+            if (!IsSubmission && action is not ("lockbox-status" or "approve")) return;
+
             Guid? workflowId;
-            if (action == OperationsWorkflows.FilesystemLs.Name && data.ToObject<LockboxReceipt>() is { } receipt)
+            if (IsSubmission && data.ToObject<LockboxReceipt>() is { } receipt)
             {
                 workflowId = receipt.WorkflowId;
                 if (workflowId == null)
@@ -857,7 +950,6 @@ public static partial class DmsCommandApp
                 }
             }
             else if (action is "lockbox-status" or "approve" &&
-                     data["Definition"]?.Value<string>() == OperationsWorkflows.FilesystemLs.Name &&
                      data["Decision"]?.Value<int>() == (int)DecisionState.Approved &&
                      Guid.TryParse(data["WorkflowId"]?.ToString(), out var approvedWorkflowId))
                 workflowId = approvedWorkflowId;
@@ -865,8 +957,10 @@ public static partial class DmsCommandApp
                 return;
 
             output.WriteLine();
-            output.WriteLine("View the directory listing after execution. Requires Read DMS operations.");
-            output.WriteLine($"  dms workflow result {workflowId}");
+            output.WriteLine(directoryListing
+                ? "View the directory listing after execution. Requires Read DMS operations."
+                : "Check execution status and available workflow results. Requires Read DMS operations.");
+            output.WriteLine($"  dms workflow {(directoryListing ? "result" : "status")} {workflowId}");
         }
 
         private async Task<DmsResponse> ReadOpenResultAsync(DmsApiClient client, DmsResponse response, Guid requestId,

@@ -5,6 +5,10 @@ namespace Aiursoft.DMS.Workflows;
 
 public sealed partial class MachineWorkflowRegistry
 {
+    internal void RegisterOperation<TInput>(MachineWorkflowDefinition<TInput, OperationResult> definition,
+        Func<MachineWorkflowContext, TInput, AgentEnvironment, CancellationToken, Task<OperationResult>> execute) =>
+        Register(definition, (input, agent) => new OperationWorkflow<TInput>(definition, input, execute, agent));
+
     private void RegisterOperations()
     {
         Register(OperationsWorkflows.PerformanceHistorySources,
@@ -464,20 +468,11 @@ public sealed partial class MachineWorkflowRegistry
                 input,
                 NetworkingOperations.InterfacesAsync,
                 agent));
-        Register(OperationsWorkflows.NetworkingRoutes,
-            (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.NetworkingRoutes,
-                input,
-                NetworkingOperations.RoutesAsync,
-                agent));
+        NetworkingOperations.Register(this);
         Register(OperationsWorkflows.NetworkingSockets,
             (input, agent) => new OperationWorkflow<EmptyInput>(OperationsWorkflows.NetworkingSockets,
                 input,
                 NetworkingOperations.SocketsAsync,
-                agent));
-        Register(OperationsWorkflows.NetworkingDnsQuery,
-            (input, agent) => new OperationWorkflow<DnsQueryInput>(OperationsWorkflows.NetworkingDnsQuery,
-                input,
-                NetworkingOperations.DnsQueryAsync,
                 agent));
         Register(OperationsWorkflows.NetworkingProbe,
             (input, agent) => new OperationWorkflow<NetworkProbeInput>(OperationsWorkflows.NetworkingProbe,

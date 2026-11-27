@@ -1224,31 +1224,12 @@ public static partial class DmsCommandApp
             _ => new EmptyInput());
     }
 
-    private static ActionCommand NewNetworkingRoutesCommand()
-    {
-        return StandardCommand("routes",
-            "Show routing tables and policy routing rules.",
-            OperationsWorkflows.NetworkingRoutes,
-            _ => new EmptyInput());
-    }
-
     private static ActionCommand NewNetworkingSocketsCommand()
     {
         return StandardCommand("sockets",
             "Show listening sockets, connections, and their processes.",
             OperationsWorkflows.NetworkingSockets,
             _ => new EmptyInput());
-    }
-
-    private static ActionCommand NewNetworkingDnsQueryCommand()
-    {
-        var host = new Option<string>("--host")
-            { Required = true, Description = "Hostname to resolve from the selected machine." };
-        return StandardCommand("dns-query",
-            "Resolve a hostname from the selected machine.",
-            OperationsWorkflows.NetworkingDnsQuery,
-            p => new DnsQueryInput(p.GetValue(host)!),
-            host);
     }
 
     private static ActionCommand NewNetworkingProbeCommand()

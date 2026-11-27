@@ -648,6 +648,33 @@ public class DmsRolePermissionTests : TestBase
     }
 
     [TestMethod]
+    public async Task ExpiredLockboxLeavesQueuesAndShowsExpiredWithoutApprovalButtons()
+    {
+        var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Low), DmsPermissions.Request(RiskLevel.Safe));
+        using var scope = Server!.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+        var workflows = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+        var box = await workflows.SubmitAsync(setup.User,
+            MachineWorkflows.ServiceStatus.Request(new ServiceInput("sshd.service"), "Expiry acceptance", [setup.First]));
+        db.ChangeTracker.Clear();
+        (await db.Lockboxes.SingleAsync(l => l.Id == box.Id)).ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
+        await db.SaveChangesAsync();
+
+        await LoginAsAdmin();
+        var id = Uri.EscapeDataString(new LockboxId(box.Id).ToString());
+        var page = await Http.GetStringAsync($"/Dms/Lockbox?id={id}");
+        StringAssert.Contains(page, "This request expired automatically after 4 hours without a decision.");
+        Assert.DoesNotContain("name=\"approve\"", page);
+
+        var expiredQueue = await Http.GetStringAsync("/Dms/Lockboxes?scope=expired");
+        StringAssert.Contains(expiredQueue, "Expiry acceptance");
+        StringAssert.Contains(expiredQueue, "data-decision=\"Expired\"");
+        Assert.DoesNotContain("Expiry acceptance", WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes?scope=pending")));
+        Assert.DoesNotContain("Expiry acceptance", WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes?scope=all")));
+        Assert.DoesNotContain("Expiry acceptance", WebUtility.HtmlDecode(await Http.GetStringAsync("/Dms/Lockboxes")));
+    }
+
+    [TestMethod]
     public async Task RequesterCanFollowOwnWebExecutionWithoutGlobalReadPermission()
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(RiskLevel.Medium));
@@ -960,8 +987,8 @@ public class DmsRolePermissionTests : TestBase
             RiskLevel.Safe => MachineWorkflows.AgentStatus.Request(new EmptyInput(), "Role test", machines: [machine]),
             RiskLevel.Low => MachineWorkflows.ServiceStatus.Request(new ServiceInput("dms-test.service"), "Role test", machines: [machine]),
             RiskLevel.Medium => MachineWorkflows.PullerForceUpdate.Request(new PullerForceUpdateInput(), "Role test", machines: [machine]),
-            RiskLevel.High => MachineWorkflows.BoxDeploy.Request(new BoxDeployInput(), "Role test", machines: [machine]),
-            RiskLevel.VeryHigh => MachineWorkflows.DockerExec.Request(new DockerExecInput(new string('a', 64), ["/start.sh"]), "Role test", machines: [machine]),
+            RiskLevel.High => MachineWorkflows.DockerExec.Request(new DockerExecInput(new string('a', 64), ["hostname"]), "Role test", machines: [machine]),
+            RiskLevel.VeryHigh => OperationsWorkflows.FilesystemCp.Request(new CopyPathInput("/tmp/source", "/tmp/destination"), "Role test", machines: [machine]),
             _ => throw new ArgumentOutOfRangeException(nameof(risk))
         };
         using var scope = Server!.Services.CreateScope();
@@ -1029,10 +1056,10 @@ public class DmsRolePermissionTests : TestBase
     [DataRow("table", true)]
     [DataRow("json", true)]
     [DataRow("csv", true)]
-    public async Task BoxInspectCliOnlySubmitsASafeWorkflowAndLeavesInspectionDetailsForTrace(string format, bool automatic)
+    public async Task BoxInspectCliOnlySubmitsALowRiskWorkflowAndLeavesInspectionDetailsForTrace(string format, bool automatic)
     {
-        var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.Safe));
-        if (automatic) await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Safe), true);
+        var setup = await ArrangeAsync(AppPermissionNames.CanReadDmsOperations, DmsPermissions.Request(RiskLevel.Low));
+        if (automatic) await SetRoleAsync(setup.Role, DmsPermissions.AutoApprove(RiskLevel.Low), true);
         var cli = await Client.DmsCommandApp.Create().TestRunAsync(["machine", "box", "inspect", "--machine-id", setup.First.ToString(),
             "--reason", "Inspect Box before deployment", "--dms-server-endpoint", Http.BaseAddress!.ToString(), "--api-key", setup.Key, "--output-format", format]);
         Assert.AreEqual(0, cli.ProgramReturn, cli.StdErr);
@@ -1040,7 +1067,7 @@ public class DmsRolePermissionTests : TestBase
         var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
         var box = await db.Lockboxes.SingleAsync(l => l.RequesterId == setup.User);
         Assert.AreEqual(MachineWorkflows.BoxInspect.Name, box.Definition);
-        Assert.AreEqual(RiskLevel.Safe, box.Risk);
+        Assert.AreEqual(RiskLevel.Low, box.Risk);
         Assert.AreEqual(automatic ? DecisionState.Approved : DecisionState.Pending, box.Decision);
         if (!automatic) Assert.IsNull(box.WorkflowId);
         StringAssert.Contains(cli.StdOut, new LockboxId(box.Id).ToString());
@@ -1064,7 +1091,7 @@ public class DmsRolePermissionTests : TestBase
     [DataRow("set-git-ssh-identity", RiskLevel.Medium)]
     [DataRow("configure-git", RiskLevel.Medium)]
     [DataRow("update-only", RiskLevel.Medium)]
-    [DataRow("rm", RiskLevel.High)]
+    [DataRow("rm", RiskLevel.Medium)]
     public async Task MachineMaintenanceCliFreezesTargetsAndTypedInputsAndRequiresTheCorrectRisk(string operation, RiskLevel risk)
     {
         var setup = await ArrangeAsync(DmsPermissions.Request(risk));

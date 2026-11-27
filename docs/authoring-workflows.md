@@ -30,7 +30,7 @@ public static class AuthoringExamples
 
 `MachineWorkflowDefinition<TInput, TResult>` declares execution on an Agent. `ClusterWorkflowDefinition<TInput, TResult>` declares execution on the Controller. The definition owns its name, version, input/output types, input validation, mandatory risk and a separate public-entry flag. Constructors require missing mandatory JSON arguments to fail; unknown input fields and incorrect JSON types fail as well. Write explicit business validation for allowed values, including null values where relevant. Validation must be deterministic and have no side effects; it also runs for typed subcalls.
 
-Declare exactly one `[WorkflowRisk]` on the shared definition field, using `RiskLevel.Safe`, `Low`, `Medium`, `High` or `VeryHigh`. Read that attribute with `WorkflowMetadata.Risk`; do not repeat a risk literal in the constructor or implementation. Shared fields let Controller approval, discovery, CLI and Agent read the same value without moving machine execution code into Contracts. Missing or invalid risk declarations fail registration. Existing Machine and Cluster risks retain their values. `PublicEntry` defaults to `false`: a registered parent can call the definition, but even a user with all risk permissions cannot submit it directly. Set `PublicEntry: true` to allow public Lockbox submissions after registering its implementation. Registering a class alone does not grant external access. A CLI entry is a separate optional choice.
+Declare exactly one `[WorkflowRisk]` on the shared definition field, using one of the six levels in the [workflow risk classification policy](workflow-risk.md). Read that attribute with `WorkflowMetadata.Risk`; do not repeat a risk literal in the constructor or implementation. Shared fields let Controller approval, discovery, CLI and Agent read the same value without moving machine execution code into Contracts. Missing or invalid risk declarations fail registration. Existing Machine and Cluster risks retain their values. `PublicEntry` defaults to `false`: a registered parent can call the definition, but even a user with all risk permissions cannot submit it directly. Set `PublicEntry: true` to allow public Lockbox submissions after registering its implementation. Registering a class alone does not grant external access. A CLI entry is a separate optional choice.
 
 A Machine definition always requires a frozen machine selection. A Cluster definition with `SelectMachines: true` accepts the same selection; its body can enumerate `GetApprovedMachinesAsync`. A Cluster definition without this flag rejects machine selection. It can still perform Controller-side work such as an inventory query.
 
@@ -70,6 +70,25 @@ total += unit.Units;
 ```
 
 It has no remote-machine or inventory API. The child gets its own ID and version, and its parent is the calling Machine instance.
+
+### Register machine workflows from a class library
+
+Reference `Aiursoft.DMS.Workflows` from the class library and group its factories in one public method. The `AuthoringExamples` class registers two machine workflows this way. [Compiled example](../tests/WorkflowAuthoringExamples.cs)
+
+```csharp
+public static void RegisterMachines(MachineWorkflowRegistry registry)
+{
+    registry.Register(Unit, (input, _) => new UnitWorkflow(input));
+    registry.Register(Repeat, (input, environment) => new RepeatWorkflow(input, environment.InstallationId));
+}
+```
+
+Reference the library from both host projects. Each host calls `AuthoringExamples.RegisterMachines(registry)` once on its own registry. [Two-Agent integration test](../tests/IntegrationTests/WorkflowAuthoringTests.cs)
+
+- **Controller** — In `Startup.ConfigureServices`, call the method in the factory that creates the `MachineWorkflowRegistry` singleton. The Controller uses that registry to validate Lockbox requests. [Controller startup](../src/Aiursoft.DMS/Startup.cs)
+- **Agent** — In `AgentRuntime.RunAsync`, create a registry, call the method and pass that registry to the `AgentClient` constructor so the Agent can execute the workflows. [Agent startup](../src/Aiursoft.DMS.Agent/AgentRuntime.cs)
+
+Add the next workflow's factory to the same method. To offer a CLI command for a public definition such as `Repeat`, add a `StandardCommand` mapping to the appropriate `DmsCommandApp` group. [CLI command groups](../src/Aiursoft.DMS.Client/DmsCommandApp.cs)
 
 ## 3. Implement and register a Cluster workflow
 
@@ -121,7 +140,9 @@ On the wire, `OperationRequest.Input` is a **JSON-encoded string**, matching the
 
 Do not add fields to `OperationRequest` for a standard workflow. Controller lookup reads public risk, location and validation from the registered definition. Approval stores the submitted input, version and frozen machine IDs; dispatch forwards those values to the instance. Root approval covers its subcalls, which cannot expand the approved target set.
 
-For an optional CLI entry, add a command path and map its options into the typed input through `DmsCommandApp.StandardCommand`. Existing `ServiceCommand` shows how to supply an option and input builder. The common handler supplies the request envelope and renders table/JSON/CSV. Do not add workflow-name cases to the common handler or implement a second approval path.
+The `machine networking` group discovers ordinary commands declared on public `OperationsWorkflows` fields. For example, `NetworkingDnsQuery` has `[WorkflowCommand("Resolve a hostname from the selected machine.")]`. Its existing ID supplies the path `dms machine networking dns-query`. The input record marks the `Host` constructor parameter with `[WorkflowOption("--host", "Hostname to resolve from the selected machine.")]`, which supplies the required `--host` option. `NetworkingRoutes` follows the same convention with `EmptyInput` and no business options.
+
+For another operation in this group, declare its typed contract and command description, write the business method, and add one `registry.RegisterOperation(definition, method)` binding in `NetworkingOperations.Register`. The common CLI builds the typed input and applies the definition's validation. This convention supports a single public input constructor with zero or more explicitly annotated required string arguments. Use the existing `DmsCommandApp.StandardCommand` mapping for aliases, typed defaults or custom option parsing. Both paths use the usual Lockbox submission and output formats.
 
 The CLI is distributed as the `Aiursoft.DMS.Client` NuGet tool, including its SDK and Contracts assemblies. When changing any of those bundled components, increment `Version` in `src/Aiursoft.DMS.Client/Aiursoft.DMS.Client.csproj` before merging. Published versions are immutable, and the shared CI skips duplicate versions. Version the CLI independently of the Controller and Agent packages.
 

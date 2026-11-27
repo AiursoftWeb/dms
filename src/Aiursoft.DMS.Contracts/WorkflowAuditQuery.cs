@@ -13,9 +13,13 @@ public sealed record WorkflowAuditQuery
     public string? Definition { get; init; }
     public string? RequestedDefinition { get; init; }
     public WorkflowAuditKind? Kind { get; init; }
+    public IReadOnlyList<WorkflowAuditKind>? Kinds { get; init; }
+    public DecisionState? Decision { get; init; }
     public RunState? State { get; init; }
     public bool? AutomaticApproval { get; init; }
     public WorkflowOrigin? Origin { get; init; }
+    public WorkflowTrigger? Trigger { get; init; }
+    public RiskLevel? Risk { get; init; }
     public int Page { get; init; }
 }
 

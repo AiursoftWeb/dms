@@ -26,7 +26,7 @@ public class AptMaintenanceIntegrationTests : TestBase
             db.PersonalApiKeys.Add(new PersonalApiKey { UserId = requester.Id, Name = "APT fixture",
                 KeyHash = DmsKeyAuthenticationHandler.Hash(apiKey), ExpiresAt = DateTime.UtcNow.AddHours(1) });
             DmsTestPermissions.Risk(db, requester.Id, RiskLevel.Low, request: true, automatic: true);
-            DmsTestPermissions.Risk(db, requester.Id, RiskLevel.High, request: true);
+            DmsTestPermissions.Risk(db, requester.Id, RiskLevel.Medium, request: true);
             await db.SaveChangesAsync();
             return (requester.Id, apiKey, firstMachine.Id, secondMachine.Id);
         });

@@ -100,15 +100,15 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<DockerPsInput, ProcessResult> DockerPs = new("machine.docker.ps", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerPs)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DockerLogsInput, ProcessResult> DockerLogs = new("machine.docker.logs", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerLogs)), "1", input => input.Validate(), PublicEntry: true);
-    [WorkflowRisk(RiskLevel.VeryHigh)]
-    public static readonly MachineWorkflowDefinition<DockerExecInput, ProcessResult> DockerExec = new("machine.docker.exec", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerExec)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.High)]
+    public static readonly MachineWorkflowDefinition<DockerExecInput, ProcessResult> DockerExec = new("machine.docker.exec", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerExec)), "1", input => input.Validate(), PublicEntry: true);
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<DockerContainerInput, ProcessResult> DockerKill = new("machine.docker.kill", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerKill)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Safe)]
     public static readonly MachineWorkflowDefinition<EmptyInput, DiskUsageResult> DiskUsage = new("machine.filesystem.disk-usage", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DiskUsage)), Version: "1");
     [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<PullerForceUpdateInput, PullerForceUpdateResult> PullerForceUpdate = new(WorkflowNames.PullerForceUpdate, WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(PullerForceUpdate)), "2", input => input.Validate(), PublicEntry: true);
-    [WorkflowRisk(RiskLevel.Safe)]
+    [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxInspectionResult> BoxInspect = new("machine.box.inspect", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxInspect)), "1", PublicEntry: true);
     [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<EmptyInput, BoxUpdateResult> BoxUpdateOnly = new("machine.box.update-only", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxUpdateOnly)), "1", PublicEntry: true);
@@ -116,7 +116,7 @@ public static class MachineWorkflows
     public static readonly MachineWorkflowDefinition<BoxGitInput, BoxInspectionResult> BoxConfigureGit = new("machine.box.configure-git", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(BoxConfigureGit)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<DirectoryUsageInput, ProcessResult> DirectoryUsage = new("machine.filesystem.du", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DirectoryUsage)), "1", input => input.Validate(), PublicEntry: true);
-    [WorkflowRisk(RiskLevel.High)]
+    [WorkflowRisk(RiskLevel.Medium)]
     public static readonly MachineWorkflowDefinition<RemovePathInput, ProcessResult> RemovePath = new("machine.filesystem.rm", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(RemovePath)), "1", input => input.Validate(), PublicEntry: true);
     [WorkflowRisk(RiskLevel.Low)]
     public static readonly MachineWorkflowDefinition<EmptyInput, ProcessResult> DockerDiskUsage = new("machine.docker.system.df", WorkflowMetadata.Risk(typeof(MachineWorkflows), nameof(DockerDiskUsage)), "1", PublicEntry: true);
