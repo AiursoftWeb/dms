@@ -73,7 +73,7 @@ On **待我审批**, tap **值班提醒** and allow Android notifications. The v
 
 Email fallback validation (2026-11-26): the integration test covered the 15-minute threshold, reviewer eligibility, exclusion of closed and obsolete requests, and retry without resending successful deliveries. All 862 solution tests and `bash lint.sh` passed locally. After syncing with `master` (`7cf1cea`) on 2026-11-27, the [MR !164](https://gitlab.aiursoft.com/aiursoft/dms/-/merge_requests/164) branch also excludes requests that have expired even if the expiry sweep has not yet updated their stored status. The full suite passed with 904 passed, 1 skipped, and no failures; lint passed. No real SMTP messages were sent; relay delivery still needs deployment acceptance.
 
-Email summary update (2026-11-27): the reminder integration test passed with the richer summary and authenticated request link, and verified that request reasons, parameters, and machine IDs are excluded. `bash lint.sh` passed. The template change has not been deployed or tested with live SMTP.
+Email summary update (2026-11-27, [MR !170](https://gitlab.aiursoft.com/aiursoft/dms/-/merge_requests/170)): reminders use a risk badge, a compact summary, and a button linking to the authenticated request. The English subject and the copyable approve/deny commands do not include credentials or workflow parameters. The two email tests and `bash lint.sh` passed locally, including checks for both formats, HTML escaping, and privacy. Live SMTP and rendering in mail clients have not been verified; this update has not been deployed.
 
 ## #2423 validation record
 
