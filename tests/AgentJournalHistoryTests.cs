@@ -22,6 +22,14 @@ public class AgentJournalHistoryTests
     private static void WriteLoose(DirectoryInfo directory, JournalTask task) =>
         File.WriteAllBytes(LooseFile(directory, task.Id), JsonSerializer.SerializeToUtf8Bytes(task));
 
+    private static void AssertArchivedOfferCannotRestart(TaskJournal journal, AgentMessage offer)
+    {
+        journal.Accept(offer);
+        Assert.IsNull(journal.Start(offer.TaskId));
+        Assert.IsFalse(journal.RejectBeforeStart(offer, "replay"));
+        Assert.Throws<InvalidDataException>(() => journal.Accept(new AgentMessage { TaskId = offer.TaskId, Definition = "changed" }));
+    }
+
     [TestMethod]
     public async Task PreviousCheckpointsPackWithoutLosingOffersOccurrencesOrLateReports()
     {
@@ -47,10 +55,7 @@ public class AgentJournalHistoryTests
                 Assert.IsTrue(new[] { manual, uncertain, waiting }.All(t => File.Exists(LooseFile(directory, t.Id))));
                 Assert.AreEqual((1, 1), journal.Counts());
                 Assert.HasCount(eligible.Length + 3, journal.Snapshot());
-                journal.Accept(offer);
-                Assert.IsNull(journal.Start(first.Id));
-                Assert.IsFalse(journal.RejectBeforeStart(offer, "replay"));
-                Assert.Throws<InvalidDataException>(() => journal.Accept(new AgentMessage { TaskId = first.Id, Definition = "changed" }));
+                AssertArchivedOfferCannotRestart(journal, offer);
                 Assert.IsNull(journal.AcceptScheduled(first.Definition, "1", eligible[^1].Schedule!, reconcileAfterInterruption: true));
                 await journal.ReportAsync(first.Id, new WorkflowEvent { WorkflowId = first.Id, IsTrace = true, Message = "after archival" });
             }
