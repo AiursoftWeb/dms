@@ -53,7 +53,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         lock (_startGate)
         {
             if (_maintenance != null || _stopping.IsCancellationRequested) return;
-            foreach (var accepted in journal.Snapshot(activeOnly: true).Where(t => t.Schedule != null && t.State == RunState.Accepted))
+            foreach (var accepted in journal.Snapshot(activeOnly: true, pendingLimit: 0).Where(t => t.Schedule != null && t.State == RunState.Accepted))
                 if (journal.Start(accepted.Id) is { } recovered) Launch(recovered);
             if (!startup && _lastScheduleMinute == minute) return;
             var missedMinute = _lastScheduleMinute is { } previous && minute > previous.AddMinutes(1);
@@ -133,14 +133,14 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "hello", InstallationId = journal.InstallationId, Version = typeof(AgentClient).Assembly.GetName().Version!.ToString() }, token);
             Guid? maintenance;
             lock (_startGate) maintenance = _maintenance;
-            foreach (var task in journal.Snapshot(activeOnly: true))
+            foreach (var task in journal.Snapshot(activeOnly: true, pendingLimit: 64))
             {
                 if (task.Schedule != null)
                     await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "scheduled", TaskId = task.Id,
                         Definition = task.Definition, Version = task.Version, Schedule = task.Schedule }, token);
                 if (task.State != RunState.Accepted || maintenance == null || maintenance == task.Id)
                     await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "status", TaskId = task.Id, State = task.State }, token);
-                foreach (var item in task.Pending.Take(64))
+                foreach (var item in task.Pending)
                     await WebSocketJson.SendAsync(socket, new AgentMessage { Kind = "event", TaskId = task.Id, Event = item }, token);
             }
             await Task.Delay(500, token);
@@ -285,7 +285,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             await context.TraceAsync("Pausing new work and waiting for other machine tasks before reboot.");
             while (true)
             {
-                var others = journal.Snapshot().Where(t => t.Id != taskId).ToArray();
+                var others = journal.Snapshot(activeOnly: true, pendingLimit: 0).Where(t => t.Id != taskId).ToArray();
                 if (others.Any(t => t.State is RunState.NeedsVerification or RunState.CancelRequested)) throw new InvalidOperationException("Reconcile uncertain tasks before rebooting.");
                 if (others.All(t => t.State != RunState.Running)) break;
                 await Task.Delay(250, drain.Token);
@@ -312,7 +312,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             await context.TraceAsync("Pausing new work and waiting for other machine tasks before poweroff.");
             while (true)
             {
-                var others = journal.Snapshot().Where(t => t.Id != taskId).ToArray();
+                var others = journal.Snapshot(activeOnly: true, pendingLimit: 0).Where(t => t.Id != taskId).ToArray();
                 if (others.Any(t => t.State is RunState.NeedsVerification or RunState.CancelRequested)) throw new InvalidOperationException("Reconcile uncertain tasks before powering off.");
                 if (others.All(t => t.State != RunState.Running)) break;
                 await Task.Delay(250, drain.Token);
@@ -328,8 +328,9 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
 
     private async Task ExecuteAsync(JournalTask task)
     {
+        var counts = journal.Counts();
         var environment = new AgentEnvironment(journal.InstallationId, typeof(AgentClient).Assembly.GetName().Version!.ToString(),
-            journal.Snapshot().Count(t => !t.State.Terminal()), journal.Snapshot().Sum(t => t.Pending.Count),
+            counts.Active, counts.Pending,
             installedState == null ? null : (context, input, token) => UpgradeAsync(task.Id, context, input, token),
             Artifacts: new AgentArtifactTransport(controller, key, task.Id),
             Reboot: installedState == null ? null : (context, input, token) => RebootAsync(task.Id, context, input, token),
@@ -350,7 +351,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
         }
         catch (Exception exception)
         {
-            if (journal.Snapshot().Single(t => t.Id == task.Id).State == RunState.Running)
+            if (journal.Snapshot(activeOnly: false, pendingLimit: 0).Single(t => t.Id == task.Id).State == RunState.Running)
                 await journal.ReportAsync(task.Id, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition,
                     State = RunState.Failed, Result = JsonSerializer.Serialize(new { Error = exception.Message }) });
             Console.Error.WriteLine($"Workflow {task.Id}: {exception.GetType().Name}. Inspect the workflow trace and journal.");

@@ -13,12 +13,44 @@ public sealed class JournalTask
     public string Version { get; set; } = WorkflowNames.Version;
     public RunState State { get; set; } = RunState.Accepted;
     public long Sequence { get; set; }
-    public List<WorkflowEvent> Pending { get; set; } = [];
+    public Queue<WorkflowEvent> Pending { get; set; } = new();
     public AgentRelease? ScheduledUpgradeRelease { get; set; }
+
+    // Rebuilt from the checkpoint and records on open; never serialized into either.
+    internal long FileLength;
+    internal bool HasRecords;
+    internal long ReclaimableBytes;
+    internal long PendingBytes;
+    internal readonly Queue<int> EventSizes = new();
+
+    internal JournalTask Copy() => (JournalTask)MemberwiseClone();
+
+    internal void AddEvent(WorkflowEvent item, int size)
+    {
+        if (item.Sequence != checked(Sequence + 1)) throw new InvalidDataException("Discontinuous Agent journal sequence.");
+        Pending.Enqueue(item);
+        EventSizes.Enqueue(size);
+        PendingBytes += size;
+        Sequence = item.Sequence;
+        if (!item.IsTrace && item.WorkflowId == Id) State = item.State;
+    }
+
+    internal void Confirm(long sequence)
+    {
+        while (Pending.TryPeek(out var item) && item.Sequence <= sequence)
+        {
+            Pending.Dequeue();
+            var size = EventSizes.Dequeue();
+            PendingBytes -= size;
+            ReclaimableBytes += size;
+        }
+    }
 }
 
-public sealed class TaskJournal : IDisposable
+public sealed partial class TaskJournal : IDisposable
 {
+    private const int CaughtUpJournalBytes = 64 * 1024;
+    private const int CheckpointThresholdBytes = 256 * 1024;
     public Guid InstallationId { get; }
     private readonly string _path;
     private readonly object _gate = new();
@@ -31,33 +63,49 @@ public sealed class TaskJournal : IDisposable
         Directory.CreateDirectory(_path);
         if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(_path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         _lock = new FileStream(Path.Combine(_path, "agent.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-        var identityFile = Path.Combine(_path, "installation-id");
-        if (File.Exists(identityFile)) InstallationId = Guid.Parse(File.ReadAllText(identityFile));
-        else
+        try
         {
-            InstallationId = Guid.NewGuid();
-            using var stream = new FileStream(identityFile, FileMode.CreateNew, FileAccess.Write, FileShare.None);
-            stream.Write(System.Text.Encoding.UTF8.GetBytes(InstallationId.ToString())); stream.Flush(true);
-        }
-        _tasks = Directory.EnumerateFiles(_path, "*.json").Select(f => JsonSerializer.Deserialize<JournalTask>(File.ReadAllText(f))
-            ?? throw new InvalidDataException("Invalid task journal.")).ToDictionary(t => t.Id);
-        foreach (var task in _tasks.Values.Where(t => t.State is RunState.Running or RunState.CancelRequested))
-        {
-            if (task.State == RunState.Running && task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName && task.Schedule != null &&
-                task.ScheduledUpgradeRelease == null)
+            var identityFile = Path.Combine(_path, "installation-id");
+            if (File.Exists(identityFile)) InstallationId = Guid.Parse(File.ReadAllText(identityFile));
+            else
             {
-                task.State = RunState.Accepted;
-                Save(task);
-                continue;
+                InstallationId = Guid.NewGuid();
+                using var stream = new FileStream(identityFile, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                stream.Write(System.Text.Encoding.UTF8.GetBytes(InstallationId.ToString()));
+                stream.Flush(flushToDisk: true);
+                SyncDirectory();
             }
-            task.State = RunState.NeedsVerification;
-            Append(task, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition, State = RunState.NeedsVerification });
+            _tasks = Directory.EnumerateFiles(_path, "*.json").Select(ReadTask).ToDictionary(t => t.Id);
+            foreach (var task in _tasks.Values.Where(t => t.State is RunState.Running or RunState.CancelRequested))
+            {
+                if (task.State == RunState.Running && task.Definition == ScheduledAgentUpgradeWorkflow.DefinitionName && task.Schedule != null &&
+                    task.ScheduledUpgradeRelease == null)
+                {
+                    SaveState(task, RunState.Accepted);
+                    continue;
+                }
+                Append(task, new WorkflowEvent { WorkflowId = task.Id, Definition = task.Definition, State = RunState.NeedsVerification });
+            }
         }
+        catch { _lock.Dispose(); throw; }
     }
 
-    public IReadOnlyList<JournalTask> Snapshot(bool activeOnly = false)
+    public IReadOnlyList<JournalTask> Snapshot(bool activeOnly = false) => Snapshot(activeOnly, int.MaxValue);
+
+    internal IReadOnlyList<JournalTask> Snapshot(bool activeOnly, int pendingLimit)
     {
-        lock (_gate) return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(t => JsonSerializer.Deserialize<JournalTask>(JsonSerializer.Serialize(t))!).ToList();
+        lock (_gate)
+            return _tasks.Values.Where(t => !activeOnly || !t.State.Terminal() || t.Pending.Count > 0).Select(task =>
+            {
+                var copy = task.Copy();
+                if (copy.Pending.Count > pendingLimit) copy.Pending = new Queue<WorkflowEvent>(task.Pending.Take(pendingLimit));
+                return JsonSerializer.Deserialize<JournalTask>(JsonSerializer.SerializeToUtf8Bytes(copy))!;
+            }).ToList();
+    }
+
+    internal (int Active, int Pending) Counts()
+    {
+        lock (_gate) return (_tasks.Values.Count(t => !t.State.Terminal()), _tasks.Values.Sum(t => t.Pending.Count));
     }
 
     internal bool BlocksAgentUpgrade(Guid except)
@@ -79,8 +127,10 @@ public sealed class TaskJournal : IDisposable
             if (task.Definition != ScheduledAgentUpgradeWorkflow.DefinitionName || task.Schedule == null || task.State != RunState.Running ||
                 task.ScheduledUpgradeRelease != null)
                 throw new InvalidOperationException("The scheduled upgrade is no longer waiting for a release.");
+            var checkpoint = task.Copy();
+            checkpoint.ScheduledUpgradeRelease = release;
+            Save(task, checkpoint);
             task.ScheduledUpgradeRelease = release;
-            Save(task);
         }
     }
 
@@ -115,7 +165,6 @@ public sealed class TaskJournal : IDisposable
             var task = FindExistingTask(message);
             if (task != null && task.State != RunState.Accepted) return false;
             task ??= new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
-            task.State = RunState.Failed;
             Append(task, new WorkflowEvent
             {
                 WorkflowId = task.Id, Definition = task.Definition, Version = task.Version,
@@ -140,38 +189,64 @@ public sealed class TaskJournal : IDisposable
         lock (_gate)
         {
             if (!_tasks.TryGetValue(id, out var task) || task.State != RunState.Accepted) return null;
-            task.State = RunState.Running;
-            Save(task); // Persist before any side effect. A crash afterwards requires verification.
+            SaveState(task, RunState.Running); // Persist before any side effect.
             return task;
         }
     }
 
     public Task ReportAsync(Guid taskId, WorkflowEvent item)
     {
-        lock (_gate)
-        {
-            var task = _tasks[taskId];
-            if (item.WorkflowId == taskId && !item.IsTrace) task.State = item.State;
-            Append(task, item);
-        }
+        lock (_gate) Append(_tasks[taskId], item);
         return Task.CompletedTask;
     }
 
     private void Append(JournalTask task, WorkflowEvent item)
     {
-        // Stop execution on exhausted durable backlog; never drop trace entries silently.
-        if (task.Pending.Sum(e => e.Message.Length) > 32 * 1024 * 1024) throw new IOException("Trace backlog is full.");
-        item.Sequence = ++task.Sequence;
-        task.Pending.Add(item);
-        Save(task);
+        item.Sequence = checked(task.Sequence + 1);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(item);
+        if (task.PendingBytes + bytes.Length > 32L * 1024 * 1024)
+        {
+            // Allow each distinct root outcome once, including recovery of an oversized legacy task.
+            var outcome = !item.IsTrace && item.WorkflowId == task.Id && (item.State.Terminal() || item.State == RunState.NeedsVerification);
+            if (!outcome || bytes.Length > WebSocketJson.MaximumMessageBytes ||
+                task.Pending.Any(e => !e.IsTrace && e.WorkflowId == task.Id && e.State == item.State))
+                throw new IOException("Agent task journal exceeds 32 MiB of unacknowledged events.");
+        }
+        var stored = JsonSerializer.Deserialize<WorkflowEvent>(bytes)!;
+        if (task.FileLength == 0)
+        {
+            // A rejected first offer and its failure must appear in the same initial checkpoint.
+            task.AddEvent(stored, bytes.Length);
+            Save(task);
+            return;
+        }
+        AppendRecord(task, bytes);
+        task.AddEvent(stored, bytes.Length);
     }
 
     public void Acknowledge(Guid id, long sequence)
     {
         lock (_gate)
         {
-            if (!_tasks.TryGetValue(id, out var task) || sequence > task.Sequence) return;
-            if (task.Pending.RemoveAll(e => e.Sequence <= sequence) > 0) Save(task);
+            if (!_tasks.TryGetValue(id, out var task) || sequence > task.Sequence ||
+                !task.Pending.TryPeek(out var first) || first.Sequence > sequence) return;
+            // A busy, connected task can catch up after every line. Reuse its current file
+            // until compaction is worthwhile, and always release finished tasks' bodies.
+            if (sequence == task.Sequence && (task.State != RunState.Running || task.FileLength >= CaughtUpJournalBytes))
+            {
+                var checkpoint = task.Copy();
+                checkpoint.Pending = new Queue<WorkflowEvent>();
+                Save(task, checkpoint);
+                task.Confirm(sequence);
+                task.ReclaimableBytes = 0;
+                return;
+            }
+            var ack = JsonSerializer.SerializeToUtf8Bytes(sequence);
+            AppendRecord(task, ack);
+            task.Confirm(sequence);
+            task.ReclaimableBytes += ack.Length + 2;
+            // Bound obsolete prefixes without rewriting a large suffix on every acknowledgement.
+            if (task.ReclaimableBytes >= CheckpointThresholdBytes && task.ReclaimableBytes >= task.PendingBytes) Save(task);
         }
     }
 
@@ -180,23 +255,30 @@ public sealed class TaskJournal : IDisposable
         lock (_gate)
         {
             if (!_tasks.TryGetValue(id, out var task) || task.State != RunState.Accepted) return false;
-            task.State = RunState.Cancelled;
             Append(task, new WorkflowEvent { WorkflowId = id, Definition = task.Definition, State = RunState.Cancelled });
             return true;
         }
     }
 
-    private void Save(JournalTask task)
+    private void SaveState(JournalTask task, RunState state)
     {
-        var file = Path.Combine(_path, $"{task.Id:N}.json");
-        var temporary = file + ".tmp";
-        using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
-        {
-            JsonSerializer.Serialize(stream, task);
-            stream.Flush(flushToDisk: true);
-        }
-        File.Move(temporary, file, overwrite: true);
+        var checkpoint = task.Copy();
+        checkpoint.State = state;
+        Save(task, checkpoint);
+        task.State = state;
     }
 
-    public void Dispose() => _lock.Dispose();
+    public void Dispose()
+    {
+        lock (_gate)
+        {
+            if (_disposed) return;
+            try
+            {
+                if (!_faulted)
+                    foreach (var task in _tasks.Values.Where(t => t.HasRecords)) Save(task);
+            }
+            finally { _disposed = true; _lock.Dispose(); }
+        }
+    }
 }
