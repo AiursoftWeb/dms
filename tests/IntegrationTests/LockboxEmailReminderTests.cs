@@ -94,12 +94,17 @@ public sealed class LockboxEmailReminderTests : TestBase
                 Assert.AreEqual(1, summary.TargetCount);
                 var (subject, body, html) = SmtpLockboxReminderEmail.Format(summary, new Uri("https://dms.example.test"));
                 Assert.AreEqual($"[DMS Lockbox] [{definition.Risk}] {definition.Name} - Approval required", subject);
-                StringAssert.Contains(body, $"申请人：Email reviewer (@{requester.UserName})");
-                StringAssert.Contains(body, $"提交时间：{due.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
-                StringAssert.Contains(body, $"过期时间：{due.ExpiresAt:yyyy-MM-dd HH:mm:ss} UTC");
+                StringAssert.Contains(body, $"Requester: Email reviewer (@{requester.UserName})");
+                StringAssert.Contains(body, $"Submitted: {due.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC");
+                StringAssert.Contains(body, $"Expires: {due.ExpiresAt:yyyy-MM-dd HH:mm:ss} UTC");
+                StringAssert.Contains(body, "Target scope: 1 machine");
                 var detailLink = $"https://dms.example.test/Dms/Lockbox/{due.Id:D}";
                 StringAssert.Contains(body, detailLink);
+                StringAssert.Contains(html, "<html lang=\"en\">");
                 StringAssert.Contains(html, $"href=\"{detailLink}\"");
+                AssertNoCjk(subject);
+                AssertNoCjk(body);
+                AssertNoCjk(html);
                 foreach (var content in new[] { body, System.Net.WebUtility.HtmlDecode(html) })
                 {
                     StringAssert.Contains(content, $"dms lockbox approve --id {summary.Id} --server 'https://dms.example.test'");
@@ -128,13 +133,24 @@ public sealed class LockboxEmailReminderTests : TestBase
         const string requester = "Reviewer\n<img src=\"https://example.test/tracker\">";
         var summary = new LockboxReminderSummary(id, requester, MachineWorkflows.AgentStatus.Name, RiskLevel.Safe,
             DateTime.UtcNow, DateTime.UtcNow.AddHours(4), null);
-        var (_, text, html) = SmtpLockboxReminderEmail.Format(summary, new Uri("https://dms.example.test:8443"));
+        var (subject, text, html) = SmtpLockboxReminderEmail.Format(summary, new Uri("https://dms.example.test:8443"));
 
-        StringAssert.Contains(text, "申请人：Reviewer <img");
+        StringAssert.Contains(text, "Requester: Reviewer <img");
+        StringAssert.Contains(text, "Target scope: Unavailable (sign in to view)");
+        StringAssert.Contains(html, "<html lang=\"en\">");
         StringAssert.Contains(html, "Reviewer &lt;img");
         Assert.DoesNotContain("<img", html);
         StringAssert.Contains(text, $"dms lockbox approve --id {id} --server 'https://dms.example.test:8443'");
         StringAssert.Contains(text, $"dms lockbox deny --id {id} --server 'https://dms.example.test:8443'");
+        AssertNoCjk(subject);
+        AssertNoCjk(text);
+        AssertNoCjk(html);
+    }
+
+    private static void AssertNoCjk(string content)
+    {
+        Assert.IsFalse(content.Any(character =>
+            character is (>= '\u3000' and <= '\u303F') or (>= '\u4E00' and <= '\u9FFF') or (>= '\uFF00' and <= '\uFFEF')));
     }
 
     private sealed class RecordingMailer(string failOnce) : ILockboxReminderEmail
