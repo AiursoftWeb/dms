@@ -44,6 +44,15 @@ public sealed class LockboxIdNewtonsoftConverter : Newtonsoft.Json.JsonConverter
     public override void WriteJson(Newtonsoft.Json.JsonWriter writer, LockboxId value, Newtonsoft.Json.JsonSerializer serializer) => writer.WriteValue(value.ToString());
 }
 
+[SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public contract properties are consumed by workflows, Agents, API, and SDK clients.")]
+public sealed record LockboxContext(
+    LockboxId LockboxId,
+    string RequesterId,
+    string? RequesterName,
+    string? Reason,
+    RiskLevel Risk,
+    DateTime TriggeredAt);
+
 [SuppressMessage("ReSharper", "NotAccessedPositionalProperty.Global", Justification = "Public JSON response properties are consumed by API and SDK clients.")]
 public sealed record LockboxReceipt(LockboxId LockboxId, Guid? WorkflowId);
 public sealed record OpenWorkflowResult(Guid WorkflowId, RunState State, string? Result);

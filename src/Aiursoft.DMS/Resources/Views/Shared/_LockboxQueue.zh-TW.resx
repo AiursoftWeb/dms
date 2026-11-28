@@ -106,4 +106,13 @@
     <value>{0} 個請求頁面</value>
   </data>
 
+  <data name="Requester" xml:space="preserve">
+    <value>申請人</value>
+  </data>
+  <data name="All users" xml:space="preserve">
+    <value>所有使用者</value>
+  </data>
+  <data name="Today only" xml:space="preserve">
+    <value>僅今天</value>
+  </data>
 </root>

@@ -106,4 +106,13 @@
     <value>{0} 请求分页</value>
   </data>
 
+  <data name="Requester" xml:space="preserve">
+    <value>申请人</value>
+  </data>
+  <data name="All users" xml:space="preserve">
+    <value>所有用户</value>
+  </data>
+  <data name="Today only" xml:space="preserve">
+    <value>仅今天</value>
+  </data>
 </root>

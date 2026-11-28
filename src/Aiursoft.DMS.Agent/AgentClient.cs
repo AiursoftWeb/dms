@@ -342,7 +342,7 @@ public sealed class AgentClient(Uri controller, string key, TaskJournal journal,
             GetFrpsDeployToken: (id, token) => AgentFrpsDeployToken.GetAsync(controller, key, id, token),
             BoxSecrets: new AgentBoxSecretTransport(controller, key),
             DatabaseSecrets: new AgentDatabaseSecretTransport(controller, key));
-        var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows);
+        var context = new MachineWorkflowContext(task.Id, null, item => journal.ReportAsync(task.Id, item), environment, _workflows, task.Lockbox);
         _running[task.Id] = context;
         try
         {

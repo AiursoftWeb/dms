@@ -550,6 +550,10 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("RequesterId")
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
                     b.Property<string>("Result")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -589,6 +593,8 @@ namespace Aiursoft.DMS.MySql.Migrations
                     b.HasIndex("RootId");
 
                     b.HasIndex("MachineId", "CreatedAt");
+
+                    b.HasIndex("RequesterId", "CreatedAt");
 
                     b.ToTable("WorkflowRuns");
                 });

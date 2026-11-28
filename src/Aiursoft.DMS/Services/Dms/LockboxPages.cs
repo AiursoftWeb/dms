@@ -10,20 +10,27 @@ namespace Aiursoft.DMS.Services.Dms;
 public sealed class LockboxPages(TemplateDbContext db, AccessService access, WorkflowService workflows,
     DmsArtifactAccess artifacts, AgentReleaseStore releases, MachineSshOverview sshOverview)
 {
-    public async Task<LockboxQueueViewModel> ListAsync(string actor, bool ownRequests, string? scope, string? query, int page, string? notice = null)
+    public async Task<LockboxQueueViewModel> ListAsync(string actor, bool ownRequests, string? scope, string? query,
+        int page, string? notice = null, string? requesterId = null, bool todayOnly = false)
     {
         const int pageSize = 50;
         var principal = await access.PrincipalAsync(actor);
         var risks = Enum.GetValues<RiskLevel>().Where(risk => DmsPermissions.CanDecide(principal, risk, ownRequest: false)).ToArray();
         var canReview = !ownRequests && risks.Length != 0;
         var selfApproval = DmsPermissions.CanApproveOwn(principal);
-        scope ??= ownRequests ? "all" : "review";
+        scope ??= ownRequests || !string.IsNullOrWhiteSpace(requesterId) || todayOnly ? "all" : "review";
         page = Math.Clamp(page, 0, 100_000);
         var search = query?.Trim() ?? "";
         if (search.Length > 200) throw new DmsException(400, "Search is limited to 200 characters.");
 
         var requests = db.Lockboxes.AsNoTracking();
         if (ownRequests) requests = requests.Where(box => box.RequesterId == actor);
+        if (!string.IsNullOrWhiteSpace(requesterId)) requests = requests.Where(box => box.RequesterId == requesterId);
+        if (todayOnly)
+        {
+            var today = DateTime.UtcNow.Date;
+            requests = requests.Where(box => box.CreatedAt >= today);
+        }
         var now = DateTime.UtcNow;
         requests = scope switch
         {
@@ -82,6 +89,11 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
                 .GroupBy(run => run.ParentId!.Value)
                 .Select(group => new { Root = group.Key, Completed = group.Count(run => run.State == RunState.Succeeded) })
                 .ToDictionaryAsync(count => count.Root, count => count.Completed);
+        var allRequesters = ownRequests
+            ? new Dictionary<string, string>()
+            : await db.Users.AsNoTracking()
+                .OrderBy(u => u.DisplayName)
+                .ToDictionaryAsync(u => u.Id, u => AccessService.PersonName(u.DisplayName, u.UserName));
 
         return new LockboxQueueViewModel
         {
@@ -95,6 +107,7 @@ public sealed class LockboxPages(TemplateDbContext db, AccessService access, Wor
                 executions.GetValueOrDefault(row.Item.Id), row.RequiresResubmission,
                 row.Item.WorkflowId is { } root && completedUpgrades.TryGetValue(root, out var completed) ? completed : null)).ToList(),
             OwnRequests = ownRequests, Scope = scope, Search = search,
+            RequesterId = requesterId, TodayOnly = todayOnly, AllRequesters = allRequesters,
             Page = page, HasNextPage = rows.Count > pageSize, Notice = notice
         };
     }

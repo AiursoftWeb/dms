@@ -13,6 +13,9 @@ public sealed class LockboxQueueViewModel : UiStackLayoutViewModel
     public required int Page { get; init; }
     public required bool HasNextPage { get; init; }
     public string? Notice { get; init; }
+    public string? RequesterId { get; init; }
+    public bool TodayOnly { get; init; }
+    public IReadOnlyDictionary<string, string> AllRequesters { get; init; } = new Dictionary<string, string>();
 }
 
 public sealed record LockboxQueueEntry(LockboxRequest Item, string Requester, IReadOnlyList<string> TargetNames,

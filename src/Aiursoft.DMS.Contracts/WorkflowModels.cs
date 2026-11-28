@@ -71,4 +71,5 @@ public sealed class AgentMessage
     public RunState State { get; set; }
     public long Sequence { get; set; }
     public WorkflowEvent? Event { get; set; }
+    public LockboxContext? Lockbox { get; set; }
 }

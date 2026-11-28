@@ -45,6 +45,7 @@ public abstract partial class TemplateDbContext(DbContextOptions options) : Iden
         builder.Entity<WorkflowRun>().HasIndex(x => x.RootId);
         builder.Entity<WorkflowRun>().HasIndex(x => x.CreatedAt);
         builder.Entity<WorkflowRun>().HasIndex(x => new { x.MachineId, x.CreatedAt });
+        builder.Entity<WorkflowRun>().HasIndex(x => new { x.RequesterId, x.CreatedAt });
         builder.Entity<AuditEvent>().HasIndex(x => new { x.ResourceId, x.Time });
     }
 

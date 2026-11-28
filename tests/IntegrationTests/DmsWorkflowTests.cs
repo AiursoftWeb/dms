@@ -554,6 +554,214 @@ public class DmsWorkflowTests : TestBase
         StringAssert.Contains(excluded, manualHeartbeatId.ToString());
         StringAssert.Contains(excluded, machineRun.Id.ToString());
         StringAssert.Contains(excluded, $"<option value=\"{setup.Machine}\" selected");
+
+        Guid userRunId, otherUserRunId, yesterdayRunId, todayBoxId, oldBoxId;
+        string otherUserId;
+        using (var scope = Server!.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            var otherUser = new User
+            {
+                UserName = "other-" + Guid.NewGuid().ToString("N"),
+                DisplayName = "Other Operator",
+                Email = "other@example.com"
+            };
+            db.Users.Add(otherUser);
+            var todayBox = new LockboxRequest
+            {
+                ClientRequestId = Guid.NewGuid(),
+                RequesterId = setup.User,
+                Definition = WorkflowNames.ListMachines,
+                Risk = RiskLevel.Safe,
+                Version = WorkflowNames.Version,
+                Parameters = "{}",
+                TargetMachines = "[]",
+                Reason = "Today request",
+                Decision = DecisionState.Approved,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = DateTime.UtcNow.AddHours(4)
+            };
+            var oldBox = new LockboxRequest
+            {
+                ClientRequestId = Guid.NewGuid(),
+                RequesterId = setup.User,
+                Definition = WorkflowNames.ListMachines,
+                Risk = RiskLevel.Safe,
+                Version = WorkflowNames.Version,
+                Parameters = "{}",
+                TargetMachines = "[]",
+                Reason = "Old request",
+                Decision = DecisionState.Approved,
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                ExpiresAt = DateTime.UtcNow.AddDays(-2).AddHours(4)
+            };
+            db.Lockboxes.AddRange(todayBox, oldBox);
+            var runForUser = new WorkflowRun
+            {
+                RequesterId = setup.User,
+                LockboxId = todayBox.Id,
+                Definition = WorkflowNames.ListMachines,
+                State = RunState.Succeeded,
+                CreatedAt = DateTime.UtcNow
+            };
+            var runForOther = new WorkflowRun
+            {
+                RequesterId = otherUser.Id,
+                Definition = WorkflowNames.ListMachines,
+                State = RunState.Succeeded,
+                CreatedAt = DateTime.UtcNow
+            };
+            var yesterdayRun = new WorkflowRun
+            {
+                RequesterId = setup.User,
+                LockboxId = oldBox.Id,
+                Definition = WorkflowNames.ListMachines,
+                State = RunState.Succeeded,
+                CreatedAt = DateTime.UtcNow.AddDays(-2)
+            };
+            db.WorkflowRuns.AddRange(runForUser, runForOther, yesterdayRun);
+            await db.SaveChangesAsync();
+            userRunId = runForUser.Id;
+            otherUserRunId = runForOther.Id;
+            yesterdayRunId = yesterdayRun.Id;
+            todayBoxId = todayBox.Id;
+            oldBoxId = oldBox.Id;
+            otherUserId = otherUser.Id;
+        }
+
+        var userFiltered = await Http.GetStringAsync($"/Dms/Operations?requesterId={setup.User}");
+        StringAssert.Contains(userFiltered, userRunId.ToString());
+        StringAssert.Contains(userFiltered, yesterdayRunId.ToString());
+        Assert.DoesNotContain(otherUserRunId.ToString(), userFiltered);
+        StringAssert.Contains(userFiltered, $"<option value=\"{setup.User}\" selected");
+        StringAssert.Contains(userFiltered, todayBoxId.ToString());
+
+        var todayFiltered = await Http.GetStringAsync($"/Dms/Operations?requesterId={setup.User}&todayOnly=true");
+        StringAssert.Contains(todayFiltered, userRunId.ToString());
+        Assert.DoesNotContain(yesterdayRunId.ToString(), todayFiltered);
+        Assert.DoesNotContain(otherUserRunId.ToString(), todayFiltered);
+
+        var lockboxByUserToday = await Http.GetStringAsync($"/Dms/Lockboxes?requesterId={setup.User}&todayOnly=true");
+        StringAssert.Contains(lockboxByUserToday, todayBoxId.ToString());
+        Assert.DoesNotContain(oldBoxId.ToString(), lockboxByUserToday);
+
+        var lockboxByOther = await Http.GetStringAsync($"/Dms/Lockboxes?requesterId={otherUserId}");
+        Assert.DoesNotContain(todayBoxId.ToString(), lockboxByOther);
+
+        var myLockboxesToday = await Http.GetAsync("/DmsAccess/MyLockboxes?todayOnly=true");
+        Assert.AreEqual(HttpStatusCode.OK, myLockboxesToday.StatusCode);
+    }
+
+    private sealed class LockboxContextProbeMachineWorkflow(
+        MachineWorkflowDefinition<EmptyInput, OperationResult> definition, EmptyInput input)
+        : MachineWorkflow<EmptyInput, OperationResult>(definition, input)
+    {
+        public override async Task<OperationResult> ExecuteAsync(MachineWorkflowContext context, EmptyInput input, CancellationToken token)
+        {
+            var proc = await context.CallAsync(
+                new ProcessWorkflow("/bin/sh", ["-c", "printf \"%s|%s\" \"$DMS_LOCKBOX_ID\" \"$DMS_REQUESTER_ID\""], captureOutput: true),
+                token);
+            var env = JsonSerializer.Deserialize<ProcessResult>(proc)!.Output;
+            return new OperationResult($"{context.Lockbox?.LockboxId}|{context.Lockbox?.RequesterId}|{context.Lockbox?.Reason}|{env}");
+        }
+    }
+
+    private sealed class LockboxContextProbeClusterWorkflow(
+        MachineWorkflowDefinition<EmptyInput, OperationResult> machineDef) : ClusterWorkflow<EmptyInput, OperationResult>
+    {
+        public override async Task<OperationResult> ExecuteAsync(WorkflowExecutionContext context, EmptyInput input, CancellationToken token)
+        {
+            var targets = await context.GetApprovedMachinesAsync(token);
+            var child = await context.CallMachineAsync(machineDef, targets.Single(), new EmptyInput(), token);
+            return new OperationResult($"cluster={context.Lockbox?.LockboxId}:{context.Lockbox?.RequesterId}:{context.Lockbox?.Reason};machine={child.Summary}");
+        }
+    }
+
+    private sealed class LockboxContextProbeTransactionalWorkflow(
+        ClusterWorkflowDefinition<EmptyInput, OperationResult> def) : TransactionalClusterWorkflow<EmptyInput, OperationResult>(def)
+    {
+        protected override Task<OperationResult> ExecuteAsync(ClusterWorkflowContext context, EmptyInput input) =>
+            Task.FromResult(new OperationResult($"{context.Lockbox?.LockboxId}|{context.Lockbox?.RequesterId}|{context.Lockbox?.Reason}"));
+    }
+
+    [TestMethod]
+    public async Task LockboxContextAndRequesterIdPropagateAcrossClusterAndMachineWorkflows()
+    {
+        var setup = await ArrangeAsync(true);
+        var key = DmsKeyAuthenticationHandler.CreateKey(true);
+        var machineDef = new MachineWorkflowDefinition<EmptyInput, OperationResult>("test.lockbox.machine", RiskLevel.Low, PublicEntry: true);
+        var clusterDef = new ClusterWorkflowDefinition<EmptyInput, OperationResult>("test.lockbox.cluster", RiskLevel.Low, SelectMachines: true, PublicEntry: true);
+        var txDef = new ClusterWorkflowDefinition<EmptyInput, OperationResult>("test.lockbox.tx", RiskLevel.Low, PublicEntry: true);
+
+        Server!.Services.GetRequiredService<MachineWorkflowRegistry>().Register(machineDef, (input, _) => new LockboxContextProbeMachineWorkflow(machineDef, input));
+        var clusterRegistry = Server.Services.GetRequiredService<ClusterWorkflowRegistry>();
+        clusterRegistry.Register(clusterDef, () => new LockboxContextProbeClusterWorkflow(machineDef));
+        clusterRegistry.Register(txDef, () => new LockboxContextProbeTransactionalWorkflow(txDef));
+
+        var agentRegistry = new MachineWorkflowRegistry();
+        agentRegistry.Register(machineDef, (input, _) => new LockboxContextProbeMachineWorkflow(machineDef, input));
+
+        using (var scope = Server.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+            (await db.Machines.SingleAsync(m => m.Id == setup.Machine)).KeyHash = DmsKeyAuthenticationHandler.Hash(key);
+            await db.SaveChangesAsync();
+        }
+
+        var path = Path.Combine(Path.GetTempPath(), "dms-lockbox-ctx-agent-" + Guid.NewGuid());
+        using var stopping = new CancellationTokenSource(TimeSpan.FromSeconds(25));
+        var token = stopping.Token;
+        try
+        {
+            using var journal = new Agent.TaskJournal(path);
+            var agent = new Agent.AgentClient(Http.BaseAddress!, key, journal, agentRegistry).RunAsync(token);
+            try
+            {
+                var sessions = Server.Services.GetRequiredService<AgentSessions>();
+                while (sessions.Get(setup.Machine)?.Ready != true) await Task.Delay(50, token);
+
+                LockboxRequest clusterBox, txBox;
+                using (var scope = Server.Services.CreateScope())
+                {
+                    var svc = scope.ServiceProvider.GetRequiredService<WorkflowService>();
+                    clusterBox = await svc.SubmitAsync(setup.User, clusterDef.Request(new EmptyInput(), "Audit cluster-to-machine", [setup.Machine]));
+                    txBox = await svc.SubmitAsync(setup.User, txDef.Request(new EmptyInput(), "Audit transactional"));
+                }
+
+                WorkflowRun clusterRoot, txRoot;
+                while (true)
+                {
+                    using var scope = Server.Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+                    clusterRoot = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == clusterBox.WorkflowId!.Value, token);
+                    txRoot = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == txBox.WorkflowId!.Value, token);
+                    if (clusterRoot.State.Terminal() && txRoot.State.Terminal()) break;
+                    await Task.Delay(50, token);
+                }
+
+                Assert.AreEqual(RunState.Succeeded, clusterRoot.State, clusterRoot.Result);
+                Assert.AreEqual(RunState.Succeeded, txRoot.State, txRoot.Result);
+                var expectedLb = new LockboxId(clusterBox.Id).ToString();
+                StringAssert.Contains(clusterRoot.Result, $"cluster={expectedLb}:{setup.User}:Audit cluster-to-machine");
+                StringAssert.Contains(clusterRoot.Result, $"machine={expectedLb}|{setup.User}|Audit cluster-to-machine|{expectedLb}|{setup.User}");
+                StringAssert.Contains(txRoot.Result, $"{new LockboxId(txBox.Id)}|{setup.User}|Audit transactional");
+
+                using (var scope = Server.Services.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<TemplateDbContext>();
+                    var tree = await db.WorkflowRuns.AsNoTracking().Where(r => r.RootId == clusterRoot.Id).ToListAsync(token);
+                    Assert.IsGreaterThanOrEqualTo(3, tree.Count); // cluster root + machine task + ProcessWorkflow child
+                    Assert.IsTrue(tree.All(r => r.RequesterId == setup.User));
+                    Assert.AreEqual(setup.User, txRoot.RequesterId);
+                }
+            }
+            finally
+            {
+                await stopping.CancelAsync();
+                try { await agent; } catch (OperationCanceledException) { }
+            }
+        }
+        finally { Directory.Delete(path, true); }
     }
 
     [TestMethod]

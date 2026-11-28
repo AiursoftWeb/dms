@@ -29,6 +29,10 @@ public class DmsViewModel : UiStackLayoutViewModel
     public bool ClusterWorkflowsOnly { get; set; }
     public Guid? MachineId { get; set; }
     public string? Definition { get; set; }
+    public string? RequesterId { get; set; }
+    public bool TodayOnly { get; set; }
+    public IReadOnlyDictionary<string, string> RequesterNames { get; set; } = new Dictionary<string, string>();
+    public IReadOnlyDictionary<string, string> AllRequesters { get; set; } = new Dictionary<string, string>();
     public static string Color(RunState state) => state switch
     {
         RunState.Running => "primary", RunState.Succeeded => "success", RunState.Failed => "danger",
