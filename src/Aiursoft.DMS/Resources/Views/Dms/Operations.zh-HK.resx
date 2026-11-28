@@ -124,4 +124,13 @@
     <value>工作流類型</value>
   </data>
 
+  <data name="Triggered by" xml:space="preserve">
+    <value>觸發人</value>
+  </data>
+  <data name="All users" xml:space="preserve">
+    <value>所有使用者</value>
+  </data>
+  <data name="Today only" xml:space="preserve">
+    <value>僅今天</value>
+  </data>
 </root>

@@ -6,18 +6,27 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Aiursoft.DMS.Services.Dms;
 
-public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run, WorkflowLaunch launch, WorkflowDefinition? definition = null)
+public sealed class ClusterWorkflowContext(TemplateDbContext db, WorkflowRun run, WorkflowLaunch launch,
+    WorkflowDefinition? definition = null, LockboxContext? lockbox = null)
 {
     public WorkflowDefinition? Definition => definition;
     public TemplateDbContext Inventory => db;
     public WorkflowRun Run => run;
     public WorkflowLaunch Launch => launch;
     public OperationRequest Parameters => launch.ReadParameters();
+    public LockboxContext? Lockbox => lockbox ?? (run.LockboxId == null ? null : new LockboxContext(
+        run.LockboxId.Value,
+        launch.RequesterId,
+        null,
+        string.IsNullOrWhiteSpace(launch.Parameters) ? null : Parameters.Reason,
+        launch.Risk,
+        DateTime.SpecifyKind(launch.DecidedAt ?? run.CreatedAt, DateTimeKind.Utc)));
 
     public void CallMachine(string name, Guid machine, string? input = null) => db.WorkflowRuns.Add(new WorkflowRun
     {
         RootId = run.RootId, ParentId = run.Id, LockboxId = run.LockboxId,
-                Origin = run.Origin, Trigger = WorkflowTrigger.Subworkflow,
+        RequesterId = run.RequesterId ?? launch.RequesterId,
+        Origin = run.Origin, Trigger = WorkflowTrigger.Subworkflow,
         MachineId = machine, Definition = name, Input = input ?? Parameters.Input,
         Version = launch.Version, IsMachineTask = true, State = RunState.Queued
     });

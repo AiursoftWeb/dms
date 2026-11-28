@@ -62,7 +62,7 @@ public abstract partial class TemplateDbContext
                     run?.ParentId, run?.LockboxId ?? box?.Id,
                     run == null ? null : run.MachineId == null ? WorkflowLocation.Cluster : WorkflowLocation.Machine,
                     run?.MachineId, machine?.InstallationId, run?.Definition ?? box!.Definition, run?.Version ?? box!.Version,
-                    launch?.RequesterId ?? box?.RequesterId, submitted ? null : launch?.ApproverId ?? box?.ApproverId,
+                    launch?.RequesterId ?? box?.RequesterId ?? run?.RequesterId, submitted ? null : launch?.ApproverId ?? box?.ApproverId,
                     submitted || box?.Decision is DecisionState.Withdrawn or DecisionState.Expired ? null : launch?.Automatic ?? box?.Automatic,
                     launch?.Risk ?? box?.Risk, launch?.Definition ?? box?.Definition, launch?.Version ?? box?.Version,
                     submitted ? DecisionState.Pending : launch != null ? DecisionState.Approved : box?.Decision,

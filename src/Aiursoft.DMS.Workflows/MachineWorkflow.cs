@@ -37,17 +37,19 @@ public sealed class MachineWorkflowContext
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _cancellations;
 
     public MachineWorkflowContext(Guid id, Guid? parentId, Func<WorkflowEvent, Task> report,
-        AgentEnvironment? environment = null, MachineWorkflowRegistry? workflows = null)
+        AgentEnvironment? environment = null, MachineWorkflowRegistry? workflows = null, LockboxContext? lockbox = null)
         : this(id, parentId, report, new ConcurrentDictionary<Guid, CancellationTokenSource>(),
-            environment ?? new AgentEnvironment(Guid.Empty, "", 0, 0), workflows ?? new MachineWorkflowRegistry()) { }
+            environment ?? new AgentEnvironment(Guid.Empty, "", 0, 0), workflows ?? new MachineWorkflowRegistry(), lockbox) { }
 
     private MachineWorkflowContext(Guid id, Guid? parentId, Func<WorkflowEvent, Task> report,
-        ConcurrentDictionary<Guid, CancellationTokenSource> cancellations, AgentEnvironment environment, MachineWorkflowRegistry workflows)
+        ConcurrentDictionary<Guid, CancellationTokenSource> cancellations, AgentEnvironment environment, MachineWorkflowRegistry workflows, LockboxContext? lockbox = null)
     {
         _id = id; _parentId = parentId; _report = report; _cancellations = cancellations; _environment = environment; _workflows = workflows;
+        Lockbox = lockbox;
     }
 
     public Guid Id => _id;
+    public LockboxContext? Lockbox { get; }
     internal AgentEnvironment Environment => _environment;
     public Guid? ParentId => _parentId;
     public bool HasWarnings => _warning;
@@ -117,7 +119,7 @@ public sealed class MachineWorkflowContext
         token = cancellation.Token;
         token.ThrowIfCancellationRequested();
         var id = Guid.NewGuid();
-        try { return await new MachineWorkflowContext(id, _id, _report, _cancellations, _environment, _workflows).RunAsync(workflow, token); }
+        try { return await new MachineWorkflowContext(id, _id, _report, _cancellations, _environment, _workflows, Lockbox).RunAsync(workflow, token); }
         catch (OperationCanceledException) { throw; }
         catch (WorkflowNeedsVerificationException) { _needsVerification = true; throw; }
         catch (Exception exception) { throw new ChildWorkflowException(id, workflow.Name, null, RunState.Failed, exception.Message); }
@@ -174,6 +176,17 @@ public sealed class ProcessWorkflow(string executable, IReadOnlyList<string> arg
             RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false
         };
         foreach (var argument in _input.Arguments) process.StartInfo.ArgumentList.Add(argument);
+        if (context.Lockbox != null)
+        {
+            process.StartInfo.EnvironmentVariables["DMS_LOCKBOX_ID"] = context.Lockbox.LockboxId.ToString();
+            process.StartInfo.EnvironmentVariables["DMS_REQUESTER_ID"] = context.Lockbox.RequesterId;
+            if (!string.IsNullOrEmpty(context.Lockbox.RequesterName))
+                process.StartInfo.EnvironmentVariables["DMS_REQUESTER_NAME"] = context.Lockbox.RequesterName;
+            if (!string.IsNullOrEmpty(context.Lockbox.Reason))
+                process.StartInfo.EnvironmentVariables["DMS_LOCKBOX_REASON"] = context.Lockbox.Reason;
+            process.StartInfo.EnvironmentVariables["DMS_LOCKBOX_RISK"] = context.Lockbox.Risk.ToString();
+            process.StartInfo.EnvironmentVariables["DMS_TRIGGERED_AT"] = context.Lockbox.TriggeredAt.ToString("O");
+        }
         process.Start();
         using var registration = token.Register(static state => Kill((Process)state!), process);
         var output = _input.CaptureOutput ? new StringBuilder() : null;

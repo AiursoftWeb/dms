@@ -51,9 +51,11 @@ public sealed class ClusterWorkflowRegistry
             : throw new InvalidDataException("Unsupported cluster workflow definition.");
 }
 
-public sealed class WorkflowExecutionContext(ClusterWorkflowRuntime runtime, Guid id, CancellationToken executionToken)
+public sealed class WorkflowExecutionContext(ClusterWorkflowRuntime runtime, Guid id, CancellationToken executionToken,
+    LockboxContext? lockbox = null)
 {
     public Guid Id => id;
+    public LockboxContext? Lockbox => lockbox;
     internal bool HasWarnings { get; private set; }
     public Task<IReadOnlyList<Guid>> GetApprovedMachinesAsync(CancellationToken token) => runtime.ApprovedMachinesAsync(id, token);
     public Task<string> GetRequesterAsync(CancellationToken token) => runtime.RequesterAsync(id, token);
@@ -196,6 +198,7 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
             var child = new WorkflowRun
             {
                 RootId = parent.RootId, ParentId = parent.Id, LockboxId = parent.LockboxId,
+                RequesterId = parent.RequesterId ?? launch.RequesterId,
                 Origin = parent.Origin, Trigger = WorkflowTrigger.Subworkflow,
                 MachineId = machine, Definition = definition, Input = input, Version = (machine == null ? workflows.FindDefinition(definition) : machines.FindDefinition(definition))!.Version,
                 IsMachineTask = machine != null, State = RunState.Queued
@@ -238,8 +241,13 @@ public sealed class ClusterWorkflowRuntime(IServiceScopeFactory scopes, Controll
         WorkflowExecutionContext? context = null;
         try
         {
-            var run = await DatabaseAsync(async db => await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == id));
-            context = new WorkflowExecutionContext(this, id, token);
+            var (run, lockbox) = await DatabaseAsync(async db =>
+            {
+                var item = await db.WorkflowRuns.AsNoTracking().SingleAsync(r => r.Id == id, token);
+                var resolved = await WorkflowScheduler.ResolveLockboxContextAsync(db, item, null, token);
+                return (item, resolved);
+            });
+            context = new WorkflowExecutionContext(this, id, token, lockbox);
             if (workflows.FindDefinition(run.Definition)?.Version != run.Version) throw new InvalidOperationException("The approved workflow version is no longer available.");
             result = await workflows.ExecuteAsync(run.Definition, context, run.Input, token);
             if (result.Length > 32768) throw new InvalidDataException("Workflow result exceeds the size limit.");

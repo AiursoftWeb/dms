@@ -221,6 +221,42 @@ public class AgentJournalTests
     }
 
     [TestMethod]
+    public async Task ProcessWorkflowInjectsLockboxContextAndJournalPersistsLockbox()
+    {
+        var boxId = new LockboxId(Guid.NewGuid());
+        var triggeredAt = new DateTime(2026, 11, 28, 12, 0, 0, DateTimeKind.Utc);
+        var lockbox = new LockboxContext(boxId, "emp-123", "Alice (@alice)", "Emergency restart", RiskLevel.High, triggeredAt);
+        var path = Path.Combine(Path.GetTempPath(), "dms-lockbox-journal-" + Guid.NewGuid());
+        try
+        {
+            var taskId = Guid.NewGuid();
+            using (var journal = new TaskJournal(path))
+            {
+                journal.Accept(new AgentMessage
+                {
+                    Kind = "offer",
+                    TaskId = taskId,
+                    Definition = WorkflowNames.AgentStatus,
+                    Lockbox = lockbox
+                });
+            }
+            using (var reopened = new TaskJournal(path))
+            {
+                var recovered = reopened.Snapshot().Single();
+                Assert.AreEqual(lockbox, recovered.Lockbox);
+            }
+        }
+        finally { Directory.Delete(path, true); }
+
+        var context = new MachineWorkflowContext(Guid.NewGuid(), null, _ => Task.CompletedTask, lockbox: lockbox);
+        var result = await context.RunAsync(
+            new ProcessWorkflow("/bin/sh", ["-c", "printf \"%s|%s|%s|%s|%s|%s\" \"$DMS_LOCKBOX_ID\" \"$DMS_REQUESTER_ID\" \"$DMS_REQUESTER_NAME\" \"$DMS_LOCKBOX_REASON\" \"$DMS_LOCKBOX_RISK\" \"$DMS_TRIGGERED_AT\""], captureOutput: true),
+            CancellationToken.None);
+        var output = JsonSerializer.Deserialize<ProcessResult>(result)!.Output;
+        Assert.AreEqual($"{boxId}|emp-123|Alice (@alice)|Emergency restart|High|{triggeredAt:O}", output);
+    }
+
+    [TestMethod]
     public void AcceptedCancellationPreventsStart()
     {
         var path = Path.Combine(Path.GetTempPath(), "dms-journal-" + Guid.NewGuid());

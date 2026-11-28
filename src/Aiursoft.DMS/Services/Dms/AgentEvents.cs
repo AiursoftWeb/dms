@@ -81,7 +81,7 @@ public sealed class AgentEvents(TemplateDbContext db, ControllerGate gate, Trace
             var parent = await db.WorkflowRuns.SingleOrDefaultAsync(r => r.Id == item.ParentId);
             if (parent == null || parent.MachineId != machineId || parent.RootId != task.RootId || (item.Definition != WorkflowNames.Process && workflows.FindDefinition(item.Definition)?.Version != item.Version) || !await BelongsToTaskAsync(parent, task.Id))
                 throw new DmsException(403, "Invalid machine subworkflow parent or definition.");
-            run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, MachineId = machineId, Definition = item.Definition, Input = item.Input, Version = item.Version,
+            run = new WorkflowRun { Id = item.WorkflowId, ParentId = parent.Id, RootId = task.RootId, LockboxId = task.LockboxId, RequesterId = task.RequesterId, MachineId = machineId, Definition = item.Definition, Input = item.Input, Version = item.Version,
                 CreatedAt = item.Time, Origin = task.Origin, Trigger = WorkflowTrigger.Subworkflow,
                 ScheduleId = task.ScheduleId, ScheduleExpression = task.ScheduleExpression, ScheduledAt = task.ScheduledAt };
             db.WorkflowRuns.Add(run);

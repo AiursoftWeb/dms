@@ -25,12 +25,12 @@ public class DmsAccessController(TemplateDbContext db, AccessService access, Loc
     });
 
     [RenderInNavBar(NavGroupName = LockboxText.Name, NavGroupOrder = 1, CascadedLinksGroupName = LockboxText.Name, CascadedLinksIcon = "lock", LinkText = "My requests", LinkOrder = 1)]
-    public async Task<IActionResult> MyLockboxes(int page = 0, string? scope = null, string? q = null)
+    public async Task<IActionResult> MyLockboxes(int page = 0, string? scope = null, string? q = null, bool todayOnly = false)
     {
         try
         {
             if (!ModelState.IsValid) return BadRequest();
-            return this.StackView(await lockboxPages.ListAsync(Actor, ownRequests: true, scope, q, page, TempData["DmsNotice"] as string));
+            return this.StackView(await lockboxPages.ListAsync(Actor, ownRequests: true, scope, q, page, TempData["DmsNotice"] as string, todayOnly: todayOnly));
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }

@@ -58,7 +58,8 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                 var workflow = run.Definition == WorkflowNames.Batch ? new MachineBatchWorkflow()
                     : workflows.CreateTransactional(run.Definition, launch.Version)
                         ?? throw new InvalidOperationException("The approved cluster workflow version is no longer available.");
-                await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, launch, catalog.Find(launch.Definition)));
+                var lockbox = await ResolveLockboxContextAsync(db, run, launch, token);
+                await workflow.ExecuteAsync(new ClusterWorkflowContext(db, run, launch, catalog.Find(launch.Definition), lockbox));
             }
             catch (Exception exception) when (exception is InvalidOperationException or JsonException or InvalidDataException or ArgumentException)
             { Fail(run, exception.Message); }
@@ -79,10 +80,11 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             if (session?.Ready != true) continue;
             if (machine.Disabled || session.KeyHash != machine.KeyHash) { session.Abort(); continue; }
             var cancel = task.State == RunState.CancelRequested;
+            WorkflowLaunch? launch = null;
             if (!cancel)
             {
                 if (task.Origin == WorkflowOrigin.Automatic) continue; // Agent-local schedules are never offered by the Controller.
-                var launch = await db.WorkflowLaunches.FindAsync([task.RootId], token);
+                launch = await db.WorkflowLaunches.FindAsync([task.RootId], token);
                 if (launch == null || !launch.ReadTargets().Contains(machine.Id))
                 {
                     Fail(task, "Machine is outside the workflow launch snapshot.");
@@ -98,7 +100,8 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
                 var owner = task;
                 while (cancel && !owner.IsMachineTask && owner.ParentId != null)
                     owner = await db.WorkflowRuns.SingleAsync(r => r.Id == owner.ParentId, token);
-                await session.SendAsync(new AgentMessage { Kind = cancel ? "cancel" : "offer", TaskId = owner.Id, TargetWorkflowId = cancel ? task.Id : null, Definition = task.Definition, Input = task.Input, Version = task.Version }, timeout.Token);
+                var lockboxContext = cancel ? null : await ResolveLockboxContextAsync(db, task, launch, token);
+                await session.SendAsync(new AgentMessage { Kind = cancel ? "cancel" : "offer", TaskId = owner.Id, TargetWorkflowId = cancel ? task.Id : null, Definition = task.Definition, Input = task.Input, Version = task.Version, Lockbox = lockboxContext }, timeout.Token);
             }
             catch (Exception exception) when (!token.IsCancellationRequested) { session.Abort(); logger.LogWarning(exception, "Agent delivery interrupted for workflow {WorkflowId}.", task.Id); }
         }
@@ -141,6 +144,24 @@ public sealed class WorkflowScheduler(IServiceScopeFactory scopes, ControllerGat
             if (run.State.Terminal()) run.FinishedAt = DateTime.UtcNow;
         }
         await db.SaveChangesAsync(token);
+    }
+
+    internal static async Task<LockboxContext?> ResolveLockboxContextAsync(
+        TemplateDbContext db, WorkflowRun run, WorkflowLaunch? launch, CancellationToken token)
+    {
+        if (run.LockboxId == null) return null;
+        launch ??= await db.WorkflowLaunches.FindAsync([run.RootId], token);
+        if (launch == null) return null;
+        var requester = string.IsNullOrEmpty(launch.RequesterId) ? null : await db.Users.FindAsync([launch.RequesterId], token);
+        var requesterName = requester == null ? null : AccessService.PersonName(requester.DisplayName, requester.UserName);
+        var reason = string.IsNullOrWhiteSpace(launch.Parameters) ? null : launch.ReadParameters().Reason;
+        return new LockboxContext(
+            run.LockboxId.Value,
+            launch.RequesterId,
+            requesterName,
+            reason,
+            launch.Risk,
+            DateTime.SpecifyKind(launch.DecidedAt ?? run.CreatedAt, DateTimeKind.Utc));
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)

@@ -15,6 +15,7 @@ public sealed class JournalTask
     public long Sequence { get; set; }
     public Queue<WorkflowEvent> Pending { get; set; } = new();
     public AgentRelease? ScheduledUpgradeRelease { get; set; }
+    public LockboxContext? Lockbox { get; set; }
 
     // Rebuilt from the checkpoint and records on open; never serialized into either.
     internal long FileLength;
@@ -153,7 +154,7 @@ public sealed partial class TaskJournal : IDisposable
         lock (_gate)
         {
             if (FindExistingTask(message) != null) return;
-            var task = new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
+            var task = new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version, Lockbox = message.Lockbox };
             Save(task); _tasks.Add(task.Id, task);
         }
     }
@@ -164,7 +165,7 @@ public sealed partial class TaskJournal : IDisposable
         {
             var task = FindExistingTask(message);
             if (task != null && task.State != RunState.Accepted) return false;
-            task ??= new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version };
+            task ??= new JournalTask { Id = message.TaskId, Definition = message.Definition, Input = message.Input, Version = message.Version, Lockbox = message.Lockbox };
             Append(task, new WorkflowEvent
             {
                 WorkflowId = task.Id, Definition = task.Definition, Version = task.Version,

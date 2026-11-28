@@ -49,23 +49,42 @@
                 <option value="all" selected="@(Model.Scope == "all")">@LockboxText.Format(@Localizer["All {0} requests"].Value)</option>
             </select>
         </div>
+        @if (!Model.OwnRequests && Model.AllRequesters.Count > 0)
+        {
+            <div class="dms-filter-field">
+                <label for="requesterId" class="form-label">@Localizer["Requester"]</label>
+                <select id="requesterId" name="requesterId" class="form-select">
+                    <option value="">@Localizer["All users"]</option>
+                    @foreach (var user in Model.AllRequesters)
+                    {
+                        <option value="@user.Key" selected="@(Model.RequesterId == user.Key)">@user.Value</option>
+                    }
+                </select>
+            </div>
+        }
         <div class="dms-filter-field dms-filter-search">
             <label for="q" class="form-label">@LockboxText.Format(@Localizer["Search {0} requests"].Value)</label>
             <input type="search" id="q" name="q" class="form-control" maxlength="200" value="@Model.Search"
                    placeholder="@(LockboxText.Format(@Localizer["Workflow, requester, reason, or {0} ID"].Value))" />
         </div>
         <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
-        @if (Model.Search.Length != 0 || Model.Scope != defaultScope)
+        @if (Model.Search.Length != 0 || Model.Scope != defaultScope || !string.IsNullOrEmpty(Model.RequesterId) || Model.TodayOnly)
         {
             <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction">@Localizer["Clear"]</a>
         }
+        <div class="dms-filter-options">
+            <div class="form-check">
+                <input id="todayOnly" name="todayOnly" type="checkbox" value="true" checked="@Model.TodayOnly" class="form-check-input" />
+                <label for="todayOnly" class="form-check-label">@Localizer["Today only"]</label>
+            </div>
+        </div>
     </form>
 
     @if (Model.Entries.Count == 0)
     {
         <div class="card dms-empty">
             <i data-lucide="inbox" aria-hidden="true"></i>
-            @if (Model.Scope == "review" && Model.Search.Length == 0)
+            @if (Model.Scope == "review" && Model.Search.Length == 0 && string.IsNullOrEmpty(Model.RequesterId) && !Model.TodayOnly)
             {
                 <p>@LockboxText.Format(@Localizer["No {0} requests are waiting for your review."].Value)</p>
                 <a asp-controller="@controller" asp-action="@indexAction" asp-route-scope="pending">@LockboxText.Format(@Localizer["See all pending {0} requests"].Value)</a>
@@ -73,6 +92,10 @@
             else
             {
                 <p>@LockboxText.Format(@Localizer["No {0} requests match these filters."].Value)</p>
+                @if (Model.Scope == "review" && (!string.IsNullOrEmpty(Model.RequesterId) || Model.TodayOnly))
+                {
+                    <a asp-controller="@controller" asp-action="@indexAction" asp-route-scope="all" asp-route-q="@Model.Search" asp-route-requesterId="@Model.RequesterId" asp-route-todayOnly="@(Model.TodayOnly ? "true" : null)">@LockboxText.Format(@Localizer["All {0} requests"].Value)</a>
+                }
             }
         </div>
     }
@@ -103,7 +126,7 @@
                             <div class="dms-item-meta">
                                 @if (!Model.OwnRequests)
                                 {
-                                    <span><i data-lucide="user" aria-hidden="true"></i> @row.Requester</span>
+                                    <a asp-controller="@controller" asp-action="@indexAction" asp-route-scope="all" asp-route-requesterId="@item.RequesterId"><i data-lucide="user" aria-hidden="true"></i> @row.Requester</a>
                                 }
                                 @if (row.TargetCount > 0)
                                 {
@@ -155,12 +178,12 @@
             @if (Model.Page > 0)
             {
                 <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction" asp-route-page="@(Model.Page - 1)"
-                   asp-route-scope="@Model.Scope" asp-route-q="@Model.Search">@Localizer["Previous"]</a>
+                   asp-route-scope="@Model.Scope" asp-route-q="@Model.Search" asp-route-requesterId="@Model.RequesterId" asp-route-todayOnly="@(Model.TodayOnly ? "true" : null)">@Localizer["Previous"]</a>
             }
             @if (Model.HasNextPage)
             {
                 <a class="btn btn-outline-secondary" asp-controller="@controller" asp-action="@indexAction" asp-route-page="@(Model.Page + 1)"
-                   asp-route-scope="@Model.Scope" asp-route-q="@Model.Search">@Localizer["Next"]</a>
+                   asp-route-scope="@Model.Scope" asp-route-q="@Model.Search" asp-route-requesterId="@Model.RequesterId" asp-route-todayOnly="@(Model.TodayOnly ? "true" : null)">@Localizer["Next"]</a>
             }
         </nav>
     }

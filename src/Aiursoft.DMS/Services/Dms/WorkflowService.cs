@@ -346,7 +346,7 @@ public sealed class WorkflowService(TemplateDbContext db, AccessService access, 
         item.DecidedAt = DateTime.UtcNow; item.DecisionReason = reason;
         var root = new WorkflowRun
         {
-            LockboxId = item.Id, State = RunState.Queued,
+            LockboxId = item.Id, RequesterId = item.RequesterId, State = RunState.Queued,
             Definition = definition.Location == WorkflowLocation.Machine ? WorkflowNames.Batch : item.Definition,
             Input = input, Version = item.Version
         };

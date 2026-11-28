@@ -543,6 +543,10 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("RequesterId")
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Result")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -582,6 +586,8 @@ namespace Aiursoft.DMS.Sqlite.Migrations
                     b.HasIndex("RootId");
 
                     b.HasIndex("MachineId", "CreatedAt");
+
+                    b.HasIndex("RequesterId", "CreatedAt");
 
                     b.ToTable("WorkflowRuns");
                 });

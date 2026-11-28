@@ -1,11 +1,13 @@
 @using Aiursoft.DMS.Contracts
 @using Aiursoft.DMS.Models.DmsViewModels
+@using Aiursoft.DMS.Services.Dms
 @using Aiursoft.WebTools
 @model DmsViewModel
 @{
     var routes = new Dictionary<string, string?>
     {
         ["machineId"] = Model.MachineId?.ToString(), ["definition"] = Model.Definition,
+        ["requesterId"] = Model.RequesterId, ["todayOnly"] = Model.TodayOnly ? "true" : null,
         ["clusterWorkflowsOnly"] = Model.ClusterWorkflowsOnly ? "true" : null,
         ["origin"] = Model.Origin?.ToString(), ["state"] = Model.State?.ToString(),
         ["rootOnly"] = Model.RootOnly ? "true" : null,
@@ -73,8 +75,22 @@
                 <option value="Automatic" selected="@(Model.Origin == WorkflowOrigin.Automatic)">@Localizer["Automatic"]</option>
             </select>
         </div>
+        <div class="dms-filter-field">
+            <label for="requesterId" class="form-label">@Localizer["Triggered by"]</label>
+            <select id="requesterId" name="requesterId" class="form-select">
+                <option value="">@Localizer["All users"]</option>
+                @foreach (var user in Model.AllRequesters)
+                {
+                    <option value="@user.Key" selected="@(Model.RequesterId == user.Key)">@user.Value</option>
+                }
+            </select>
+        </div>
         <button class="btn btn-primary" type="submit">@Localizer["Apply filters"]</button>
         <div class="dms-filter-options">
+            <div class="form-check">
+                <input id="todayOnly" name="todayOnly" type="checkbox" value="true" checked="@Model.TodayOnly" class="form-check-input" />
+                <label for="todayOnly" class="form-check-label">@Localizer["Today only"]</label>
+            </div>
             <div class="form-check">
                 <input id="excludeHeartbeats" name="excludeHeartbeats" type="checkbox" value="true" checked="@Model.ExcludeHeartbeats" class="form-check-input" />
                 <label for="excludeHeartbeats" class="form-check-label">@Localizer["Exclude heartbeats"]</label>
@@ -117,6 +133,14 @@
                                 else
                                 {
                                     <span>@Localizer["Controller"]</span>
+                                }
+                                @if (!string.IsNullOrEmpty(run.RequesterId))
+                                {
+                                    <a asp-action="Operations" asp-route-requesterId="@run.RequesterId"><i data-lucide="user" aria-hidden="true"></i> @Model.RequesterNames.GetValueOrDefault(run.RequesterId, run.RequesterId)</a>
+                                }
+                                @if (run.LockboxId is { } runBoxId)
+                                {
+                                    <a asp-action="Lockbox" asp-route-id="@(new LockboxId(runBoxId))"><i data-lucide="lock" aria-hidden="true"></i> @LockboxText.Name</a>
                                 }
                                 <span><i data-lucide="clock" aria-hidden="true"></i> <span data-utc-time="@run.CreatedAt.ToHtmlDateTime()"></span></span>
                                 <span>@(run.Origin == WorkflowOrigin.Automatic ? @Localizer["Automatic"] : @Localizer["Manual"])</span>

@@ -192,12 +192,12 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     private static int RiskRank(RiskLevel risk) => risk == RiskLevel.Open ? -1 : (int)risk;
 
     [RenderInNavBar(NavGroupName = LockboxText.Name, NavGroupOrder = 1, CascadedLinksGroupName = LockboxText.Name, CascadedLinksIcon = "lock", LinkText = "My approvals", LinkOrder = 2)]
-    public async Task<IActionResult> Lockboxes(int page = 0, string? scope = null, string? q = null)
+    public async Task<IActionResult> Lockboxes(int page = 0, string? scope = null, string? q = null, string? requesterId = null, bool todayOnly = false)
     {
         try
         {
-            if (!ModelState.IsValid) return BadRequest();
-            return this.StackView(await lockboxPages.ListAsync(Actor, ownRequests: false, scope, q, page));
+            if (!ModelState.IsValid || requesterId?.Length > 450) return BadRequest();
+            return this.StackView(await lockboxPages.ListAsync(Actor, ownRequests: false, scope, q, page, requesterId: requesterId, todayOnly: todayOnly));
         }
         catch (DmsException exception) { return StatusCode(exception.StatusCode); }
     }
@@ -255,12 +255,13 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
     }
 
     [RenderInNavBar(NavGroupName = "DMS", NavGroupOrder = 0, CascadedLinksGroupName = "Operations", CascadedLinksIcon = "server", LinkText = "Workflow history", LinkOrder = 3)]
-    public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? definition = null,
-        bool clusterWorkflowsOnly = false, WorkflowOrigin? origin = null, RunState? state = null, bool rootOnly = false,
+    public async Task<IActionResult> Operations(int page = 0, Guid? machineId = null, string? requesterId = null,
+        bool todayOnly = false, string? definition = null, bool clusterWorkflowsOnly = false,
+        WorkflowOrigin? origin = null, RunState? state = null, bool rootOnly = false,
         bool excludeHeartbeats = false)
     {
         if (!ModelState.IsValid || (origin.HasValue && !Enum.IsDefined(origin.Value)) ||
-            (state.HasValue && !Enum.IsDefined(state.Value)) || definition?.Length > 200) return BadRequest();
+            (state.HasValue && !Enum.IsDefined(state.Value)) || definition?.Length > 200 || requesterId?.Length > 450) return BadRequest();
         page = Math.Clamp(page, 0, 100000);
         var query = db.WorkflowRuns.AsNoTracking();
         if (origin != null) query = query.Where(run => run.Origin == origin);
@@ -268,6 +269,12 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         if (rootOnly) query = query.Where(run => run.ParentId == null);
         if (clusterWorkflowsOnly) query = query.Where(run => run.MachineId == null);
         if (machineId != null) query = query.Where(run => run.MachineId == machineId);
+        if (!string.IsNullOrWhiteSpace(requesterId)) query = query.Where(run => run.RequesterId == requesterId);
+        if (todayOnly)
+        {
+            var today = DateTime.UtcNow.Date;
+            query = query.Where(run => run.CreatedAt >= today);
+        }
         if (excludeHeartbeats)
         {
             query = query.Where(run => run.Origin == WorkflowOrigin.Manual ||
@@ -288,14 +295,26 @@ public class DmsController(TemplateDbContext db, AccessService access, WorkflowS
         var allMachines = await db.Machines.AsNoTracking()
             .OrderBy(m => m.Name)
             .ToDictionaryAsync(m => m.Id, m => m.Name);
+        var runRequesterIds = runs.Select(run => run.RequesterId).Where(id => !string.IsNullOrEmpty(id)).Distinct().ToList();
+        if (!string.IsNullOrEmpty(requesterId) && !runRequesterIds.Contains(requesterId))
+            runRequesterIds.Add(requesterId);
+        var requesterNames = runRequesterIds.Count > 0
+            ? await db.Users.AsNoTracking().Where(u => runRequesterIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => AccessService.PersonName(u.DisplayName, u.UserName))
+            : new Dictionary<string, string>();
+        var allRequesters = await db.Users.AsNoTracking()
+            .OrderBy(u => u.DisplayName)
+            .ToDictionaryAsync(u => u.Id, u => AccessService.PersonName(u.DisplayName, u.UserName));
         return this.StackView(new DmsViewModel
         {
             PageTitle = "Workflow history",
             Origin = origin, State = state, RootOnly = rootOnly, Runs = runs, Page = page, HasNextPage = items.Count > 50,
-            MachineId = machineId, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly,
+            MachineId = machineId, RequesterId = requesterId, TodayOnly = todayOnly, Definition = definition, ClusterWorkflowsOnly = clusterWorkflowsOnly,
             ExcludeHeartbeats = excludeHeartbeats,
             MachineNames = await MachineNamesAsync(runs.Select(run => run.MachineId).Append(machineId)),
             AllMachines = allMachines,
+            RequesterNames = requesterNames,
+            AllRequesters = allRequesters,
             RequestedDefinitions = requested
         });
     }

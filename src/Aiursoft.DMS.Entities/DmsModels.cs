@@ -54,6 +54,7 @@ public class WorkflowRun
     public Guid RootId { get; set; }
     public Guid? ParentId { get; set; }
     public Guid? LockboxId { get; set; }
+    [MaxLength(450)] public string? RequesterId { get; set; }
     public WorkflowOrigin Origin { get; set; }
     public WorkflowTrigger Trigger { get; set; }
     [MaxLength(100)] public string? ScheduleId { get; set; }
